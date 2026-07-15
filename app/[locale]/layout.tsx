@@ -7,6 +7,7 @@ import "../globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { routing } from "@/i18n/routing"
+import { SmoothScrollProvider } from "@/providers/smooth-scroll-provider"
 
 const oxaniumHeading = Oxanium({
   subsets: ["latin"],
@@ -55,7 +56,9 @@ export default async function LocaleLayout({
     >
       <body suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <SmoothScrollProvider>{children} </SmoothScrollProvider>
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

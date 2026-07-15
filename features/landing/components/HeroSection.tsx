@@ -1,15 +1,21 @@
 import { Play } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { getTranslations, getLocale } from "next-intl/server"
 import { Link } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
-export default function HeroSection() {
-  const t = useTranslations("Hero")
+import { cn } from "@/lib/utils"
+export default async function HeroSection() {
+  const t = await getTranslations("Hero")
+  const locale = await getLocale()
 
   return (
-    <main
-      className="relative mt-[-94px] flex min-h-screen w-full items-center overflow-hidden bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('/images/Landing/hero.webp')" }}
-    >
+    <main className="relative mt-[-94px] flex min-h-screen w-full items-center overflow-hidden bg-cover bg-center bg-no-repeat">
+      <div
+        className={cn(
+          "absolute inset-0 bg-cover bg-center bg-no-repeat",
+          locale === "ar" && "-scale-x-100"
+        )}
+        style={{ backgroundImage: "url('/images/Landing/hero.webp')" }}
+      />
       {/* Main Container */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pt-28 pb-16 sm:px-6 md:px-8 md:pt-20">
         <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-12">
@@ -22,7 +28,7 @@ export default function HeroSection() {
                 {t("titleLine2")}
               </h1>
 
-              <p className="mt-6 max-w-lg text-start font-sans text-sm leading-relaxed text-white/85 sm:text-base md:text-lg">
+              <p className="mt-6 max-w-lg text-start font-sans text-sm leading-relaxed font-medium text-white/85 sm:text-base md:text-lg">
                 {t("description")}
               </p>
 

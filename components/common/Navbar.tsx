@@ -6,7 +6,7 @@ import MobileMenu from "@/components/common/MobileMenu"
 import LangToggle from "@/components/common/LangToggle"
 import ActLink from "@/components/common/ActLink"
 import CartSheet from "@/components/common/CartSheet"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 
 export default function Navbar() {
   const t = useTranslations("Navbar")
