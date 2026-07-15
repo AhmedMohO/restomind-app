@@ -32,7 +32,7 @@ export default function MobileMenu() {
           <Button
             variant="outline"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden"
             aria-label="Open mobile menu"
             nativeButton
           >

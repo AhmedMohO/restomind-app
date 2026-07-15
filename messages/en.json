@@ -11,5 +11,34 @@
     "description": "RestruMind empowers restaurants and bakeries to minimize food waste with smart AI predictions. Instantly convert daily surplus into delicious, discounted offers that nearby customers can order and rescue.",
     "ctaOrder": "Save a Meal",
     "ctaVideo": "How It Works"
+  },
+  "Story": {
+    "badge": "Our Mission",
+    "title": "Smart prediction meets local abundance",
+    "description": "RestruMind bridges the gap between food surplus and hungry tables. By joining our platform, bakeries and restaurants gain access to powerful AI tools that forecast daily waste. Instead of letting delicious food go to waste, businesses can list their daily surplus as discounted offers for local users to rescue, order, and enjoy.",
+    "point1Title": "AI-Powered Predictions",
+    "point1Desc": "Bakeries and restaurants predict excess inventory before it happens.",
+    "point2Title": "Instant Surplus Offers",
+    "point2Desc": "Turn daily excess into attractive, discounted offers for nearby users.",
+    "point3Title": "Rescue & Enjoy",
+    "point3Desc": "Normal users browse, order, and save high-quality meals at great prices."
+  },
+  "Partners": {
+    "title": "Trusted by Local Bakeries & Restaurants",
+    "subtitle": "Empowering neighborhood bakeries, cafes, and dining spots to forecast food surplus and share abundance daily."
+  },
+  "Footer": {
+    "joinNewsletter": "Join our newsletter",
+    "emailPlaceholder": "Enter your email",
+    "subscribe": "Subscribe",
+    "description": "Predict waste, minimize food surplus, and share local abundance with smart AI predictions.",
+    "menuTitle": "Explore",
+    "infoTitle": "Company",
+    "faq": "FAQ",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "contact": "Contact",
+    "rights": "All rights reserved.",
+    "brandName": "RestruMind"
   }
 }
