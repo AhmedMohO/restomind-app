@@ -17,8 +17,8 @@ export default function Navbar() {
   ] as const
 
   return (
-    <header className="absolute top-0 right-0 left-0 z-50 w-full bg-transparent">
-      <div className="mx-auto flex items-center justify-between px-4 py-6 md:grid md:grid-cols-3 md:px-8">
+    <header className="relative z-50 w-full bg-transparent">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 md:grid md:grid-cols-3 md:px-8">
         {/* Left: Navigation links (hidden on mobile, visible on desktop) */}
         <div className="hidden md:flex md:justify-start">
           <nav className="flex items-center gap-1 rounded-full border border-border/40 bg-background/50 p-1.5 backdrop-blur-md">

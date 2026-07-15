@@ -1,0 +1,83 @@
+"use client"
+
+import React from "react"
+import { SortOption } from "./types"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+import { Label } from "@/components/ui/label"
+
+interface SortBarProps {
+  sortBy: SortOption
+  onSortChange: (value: SortOption) => void
+  pageSize: number
+  onPageSizeChange: (value: number) => void
+  totalCount: number
+}
+
+export default function SortBar({
+  sortBy,
+  onSortChange,
+  pageSize,
+  onPageSizeChange,
+  totalCount
+}: SortBarProps) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#ECE6DB] pb-4 dark:border-neutral-800">
+      {/* Product Count */}
+      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        Showing 1-{Math.min(pageSize, totalCount)} of {totalCount} results
+      </span>
+
+      {/* Sorting selectors */}
+      <div className="flex items-center gap-3">
+        {/* Sort By Selector */}
+        <div className="flex items-center">
+          <Label className="bg-[#FAF7F2] border border-input dark:bg-neutral-850 text-muted-foreground text-[10px] px-2.5 font-semibold rounded-l-md uppercase tracking-wider h-8 flex items-center border-r-0">
+            Sort By:
+          </Label>
+          <Select
+            value={sortBy}
+            onValueChange={(val) => onSortChange(val as SortOption)}
+          >
+            <SelectTrigger className="rounded-l-none rounded-r-md border border-input h-8 text-xs bg-white dark:bg-neutral-900 min-w-36 focus:ring-1 focus:ring-ring focus:outline-none">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border border-input text-popover-foreground text-xs shadow-md">
+              <SelectItem value="default">Default</SelectItem>
+              <SelectItem value="price-asc">Price: Low to High</SelectItem>
+              <SelectItem value="price-desc">Price: High to Low</SelectItem>
+              <SelectItem value="rating-desc">Highest Rated</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Page Size Selector */}
+        <div className="flex items-center">
+          <Label className="bg-[#FAF7F2] border border-input dark:bg-neutral-850 text-muted-foreground text-[10px] px-2.5 font-semibold rounded-l-md uppercase tracking-wider h-8 flex items-center border-r-0">
+            Show:
+          </Label>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(val) => onPageSizeChange(Number(val))}
+          >
+            <SelectTrigger className="rounded-l-none rounded-r-md border border-input h-8 text-xs bg-white dark:bg-neutral-900 min-w-16 focus:ring-1 focus:ring-ring focus:outline-none">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border border-input text-popover-foreground text-xs shadow-md">
+              <SelectItem value="6">6</SelectItem>
+              <SelectItem value="12">12</SelectItem>
+              <SelectItem value="24">24</SelectItem>
+              <SelectItem value="36">36</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  )
+}

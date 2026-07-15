@@ -53,7 +53,7 @@ export default async function LocaleLayout({
         cairo.variable
       )}
     >
-      <body>
+      <body suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>{children}</ThemeProvider>
         </NextIntlClientProvider>

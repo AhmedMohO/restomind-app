@@ -8,11 +8,9 @@ export default function Page() {
 
   return (
     <main
-      className="relative flex min-h-screen w-full items-center overflow-hidden bg-cover bg-center bg-no-repeat"
+      className="relative flex min-h-screen w-full items-center overflow-hidden bg-cover bg-center bg-no-repeat mt-[-104px]"
       style={{ backgroundImage: "url('/images/Landing/hero.webp')" }}
     >
-      {/* Dark overlay to ensure good contrast on all screens */}
-      <div className="absolute inset-0 bg-stone-950/25 md:bg-gradient-to-r md:from-stone-950/40 md:via-stone-900/10 md:to-transparent rtl:md:bg-gradient-to-l rtl:md:from-stone-950/40 rtl:md:via-stone-900/10 rtl:md:to-transparent" />
 
       {/* Main Container */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pt-28 pb-16 sm:px-6 md:px-8 md:pt-20">
