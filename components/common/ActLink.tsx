@@ -22,6 +22,11 @@ export default function ActLink({
   // Safely extract string href
   const hrefString = typeof href === "string" ? href : href.pathname || ""
 
+  activeClassName = activeClassName || "bg-accent text-accent-foreground"
+  inactiveClassName =
+    inactiveClassName ||
+    "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+
   const isActive =
     pathname === hrefString ||
     (hrefString !== "/" && pathname?.startsWith(hrefString))
@@ -29,10 +34,7 @@ export default function ActLink({
   return (
     <Link
       href={href}
-      className={cn(
-        className,
-        isActive ? activeClassName : inactiveClassName
-      )}
+      className={cn(className, isActive ? activeClassName : inactiveClassName)}
       {...props}
     >
       {children}

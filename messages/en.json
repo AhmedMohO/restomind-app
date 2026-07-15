@@ -3,7 +3,8 @@
     "home": "Home",
     "about": "About us",
     "offers": "Offers",
-    "dashboard": "Business Portal"
+    "login": "Sign In",
+    "register": "Register"
   },
   "Hero": {
     "titleLine1": "Predict Waste,",
