@@ -55,6 +55,7 @@ export default function MobileMenu() {
             {links.map((link) => (
               <SheetClose
                 key={link.key}
+                nativeButton={false}
                 render={
                   <ActLink
                     href={link.href}

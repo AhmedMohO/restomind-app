@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle"
 import MobileMenu from "@/components/common/MobileMenu"
 import LangToggle from "@/components/common/LangToggle"
 import ActLink from "@/components/common/ActLink"
+import CartSheet from "@/components/common/CartSheet"
 
 export default function Navbar() {
   const t = useTranslations("Navbar")
@@ -53,6 +54,7 @@ export default function Navbar() {
         {/* Right: Theme Toggle & Mobile Menu */}
         <div className="flex items-center justify-end gap-3">
           <ThemeToggle />
+          <CartSheet />
           <LangToggle />
           <MobileMenu />
         </div>

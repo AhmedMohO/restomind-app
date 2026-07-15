@@ -27,6 +27,10 @@
     "title": "Trusted by Local Bakeries & Restaurants",
     "subtitle": "Empowering neighborhood bakeries, cafes, and dining spots to forecast food surplus and share abundance daily."
   },
+  "Recommended": {
+    "title": "Recommended delicious treats",
+    "subtitle": "Popular fresh surplus meals recommended by our community"
+  },
   "Footer": {
     "joinNewsletter": "Join our newsletter",
     "emailPlaceholder": "Enter your email",
@@ -40,5 +44,16 @@
     "contact": "Contact",
     "rights": "All rights reserved.",
     "brandName": "RestruMind"
+  },
+  "Cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "emptyDesc": "Add delicious treats from our store to get started!",
+    "startShopping": "Start Shopping",
+    "subtotal": "Subtotal",
+    "checkout": "Proceed to Checkout",
+    "clear": "Clear Cart",
+    "remove": "Remove",
+    "items": "items"
   }
 }

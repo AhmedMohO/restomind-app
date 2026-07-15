@@ -28,7 +28,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </p>
         </div>
         <Link
-          href="/products"
+          href="/offers"
           className="inline-flex items-center gap-1 text-sm font-semibold text-[#7C4A27] hover:underline dark:text-[#E68A49]"
         >
           <ArrowLeft size={16} />

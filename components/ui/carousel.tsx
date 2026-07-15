@@ -1,0 +1,227 @@
+"use client"
+
+import * as React from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+
+type CarouselContextProps = {
+  carouselRef: React.RefObject<HTMLDivElement | null>
+  canScrollPrev: boolean
+  canScrollNext: boolean
+  showArrows: boolean
+  scrollPrev: () => void
+  scrollNext: () => void
+}
+
+const CarouselContext = React.createContext<CarouselContextProps | null>(null)
+
+function useCarousel() {
+  const context = React.useContext(CarouselContext)
+  if (!context) {
+    throw new Error("useCarousel must be used within a <Carousel />")
+  }
+  return context
+}
+
+interface CarouselProps extends React.ComponentProps<"div"> {
+  opts?: { align?: "start" | "center" | "end" }
+  ref?: React.Ref<HTMLDivElement>
+}
+
+const Carousel = ({ className, children, ref, ...props }: CarouselProps) => {
+  const carouselRef = React.useRef<HTMLDivElement>(null)
+  const [canScrollPrev, setCanScrollPrev] = React.useState(false)
+  const [canScrollNext, setCanScrollNext] = React.useState(false)
+  const [showArrows, setShowArrows] = React.useState(false)
+
+  const checkScroll = React.useCallback(() => {
+    const el = carouselRef.current
+    if (el) {
+      const { scrollLeft, scrollWidth, clientWidth } = el
+      const isStart = Math.abs(scrollLeft) < 2
+      const isEnd = Math.abs(scrollLeft) + clientWidth >= scrollWidth - 2
+      
+      setShowArrows(scrollWidth > clientWidth)
+      setCanScrollPrev(!isStart)
+      setCanScrollNext(!isEnd)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    const el = carouselRef.current
+    if (el) {
+      checkScroll()
+      el.addEventListener("scroll", checkScroll)
+      window.addEventListener("resize", checkScroll)
+      
+      const observer = new MutationObserver(checkScroll)
+      observer.observe(el, { childList: true, subtree: true })
+      
+      return () => {
+        el.removeEventListener("scroll", checkScroll)
+        window.removeEventListener("resize", checkScroll)
+        observer.disconnect()
+      }
+    }
+  }, [checkScroll])
+
+  const scrollPrev = React.useCallback(() => {
+    const el = carouselRef.current
+    if (el) {
+      const scrollAmount = el.clientWidth * 0.8
+      el.scrollBy({ left: -scrollAmount, behavior: "smooth" })
+    }
+  }, [])
+
+  const scrollNext = React.useCallback(() => {
+    const el = carouselRef.current
+    if (el) {
+      const scrollAmount = el.clientWidth * 0.8
+      el.scrollBy({ left: scrollAmount, behavior: "smooth" })
+    }
+  }, [])
+
+  return (
+    <CarouselContext.Provider
+      value={{
+        carouselRef,
+        canScrollPrev,
+        canScrollNext,
+        showArrows,
+        scrollPrev,
+        scrollNext,
+      }}
+    >
+      <div
+        ref={ref}
+        className={cn("relative w-full", className)}
+        role="region"
+        aria-roledescription="carousel"
+        {...props}
+      >
+        {children}
+      </div>
+    </CarouselContext.Provider>
+  )
+}
+Carousel.displayName = "Carousel"
+
+interface CarouselContentProps extends React.ComponentProps<"div"> {
+  ref?: React.Ref<HTMLDivElement>
+}
+
+const CarouselContent = ({ className, ref, ...props }: CarouselContentProps) => {
+  const { carouselRef } = useCarousel()
+
+  return (
+    <div
+      ref={carouselRef}
+      className={cn(
+        "flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+CarouselContent.displayName = "CarouselContent"
+
+interface CarouselItemProps extends React.ComponentProps<"div"> {
+  ref?: React.Ref<HTMLDivElement>
+}
+
+const CarouselItem = ({ className, ref, ...props }: CarouselItemProps) => {
+  return (
+    <div
+      ref={ref}
+      role="group"
+      aria-roledescription="slide"
+      className={cn(
+        "min-w-0 shrink-0 grow-0 snap-start",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+CarouselItem.displayName = "CarouselItem"
+
+interface CarouselPreviousProps extends React.ComponentProps<typeof Button> {
+  ref?: React.Ref<HTMLButtonElement>
+}
+
+const CarouselPrevious = ({
+  className,
+  variant = "outline",
+  size = "icon",
+  ref,
+  ...props
+}: CarouselPreviousProps) => {
+  const { scrollPrev, canScrollPrev, showArrows } = useCarousel()
+
+  if (!showArrows) return null
+
+  return (
+    <Button
+      ref={ref}
+      variant={variant}
+      size={size}
+      className={cn(
+        "absolute h-8 w-8 rounded-full z-10 bg-white dark:bg-neutral-900 border border-[#ECE6DB] dark:border-neutral-800 shadow-sm transition-opacity duration-200 disabled:opacity-40 cursor-pointer",
+        className
+      )}
+      disabled={!canScrollPrev}
+      onClick={scrollPrev}
+      {...props}
+    >
+      <ChevronLeft className="h-4 w-4" />
+      <span className="sr-only">Previous slide</span>
+    </Button>
+  )
+}
+CarouselPrevious.displayName = "CarouselPrevious"
+
+interface CarouselNextProps extends React.ComponentProps<typeof Button> {
+  ref?: React.Ref<HTMLButtonElement>
+}
+
+const CarouselNext = ({
+  className,
+  variant = "outline",
+  size = "icon",
+  ref,
+  ...props
+}: CarouselNextProps) => {
+  const { scrollNext, canScrollNext, showArrows } = useCarousel()
+
+  if (!showArrows) return null
+
+  return (
+    <Button
+      ref={ref}
+      variant={variant}
+      size={size}
+      className={cn(
+        "absolute h-8 w-8 rounded-full z-10 bg-white dark:bg-neutral-900 border border-[#ECE6DB] dark:border-neutral-800 shadow-sm transition-opacity duration-200 disabled:opacity-40 cursor-pointer",
+        className
+      )}
+      disabled={!canScrollNext}
+      onClick={scrollNext}
+      {...props}
+    >
+      <ChevronRight className="h-4 w-4" />
+      <span className="sr-only">Next slide</span>
+    </Button>
+  )
+}
+CarouselNext.displayName = "CarouselNext"
+
+export {
+  type CarouselContextProps,
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+}

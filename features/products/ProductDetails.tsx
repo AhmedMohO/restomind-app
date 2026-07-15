@@ -6,6 +6,7 @@ import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star } from "lucide-react"
 import { Product } from "./types"
 import { useCart } from "@/hooks/use-cart"
 import { cn } from "@/lib/utils"
+import ProductCarousel from "@/components/common/ProductCarousel"
 
 interface ProductDetailsProps {
   product: Product
@@ -41,7 +42,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       {/* Back to shop breadcrumb button */}
       <div>
         <Link
-          href="/products"
+          href="/offers"
           className="inline-flex items-center gap-1 text-sm font-semibold text-[#7C4A27] hover:underline dark:text-[#E68A49]"
         >
           <ArrowLeft size={16} />
@@ -171,6 +172,16 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Similar offers carousel */}
+      <div className="pt-12 border-t border-[#ECE6DB] dark:border-neutral-800 transition-colors mt-12">
+        <ProductCarousel
+          category={product.category}
+          excludeId={product.id}
+          title="Similar Delicious Offers"
+          subtitle={`Warm treats from our ${product.category} section`}
+        />
       </div>
     </div>
   )
