@@ -6,6 +6,7 @@ import MobileMenu from "@/components/common/MobileMenu"
 import LangToggle from "@/components/common/LangToggle"
 import ActLink from "@/components/common/ActLink"
 import CartSheet from "@/components/common/CartSheet"
+import { Button, buttonVariants } from "@/components/ui/button"
 
 export default function Navbar() {
   const t = useTranslations("Navbar")
@@ -14,11 +15,10 @@ export default function Navbar() {
     { key: "home", href: "/" },
     { key: "offers", href: "/offers" },
     { key: "about", href: "/about" },
-    { key: "dashboard", href: "/dashboard" },
   ] as const
 
   return (
-    <header className="relative z-50 h-[94px] w-full bg-transparent">
+    <header className="relative z-50 w-full bg-transparent">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 lg:grid lg:grid-cols-3 lg:px-8">
         {/* Left: Navigation links (hidden on mobile, visible on desktop) */}
         <div className="hidden lg:flex lg:justify-start">
@@ -51,11 +51,37 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Right: Theme Toggle & Mobile Menu */}
-        <div className="flex items-center justify-end gap-3">
-          <ThemeToggle />
-          <CartSheet />
-          <LangToggle />
+        {/* Right: Auth links, Utilities, Mobile Menu */}
+        <div className="flex items-center justify-end gap-3 sm:gap-4">
+          {/* Desktop Auth Links */}
+          <div className="hidden items-center gap-2 md:flex">
+            <ActLink
+              href="/login"
+              className={buttonVariants({
+                variant: "outline",
+              })}
+            >
+              {t("login")}
+            </ActLink>
+            <ActLink
+              className={buttonVariants({
+                variant: "outline",
+              })}
+              href="/register"
+            >
+              {t("register")}
+            </ActLink>
+          </div>
+
+          {/* System Utilities */}
+          <div className="flex items-center gap-1.5 border-l border-border/40 pl-3 rtl:border-r rtl:border-l-0 rtl:pr-3 rtl:pl-0 dark:border-stone-800">
+            <ThemeToggle />
+            <CartSheet />
+
+            <LangToggle />
+          </div>
+
+          {/* Mobile Menu */}
           <MobileMenu />
         </div>
       </div>

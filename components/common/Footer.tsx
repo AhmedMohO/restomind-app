@@ -112,14 +112,6 @@ export default function Footer() {
                     {tNavbar("about")}
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/dashboard"
-                    className="text-stone-600 transition-colors hover:text-[#111111] dark:text-stone-400 dark:hover:text-stone-100"
-                  >
-                    {tNavbar("dashboard")}
-                  </Link>
-                </li>
               </ul>
             </div>
 
