@@ -1,5 +1,4 @@
-import Header from "@/components/common/Header"
-import Footer from "@/components/common/Footer"
+import Navbar from "@/components/common/Navbar"
 
 export default function PublicLayout({
   children,
@@ -7,10 +6,9 @@ export default function PublicLayout({
   children: React.ReactNode
 }) {
   return (
-    <div>
+    <div className="relative min-h-screen">
       <Navbar />
       {children}
-      <Footer />
     </div>
   )
 }
