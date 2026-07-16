@@ -22,6 +22,7 @@ export default function MobileMenu() {
   const links = [
     { key: "home", href: "/" },
     { key: "offers", href: "/offers" },
+    { key: "orders", href: "/orders" },
     { key: "about", href: "/about" },
   ] as const
 

@@ -3,6 +3,7 @@
     "home": "Home",
     "about": "About us",
     "offers": "Offers",
+    "orders": "Orders",
     "login": "Sign In",
     "register": "Register"
   },
@@ -56,5 +57,25 @@
     "clear": "Clear Cart",
     "remove": "Remove",
     "items": "items"
+  },
+  "Orders": {
+    "title": "My Orders",
+    "subtitle": "Track and manage your order history with RestruMind",
+    "statusAll": "All Orders",
+    "statusPending": "Preparing",
+    "statusOutForDelivery": "Out for Delivery",
+    "statusDelivered": "Delivered",
+    "statusCancelled": "Cancelled",
+    "orderNo": "Order",
+    "total": "Total",
+    "items": "items",
+    "reorder": "Reorder",
+    "support": "Support",
+    "invoice": "Invoice",
+    "favorite": "Favorite",
+    "track": "Track Order",
+    "cancel": "Cancel Order",
+    "empty": "No orders found",
+    "emptyDesc": "You haven't placed any orders matching this status yet."
   }
 }

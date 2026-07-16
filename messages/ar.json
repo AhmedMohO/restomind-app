@@ -3,6 +3,7 @@
     "home": "الرئيسية",
     "about": "من نحن",
     "offers": "عروض",
+    "orders": "طلباتي",
     "login": "تسجيل الدخول",
     "register": "تسجيل"
   },
@@ -56,5 +57,25 @@
     "clear": "تفريغ السلة",
     "remove": "إزالة",
     "items": "منتجات"
+  },
+  "Orders": {
+    "title": "طلباتي",
+    "subtitle": "تتبع وإدارة سجل طلباتك مع ريستروميند",
+    "statusAll": "كل الطلبات",
+    "statusPending": "قيد التحضير",
+    "statusOutForDelivery": "خارج للتوصيل",
+    "statusDelivered": "تم التوصيل",
+    "statusCancelled": "ملغي",
+    "orderNo": "طلب",
+    "total": "الإجمالي",
+    "items": "منتجات",
+    "reorder": "إعادة طلب",
+    "support": "الدعم",
+    "invoice": "الفاتورة",
+    "favorite": "المفضلة",
+    "track": "تتبع الطلب",
+    "cancel": "إلغاء الطلب",
+    "empty": "لم يتم العثور على طلبات",
+    "emptyDesc": "لم تقم بتقديم أي طلبات تطابق هذه الحالة بعد."
   }
 }

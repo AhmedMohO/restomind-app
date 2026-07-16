@@ -14,6 +14,7 @@ export default function Navbar() {
   const navLinks = [
     { key: "home", href: "/" },
     { key: "offers", href: "/offers" },
+    { key: "orders", href: "/orders" },
     { key: "about", href: "/about" },
   ] as const
 
