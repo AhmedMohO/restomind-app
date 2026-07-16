@@ -56,5 +56,52 @@
     "clear": "تفريغ السلة",
     "remove": "إزالة",
     "items": "منتجات"
+  },
+  "Checkout": {
+    "title": "الدفع",
+    "step1": "التفاصيل",
+    "step2": "التوصيل",
+    "step3": "الدفع",
+    "yourDetails": "بياناتك",
+    "fullName": "الاسم الكامل",
+    "phoneNumber": "رقم الهاتف",
+    "email": "البريد الإلكتروني",
+    "deliveryAddress": "عنوان التوصيل",
+    "specialNotes": "ملاحظات خاصة (اختياري)",
+    "specialNotesPlaceholder": "الحساسية، طلبات خاصة، تعليمات التوصيل...",
+    "continue": "متابعة",
+    "back": "رجوع",
+    "deliveryMethod": "طريقة التوصيل",
+    "homeDelivery": "توصيل للمنزل",
+    "homeDeliveryDesc": "2–3 ساعات · {fee} جنيه",
+    "storePickup": "الاستلام من المتجر",
+    "storePickupDesc": "جاهز خلال 30 دقيقة · مجاناً",
+    "promoCode": "رمز الخصم",
+    "promoPlaceholder": "أدخل رمز الخصم",
+    "apply": "تطبيق",
+    "paymentMethod": "طريقة الدفع",
+    "creditCard": "بطاقة ائتمان / خصم",
+    "creditCardDesc": "فيزا، ماستركارد، أمريكان إكسبريس",
+    "cashOnDelivery": "الدفع عند الاستلام",
+    "cashOnDeliveryDesc": "ادفع عند وصول طلبك",
+    "placeOrder": "تأكيد الطلب",
+    "errorFullName": "يجب أن يكون الاسم حرفين على الأقل",
+    "errorPhone": "أدخل رقم هاتف صحيح (8 أرقام على الأقل)",
+    "errorEmail": "أدخل بريدًا إلكترونيًا صحيحًا",
+    "errorAddress": "يجب أن يكون العنوان 5 أحرف على الأقل"
+  },
+  "OrderSummary": {
+    "title": "ملخص الطلب",
+    "subtotal": "المجموع الفرعي",
+    "delivery": "التوصيل",
+    "total": "الإجمالي",
+    "free": "مجاناً"
+  },
+  "OrderConfirmed": {
+    "title": "تم تأكيد طلبك!",
+    "subtitle": "يتم تحضير مخبوزاتك الحرفية بعناية من قِبل فريقنا.",
+    "sms": "ستصلك رسالة تأكيد قريباً.",
+    "trackOrder": "تتبع طلبي",
+    "continueShopping": "مواصلة التسوق"
   }
 }

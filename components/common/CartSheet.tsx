@@ -184,11 +184,17 @@ export default function CartSheet() {
               </span>
             </div>
             
-            <Button
-              className="w-full rounded-full py-6 font-sans text-sm font-semibold bg-[#7C4A27] text-white hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432] shadow-md transition-all duration-200 active:scale-[0.98]"
-            >
-              {t("checkout")}
-            </Button>
+            <SheetClose
+              nativeButton={false}
+              render={
+                <Link
+                  href="/checkout"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold shadow-md transition-all duration-200 active:scale-[0.98]"
+                >
+                  {t("checkout")}
+                </Link>
+              }
+            />
           </SheetFooter>
         )}
       </SheetContent>
