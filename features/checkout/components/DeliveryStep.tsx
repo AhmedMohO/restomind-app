@@ -97,7 +97,7 @@ export default function DeliveryStep({
         <label className="text-sm font-medium text-foreground">{t("promoCode")}</label>
         <div className="flex gap-3">
           <Input
-            className="h-12 rounded-full bg-secondary border-transparent px-5 text-sm flex-1 placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-transparent"
+            className="h-12 rounded-full border-transparent px-5 text-sm flex-1  focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-transparent"
             placeholder={t("promoPlaceholder")}
             value={promoInput}
             onChange={(e) => setPromoInput(e.target.value)}

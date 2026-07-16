@@ -31,7 +31,7 @@ const detailsSchema = z.object({
 })
 
 const inputClass =
-  "h-12 rounded-full bg-secondary border-transparent px-5 text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-transparent"
+  "h-12 rounded-full  border-transparent px-5 text-sm  focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-transparent"
 
 const inputErrorClass = "ring-1 ring-destructive focus-visible:ring-destructive"
 
@@ -136,7 +136,7 @@ export default function DetailsStep({ initialData, onContinue }: DetailsStepProp
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-foreground">{t("specialNotes")}</label>
           <Textarea
-            className="bg-secondary border-transparent placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-transparent"
+            className=" border-transparent  focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-transparent"
             placeholder={t("specialNotesPlaceholder")}
             value={form.specialNotes}
             onChange={(e) => handleChange("specialNotes", e.target.value)}
