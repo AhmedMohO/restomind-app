@@ -1,5 +1,5 @@
 {
-  "name": "restrumind",
+  "name": "Restomind",
   "version": "0.0.1",
   "type": "module",
   "private": true,
@@ -16,6 +16,7 @@
     "@hugeicons/core-free-icons": "^4.2.2",
     "@hugeicons/react": "^1.1.9",
     "@space-man/react-theme-animation": "^2.3.0",
+    "@tanstack/react-query": "^5.101.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.2",
@@ -27,6 +28,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-fast-marquee": "^1.6.5",
+    "react-hook-form": "^7.81.0",
     "shadcn": "^4.13.0",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",

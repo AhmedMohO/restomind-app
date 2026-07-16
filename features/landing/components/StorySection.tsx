@@ -6,8 +6,8 @@ export default function StorySection() {
   const t = useTranslations("Story")
 
   return (
-    <section className="relative w-full py-16 md:py-24 bg-background/50">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+    <section className="relative w-full bg-background/50 py-16 md:py-24">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-12 lg:gap-16">
           {/* Image Column */}
           <div className="md:col-span-6 lg:col-span-5">
@@ -26,15 +26,15 @@ export default function StorySection() {
           {/* Content Column */}
           <div className="flex flex-col justify-center md:col-span-6 lg:col-span-7">
             <div>
-              <span className="inline-block text-xs font-bold uppercase tracking-wider text-primary">
+              <span className="inline-block text-xs font-bold tracking-wider text-primary uppercase">
                 {t("badge")}
               </span>
-              
-              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl font-heading leading-tight">
+
+              <h2 className="mt-3 font-heading text-3xl leading-tight font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
                 {t("title")}
               </h2>
 
-              <p className="mt-6 text-base sm:text-lg leading-relaxed text-muted-foreground">
+              <p className="mt-6 text-base leading-relaxed text-muted-foreground sm:text-lg">
                 {t("description")}
               </p>
 
@@ -46,8 +46,11 @@ export default function StorySection() {
                     <Brain className="size-5" />
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                      <span className="font-semibold text-foreground">{t("point1Title")}</span> — {t("point1Desc")}
+                    <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                      <span className="font-semibold text-foreground">
+                        {t("point1Title")}
+                      </span>{" "}
+                      — {t("point1Desc")}
                     </p>
                   </div>
                 </div>
@@ -58,8 +61,11 @@ export default function StorySection() {
                     <Percent className="size-5" />
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                      <span className="font-semibold text-foreground">{t("point2Title")}</span> — {t("point2Desc")}
+                    <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                      <span className="font-semibold text-foreground">
+                        {t("point2Title")}
+                      </span>{" "}
+                      — {t("point2Desc")}
                     </p>
                   </div>
                 </div>
@@ -70,8 +76,11 @@ export default function StorySection() {
                     <ShoppingBag className="size-5" />
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                      <span className="font-semibold text-foreground">{t("point3Title")}</span> — {t("point3Desc")}
+                    <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                      <span className="font-semibold text-foreground">
+                        {t("point3Title")}
+                      </span>{" "}
+                      — {t("point3Desc")}
                     </p>
                   </div>
                 </div>

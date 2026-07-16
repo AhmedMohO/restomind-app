@@ -31,19 +31,15 @@ export default function OrdersPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 md:py-12 space-y-8 min-h-[70vh]">
+    <div className="container mx-auto min-h-[70vh] space-y-8 px-4">
       {/* Title Header Section */}
-      <div className="bg-white border border-[#ECE6DB] rounded-[24px] p-6 sm:p-8 space-y-2 dark:bg-neutral-900 dark:border-neutral-800 transition-colors shadow-xs">
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#2B1B15] dark:text-neutral-100">
-          {t("title")}
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
-          {t("subtitle")}
-        </p>
-      </div>
+
+      <h1 className="font-serif text-3xl font-bold tracking-tight text-[#2B1B15] sm:text-4xl dark:text-neutral-100">
+        {t("title")}
+      </h1>
 
       {/* Filter Tabs */}
-      <div className="flex overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-850">
+      <div className="dark:scrollbar-thumb-neutral-850 -mx-4 flex scrollbar-thin scrollbar-thumb-neutral-200 gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.key
           return (
@@ -51,10 +47,10 @@ export default function OrdersPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                "px-4 py-2 text-xs font-semibold rounded-full border transition-all whitespace-nowrap active:translate-y-px",
+                "rounded-full border px-4 py-2 text-xs font-semibold whitespace-nowrap transition-all active:translate-y-px",
                 isActive
-                  ? "bg-[#7C4A27] text-white border-[#7C4A27] dark:bg-[#C2733C] dark:border-[#C2733C] shadow-xs"
-                  : "bg-white border-[#ECE6DB] text-muted-foreground hover:bg-neutral-50 hover:text-foreground dark:bg-neutral-900 dark:border-neutral-800 dark:hover:bg-neutral-850 dark:hover:text-neutral-200"
+                  ? "border-[#7C4A27] bg-[#7C4A27] text-white shadow-xs dark:border-[#C2733C] dark:bg-[#C2733C]"
+                  : "dark:hover:bg-neutral-850 border-[#ECE6DB] bg-white text-muted-foreground hover:bg-neutral-50 hover:text-foreground dark:border-neutral-800 dark:bg-neutral-900 dark:hover:text-neutral-200"
               )}
             >
               {t(tab.labelKey)}
@@ -65,7 +61,7 @@ export default function OrdersPage() {
 
       {/* Orders List / Empty State */}
       {filteredOrders.length > 0 ? (
-        <div className="flex flex-col gap-6 pl-1 md:pl-2 pt-2">
+        <div className="flex flex-col gap-6 pt-2 pl-1 md:pl-2">
           {filteredOrders.map((order, idx) => (
             <OrderCard
               key={order.id}
@@ -77,23 +73,23 @@ export default function OrdersPage() {
         </div>
       ) : (
         /* Empty State */
-        <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-[#ECE6DB] rounded-[24px] bg-white dark:bg-neutral-900 dark:border-neutral-800 p-8 space-y-5 animate-in fade-in duration-300">
-          <div className="bg-[#FAF2ED] dark:bg-neutral-850 p-5 rounded-full text-[#7C4A27] dark:text-[#E68A49] transition-colors">
+        <div className="flex animate-in flex-col items-center justify-center space-y-5 rounded-[24px] border border-dashed border-[#ECE6DB] bg-white p-8 py-16 text-center duration-300 fade-in dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="dark:bg-neutral-850 rounded-full bg-[#FAF2ED] p-5 text-[#7C4A27] transition-colors dark:text-[#E68A49]">
             <ClipboardList size={44} className="stroke-[1.5]" />
           </div>
           <div className="space-y-1.5">
             <h3 className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
               {t("empty")}
             </h3>
-            <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
+            <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">
               {t("emptyDesc")}
             </p>
           </div>
           <Link
             href="/offers"
-            className="inline-flex h-9 items-center justify-center rounded-full bg-[#7C4A27] text-white hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432] text-xs font-semibold px-6 transition-all shadow-sm"
+            className="inline-flex h-9 items-center justify-center rounded-full bg-[#7C4A27] px-6 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
           >
-            <ShoppingBag className="size-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+            <ShoppingBag className="mr-1.5 size-3.5 rtl:mr-0 rtl:ml-1.5" />
             <span>{t("statusAll")}</span>
           </Link>
         </div>
