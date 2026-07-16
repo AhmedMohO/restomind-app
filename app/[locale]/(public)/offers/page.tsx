@@ -7,6 +7,7 @@ import ProductCard from "@/features/products/ProductCard"
 import FilterSidebar from "@/features/products/FilterSidebar"
 import SortBar from "@/features/products/SortBar"
 import { Filter, Search } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 const DEFAULT_FILTERS: FilterState = {
   searchQuery: "",
@@ -20,6 +21,7 @@ const DEFAULT_FILTERS: FilterState = {
 }
 
 export default function ProductsPage() {
+  const t = useTranslations("Offers")
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
   const [sortBy, setSortBy] = useState<SortOption>("default")
   const [pageSize, setPageSize] = useState<number>(12)
@@ -81,13 +83,13 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Title Header Section */}
-      <div className="bg-white border border-[#ECE6DB] rounded-[24px] p-6 sm:p-8 space-y-2 dark:bg-neutral-900 dark:border-neutral-800 transition-colors">
+      {/* Title Header Section (Simple and Elegant) */}
+      <div className="space-y-1.5 py-2 text-start">
         <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#2B1B15] dark:text-neutral-100">
-          From today&apos;s shelves
+          {t("title")}
         </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
-          The three trays Cairo keeps coming back for, baked fresh, layered with premium ghee, and served warm every single hour.
+        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xl">
+          {t("subtitle")}
         </p>
       </div>
 

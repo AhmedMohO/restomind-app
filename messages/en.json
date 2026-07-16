@@ -4,6 +4,7 @@
     "about": "About us",
     "offers": "Offers",
     "orders": "Orders",
+    "favourites": "Favourites",
     "login": "Sign In",
     "register": "Register"
   },
@@ -77,5 +78,16 @@
     "cancel": "Cancel Order",
     "empty": "No orders found",
     "emptyDesc": "You haven't placed any orders matching this status yet."
+  },
+  "Favourites": {
+    "title": "My Favourites",
+    "subtitle": "Your handpicked delicious treats and daily fresh offers",
+    "empty": "No favourites yet",
+    "emptyDesc": "Browse our fresh offers and click the heart icon to save your top picks here!",
+    "backToOffers": "Explore Offers"
+  },
+  "Offers": {
+    "title": "Daily Offers",
+    "subtitle": "Discover daily fresh offers and discounted surplus treats from local bakeries & restaurants."
   }
 }
