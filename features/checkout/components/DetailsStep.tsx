@@ -1,13 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { ChevronRight } from "lucide-react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { getZodErrorMap } from "@/lib/zod-locale"
 
 export interface DetailsFormData {
   fullName: string
@@ -37,6 +38,7 @@ const inputErrorClass = "ring-1 ring-destructive focus-visible:ring-destructive"
 
 export default function DetailsStep({ initialData, onContinue }: DetailsStepProps) {
   const t = useTranslations("Checkout")
+  const locale = useLocale()
   const [form, setForm] = useState<DetailsFormData>(initialData)
   const [errors, setErrors] = useState<Partial<Record<keyof DetailsFormData, string>>>({})
 
@@ -46,19 +48,13 @@ export default function DetailsStep({ initialData, onContinue }: DetailsStepProp
   }
 
   function handleSubmit() {
-    const result = detailsSchema.safeParse(form)
+    const result = detailsSchema.safeParse(form, { error: getZodErrorMap(locale) })
     if (!result.success) {
       const translatedErrors: Partial<Record<keyof DetailsFormData, string>> = {}
-      const errorMap: Record<string, string> = {
-        fullName: t("errorFullName"),
-        phoneNumber: t("errorPhone"),
-        email: t("errorEmail"),
-        deliveryAddress: t("errorAddress"),
-      }
       result.error.issues.forEach((issue) => {
         const key = issue.path[0] as keyof DetailsFormData
         if (!translatedErrors[key]) {
-          translatedErrors[key] = errorMap[key]
+          translatedErrors[key] = issue.message
         }
       })
       setErrors(translatedErrors)

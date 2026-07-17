@@ -1,22 +1,43 @@
 "use client"
+
 import Image from "next/image"
 import { useTranslations } from "next-intl"
-import { Link } from "@/i18n/routing"
+import { Link, useRouter } from "@/i18n/routing"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import MobileMenu from "@/components/common/MobileMenu"
 import LangToggle from "@/components/common/LangToggle"
 import ActLink from "@/components/common/ActLink"
 import CartSheet from "@/components/common/CartSheet"
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
+import { SignedIn, SignedOut, HasRole } from "@/features/auth/components/Guards"
+import { logoutAction } from "@/features/auth/actions/login"
+import { useQueryClient } from "@tanstack/react-query"
+import { User, LogOut, LayoutDashboard, Heart, ShoppingBag } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 export default function Navbar() {
   const t = useTranslations("Navbar")
   const pathname = usePathname()
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
+  const user = useAuthStore((s) => s.user)
+  const setUser = useAuthStore((s) => s.setUser)
+
   const isLandingPage =
     pathname === "/" || pathname === "/en" || pathname === "/ar"
-  console.log(isLandingPage)
 
   const navLinks = [
     { key: "home", href: "/" },
@@ -25,6 +46,17 @@ export default function Navbar() {
     { key: "favourites", href: "/favourites" },
     { key: "about", href: "/about" },
   ] as const
+
+  async function handleLogout() {
+    await logoutAction()
+    setUser(null)
+    queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+    router.refresh()
+  }
+
+  const userInitials = user
+    ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase()
+    : ""
 
   return (
     <header
@@ -67,31 +99,101 @@ export default function Navbar() {
 
         {/* Right: Auth links, Utilities, Mobile Menu */}
         <div className="flex items-center justify-end gap-3 sm:gap-4">
-          {/* Desktop Auth Links */}
+          {/* Desktop Auth Links / User Profile */}
           <div className="hidden items-center gap-2 md:flex">
-            <ActLink
-              href="/login"
-              className={buttonVariants({
-                variant: "outline",
-              })}
-            >
-              {t("login")}
-            </ActLink>
-            <ActLink
-              className={buttonVariants({
-                variant: "outline",
-              })}
-              href="/register"
-            >
-              {t("register")}
-            </ActLink>
+            <SignedIn>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 rounded-full border-border/60 bg-background/80 px-3 py-1.5 shadow-xs backdrop-blur-sm transition-all hover:bg-accent"
+                    >
+                      <Avatar size="sm">
+                        <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                          {userInitials || <User className="size-3.5" />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="max-w-[120px] truncate text-sm font-medium">
+                        {user?.firstName}
+                      </span>
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 rounded-md p-2"
+                >
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="flex flex-col gap-0.5 px-2 py-1.5">
+                      <p className="text-sm font-semibold text-foreground">
+                        {user?.firstName} {user?.lastName}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </DropdownMenuLabel>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <HasRole roles={["admin", "manager"]}>
+                    <DropdownMenuItem
+                      onClick={() => router.push("/dashboard")}
+                      className="cursor-pointer gap-2 py-2"
+                    >
+                      <LayoutDashboard className="size-4 text-muted-foreground" />
+                      <span>{t("dashboard")}</span>
+                    </DropdownMenuItem>
+                  </HasRole>
+                  <DropdownMenuItem
+                    onClick={() => router.push("/orders")}
+                    className="cursor-pointer gap-2 py-2"
+                  >
+                    <ShoppingBag className="size-4 text-muted-foreground" />
+                    <span>{t("orders")}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => router.push("/favourites")}
+                    className="cursor-pointer gap-2 py-2"
+                  >
+                    <Heart className="size-4 text-muted-foreground" />
+                    <span>{t("favourites")}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    variant="destructive"
+                    className="cursor-pointer gap-2 py-2"
+                  >
+                    <LogOut className="size-4" />
+                    <span>{t("logout")}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SignedIn>
+            <SignedOut>
+              <ActLink
+                href="/login"
+                className={buttonVariants({
+                  variant: "outline",
+                })}
+              >
+                {t("login")}
+              </ActLink>
+              <ActLink
+                className={buttonVariants({
+                  variant: "outline",
+                })}
+                href="/register"
+              >
+                {t("register")}
+              </ActLink>
+            </SignedOut>
           </div>
 
           {/* System Utilities */}
           <div className="flex items-center gap-1.5 border-l border-border/40 pl-3 rtl:border-r rtl:border-l-0 rtl:pr-3 rtl:pl-0 dark:border-stone-800">
             <ThemeToggle />
             <CartSheet />
-
             <LangToggle />
           </div>
 

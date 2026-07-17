@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  cacheComponents: true,
 }
 
 export default withNextIntl(nextConfig)

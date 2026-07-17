@@ -1,4 +1,13 @@
 {
+  "Validation": {
+    "required": "هذا الحقل مطلوب",
+    "invalidEmail": "البريد الإلكتروني غير صحيح",
+    "minChars": "يجب أن يحتوي على {min} أحرف على الأقل",
+    "maxChars": "يجب ألا يتجاوز {max} حرفاً",
+    "exactLength": "يجب أن يكون مكوناً من {length} أرقام/أحرف بالظبط",
+    "passwordsMismatch": "كلمات المرور غير متطابقة",
+    "otpDigitsOnly": "يجب أن يحتوي رمز التحقق على أرقام فقط"
+  },
   "Navbar": {
     "home": "الرئيسية",
     "about": "من نحن",
@@ -6,7 +15,9 @@
     "orders": "طلباتي",
     "favourites": "المفضلة",
     "login": "تسجيل الدخول",
-    "register": "تسجيل"
+    "register": "تسجيل",
+    "logout": "تسجيل الخروج",
+    "dashboard": "لوحة التحكم"
   },
   "Hero": {
     "titleLine1": "توقع الهدر،",
@@ -133,6 +144,11 @@
     "emptyDesc": "تصفح عروضنا الطازجة وانقر على أيقونة القلب لحفظ العناصر المفضلة لديك هنا!",
     "backToOffers": "استكشف العروض"
   },
+  "metadata": {
+    "title": "ريستوميند — توقع الهدر، شارك الوفرة",
+    "description": "ريستوميند يمكّن المطاعم والمخابز من تقليل الهدر الغذائي باستخدام التنبؤات الذكية. حول الفائض اليومي فوراً إلى عروض مخفضة.",
+    "keywords": "ريستوميند, هدر الطعام, فائض الطعام, مخابز مصر, مطاعم مصر, تنبؤات ذكاء اصطناعي, إنقاذ الطعام, عروض مخفضة"
+  },
   "Offers": {
     "title": "عروض اليوم",
     "subtitle": "استكشف العروض اليومية الطازجة والوجبات الفائضة المخفضة من المخابز والمطاعم المحلية."
@@ -146,6 +162,15 @@
     "emailPlaceholder": "name@example.com",
     "passwordLabel": "كلمة المرور",
     "confirmPasswordLabel": "تأكيد كلمة المرور",
+    "firstNameLabel": "الاسم الأول",
+    "firstNamePlaceholder": "جون",
+    "lastNameLabel": "اسم العائلة",
+    "lastNamePlaceholder": "دو",
+    "fullNameLabel": "الاسم الكامل",
+    "fullNamePlaceholder": "جون دو",
+    "phoneLabel": "رقم الهاتف",
+    "phonePlaceholder": "+20 10 0000 0000",
+    "optional": "اختياري",
     "forgotPassword": "هل نسيت كلمة المرور؟",
     "loginButton": "تسجيل الدخول",
     "registerButton": "إنشاء الحساب",
@@ -154,10 +179,27 @@
     "signUpLink": "سجل الآن",
     "alreadyHaveAccount": "لديك حساب بالفعل؟",
     "signInLink": "تسجيل الدخول",
-    "fullNameLabel": "الاسم الكامل",
-    "fullNamePlaceholder": "جون دو",
     "backToHome": "العودة للرئيسية",
     "logoAlt": "شعار ريستوميند",
-    "imageTagline": "توقع الهدر، وشارك الوفرة، وأنقذ الفائض الشهي."
+    "imageTagline": "توقع الهدر، وشارك الوفرة، وأنقذ الفائض الشهي.",
+    "otpTitle": "تحقق من بريدك الإلكتروني",
+    "otpDescription": "أرسلنا رمز تحقق مكون من 6 أرقام إلى",
+    "otpLabel": "رمز التحقق",
+    "otpButton": "تأكيد البريد الإلكتروني",
+    "otpNoCode": "لم تستلم الرمز؟",
+    "otpResend": "إعادة الإرسال",
+    "otpResendIn": "إعادة الإرسال خلال {seconds}ث",
+    "otpBack": "تغيير البريد الإلكتروني",
+    "forgotPasswordTitle": "نسيت كلمة المرور؟",
+    "forgotPasswordDescription": "أدخل بريدك الإلكتروني وسنرسل لك رمز إعادة التعيين.",
+    "forgotPasswordButton": "إرسال رمز إعادة التعيين",
+    "forgotPasswordSuccess": "تحقق من بريدك الإلكتروني للحصول على رمز إعادة التعيين.",
+    "backToLogin": "العودة لتسجيل الدخول",
+    "verifyCodeButton": "تأكيد الرمز",
+    "resetPasswordTitle": "تعيين كلمة مرور جديدة",
+    "resetPasswordDescription": "أدخل كلمة المرور الجديدة أدناه.",
+    "resetPasswordButton": "إعادة تعيين كلمة المرور",
+    "resetPasswordSuccess": "تم إعادة تعيين كلمة المرور بنجاح!"
   }
 }
+

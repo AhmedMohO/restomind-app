@@ -1,12 +1,16 @@
 "use client"
 
 import * as React from "react"
-import { Menu } from "lucide-react"
+import { Menu, LogOut, LayoutDashboard, User } from "lucide-react"
 import { useTranslations } from "next-intl"
-import { Link } from "@/i18n/routing"
+import { Link, useRouter } from "@/i18n/routing"
 import ActLink from "@/components/common/ActLink"
 import LangToggle from "@/components/common/LangToggle"
 import { Button } from "@/components/ui/button"
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
+import { SignedIn, SignedOut, HasRole } from "@/features/auth/components/Guards"
+import { logoutAction } from "@/features/auth/actions/login"
+import { useQueryClient } from "@tanstack/react-query"
 import {
   Sheet,
   SheetContent,
@@ -18,6 +22,11 @@ import {
 
 export default function MobileMenu() {
   const t = useTranslations("Navbar")
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
+  const user = useAuthStore((s) => s.user)
+  const setUser = useAuthStore((s) => s.setUser)
 
   const links = [
     { key: "home", href: "/" },
@@ -26,6 +35,14 @@ export default function MobileMenu() {
     { key: "favourites", href: "/favourites" },
     { key: "about", href: "/about" },
   ] as const
+
+  async function handleLogout() {
+    await logoutAction()
+    setUser(null)
+    queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+    router.push("/login")
+    router.refresh()
+  }
 
   return (
     <Sheet>
@@ -43,7 +60,7 @@ export default function MobileMenu() {
         }
       />
       <SheetContent side="right" className="w-[300px] p-6">
-        <SheetHeader className="mt-4 mb-8 flex flex-row items-center justify-between">
+        <SheetHeader className="mt-4 mb-6 flex flex-row items-center justify-between">
           <SheetTitle className="text-left font-heading text-xl rtl:text-right">
             Menu
           </SheetTitle>
@@ -52,8 +69,27 @@ export default function MobileMenu() {
           </div>
         </SheetHeader>
 
+        {/* User Card Header when logged in */}
+        <SignedIn>
+          <div className="mb-6 rounded-xl border border-border/60 bg-muted/40 p-3.5">
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <User className="size-4" />
+              </div>
+              <div className="flex min-w-0 flex-col">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {user?.email}
+                </p>
+              </div>
+            </div>
+          </div>
+        </SignedIn>
+
         <div className="flex flex-col gap-6">
-          <nav className="flex flex-col gap-3">
+          <nav className="flex flex-col gap-2">
             {links.map((link) => (
               <SheetClose
                 key={link.key}
@@ -70,6 +106,23 @@ export default function MobileMenu() {
                 }
               />
             ))}
+
+            <HasRole roles={["admin", "manager"]}>
+              <SheetClose
+                nativeButton={false}
+                render={
+                  <ActLink
+                    href="/dashboard"
+                    className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-start text-base font-medium transition-colors"
+                    activeClassName="bg-accent text-accent-foreground"
+                    inactiveClassName="text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                  >
+                    <LayoutDashboard className="size-4" />
+                    <span>{t("dashboard")}</span>
+                  </ActLink>
+                }
+              />
+            </HasRole>
           </nav>
 
           {/* Divider */}
@@ -77,30 +130,47 @@ export default function MobileMenu() {
 
           {/* Mobile Auth Actions */}
           <div className="flex flex-col gap-3">
-            <SheetClose
-              nativeButton={false}
-              render={
-                <Link
-                  href="/login"
-                  className="flex h-10 w-full items-center justify-center rounded-full text-sm font-semibold text-muted-foreground transition-all duration-200 hover:bg-accent hover:text-foreground"
-                >
-                  {t("login")}
-                </Link>
-              }
-            />
-            <SheetClose
-              nativeButton={false}
-              render={
-                <Link href="/register" passHref className="w-full">
+            <SignedIn>
+              <SheetClose
+                nativeButton={false}
+                render={
                   <Button
-                    variant="outline"
-                    className="h-10 w-full cursor-pointer rounded-full border-stone-300 text-sm font-semibold tracking-wider text-stone-900 uppercase transition-all dark:border-stone-800 dark:text-stone-100 dark:hover:bg-stone-900"
+                    variant="destructive"
+                    onClick={handleLogout}
+                    className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-full text-sm font-semibold"
                   >
-                    {t("register")}
+                    <LogOut className="size-4" />
+                    <span>{t("logout")}</span>
                   </Button>
-                </Link>
-              }
-            />
+                }
+              />
+            </SignedIn>
+            <SignedOut>
+              <SheetClose
+                nativeButton={false}
+                render={
+                  <Link
+                    href="/login"
+                    className="flex h-10 w-full items-center justify-center rounded-full text-sm font-semibold text-muted-foreground transition-all duration-200 hover:bg-accent hover:text-foreground"
+                  >
+                    {t("login")}
+                  </Link>
+                }
+              />
+              <SheetClose
+                nativeButton={false}
+                render={
+                  <Link href="/register" passHref className="w-full">
+                    <Button
+                      variant="outline"
+                      className="h-10 w-full cursor-pointer rounded-full border-stone-300 text-sm font-semibold tracking-wider text-stone-900 uppercase transition-all dark:border-stone-800 dark:text-stone-100 dark:hover:bg-stone-900"
+                    >
+                      {t("register")}
+                    </Button>
+                  </Link>
+                }
+              />
+            </SignedOut>
           </div>
         </div>
       </SheetContent>

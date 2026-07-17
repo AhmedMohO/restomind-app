@@ -1,6 +1,7 @@
+import type { Metadata } from "next"
 import { Geist_Mono, Outfit, Oxanium, Cairo } from "next/font/google"
 import { NextIntlClientProvider } from "next-intl"
-import { getMessages } from "next-intl/server"
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server"
 import { notFound } from "next/navigation"
 
 import "../globals.css"
@@ -9,6 +10,10 @@ import { cn } from "@/lib/utils"
 import { routing } from "@/i18n/routing"
 import { SmoothScrollProvider } from "@/providers/smooth-scroll-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import QueryProvider from "@/providers/use-query-provider"
+import { AuthProvider } from "@/providers/auth-provider"
+import { ZodLocaleProvider } from "@/providers/zod-locale-provider"
+import { organizationJsonLd } from "@/lib/seo/json-ld"
 
 const oxaniumHeading = Oxanium({
   subsets: ["latin"],
@@ -24,6 +29,85 @@ const cairo = Cairo({
   variable: "--font-arabic",
 })
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }))
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "metadata" })
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+
+  const currentPath = `/${locale}`
+  const enPath = `/en`
+  const arPath = `/ar`
+
+  const keywordsString = t("keywords")
+  const keywordsArray = keywordsString
+    ? keywordsString.split(",").map((k: string) => k.trim())
+    : []
+
+  return {
+    metadataBase: new URL(baseUrl),
+    applicationName: "RestoMind",
+    title: {
+      default: t("title"),
+      template: `%s | RestoMind`,
+    },
+    description: t("description"),
+    keywords: keywordsArray,
+    alternates: {
+      canonical: currentPath,
+      languages: {
+        en: enPath,
+        ar: arPath,
+        "x-default": enPath,
+      },
+    },
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+      url: `${baseUrl}/${locale}`,
+      siteName: "RestoMind",
+      locale: locale === "ar" ? "ar_EG" : "en_US",
+      type: "website",
+      images: [
+        {
+          url: "/images/logo.webp",
+          width: 512,
+          height: 512,
+          alt: "RestoMind Logo",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("title"),
+      description: t("description"),
+      images: ["/images/logo.webp"],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    icons: {
+      icon: [{ url: "/favicon.ico", sizes: "32x32" }],
+      apple: [{ url: "/images/logo.webp", sizes: "192x192", type: "image/webp" }],
+    },
+  }
+}
+
 export default async function LocaleLayout({
   children,
   params,
@@ -33,18 +117,20 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params
 
-  // Validate that the incoming locale is supported
+  setRequestLocale(locale)
+
   if (!routing.locales.includes(locale as "en" | "ar")) {
     notFound()
   }
 
-  // Load messages for the provider
   const messages = await getMessages()
+  const dir = locale === "ar" ? "rtl" : "ltr"
+  const orgSchema = organizationJsonLd()
 
   return (
     <html
       lang={locale}
-      dir={locale === "ar" ? "rtl" : "ltr"}
+      dir={dir}
       suppressHydrationWarning
       className={cn(
         "antialiased",
@@ -55,13 +141,25 @@ export default async function LocaleLayout({
         cairo.variable
       )}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+        />
+      </head>
       <body suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>
-            <TooltipProvider>
-              <SmoothScrollProvider>{children} </SmoothScrollProvider>
-            </TooltipProvider>
-          </ThemeProvider>
+          <ZodLocaleProvider>
+            <QueryProvider>
+              <AuthProvider>
+                <ThemeProvider>
+                  <TooltipProvider>
+                    <SmoothScrollProvider>{children}</SmoothScrollProvider>
+                  </TooltipProvider>
+                </ThemeProvider>
+              </AuthProvider>
+            </QueryProvider>
+          </ZodLocaleProvider>
         </NextIntlClientProvider>
       </body>
     </html>

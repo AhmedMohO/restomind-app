@@ -1,4 +1,13 @@
 {
+  "Validation": {
+    "required": "This field is required",
+    "invalidEmail": "Must be a valid email address",
+    "minChars": "Must be at least {min} characters",
+    "maxChars": "Must be at most {max} characters",
+    "exactLength": "Must be exactly {length} characters",
+    "passwordsMismatch": "Passwords do not match",
+    "otpDigitsOnly": "OTP must contain only digits"
+  },
   "Navbar": {
     "home": "Home",
     "about": "About",
@@ -6,7 +15,9 @@
     "orders": "Orders",
     "favourites": "Favourites",
     "login": "Sign In",
-    "register": "Register"
+    "register": "Register",
+    "logout": "Log Out",
+    "dashboard": "Dashboard"
   },
   "Hero": {
     "titleLine1": "Predict Waste,",
@@ -133,6 +144,11 @@
     "emptyDesc": "Browse our fresh offers and click the heart icon to save your top picks here!",
     "backToOffers": "Explore Offers"
   },
+  "metadata": {
+    "title": "RestoMind — Predict Waste, Share Abundance",
+    "description": "RestoMind empowers restaurants and bakeries to minimize food waste with smart AI predictions. Instantly convert daily surplus into delicious, discounted offers.",
+    "keywords": "RestoMind, food waste, surplus food, bakery Egypt, restaurant Egypt, AI predictions, food rescue, discounted meals, Cairo bakery"
+  },
   "Offers": {
     "title": "Daily Offers",
     "subtitle": "Discover daily fresh offers and discounted surplus treats from local bakeries & restaurants."
@@ -146,6 +162,15 @@
     "emailPlaceholder": "name@example.com",
     "passwordLabel": "Password",
     "confirmPasswordLabel": "Confirm Password",
+    "firstNameLabel": "First Name",
+    "firstNamePlaceholder": "John",
+    "lastNameLabel": "Last Name",
+    "lastNamePlaceholder": "Doe",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "+20 10 0000 0000",
+    "optional": "optional",
     "forgotPassword": "Forgot your password?",
     "loginButton": "Login",
     "registerButton": "Sign Up",
@@ -154,10 +179,27 @@
     "signUpLink": "Sign up",
     "alreadyHaveAccount": "Already have an account?",
     "signInLink": "Sign in",
-    "fullNameLabel": "Full Name",
-    "fullNamePlaceholder": "John Doe",
     "backToHome": "Back to home",
     "logoAlt": "RestoMind Logo",
-    "imageTagline": "Predict waste, share abundance, rescue delicious surplus."
+    "imageTagline": "Predict waste, share abundance, rescue delicious surplus.",
+    "otpTitle": "Check your email",
+    "otpDescription": "We sent a 6-digit verification code to",
+    "otpLabel": "Verification code",
+    "otpButton": "Verify Email",
+    "otpNoCode": "Didn't receive a code?",
+    "otpResend": "Resend",
+    "otpResendIn": "Resend in {seconds}s",
+    "otpBack": "Change email",
+    "forgotPasswordTitle": "Forgot password?",
+    "forgotPasswordDescription": "Enter your email and we'll send you a reset code.",
+    "forgotPasswordButton": "Send Reset Code",
+    "forgotPasswordSuccess": "Check your email for the reset code.",
+    "backToLogin": "Back to login",
+    "verifyCodeButton": "Verify Code",
+    "resetPasswordTitle": "Set new password",
+    "resetPasswordDescription": "Enter your new password below.",
+    "resetPasswordButton": "Reset Password",
+    "resetPasswordSuccess": "Password reset successfully!"
   }
 }
+

@@ -8,7 +8,7 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel"
-import ProductCard from "@/features/products/ProductCard"
+import ProductCard from "@/features/products/components/ProductCard"
 import { MOCK_PRODUCTS } from "@/features/products/data"
 import { Product } from "@/features/products/types"
 
@@ -55,22 +55,22 @@ export default function ProductCarousel({
   return (
     <div className={className}>
       <Carousel className="w-full">
-        <div className="flex items-end justify-between mb-6 px-1">
+        <div className="mb-6 flex items-end justify-between px-1">
           <div className="space-y-1.5 text-start">
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#2B1B15] dark:text-neutral-100">
+            <h2 className="font-serif text-2xl font-bold tracking-tight text-[#2B1B15] sm:text-3xl dark:text-neutral-100">
               {title}
             </h2>
             {subtitle && (
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
                 {subtitle}
               </p>
             )}
           </div>
 
           {/* Navigation buttons wrapper */}
-          <div className="flex items-center gap-2 relative h-9 w-20 shrink-0">
-            <CarouselPrevious className="relative left-0 right-0 top-0 translate-y-0 size-9 flex items-center justify-center cursor-pointer" />
-            <CarouselNext className="relative left-0 right-0 top-0 translate-y-0 size-9 flex items-center justify-center cursor-pointer" />
+          <div className="relative flex h-9 w-20 shrink-0 items-center gap-2">
+            <CarouselPrevious className="relative top-0 right-0 left-0 flex size-9 translate-y-0 cursor-pointer items-center justify-center" />
+            <CarouselNext className="relative top-0 right-0 left-0 flex size-9 translate-y-0 cursor-pointer items-center justify-center" />
           </div>
         </div>
 
@@ -78,7 +78,7 @@ export default function ProductCarousel({
           {displayProducts.map((product) => (
             <CarouselItem
               key={product.id}
-              className="w-[280px] sm:w-[320px] shrink-0 snap-start"
+              className="w-[280px] shrink-0 snap-start sm:w-[320px]"
             >
               <ProductCard product={product} />
             </CarouselItem>

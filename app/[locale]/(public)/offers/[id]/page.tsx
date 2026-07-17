@@ -1,17 +1,58 @@
-import React from "react"
-import { Link } from "@/i18n/routing"
-import { notFound } from "next/navigation"
-import { MOCK_PRODUCTS } from "@/features/products/data"
-import ProductDetails from "@/features/products/ProductDetails"
+import React, { Suspense } from "react"
+import { Link, routing } from "@/i18n/routing"
+import { setRequestLocale } from "next-intl/server"
+import type { Metadata } from "next"
+import ProductDetails from "@/features/products/components/ProductDetails"
+import { productMetadata } from "@/lib/seo/metadata"
+import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo/json-ld"
 import { ArrowLeft, Search } from "lucide-react"
+import { getCachedProduct } from "./product-cache"
 
 interface ProductPageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ locale: string; id: string }>
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params
-  const product = MOCK_PRODUCTS.find((p) => p.id === id)
+export async function generateStaticParams() {
+  const { MOCK_PRODUCTS } = await import("@/features/products/data")
+  return routing.locales.flatMap((locale) =>
+    MOCK_PRODUCTS.map((product) => ({
+      locale,
+      id: product.id,
+    }))
+  )
+}
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { locale, id } = await params
+  const product = await getCachedProduct(id)
+  if (!product) return { title: "Product Not Found" }
+
+  return productMetadata(
+    {
+      id: product.id,
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      category: product.category,
+    },
+    locale
+  )
+}
+
+function ProductDetailLoading() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+    </div>
+  )
+}
+
+async function ProductContent({ params }: ProductPageProps) {
+  const { locale, id } = await params
+  setRequestLocale(locale)
+
+  const product = await getCachedProduct(id)
 
   if (!product) {
     return (
@@ -39,12 +80,42 @@ export default async function ProductPage({ params }: ProductPageProps) {
     )
   }
 
-  return <ProductDetails product={product} />
+  const jsonLd = productJsonLd({
+    id: product.id,
+    title: product.title,
+    description: product.description,
+    price: product.price,
+    image: product.image,
+    category: product.category,
+    isAvailable: product.isAvailable,
+  })
+
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "Offers", url: "/offers" },
+    { name: product.title, url: `/offers/${product.id}` },
+  ]
+  const breadcrumbLd = breadcrumbJsonLd(breadcrumbItems)
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <ProductDetails product={product} />
+    </>
+  )
 }
 
-// Generate static params for optimal server rendering
-export async function generateStaticParams() {
-  return MOCK_PRODUCTS.map((product) => ({
-    id: product.id,
-  }))
+export default function ProductPage({ params }: ProductPageProps) {
+  return (
+    <Suspense fallback={<ProductDetailLoading />}>
+      <ProductContent params={params} />
+    </Suspense>
+  )
 }
