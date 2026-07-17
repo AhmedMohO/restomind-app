@@ -12,6 +12,7 @@ type CarouselContextProps = {
   showArrows: boolean
   scrollPrev: () => void
   scrollNext: () => void
+  isRtl: boolean
 }
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
@@ -34,13 +35,18 @@ const Carousel = ({ className, children, ref, ...props }: CarouselProps) => {
   const [canScrollPrev, setCanScrollPrev] = React.useState(false)
   const [canScrollNext, setCanScrollNext] = React.useState(false)
   const [showArrows, setShowArrows] = React.useState(false)
+  const [isRtl, setIsRtl] = React.useState(false)
 
   const checkScroll = React.useCallback(() => {
     const el = carouselRef.current
     if (el) {
       const { scrollLeft, scrollWidth, clientWidth } = el
-      const isStart = Math.abs(scrollLeft) < 2
-      const isEnd = Math.abs(scrollLeft) + clientWidth >= scrollWidth - 2
+      const isRTL = window.getComputedStyle(el).direction === "rtl"
+      setIsRtl(isRTL)
+      
+      const absScrollLeft = Math.abs(scrollLeft)
+      const isStart = absScrollLeft < 4
+      const isEnd = absScrollLeft + clientWidth >= scrollWidth - 4
       
       setShowArrows(scrollWidth > clientWidth)
       setCanScrollPrev(!isStart)
@@ -70,7 +76,8 @@ const Carousel = ({ className, children, ref, ...props }: CarouselProps) => {
     const el = carouselRef.current
     if (el) {
       const scrollAmount = el.clientWidth * 0.8
-      el.scrollBy({ left: -scrollAmount, behavior: "smooth" })
+      const isRTL = window.getComputedStyle(el).direction === "rtl"
+      el.scrollBy({ left: isRTL ? scrollAmount : -scrollAmount, behavior: "smooth" })
     }
   }, [])
 
@@ -78,7 +85,8 @@ const Carousel = ({ className, children, ref, ...props }: CarouselProps) => {
     const el = carouselRef.current
     if (el) {
       const scrollAmount = el.clientWidth * 0.8
-      el.scrollBy({ left: scrollAmount, behavior: "smooth" })
+      const isRTL = window.getComputedStyle(el).direction === "rtl"
+      el.scrollBy({ left: isRTL ? -scrollAmount : scrollAmount, behavior: "smooth" })
     }
   }, [])
 
@@ -91,6 +99,7 @@ const Carousel = ({ className, children, ref, ...props }: CarouselProps) => {
         showArrows,
         scrollPrev,
         scrollNext,
+        isRtl,
       }}
     >
       <div
@@ -158,7 +167,7 @@ const CarouselPrevious = ({
   ref,
   ...props
 }: CarouselPreviousProps) => {
-  const { scrollPrev, canScrollPrev, showArrows } = useCarousel()
+  const { scrollPrev, canScrollPrev, showArrows, isRtl } = useCarousel()
 
   if (!showArrows) return null
 
@@ -175,7 +184,11 @@ const CarouselPrevious = ({
       onClick={scrollPrev}
       {...props}
     >
-      <ChevronLeft className="h-4 w-4" />
+      {isRtl ? (
+        <ChevronRight className="h-4 w-4" />
+      ) : (
+        <ChevronLeft className="h-4 w-4" />
+      )}
       <span className="sr-only">Previous slide</span>
     </Button>
   )
@@ -193,7 +206,7 @@ const CarouselNext = ({
   ref,
   ...props
 }: CarouselNextProps) => {
-  const { scrollNext, canScrollNext, showArrows } = useCarousel()
+  const { scrollNext, canScrollNext, showArrows, isRtl } = useCarousel()
 
   if (!showArrows) return null
 
@@ -210,7 +223,11 @@ const CarouselNext = ({
       onClick={scrollNext}
       {...props}
     >
-      <ChevronRight className="h-4 w-4" />
+      {isRtl ? (
+        <ChevronLeft className="h-4 w-4" />
+      ) : (
+        <ChevronRight className="h-4 w-4" />
+      )}
       <span className="sr-only">Next slide</span>
     </Button>
   )

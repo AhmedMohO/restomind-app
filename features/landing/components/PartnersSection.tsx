@@ -14,7 +14,7 @@ export default async function PartnersSection() {
 
   return (
     <section className="relative w-full overflow-hidden border-y border-border/40 bg-muted/20 py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <h3 className="font-heading text-xl font-bold tracking-tight text-foreground/90 sm:text-2xl lg:text-3xl">
             {t("title")}

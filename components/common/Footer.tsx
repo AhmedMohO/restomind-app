@@ -56,7 +56,7 @@ export default function Footer() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Grid: Newsletter + Quick Links */}
         <div className="grid grid-cols-1 gap-12 border-b border-stone-200 pb-16 lg:grid-cols-12 lg:gap-8 dark:border-stone-900/60">
           {/* Newsletter Column */}
@@ -163,7 +163,7 @@ export default function Footer() {
           {/* Huge Brand Text (Always LTR English Logo) */}
           <div dir="ltr" className="leading-none select-none">
             <span className="font-serif text-[11vw] leading-[0.8] font-black tracking-tighter text-[#111111] sm:text-[9vw] md:text-[7vw] lg:text-[7.5rem] dark:text-stone-100">
-              RestroMind
+              RestoMind
             </span>
           </div>
 
@@ -192,7 +192,7 @@ export default function Footer() {
         {/* Fine Print Copyright Bar */}
         <div className="mt-16 flex flex-col items-center justify-between border-t border-stone-200/60 pt-8 text-xs text-stone-500 sm:flex-row dark:border-stone-900/40 dark:text-stone-500">
           <p>
-            © {new Date().getFullYear()} RestroMind. {t("rights")}
+            © {new Date().getFullYear()} RestoMind. {t("rights")}
           </p>
           <p className="mt-2 sm:mt-0">Made with ❤️ in Cairo, Egypt</p>
         </div>

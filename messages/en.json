@@ -1,22 +1,24 @@
 {
   "Navbar": {
     "home": "Home",
-    "about": "About us",
+    "about": "About",
     "offers": "Offers",
+    "orders": "Orders",
+    "favourites": "Favourites",
     "login": "Sign In",
     "register": "Register"
   },
   "Hero": {
     "titleLine1": "Predict Waste,",
     "titleLine2": "Share Abundance",
-    "description": "RestruMind empowers restaurants and bakeries to minimize food waste with smart AI predictions. Instantly convert daily surplus into delicious, discounted offers that nearby customers can order and rescue.",
+    "description": "RestoMind empowers restaurants and bakeries to minimize food waste with smart AI predictions. Instantly convert daily surplus into delicious, discounted offers that nearby customers can order and rescue.",
     "ctaOrder": "Save a Meal",
     "ctaVideo": "How It Works"
   },
   "Story": {
     "badge": "Our Mission",
     "title": "Smart prediction meets local abundance",
-    "description": "RestruMind bridges the gap between food surplus and hungry tables. By joining our platform, bakeries and restaurants gain access to powerful AI tools that forecast daily waste. Instead of letting delicious food go to waste, businesses can list their daily surplus as discounted offers for local users to rescue, order, and enjoy.",
+    "description": "RestoMind bridges the gap between food surplus and hungry tables. By joining our platform, bakeries and restaurants gain access to powerful AI tools that forecast daily waste. Instead of letting delicious food go to waste, businesses can list their daily surplus as discounted offers for local users to rescue, order, and enjoy.",
     "point1Title": "AI-Powered Predictions",
     "point1Desc": "Bakeries and restaurants predict excess inventory before it happens.",
     "point2Title": "Instant Surplus Offers",
@@ -44,7 +46,7 @@
     "terms": "Terms & Conditions",
     "contact": "Contact",
     "rights": "All rights reserved.",
-    "brandName": "RestruMind"
+    "brandName": "RestoMind"
   },
   "Cart": {
     "title": "Shopping Cart",
@@ -103,5 +105,59 @@
     "sms": "You'll receive a confirmation SMS shortly.",
     "trackOrder": "Track My Order",
     "continueShopping": "Continue Shopping"
+  },
+  "Orders": {
+    "title": "My Orders",
+    "subtitle": "Track and manage your order history with RestoMind",
+    "statusAll": "All Orders",
+    "statusPending": "Preparing",
+    "statusOutForDelivery": "Out for Delivery",
+    "statusDelivered": "Delivered",
+    "statusCancelled": "Cancelled",
+    "orderNo": "Order",
+    "total": "Total",
+    "items": "items",
+    "reorder": "Reorder",
+    "support": "Support",
+    "invoice": "Invoice",
+    "favorite": "Favorite",
+    "track": "Track Order",
+    "cancel": "Cancel Order",
+    "empty": "No orders found",
+    "emptyDesc": "You haven't placed any orders matching this status yet."
+  },
+  "Favourites": {
+    "title": "My Favourites",
+    "subtitle": "Your handpicked delicious treats and daily fresh offers",
+    "empty": "No favourites yet",
+    "emptyDesc": "Browse our fresh offers and click the heart icon to save your top picks here!",
+    "backToOffers": "Explore Offers"
+  },
+  "Offers": {
+    "title": "Daily Offers",
+    "subtitle": "Discover daily fresh offers and discounted surplus treats from local bakeries & restaurants."
+  },
+  "Auth": {
+    "loginTitle": "Login to your account",
+    "loginDescription": "Enter your email below to login to your account",
+    "registerTitle": "Create your account",
+    "registerDescription": "Enter your details below to create your account",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "name@example.com",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "forgotPassword": "Forgot your password?",
+    "loginButton": "Login",
+    "registerButton": "Sign Up",
+    "orContinueWith": "Or continue with",
+    "dontHaveAccount": "Don't have an account?",
+    "signUpLink": "Sign up",
+    "alreadyHaveAccount": "Already have an account?",
+    "signInLink": "Sign in",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "backToHome": "Back to home",
+    "logoAlt": "RestoMind Logo",
+    "imageTagline": "Predict waste, share abundance, rescue delicious surplus."
   }
 }

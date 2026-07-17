@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import Link from "next/link"
+import { Link } from "@/i18n/routing"
 import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star } from "lucide-react"
 import { Product } from "./types"
 import { useCart } from "@/hooks/use-cart"
@@ -35,10 +35,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     setTimeout(() => setAdded(false), 1500)
   }
 
-
-
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 py-8 space-y-6">
+    <div className="container mx-auto space-y-6 px-4 py-8 sm:px-6 md:px-8">
       {/* Back to shop breadcrumb button */}
       <div>
         <Link
@@ -54,7 +52,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {/* Left Side: Product Image */}
         <div className="relative overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white p-2 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="aspect-[4/3] md:aspect-square w-full overflow-hidden rounded-[18px] bg-[#FAF7F2] dark:bg-neutral-850">
+          <div className="dark:bg-neutral-850 aspect-[4/3] w-full overflow-hidden rounded-[18px] bg-[#FAF7F2] md:aspect-square">
             <img
               src={product.image}
               alt={product.title}
@@ -64,19 +62,19 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         {/* Right Side: Product Details */}
-        <div className="flex flex-col gap-4 py-2 space-y-6">
+        <div className="flex flex-col gap-4 space-y-6 py-2">
           <div className="space-y-4">
             {/* Top row: Tags and wishlist button */}
             <div className="flex items-center justify-between">
-              <span className="bg-[#E2F7EB] text-[#2F6D44] text-xs font-semibold px-3 py-1 rounded-full dark:bg-emerald-950/30 dark:text-emerald-400">
+              <span className="rounded-full bg-[#E2F7EB] px-3 py-1 text-xs font-semibold text-[#2F6D44] dark:bg-emerald-950/30 dark:text-emerald-400">
                 Daily Fresh
               </span>
               <button
                 onClick={() => toggleWishlist(product.id)}
                 className={cn(
-                  "p-2.5 rounded-full border border-[#ECE6DB] hover:bg-[#FAF7F2] transition-colors dark:border-neutral-800 dark:hover:bg-neutral-800",
+                  "rounded-full border border-[#ECE6DB] p-2.5 transition-colors hover:bg-[#FAF7F2] dark:border-neutral-800 dark:hover:bg-neutral-800",
                   isFavorite
-                    ? "bg-[#FAF2ED] border-[#7C4A27] text-red-500 dark:bg-red-950/20"
+                    ? "border-[#7C4A27] bg-[#FAF2ED] text-red-500 dark:bg-red-950/20"
                     : "text-muted-foreground"
                 )}
                 title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
@@ -89,7 +87,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </div>
 
             {/* Title */}
-            <h1 className="font-serif text-3xl font-bold leading-tight text-[#2B1B15] dark:text-neutral-100 md:text-4xl">
+            <h1 className="font-serif text-3xl leading-tight font-bold text-[#2B1B15] md:text-4xl dark:text-neutral-100">
               {product.title}
             </h1>
 
@@ -101,7 +99,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     key={i}
                     size={16}
                     className={cn(
-                      i < Math.floor(product.rating) ? "fill-current" : "opacity-30"
+                      i < Math.floor(product.rating)
+                        ? "fill-current"
+                        : "opacity-30"
                     )}
                   />
                 ))}
@@ -115,36 +115,34 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </div>
 
             {/* Large Price Display */}
-            <div className="text-3xl font-serif font-bold text-[#2B1B15] dark:text-neutral-100">
+            <div className="font-serif text-3xl font-bold text-[#2B1B15] dark:text-neutral-100">
               {product.price} EGP
             </div>
 
             {/* Description */}
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {product.longDescription}
             </p>
-
-
           </div>
 
           {/* Action Row: Quantity Selector & Add to cart button */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-[#ECE6DB] dark:border-neutral-800">
+          <div className="flex flex-col gap-4 border-t border-[#ECE6DB] pt-4 sm:flex-row dark:border-neutral-800">
             {/* Quantity control */}
-            <div className="flex items-center justify-between rounded-full border border-[#ECE6DB] bg-white px-2 py-1.5 dark:border-neutral-800 dark:bg-neutral-900 min-w-[120px] sm:w-fit">
+            <div className="flex min-w-[120px] items-center justify-between rounded-full border border-[#ECE6DB] bg-white px-2 py-1.5 sm:w-fit dark:border-neutral-800 dark:bg-neutral-900">
               <button
                 onClick={handleDecrement}
                 disabled={!product.isAvailable}
-                className="p-1 rounded-full text-muted-foreground hover:bg-[#FAF7F2] dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] disabled:opacity-50 dark:hover:bg-neutral-800"
               >
                 <Minus size={14} />
               </button>
-              <span className="text-sm font-bold px-4 text-[#2B1B15] dark:text-neutral-200">
+              <span className="px-4 text-sm font-bold text-[#2B1B15] dark:text-neutral-200">
                 {quantity}
               </span>
               <button
                 onClick={handleIncrement}
                 disabled={!product.isAvailable}
-                className="p-1 rounded-full text-muted-foreground hover:bg-[#FAF7F2] dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] disabled:opacity-50 dark:hover:bg-neutral-800"
               >
                 <Plus size={14} />
               </button>
@@ -155,12 +153,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               onClick={handleAddToCart}
               disabled={!product.isAvailable}
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 rounded-full py-3 px-6 font-sans text-sm font-semibold transition-all shadow-sm active:translate-y-px",
+                "flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-3 font-sans text-sm font-semibold shadow-sm transition-all active:translate-y-px",
                 product.isAvailable
                   ? added
                     ? "bg-[#529E66] text-white hover:bg-[#438353]"
                     : "bg-[#7C4A27] text-white hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
-                  : "bg-neutral-100 text-neutral-400 cursor-not-allowed dark:bg-neutral-800 dark:text-neutral-600"
+                  : "cursor-not-allowed bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
               )}
             >
               <ShoppingCart size={16} />
@@ -175,7 +173,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       </div>
 
       {/* Similar offers carousel */}
-      <div className="pt-12 border-t border-[#ECE6DB] dark:border-neutral-800 transition-colors mt-12">
+      <div className="mt-12 border-t border-[#ECE6DB] pt-12 transition-colors dark:border-neutral-800">
         <ProductCarousel
           category={product.category}
           excludeId={product.id}

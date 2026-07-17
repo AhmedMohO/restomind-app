@@ -8,7 +8,7 @@ export default async function HeroSection() {
   const locale = await getLocale()
 
   return (
-    <main className="relative mt-[-94px] flex min-h-screen w-full items-center overflow-hidden bg-cover bg-center bg-no-repeat">
+    <main className="relative flex min-h-screen w-full items-center overflow-hidden bg-cover bg-center bg-no-repeat">
       <div
         className={cn(
           "absolute inset-0 bg-cover bg-center bg-no-repeat",
@@ -17,7 +17,7 @@ export default async function HeroSection() {
         style={{ backgroundImage: "url('/images/Landing/hero.webp')" }}
       />
       {/* Main Container */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pt-28 pb-16 sm:px-6 md:px-8 md:pt-20">
+      <div className="relative z-10 container mx-auto w-full px-4 pt-28 pb-16 sm:px-6 md:px-8 md:pt-20">
         <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-12">
           {/* Content Column (moves to the right on Arabic RTL dynamically) */}
           <div className="flex flex-col justify-center md:col-span-7 lg:col-span-6">
