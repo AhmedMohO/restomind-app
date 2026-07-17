@@ -202,10 +202,17 @@ export default function CartSheet() {
                 {cartTotal.toLocaleString()} EGP
               </span>
             </div>
-
-            <Button className="w-full rounded-full bg-[#7C4A27] py-6 font-sans text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#60391E] active:scale-[0.98] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]">
-              {t("checkout")}
-            </Button>
+            <SheetClose
+              nativeButton={false}
+              render={
+                <Link
+                  href="/checkout"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold shadow-md transition-all duration-200 active:scale-[0.98]"
+                >
+                  {t("checkout")}
+                </Link>
+              }
+            />
           </SheetFooter>
         )}
       </SheetContent>
