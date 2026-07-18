@@ -6,7 +6,7 @@ import ProductDetails from "@/features/products/components/ProductDetails"
 import { productMetadata } from "@/lib/seo/metadata"
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo/json-ld"
 import { ArrowLeft, Search } from "lucide-react"
-import { MOCK_PRODUCTS } from "@/features/products/data"
+import { getProducts } from "@/features/products/api"
 import { getCachedProduct } from "./product-cache"
 
 interface ProductPageProps {
@@ -14,15 +14,26 @@ interface ProductPageProps {
 }
 
 export async function generateStaticParams() {
-  return routing.locales.flatMap((locale) =>
-    MOCK_PRODUCTS.map((product) => ({
-      locale,
-      id: product._id,
-    }))
-  )
+  try {
+    const res = await getProducts({ limit: 5 })
+    return routing.locales.flatMap((locale) =>
+      (res?.items || []).map((product) => ({
+        locale,
+        id: product._id,
+      }))
+    )
+  } catch (error) {
+    console.error(
+      "[generateStaticParams] Failed to fetch products for static params:",
+      error
+    )
+    return []
+  }
 }
 
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
   const { locale, id } = await params
   const product = await getCachedProduct(id)
   if (!product) return { title: "Product" }

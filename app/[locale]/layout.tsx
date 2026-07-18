@@ -3,6 +3,7 @@ import { Geist_Mono, Outfit, Oxanium, Cairo } from "next/font/google"
 import { NextIntlClientProvider } from "next-intl"
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server"
 import { notFound } from "next/navigation"
+import { Suspense } from "react"
 
 import "../globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -123,7 +124,6 @@ export default async function LocaleLayout({
     notFound()
   }
 
-  const messages = await getMessages()
   const dir = locale === "ar" ? "rtl" : "ltr"
   const orgSchema = organizationJsonLd()
 
@@ -148,20 +148,29 @@ export default async function LocaleLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>
-          <ZodLocaleProvider>
-            <QueryProvider>
-              <AuthProvider>
-                <ThemeProvider>
-                  <TooltipProvider>
-                    <SmoothScrollProvider>{children}</SmoothScrollProvider>
-                  </TooltipProvider>
-                </ThemeProvider>
-              </AuthProvider>
-            </QueryProvider>
-          </ZodLocaleProvider>
-        </NextIntlClientProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              <TooltipProvider>
+                <SmoothScrollProvider>
+                  <Suspense fallback={null}>
+                    <LocaleMessages>{children}</LocaleMessages>
+                  </Suspense>
+                </SmoothScrollProvider>
+              </TooltipProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
+  )
+}
+
+async function LocaleMessages({ children }: { children: React.ReactNode }) {
+  const messages = await getMessages()
+  return (
+    <NextIntlClientProvider messages={messages}>
+      <ZodLocaleProvider>{children}</ZodLocaleProvider>
+    </NextIntlClientProvider>
   )
 }

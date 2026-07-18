@@ -1,6 +1,5 @@
 "use client"
 
-// import React, { useEffect, useState } from "react"
 import {
   Carousel,
   CarouselContent,
@@ -9,7 +8,6 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel"
 import ProductCard from "@/features/products/components/ProductCard"
-// import { fetchProductsAction } from "@/features/products/actions"
 import type { ApiProduct } from "@/features/products/api/type"
 
 interface ProductCarouselProps {
@@ -22,33 +20,6 @@ interface ProductCarouselProps {
   className?: string
 }
 
-  // function mapApiProductToProduct(apiProd: ApiProduct): ApiProduct {
-  //   const categoryName =
-  //     typeof apiProd.category === "object" && apiProd.category !== null
-  //       ? (apiProd.category as { name: string }).name
-  //       : String(apiProd.category || "General")
-
-  //   return {
-  //     id: apiProd._id,
-  //     title: apiProd.title,
-  //     description: apiProd.description,
-  //     longDescription: apiProd.longDescription,
-  //     price: apiProd.discountedPrice ?? apiProd.price,
-  //     rating: apiProd.rating ?? 0,
-  //     reviewsCount: apiProd.reviewsCount ?? 0,
-  //     isBestseller: apiProd.isBestseller ?? false,
-  //     isAvailable: apiProd.isAvailable ?? true,
-  //     image:
-  //       apiProd.image?.secure_url ||
-  //       "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=800&q=80",
-  //     category: categoryName,
-  //     prepTime: "15 min",
-  //     calories: 250,
-  //     freshnessWindow: apiProd.freshnessWindow || 24,
-  //     tags: apiProd.tags || [],
-  //   }
-  // }
-
 export default function ProductCarousel({
   products = [],
   category,
@@ -58,8 +29,7 @@ export default function ProductCarousel({
   limit = 8,
   className,
 }: ProductCarouselProps) {
-  
-  let displayProducts = products;
+  let displayProducts = products
 
   if (category) {
     displayProducts = displayProducts.filter(

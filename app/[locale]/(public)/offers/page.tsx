@@ -5,7 +5,6 @@ import { getAlternates } from "@/lib/seo/metadata"
 import { webpageJsonLd } from "@/lib/seo/json-ld"
 import OffersContentClient from "./offers-content-client"
 import { getProducts } from "@/features/products/api"
-import type { PaginatedProducts } from "@/features/products/api/type"
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -20,12 +19,7 @@ function OffersLoading() {
 }
 
 async function OffersListFetcher() {
-  let initialPage: PaginatedProducts | undefined
-  try {
-    initialPage = await getProducts({ page: 1, limit: 12 })
-  } catch {
-    // PPR prerender may reject fetch — fallback to client fetch
-  }
+  const initialPage = await getProducts({ page: 1, limit: 12 })
 
   return <OffersContentClient initialPage={initialPage} />
 }
@@ -52,7 +46,12 @@ export default async function OffersPage({ params }: Props) {
   setRequestLocale(locale)
   const t = await getTranslations({ locale, namespace: "Offers" })
 
-  const schema = webpageJsonLd(t("title"), t("subtitle"), `/${locale}/offers`, locale)
+  const schema = webpageJsonLd(
+    t("title"),
+    t("subtitle"),
+    `/${locale}/offers`,
+    locale
+  )
 
   return (
     <>

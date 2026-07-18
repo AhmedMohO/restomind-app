@@ -43,11 +43,11 @@ const Carousel = ({ className, children, ref, ...props }: CarouselProps) => {
       const { scrollLeft, scrollWidth, clientWidth } = el
       const isRTL = window.getComputedStyle(el).direction === "rtl"
       setIsRtl(isRTL)
-      
+
       const absScrollLeft = Math.abs(scrollLeft)
       const isStart = absScrollLeft < 4
       const isEnd = absScrollLeft + clientWidth >= scrollWidth - 4
-      
+
       setShowArrows(scrollWidth > clientWidth)
       setCanScrollPrev(!isStart)
       setCanScrollNext(!isEnd)
@@ -60,10 +60,10 @@ const Carousel = ({ className, children, ref, ...props }: CarouselProps) => {
       checkScroll()
       el.addEventListener("scroll", checkScroll)
       window.addEventListener("resize", checkScroll)
-      
+
       const observer = new MutationObserver(checkScroll)
       observer.observe(el, { childList: true, subtree: true })
-      
+
       return () => {
         el.removeEventListener("scroll", checkScroll)
         window.removeEventListener("resize", checkScroll)
@@ -77,7 +77,10 @@ const Carousel = ({ className, children, ref, ...props }: CarouselProps) => {
     if (el) {
       const scrollAmount = el.clientWidth * 0.8
       const isRTL = window.getComputedStyle(el).direction === "rtl"
-      el.scrollBy({ left: isRTL ? scrollAmount : -scrollAmount, behavior: "smooth" })
+      el.scrollBy({
+        left: isRTL ? scrollAmount : -scrollAmount,
+        behavior: "smooth",
+      })
     }
   }, [])
 
@@ -86,7 +89,10 @@ const Carousel = ({ className, children, ref, ...props }: CarouselProps) => {
     if (el) {
       const scrollAmount = el.clientWidth * 0.8
       const isRTL = window.getComputedStyle(el).direction === "rtl"
-      el.scrollBy({ left: isRTL ? -scrollAmount : scrollAmount, behavior: "smooth" })
+      el.scrollBy({
+        left: isRTL ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      })
     }
   }, [])
 
@@ -120,14 +126,18 @@ interface CarouselContentProps extends React.ComponentProps<"div"> {
   ref?: React.Ref<HTMLDivElement>
 }
 
-const CarouselContent = ({ className, ref, ...props }: CarouselContentProps) => {
+const CarouselContent = ({
+  className,
+  ref,
+  ...props
+}: CarouselContentProps) => {
   const { carouselRef } = useCarousel()
 
   return (
     <div
       ref={carouselRef}
       className={cn(
-        "flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none",
+        "grid snap-x snap-mandatory scrollbar-none overflow-x-auto scroll-smooth",
         className
       )}
       {...props}
@@ -146,10 +156,7 @@ const CarouselItem = ({ className, ref, ...props }: CarouselItemProps) => {
       ref={ref}
       role="group"
       aria-roledescription="slide"
-      className={cn(
-        "min-w-0 shrink-0 grow-0 snap-start",
-        className
-      )}
+      className={cn("min-w-0 shrink-0 grow-0 snap-start", className)}
       {...props}
     />
   )
@@ -177,7 +184,7 @@ const CarouselPrevious = ({
       variant={variant}
       size={size}
       className={cn(
-        "absolute h-8 w-8 rounded-full z-10 bg-white dark:bg-neutral-900 border border-[#ECE6DB] dark:border-neutral-800 shadow-sm transition-opacity duration-200 disabled:opacity-40 cursor-pointer",
+        "absolute z-10 h-8 w-8 cursor-pointer rounded-full border border-[#ECE6DB] bg-white shadow-sm transition-opacity duration-200 disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-900",
         className
       )}
       disabled={!canScrollPrev}
@@ -216,7 +223,7 @@ const CarouselNext = ({
       variant={variant}
       size={size}
       className={cn(
-        "absolute h-8 w-8 rounded-full z-10 bg-white dark:bg-neutral-900 border border-[#ECE6DB] dark:border-neutral-800 shadow-sm transition-opacity duration-200 disabled:opacity-40 cursor-pointer",
+        "absolute z-10 h-8 w-8 cursor-pointer rounded-full border border-[#ECE6DB] bg-white shadow-sm transition-opacity duration-200 disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-900",
         className
       )}
       disabled={!canScrollNext}

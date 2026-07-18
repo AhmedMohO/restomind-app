@@ -132,7 +132,7 @@ export default function MobileMenu() {
           <div className="flex flex-col gap-3">
             <SignedIn>
               <SheetClose
-                nativeButton={false}
+                nativeButton
                 render={
                   <Button
                     variant="destructive"

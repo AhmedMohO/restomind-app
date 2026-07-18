@@ -1,51 +1,26 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { useTranslations } from "next-intl"
-import { Heart, ShoppingBag, Loader2 } from "lucide-react"
-import { Link } from "@/i18n/routing"
-import { useCart } from "@/hooks/use-cart"
-import ProductCard from "@/features/products/components/ProductCard"
+import { Suspense } from "react"
+import { getTranslations } from "next-intl/server"
+import { Heart, Loader2 } from "lucide-react"
 import { getFavoritesAction } from "@/features/favorites/actions"
-import type { ApiProduct } from "@/features/products/api/type"
+import FavouritesList from "./favourites-list"
 
-export default function FavouritesPage() {
-  const t = useTranslations("Favourites")
-  const { wishlist } = useCart()
-  const [favoriteProducts, setFavoriteProducts] = useState<ApiProduct[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    let isMounted = true
-    async function loadFavorites() {
-      setLoading(true)
-      const res = await getFavoritesAction()
-      if (isMounted) {
-        if (res.success && Array.isArray(res.data)) {
-          setFavoriteProducts(res.data)
-        }
-        setLoading(false)
-      }
-    }
-    loadFavorites()
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  // Filter products by active wishlist IDs in context
-  
-  const activeProducts = favoriteProducts.filter((product) =>
-    wishlist.includes(product._id)
+function FavouritesLoading() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center">
+      <Loader2 className="size-8 animate-spin text-primary dark:text-[#E68A49]" />
+    </div>
   )
+}
 
-  if (loading) {
-    return (
-      <div className="container mx-auto flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-primary dark:text-[#E68A49]" />
-      </div>
-    )
-  }
+async function FavouritesFetcher() {
+  const res = await getFavoritesAction()
+  const initialFavorites = res.success ? res.data : []
+
+  return <FavouritesList initialFavorites={initialFavorites} />
+}
+
+export default async function FavouritesPage() {
+  const t = await getTranslations("Favourites")
 
   return (
     <div className="container mx-auto min-h-[60vh] space-y-8 px-4">
@@ -54,38 +29,9 @@ export default function FavouritesPage() {
         <span>{t("title")}</span>
       </h1>
 
-      {/* Favourites Grid / Empty State */}
-      {activeProducts.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {activeProducts.map((product) => (
-            <div key={product._id} className="animate-in duration-300 fade-in">
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        /* Empty State */
-        <div className="flex animate-in flex-col items-center justify-center space-y-5 rounded-[24px] border border-dashed border-[#ECE6DB] bg-white p-8 py-20 text-center duration-300 fade-in dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="rounded-full bg-rose-50 p-5 text-rose-500 transition-colors dark:bg-rose-950/20">
-            <Heart size={44} className="fill-rose-500/10 stroke-[1.5]" />
-          </div>
-          <div className="space-y-1.5">
-            <h3 className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
-              {t("empty")}
-            </h3>
-            <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">
-              {t("emptyDesc")}
-            </p>
-          </div>
-          <Link
-            href="/offers"
-            className="inline-flex h-9 items-center justify-center rounded-full bg-[#7C4A27] px-6 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
-          >
-            <ShoppingBag className="mr-1.5 size-3.5 rtl:mr-0 rtl:ml-1.5" />
-            <span>{t("backToOffers")}</span>
-          </Link>
-        </div>
-      )}
+      <Suspense fallback={<FavouritesLoading />}>
+        <FavouritesFetcher />
+      </Suspense>
     </div>
   )
 }

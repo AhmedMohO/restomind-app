@@ -4,11 +4,12 @@ import React, { useEffect, useState } from "react"
 import { Link } from "@/i18n/routing"
 import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star } from "lucide-react"
 import type { ApiProduct } from "@/features/products/api/type"
-import { fetchRecommendedProductsAction } from "@/features/products/actions"
+import { fetchProductsAction } from "@/features/products/actions"
 import { useCart } from "@/hooks/use-cart"
 import { cn } from "@/lib/utils"
 import ProductCarousel from "@/components/common/ProductCarousel"
-import { useLocale, useTranslations } from "next-intl"
+import { useTranslations } from "next-intl"
+import Image from "next/image"
 
 interface ProductDetailsProps {
   product: ApiProduct
@@ -25,16 +26,25 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     let isMounted = true
     async function loadSimilar() {
       try {
-        const res = await fetchRecommendedProductsAction({ limit: 10 })
+        const res = await fetchProductsAction({
+          limit: 10,
+          category: product.category?._id,
+          sort: "price",
+          order: "asc",
+        })
+        console.log(res, "test")
+
         if (isMounted && res?.items) {
           setSimilarProducts(res.items.filter((p) => p._id !== product._id))
         }
-      } catch {
-        // silently fail
+      } catch (error) {
+        console.error("[loadSimilar] Error fetching similar products:", error)
       }
     }
     loadSimilar()
-    return () => { isMounted = false }
+    return () => {
+      isMounted = false
+    }
   }, [product._id, product.category?._id])
 
   const isFavorite = wishlist.includes(product._id)
@@ -71,7 +81,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   }
 
   return (
-    <div className="container mx-auto space-y-6 px-4 py-8 sm:px-6 md:px-8">
+    <div className="container mx-auto space-y-6 px-4">
       {/* Back to shop breadcrumb button */}
       <div>
         <Link
@@ -88,9 +98,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         {/* Left Side: Product Image */}
         <div className="relative overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white p-2 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
           <div className="dark:bg-neutral-850 aspect-[4/3] w-full overflow-hidden rounded-[18px] bg-[#FAF7F2] md:aspect-square">
-            <img
+            <Image
               src={product.image?.secure_url || "/placeholder.svg"}
               alt={product.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
               className="h-full w-full object-cover"
             />
           </div>
