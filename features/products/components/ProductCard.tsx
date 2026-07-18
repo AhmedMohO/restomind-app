@@ -1,10 +1,11 @@
 "use client"
 
 import React, { useState } from "react"
-import { Link } from "@/i18n/routing"
+import { Link, useRouter } from "@/i18n/routing"
 import { Star, Plus, Heart } from "lucide-react"
 import { Product } from "../types"
 import { useCart } from "@/hooks/use-cart"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
@@ -14,7 +15,9 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, toggleWishlist, wishlist } = useCart()
+  const { toggleWishlist, wishlist } = useCart()
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
   const [added, setAdded] = useState(false)
   const t = useTranslations("Offers")
 
@@ -23,7 +26,14 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    addToCart(product)
+
+    // Auth guard check: redirect unauthenticated users to login
+    if (!isAuthenticated) {
+      router.push("/login")
+      return
+    }
+
+    // Strict constraint: UI feedback only, no cart API calls or state mutations yet
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }

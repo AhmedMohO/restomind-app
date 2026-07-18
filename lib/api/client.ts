@@ -121,8 +121,8 @@ export async function publicApiClient(
   }
 
   return fetch(url, {
+    cache: "no-store",
     ...init,
     headers,
-    cache: "no-store",
   })
 }

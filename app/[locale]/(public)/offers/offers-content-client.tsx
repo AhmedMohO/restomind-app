@@ -1,17 +1,20 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
-import { MOCK_PRODUCTS } from "@/features/products/data"
-import { FilterState, SortOption } from "@/features/products/types"
+import { FilterState, SortOption, Product } from "@/features/products/types"
 import ProductCard from "@/features/products/components/ProductCard"
 import FilterSidebar from "@/features/products/components/FilterSidebar"
 import SortBar from "@/features/products/components/SortBar"
 import { Filter, Search } from "lucide-react"
 import { useTranslations } from "next-intl"
 
+interface OffersContentClientProps {
+  initialProducts?: Product[]
+}
+
 const DEFAULT_FILTERS: FilterState = {
   searchQuery: "",
-  priceRange: [0, 250],
+  priceRange: [0, 500],
   availability: {
     inStock: false,
     outOfStock: false,
@@ -20,7 +23,9 @@ const DEFAULT_FILTERS: FilterState = {
   tags: [],
 }
 
-export default function OffersContentClient() {
+export default function OffersContentClient({
+  initialProducts = [],
+}: OffersContentClientProps) {
   const t = useTranslations("Offers")
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
   const [sortBy, setSortBy] = useState<SortOption>("default")
@@ -32,53 +37,55 @@ export default function OffersContentClient() {
   }
 
   const filteredProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter((product) => {
-      if (
-        filters.searchQuery &&
-        !product.title
-          .toLowerCase()
-          .includes(filters.searchQuery.toLowerCase()) &&
-        !product.description
-          .toLowerCase()
-          .includes(filters.searchQuery.toLowerCase())
-      ) {
-        return false
-      }
+    return initialProducts
+      .filter((product) => {
+        if (
+          filters.searchQuery &&
+          !product.title
+            .toLowerCase()
+            .includes(filters.searchQuery.toLowerCase()) &&
+          !product.description
+            .toLowerCase()
+            .includes(filters.searchQuery.toLowerCase())
+        ) {
+          return false
+        }
 
-      if (
-        product.price < filters.priceRange[0] ||
-        product.price > filters.priceRange[1]
-      ) {
-        return false
-      }
+        if (
+          product.price < filters.priceRange[0] ||
+          product.price > filters.priceRange[1]
+        ) {
+          return false
+        }
 
-      const { inStock, outOfStock } = filters.availability
-      if (inStock || outOfStock) {
-        if (inStock && !product.isAvailable) return false
-        if (outOfStock && product.isAvailable) return false
-      }
+        const { inStock, outOfStock } = filters.availability
+        if (inStock || outOfStock) {
+          if (inStock && !product.isAvailable) return false
+          if (outOfStock && product.isAvailable) return false
+        }
 
-      if (
-        filters.categories.length > 0 &&
-        !filters.categories.includes(product.category)
-      ) {
-        return false
-      }
+        if (
+          filters.categories.length > 0 &&
+          !filters.categories.includes(product.category)
+        ) {
+          return false
+        }
 
-      return true
-    }).sort((a, b) => {
-      if (sortBy === "price-asc") {
-        return a.price - b.price
-      }
-      if (sortBy === "price-desc") {
-        return b.price - a.price
-      }
-      if (sortBy === "rating-desc") {
-        return b.rating - a.rating
-      }
-      return 0
-    })
-  }, [filters, sortBy])
+        return true
+      })
+      .sort((a, b) => {
+        if (sortBy === "price-asc") {
+          return a.price - b.price
+        }
+        if (sortBy === "price-desc") {
+          return b.price - a.price
+        }
+        if (sortBy === "rating-desc") {
+          return b.rating - a.rating
+        }
+        return 0
+      })
+  }, [initialProducts, filters, sortBy])
 
   const paginatedProducts = useMemo(() => {
     return filteredProducts.slice(0, pageSize)
