@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ALL_CATEGORIES } from "../data"
 import { cn } from "@/lib/utils"
+import { useLocale, useTranslations } from "next-intl"
 
 interface FilterSidebarProps {
   filters: FilterState
@@ -27,6 +28,10 @@ export default function FilterSidebar({
   onFiltersChange,
   onClear,
 }: FilterSidebarProps) {
+  const t = useTranslations("Offers")
+  const locale = useLocale()
+  const dir = locale === "ar" ? "rtl" : "ltr"
+
   const handlePriceChange = (val: number | readonly number[]) => {
     if (Array.isArray(val)) {
       onFiltersChange({
@@ -77,22 +82,37 @@ export default function FilterSidebar({
     })
   }
 
+  const getCategoryLabel = (cat: string) => {
+    switch (cat) {
+      case "Bread":
+        return t("categoryBread")
+      case "Pastry":
+        return t("categoryPastry")
+      case "Cookies":
+        return t("categoryCookies")
+      case "Desserts":
+        return t("categoryDesserts")
+      default:
+        return cat
+    }
+  }
+
   return (
-    <div className="w-full space-y-6 rounded-[20px] border border-[#ECE6DB] bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <div dir={dir} className="w-full space-y-6 rounded-[20px] border border-[#ECE6DB] bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
       {/* Sidebar Header */}
       <div className="flex items-center justify-between border-b border-dashed border-[#ECE6DB] pb-3 dark:border-neutral-800">
         <div className="relative">
           <h2 className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
-            Filter
+            {t("filterTitle")}
           </h2>
-          <div className="absolute -bottom-[13px] left-0 h-0.5 w-12 bg-[#7C4A27] dark:bg-[#C2733C]" />
+          <div className="absolute -bottom-[13px] start-0 h-0.5 w-12 bg-[#7C4A27] dark:bg-[#C2733C]" />
         </div>
         <button
           onClick={onClear}
           className="flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-1 text-[11px] font-semibold tracking-wider text-[#7C4A27] uppercase transition-colors hover:bg-[#F2ECE1] dark:bg-neutral-800 dark:text-[#E68A49] dark:hover:bg-neutral-700"
         >
           <X size={12} />
-          <span>Clear</span>
+          <span>{t("clear")}</span>
         </button>
       </div>
 
@@ -104,7 +124,7 @@ export default function FilterSidebar({
       >
         {/* PRICE ACCORDION */}
         <AccordionItem value="price" className="border-none">
-          <AccordionTriggerPlus className="pb-2">Price</AccordionTriggerPlus>
+          <AccordionTriggerPlus className="pb-2">{t("price")}</AccordionTriggerPlus>
           <AccordionContent className="pt-2">
             <div className="space-y-4 px-1">
               <Slider
@@ -121,12 +141,12 @@ export default function FilterSidebar({
                     type="number"
                     value={filters.priceRange[0]}
                     onChange={handleMinPriceInput}
-                    className="w-full pr-8 text-center"
+                    className="w-full pe-8 text-center"
                     min={0}
                     max={250}
                   />
-                  <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[9px] font-semibold text-muted-foreground uppercase">
-                    EGP
+                  <span className="pointer-events-none absolute top-1/2 end-2.5 -translate-y-1/2 text-[9px] font-semibold text-muted-foreground uppercase">
+                    {t("egp")}
                   </span>
                 </div>
                 <span className="text-muted-foreground">—</span>
@@ -135,12 +155,12 @@ export default function FilterSidebar({
                     type="number"
                     value={filters.priceRange[1]}
                     onChange={handleMaxPriceInput}
-                    className="w-full pr-8 text-center"
+                    className="w-full pe-8 text-center"
                     min={0}
                     max={250}
                   />
-                  <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[9px] font-semibold text-muted-foreground uppercase">
-                    EGP
+                  <span className="pointer-events-none absolute top-1/2 end-2.5 -translate-y-1/2 text-[9px] font-semibold text-muted-foreground uppercase">
+                    {t("egp")}
                   </span>
                 </div>
               </div>
@@ -151,7 +171,7 @@ export default function FilterSidebar({
         {/* AVAILABILITY ACCORDION */}
         <AccordionItem value="availability" className="border-none">
           <AccordionTriggerPlus className="pb-2">
-            Availability
+            {t("availability")}
           </AccordionTriggerPlus>
           <AccordionContent className="pt-2">
             <div className="space-y-2.5">
@@ -167,7 +187,7 @@ export default function FilterSidebar({
                   htmlFor="inStock"
                   className="cursor-pointer text-xs font-normal tracking-normal text-muted-foreground normal-case hover:text-foreground"
                 >
-                  In Stock
+                  {t("inStock")}
                 </Label>
               </div>
               <div className="flex items-center gap-2">
@@ -182,17 +202,17 @@ export default function FilterSidebar({
                   htmlFor="outOfStock"
                   className="cursor-pointer text-xs font-normal tracking-normal text-muted-foreground normal-case hover:text-foreground"
                 >
-                  Out of Stock
+                  {t("outOfStock")}
                 </Label>
               </div>
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {/* BRANDS / CATEGORIES ACCORDION */}
+        {/* CATEGORIES ACCORDION */}
         <AccordionItem value="categories" className="border-none">
           <AccordionTriggerPlus className="pb-2">
-            Categories
+            {t("categories")}
           </AccordionTriggerPlus>
           <AccordionContent className="pt-2">
             <div className="flex flex-wrap gap-2">
@@ -209,7 +229,7 @@ export default function FilterSidebar({
                         : "border-[#ECE6DB] bg-white text-muted-foreground hover:bg-[#FAF7F2] dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
                     )}
                   >
-                    {category}
+                    {getCategoryLabel(category)}
                   </button>
                 )
               })}
@@ -217,42 +237,42 @@ export default function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        {/* MOCK ACCORDIONS TO MATCH SCREENSHOT SHAPE */}
+        {/* ADDITIONAL ACCORDIONS */}
         <AccordionItem value="bakery-style" className="border-none">
           <AccordionTriggerPlus className="pb-2">
-            Baking Style
+            {t("bakingStyle")}
           </AccordionTriggerPlus>
           <AccordionContent className="pt-2">
-            <div className="space-y-1 pl-1 text-xs text-muted-foreground">
-              <p>• Stone Baked</p>
-              <p>• Clay Oven</p>
-              <p>• Griddle Pan</p>
+            <div className="space-y-1 ps-1 text-xs text-muted-foreground">
+              <p>• {t("stoneBaked")}</p>
+              <p>• {t("clayOven")}</p>
+              <p>• {t("griddlePan")}</p>
             </div>
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="sweetness" className="border-none">
           <AccordionTriggerPlus className="pb-2">
-            Sweetness
+            {t("sweetness")}
           </AccordionTriggerPlus>
           <AccordionContent className="pt-2">
-            <div className="space-y-1 pl-1 text-xs text-muted-foreground">
-              <p>• Unsweetened</p>
-              <p>• Mildly Sweet</p>
-              <p>• Rich Dessert</p>
+            <div className="space-y-1 ps-1 text-xs text-muted-foreground">
+              <p>• {t("unsweetened")}</p>
+              <p>• {t("mildlySweet")}</p>
+              <p>• {t("richDessert")}</p>
             </div>
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="allergens" className="border-none">
           <AccordionTriggerPlus className="pb-2">
-            Allergen Free
+            {t("allergens")}
           </AccordionTriggerPlus>
           <AccordionContent className="pt-2">
-            <div className="space-y-1 pl-1 text-xs text-muted-foreground">
-              <p>• Dairy Free</p>
-              <p>• Gluten Free</p>
-              <p>• Nut Free</p>
+            <div className="space-y-1 ps-1 text-xs text-muted-foreground">
+              <p>• {t("dairyFree")}</p>
+              <p>• {t("glutenFree")}</p>
+              <p>• {t("nutFree")}</p>
             </div>
           </AccordionContent>
         </AccordionItem>

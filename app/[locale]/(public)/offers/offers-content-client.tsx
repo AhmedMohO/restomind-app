@@ -105,18 +105,20 @@ export default function OffersContentClient() {
         </aside>
 
         <section className="space-y-6 lg:col-span-3">
+          {/* Mobile Filter Toggle & Search */}
           <div className="flex gap-3 lg:hidden">
             <button
               onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
               className="flex items-center gap-1.5 rounded-xl border border-[#ECE6DB] bg-white px-4 py-2 text-xs font-semibold tracking-wider text-primary uppercase transition-colors dark:border-neutral-800 dark:bg-neutral-900 dark:text-[#E68A49]"
             >
               <Filter size={16} />
-              <span>Filters</span>
+              <span>{t("filters")}</span>
             </button>
-            <div className="flex flex-1 items-center gap-2 rounded-xl border border-[#ECE6DB] bg-white px-3 py-1 transition-colors dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="relative flex flex-1 items-center rounded-xl border border-[#ECE6DB] bg-white px-3 py-1 transition-colors dark:border-neutral-800 dark:bg-neutral-900">
+              <Search size={16} className="me-2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search bakery..."
+                placeholder={t("searchPlaceholderShort")}
                 value={filters.searchQuery}
                 onChange={(e) =>
                   setFilters({ ...filters, searchQuery: e.target.value })
@@ -126,10 +128,12 @@ export default function OffersContentClient() {
             </div>
           </div>
 
+          {/* Desktop Search */}
           <div className="hidden items-center gap-2 rounded-xl border border-[#ECE6DB] bg-white px-4 py-2 transition-colors lg:flex dark:border-neutral-800 dark:bg-neutral-900">
+            <Search size={18} className="me-2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search by bread title, description, pastries..."
+              placeholder={t("searchPlaceholder")}
               value={filters.searchQuery}
               onChange={(e) =>
                 setFilters({ ...filters, searchQuery: e.target.value })
@@ -169,19 +173,17 @@ export default function OffersContentClient() {
               </div>
               <div className="space-y-1">
                 <h3 className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
-                  No baked goodies found
+                  {t("noProductsFound")}
                 </h3>
                 <p className="max-w-sm text-xs text-muted-foreground">
-                  We couldn&apos;t find any products matching your current
-                  filters. Try resetting the price slider or category
-                  selections.
+                  {t("noProductsDesc")}
                 </p>
               </div>
               <button
                 onClick={handleClearFilters}
                 className="rounded-full bg-[#7C4A27] px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
               >
-                Clear all filters
+                {t("clearAllFilters")}
               </button>
             </div>
           )}

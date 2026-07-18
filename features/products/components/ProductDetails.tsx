@@ -7,6 +7,7 @@ import { Product } from "../types"
 import { useCart } from "@/hooks/use-cart"
 import { cn } from "@/lib/utils"
 import ProductCarousel from "@/components/common/ProductCarousel"
+import { useLocale, useTranslations } from "next-intl"
 
 interface ProductDetailsProps {
   product: Product
@@ -16,8 +17,24 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const { addToCart, toggleWishlist, wishlist } = Object(useCart())
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const t = useTranslations("Offers")
 
   const isFavorite = wishlist.includes(product.id)
+
+  const getCategoryLabel = (cat: string) => {
+    switch (cat) {
+      case "Bread":
+        return t("categoryBread")
+      case "Pastry":
+        return t("categoryPastry")
+      case "Cookies":
+        return t("categoryCookies")
+      case "Desserts":
+        return t("categoryDesserts")
+      default:
+        return cat
+    }
+  }
 
   const handleDecrement = () => {
     if (quantity > 1) {
@@ -41,10 +58,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       <div>
         <Link
           href="/offers"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-[#7C4A27] hover:underline dark:text-[#E68A49]"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#7C4A27] hover:underline dark:text-[#E68A49]"
         >
-          <ArrowLeft size={16} />
-          <span>Back to shop</span>
+          <ArrowLeft size={16} className="rtl:rotate-180" />
+          <span>{t("backToOffers")}</span>
         </Link>
       </div>
 
@@ -62,12 +79,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         {/* Right Side: Product Details */}
-        <div className="flex flex-col gap-4 space-y-6 py-2">
+        <div className="flex flex-col gap-4 space-y-6 py-2 text-start">
           <div className="space-y-4">
             {/* Top row: Tags and wishlist button */}
             <div className="flex items-center justify-between">
               <span className="rounded-full bg-[#E2F7EB] px-3 py-1 text-xs font-semibold text-[#2F6D44] dark:bg-emerald-950/30 dark:text-emerald-400">
-                Daily Fresh
+                {t("dailyFresh")}
               </span>
               <button
                 onClick={() => toggleWishlist(product.id)}
@@ -110,13 +127,13 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 {product.rating}
               </span>
               <span className="text-xs text-muted-foreground">
-                ({product.reviewsCount} reviews)
+                {t("reviews", { count: product.reviewsCount })}
               </span>
             </div>
 
             {/* Large Price Display */}
             <div className="font-serif text-3xl font-bold text-[#2B1B15] dark:text-neutral-100">
-              {product.price} EGP
+              {product.price} {t("egp")}
             </div>
 
             {/* Description */}
@@ -164,8 +181,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <ShoppingCart size={16} />
               <span>
                 {added
-                  ? "Added to Cart!"
-                  : `Add to Cart • ${(product.price * quantity).toLocaleString()} EGP`}
+                  ? t("addedToCart")
+                  : t("addToCartPrice", {
+                      price: (product.price * quantity).toLocaleString(),
+                    })}
               </span>
             </button>
           </div>
@@ -177,8 +196,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         <ProductCarousel
           category={product.category}
           excludeId={product.id}
-          title="Similar Delicious Offers"
-          subtitle={`Warm treats from our ${product.category} section`}
+          title={t("similarTitle")}
+          subtitle={t("similarSubtitle", {
+            category: getCategoryLabel(product.category),
+          })}
         />
       </div>
     </div>

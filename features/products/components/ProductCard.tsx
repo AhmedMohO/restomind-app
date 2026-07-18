@@ -7,6 +7,7 @@ import { Product } from "../types"
 import { useCart } from "@/hooks/use-cart"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+import { useLocale, useTranslations } from "next-intl"
 
 interface ProductCardProps {
   product: Product
@@ -15,6 +16,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart, toggleWishlist, wishlist } = useCart()
   const [added, setAdded] = useState(false)
+  const t = useTranslations("Offers")
 
   const isFavorite = wishlist.includes(product.id)
 
@@ -47,7 +49,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           {/* Bestseller Badge */}
           {product.isBestseller && (
             <span className="absolute start-3 top-3 rounded-full bg-[#E6BF8F] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#2B1B15] uppercase shadow-sm">
-              Bestseller
+              {t("bestseller")}
             </span>
           )}
           {/* Wishlist Toggle Button */}
@@ -69,13 +71,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Info Area (with padding) */}
-        <div className="space-y-2 p-4 pb-0">
+        <div className="space-y-2 p-4 pb-0 text-start">
           {/* Title & Rating */}
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-2">
             <h3 className="font-serif text-lg leading-tight font-bold text-[#2B1B15] transition-colors group-hover:text-primary dark:text-neutral-100 dark:group-hover:text-[#E68A49]">
               {product.title}
             </h3>
-            <div className="flex items-center gap-1 text-[#D7A977]">
+            <div className="flex shrink-0 items-center gap-1 text-[#D7A977]">
               <Star size={16} className="fill-current" />
               <span className="text-xs font-bold text-[#2B1B15] dark:text-neutral-300">
                 {product.rating}
@@ -91,7 +93,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           {/* Price & Availability */}
           <div className="flex items-center justify-between border-t border-dashed border-[#ECE6DB] pt-1 dark:border-neutral-800">
             <span className="font-serif text-base font-bold text-[#2B1B15] dark:text-neutral-100">
-              {product.price} EGP
+              {product.price} {t("egp")}
             </span>
             <div className="flex items-center gap-1.5">
               <span
@@ -101,7 +103,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 )}
               />
               <span className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-                {product.isAvailable ? "Available" : "Out of stock"}
+                {product.isAvailable ? t("available") : t("outOfStock")}
               </span>
             </div>
           </div>
@@ -123,7 +125,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         >
           <Plus size={16} />
-          <span>{added ? "Added!" : "Add to cart"}</span>
+          <span>{added ? t("added") : t("addToCart")}</span>
         </button>
       </div>
     </div>

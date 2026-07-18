@@ -1,6 +1,6 @@
 import React, { Suspense } from "react"
 import { Link, routing } from "@/i18n/routing"
-import { setRequestLocale } from "next-intl/server"
+import { setRequestLocale, getTranslations } from "next-intl/server"
 import type { Metadata } from "next"
 import ProductDetails from "@/features/products/components/ProductDetails"
 import { productMetadata } from "@/lib/seo/metadata"
@@ -51,6 +51,7 @@ function ProductDetailLoading() {
 async function ProductContent({ params }: ProductPageProps) {
   const { locale, id } = await params
   setRequestLocale(locale)
+  const t = await getTranslations({ locale, namespace: "Offers" })
 
   const product = await getCachedProduct(id)
 
@@ -62,19 +63,18 @@ async function ProductContent({ params }: ProductPageProps) {
         </div>
         <div className="space-y-1">
           <h1 className="font-serif text-2xl font-bold text-[#2B1B15] dark:text-neutral-100">
-            Product Not Found
+            {t("productNotFound")}
           </h1>
           <p className="max-w-sm text-sm text-muted-foreground">
-            We couldn&apos;t find the bakery item you are looking for. It may
-            have been discontinued or renamed.
+            {t("productNotFoundDesc")}
           </p>
         </div>
         <Link
           href="/offers"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-[#7C4A27] hover:underline dark:text-[#E68A49]"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#7C4A27] hover:underline dark:text-[#E68A49]"
         >
-          <ArrowLeft size={16} />
-          <span>Return to shop</span>
+          <ArrowLeft size={16} className="rtl:rotate-180" />
+          <span>{t("backToOffers")}</span>
         </Link>
       </div>
     )
