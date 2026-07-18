@@ -1,25 +1,43 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Link } from "@/i18n/routing"
 import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star } from "lucide-react"
-import { Product } from "../types"
+import type { ApiProduct } from "@/features/products/api/type"
+import { fetchRecommendedProductsAction } from "@/features/products/actions"
 import { useCart } from "@/hooks/use-cart"
 import { cn } from "@/lib/utils"
 import ProductCarousel from "@/components/common/ProductCarousel"
 import { useLocale, useTranslations } from "next-intl"
 
 interface ProductDetailsProps {
-  product: Product
+  product: ApiProduct
 }
 
 export default function ProductDetails({ product }: ProductDetailsProps) {
   const { addToCart, toggleWishlist, wishlist } = Object(useCart())
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const [similarProducts, setSimilarProducts] = useState<ApiProduct[]>([])
   const t = useTranslations("Offers")
 
-  const isFavorite = wishlist.includes(product.id)
+  useEffect(() => {
+    let isMounted = true
+    async function loadSimilar() {
+      try {
+        const res = await fetchRecommendedProductsAction({ limit: 10 })
+        if (isMounted && res?.items) {
+          setSimilarProducts(res.items.filter((p) => p._id !== product._id))
+        }
+      } catch {
+        // silently fail
+      }
+    }
+    loadSimilar()
+    return () => { isMounted = false }
+  }, [product._id, product.category?._id])
+
+  const isFavorite = wishlist.includes(product._id)
 
   const getCategoryLabel = (cat: string) => {
     switch (cat) {
@@ -71,7 +89,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         <div className="relative overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white p-2 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
           <div className="dark:bg-neutral-850 aspect-[4/3] w-full overflow-hidden rounded-[18px] bg-[#FAF7F2] md:aspect-square">
             <img
-              src={product.image}
+              src={product.image?.secure_url || "/placeholder.svg"}
               alt={product.title}
               className="h-full w-full object-cover"
             />
@@ -87,7 +105,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 {t("dailyFresh")}
               </span>
               <button
-                onClick={() => toggleWishlist(product.id)}
+                onClick={() => toggleWishlist(product._id)}
                 className={cn(
                   "rounded-full border border-[#ECE6DB] p-2.5 transition-colors hover:bg-[#FAF7F2] dark:border-neutral-800 dark:hover:bg-neutral-800",
                   isFavorite
@@ -192,16 +210,17 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       </div>
 
       {/* Similar offers carousel */}
-      <div className="mt-12 border-t border-[#ECE6DB] pt-12 transition-colors dark:border-neutral-800">
-        <ProductCarousel
-          category={product.category}
-          excludeId={product.id}
-          title={t("similarTitle")}
-          subtitle={t("similarSubtitle", {
-            category: getCategoryLabel(product.category),
-          })}
-        />
-      </div>
+      {similarProducts.length > 0 && (
+        <div className="mt-12 border-t border-[#ECE6DB] pt-12 transition-colors dark:border-neutral-800">
+          <ProductCarousel
+            products={similarProducts}
+            title={t("similarTitle")}
+            subtitle={t("similarSubtitle", {
+              category: getCategoryLabel(product.category?.name || ""),
+            })}
+          />
+        </div>
+      )}
     </div>
   )
 }

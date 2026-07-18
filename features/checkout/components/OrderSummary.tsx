@@ -21,10 +21,10 @@ export default function OrderSummary({ deliveryFee }: OrderSummaryProps) {
       {/* Cart items */}
       <div className="space-y-4">
         {cart.map((item) => (
-          <div key={item.product.id} className="flex items-center gap-3">
+          <div key={item.product._id} className="flex items-center gap-3">
             <div className="relative size-14 rounded-xl overflow-hidden shrink-0 border border-border/30">
               <Image
-                src={item.product.image}
+                src={item.product.image?.secure_url || "/placeholder.svg"}
                 alt={item.product.title}
                 fill
                 className="object-cover"

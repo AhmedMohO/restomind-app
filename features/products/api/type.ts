@@ -13,7 +13,7 @@ export interface ApiProduct {
   isBestseller: boolean
   isAvailable: boolean
   image: ApiImage
-  category: string | ApiCategory
+  category: ApiCategory
   freshnessWindow: number
   tags: string[]
   isDeleted: boolean

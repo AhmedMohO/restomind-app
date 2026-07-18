@@ -121,13 +121,13 @@ export default function CartSheet() {
             <div className="space-y-6">
               {cart.map((item) => (
                 <div
-                  key={item.product.id}
+                  key={item.product._id}
                   className="flex items-center justify-between gap-4 border-b border-dashed border-[#ECE6DB] pb-5 transition-colors last:border-0 last:pb-0 dark:border-neutral-800"
                 >
                   {/* Product Image */}
                   <div className="dark:bg-neutral-850 relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] border border-[#ECE6DB] bg-[#FAF7F2] dark:border-neutral-800">
                     <Image
-                      src={item.product.image}
+                      src={item.product.image?.secure_url || "/placeholder.svg"}
                       alt={item.product.title}
                       width={64}
                       height={64}
@@ -149,7 +149,7 @@ export default function CartSheet() {
                         <div className="flex items-center rounded-full border border-[#ECE6DB] bg-white px-1 py-0.5 dark:border-neutral-800 dark:bg-neutral-900">
                           <button
                             onClick={() =>
-                              updateQuantity(item.product.id, item.quantity - 1)
+                              updateQuantity(item.product._id, item.quantity - 1)
                             }
                             className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] dark:hover:bg-neutral-800"
                             aria-label="Decrease quantity"
@@ -161,7 +161,7 @@ export default function CartSheet() {
                           </span>
                           <button
                             onClick={() =>
-                              updateQuantity(item.product.id, item.quantity + 1)
+                              updateQuantity(item.product._id, item.quantity + 1)
                             }
                             className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] dark:hover:bg-neutral-800"
                             aria-label="Increase quantity"
@@ -175,7 +175,7 @@ export default function CartSheet() {
                     {/* Actions & Price */}
                     <div className="flex flex-col items-end justify-between self-stretch py-0.5">
                       <button
-                        onClick={() => removeFromCart(item.product.id)}
+                        onClick={() => removeFromCart(item.product._id)}
                         className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-500"
                         title={t("remove")}
                         aria-label={t("remove")}

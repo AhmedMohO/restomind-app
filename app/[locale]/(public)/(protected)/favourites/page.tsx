@@ -1,20 +1,51 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
-import { Heart, ShoppingBag } from "lucide-react"
+import { Heart, ShoppingBag, Loader2 } from "lucide-react"
 import { Link } from "@/i18n/routing"
 import { useCart } from "@/hooks/use-cart"
-import { MOCK_PRODUCTS } from "@/features/products/data"
 import ProductCard from "@/features/products/components/ProductCard"
+import { getFavoritesAction } from "@/features/favorites/actions"
+import type { ApiProduct } from "@/features/products/api/type"
 
 export default function FavouritesPage() {
   const t = useTranslations("Favourites")
   const { wishlist } = useCart()
+  const [favoriteProducts, setFavoriteProducts] = useState<ApiProduct[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Filter products that exist in wishlist
-  const favouriteProducts = MOCK_PRODUCTS.filter((product) =>
-    wishlist.includes(product.id)
+  useEffect(() => {
+    let isMounted = true
+    async function loadFavorites() {
+      setLoading(true)
+      const res = await getFavoritesAction()
+      if (isMounted) {
+        if (res.success && Array.isArray(res.data)) {
+          setFavoriteProducts(res.data)
+        }
+        setLoading(false)
+      }
+    }
+    loadFavorites()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Filter products by active wishlist IDs in context
+  
+  const activeProducts = favoriteProducts.filter((product) =>
+    wishlist.includes(product._id)
   )
+
+  if (loading) {
+    return (
+      <div className="container mx-auto flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary dark:text-[#E68A49]" />
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto min-h-[60vh] space-y-8 px-4">
@@ -24,10 +55,10 @@ export default function FavouritesPage() {
       </h1>
 
       {/* Favourites Grid / Empty State */}
-      {favouriteProducts.length > 0 ? (
+      {activeProducts.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {favouriteProducts.map((product) => (
-            <div key={product.id} className="animate-in duration-300 fade-in">
+          {activeProducts.map((product) => (
+            <div key={product._id} className="animate-in duration-300 fade-in">
               <ProductCard product={product} />
             </div>
           ))}

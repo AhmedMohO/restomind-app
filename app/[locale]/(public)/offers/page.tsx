@@ -4,52 +4,30 @@ import type { Metadata } from "next"
 import { getAlternates } from "@/lib/seo/metadata"
 import { webpageJsonLd } from "@/lib/seo/json-ld"
 import OffersContentClient from "./offers-content-client"
-import { getProducts, type ApiProduct } from "@/features/products/api"
-import type { Product } from "@/features/products/types"
+import { getProducts } from "@/features/products/api"
+import type { PaginatedProducts } from "@/features/products/api/type"
 
 type Props = {
   params: Promise<{ locale: string }>
 }
 
-function mapApiProductToProduct(apiProd: ApiProduct): Product {
-  const categoryName =
-    typeof apiProd.category === "object" && apiProd.category !== null
-      ? (apiProd.category as { name: string }).name
-      : String(apiProd.category || "General")
-
-  return {
-    id: apiProd._id,
-    title: apiProd.title,
-    description: apiProd.description,
-    longDescription: apiProd.longDescription,
-    price: apiProd.discountedPrice ?? apiProd.price,
-    rating: apiProd.rating ?? 0,
-    reviewsCount: apiProd.reviewsCount ?? 0,
-    isBestseller: apiProd.isBestseller ?? false,
-    isAvailable: apiProd.isAvailable ?? true,
-    image:
-      apiProd.image?.secure_url ||
-      "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=800&q=80",
-    category: categoryName,
-    prepTime: "15 min",
-    calories: 250,
-    freshnessWindow: apiProd.freshnessWindow || 24,
-    tags: apiProd.tags || [],
-  }
+function OffersLoading() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+    </div>
+  )
 }
 
 async function OffersListFetcher() {
-  let initialProducts: Product[] = []
+  let initialPage: PaginatedProducts | undefined
   try {
-    const productsRes = await getProducts({ limit: 100 })
-    if (productsRes && Array.isArray(productsRes.items)) {
-      initialProducts = productsRes.items.map(mapApiProductToProduct)
-    }
-  } catch (error) {
-    console.error("Failed to fetch products for OffersPage:", error)
+    initialPage = await getProducts({ page: 1, limit: 12 })
+  } catch {
+    // PPR prerender may reject fetch — fallback to client fetch
   }
 
-  return <OffersContentClient initialProducts={initialProducts} />
+  return <OffersContentClient initialPage={initialPage} />
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -82,7 +60,7 @@ export default async function OffersPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <Suspense fallback={null}>
+      <Suspense fallback={<OffersLoading />}>
         <OffersListFetcher />
       </Suspense>
     </>

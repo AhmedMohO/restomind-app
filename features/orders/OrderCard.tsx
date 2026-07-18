@@ -6,7 +6,6 @@ import { Truck, Clock, Heart, FileText, MessageSquare, XCircle, RotateCcw, Check
 import { Order, OrderStatus } from "./data"
 import { useCart } from "@/hooks/use-cart"
 import { MOCK_PRODUCTS } from "@/features/products/data"
-import { Product } from "@/features/products/types"
 import { cn } from "@/lib/utils"
 
 interface OrderCardProps {
@@ -75,24 +74,26 @@ export default function OrderCard({ order, isFirst, isLast }: OrderCardProps) {
     setTimeout(() => {
       order.items.forEach((item) => {
         // Find existing product details from catalog to push to cart context correctly
-        const matchedProduct = MOCK_PRODUCTS.find((p) => p.id === item.id)
+        const matchedProduct = MOCK_PRODUCTS.find((p) => p._id === item.id)
         
-        const productToInsert: Product = matchedProduct || {
-          id: item.id,
+        const productToInsert = matchedProduct || {
+          _id: item.id,
           title: item.title,
           description: "",
           longDescription: "",
           price: 95,
+          discountedPrice: 0,
           rating: 4.8,
           reviewsCount: 12,
           isBestseller: false,
           isAvailable: true,
-          image: item.image,
-          category: "Pastry",
-          prepTime: "1 hr",
-          calories: 220,
+          image: { public_id: item.id, secure_url: item.image },
+          category: { _id: "pastry", name: "Pastry", description: "", image: { public_id: "", secure_url: "" }, isDeleted: false, createdAt: "", updatedAt: "" },
           freshnessWindow: 12,
-          tags: []
+          tags: [],
+          isDeleted: false,
+          createdAt: "",
+          updatedAt: "",
         }
 
         addToCart(productToInsert, item.quantity)

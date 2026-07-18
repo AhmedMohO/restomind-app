@@ -1,17 +1,6 @@
-import type { ApiImage } from "@/features/users/api/type"
-
-export interface CartItemProduct {
-  _id: string
-  title: string
-  description: string
-  price: number
-  discountedPrice: number
-  image: ApiImage
-  isAvailable: boolean
-}
-
+import { ApiProduct } from "@/features/products/api/type"
 export interface ApiCartItem {
-  product: CartItemProduct
+  product: ApiProduct
   quantity: number
   unitPrice: number
   discountedPrice: number

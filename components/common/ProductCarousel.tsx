@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+// import React, { useEffect, useState } from "react"
 import {
   Carousel,
   CarouselContent,
@@ -9,11 +9,11 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel"
 import ProductCard from "@/features/products/components/ProductCard"
-import { MOCK_PRODUCTS } from "@/features/products/data"
-import { Product } from "@/features/products/types"
+// import { fetchProductsAction } from "@/features/products/actions"
+import type { ApiProduct } from "@/features/products/api/type"
 
 interface ProductCarouselProps {
-  products?: Product[]
+  products?: ApiProduct[]
   category?: string
   excludeId?: string
   title: string
@@ -22,30 +22,55 @@ interface ProductCarouselProps {
   className?: string
 }
 
+  // function mapApiProductToProduct(apiProd: ApiProduct): ApiProduct {
+  //   const categoryName =
+  //     typeof apiProd.category === "object" && apiProd.category !== null
+  //       ? (apiProd.category as { name: string }).name
+  //       : String(apiProd.category || "General")
+
+  //   return {
+  //     id: apiProd._id,
+  //     title: apiProd.title,
+  //     description: apiProd.description,
+  //     longDescription: apiProd.longDescription,
+  //     price: apiProd.discountedPrice ?? apiProd.price,
+  //     rating: apiProd.rating ?? 0,
+  //     reviewsCount: apiProd.reviewsCount ?? 0,
+  //     isBestseller: apiProd.isBestseller ?? false,
+  //     isAvailable: apiProd.isAvailable ?? true,
+  //     image:
+  //       apiProd.image?.secure_url ||
+  //       "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=800&q=80",
+  //     category: categoryName,
+  //     prepTime: "15 min",
+  //     calories: 250,
+  //     freshnessWindow: apiProd.freshnessWindow || 24,
+  //     tags: apiProd.tags || [],
+  //   }
+  // }
+
 export default function ProductCarousel({
-  products,
+  products = [],
   category,
   excludeId,
   title,
   subtitle,
-  limit,
+  limit = 8,
   className,
 }: ProductCarouselProps) {
-  // Use passed products or fallback to MOCK_PRODUCTS with filtering
-  let displayProducts = products ? [...products] : [...MOCK_PRODUCTS]
+  
+  let displayProducts = products;
 
-  if (!products) {
-    if (category) {
-      displayProducts = displayProducts.filter(
-        (p) => p.category.toLowerCase() === category.toLowerCase()
-      )
-    }
-    if (excludeId) {
-      displayProducts = displayProducts.filter((p) => p.id !== excludeId)
-    }
-    if (limit) {
-      displayProducts = displayProducts.slice(0, limit)
-    }
+  if (category) {
+    displayProducts = displayProducts.filter(
+      (p) => p.category.name.toLowerCase() === category.toLowerCase()
+    )
+  }
+  if (excludeId) {
+    displayProducts = displayProducts.filter((p) => p._id !== excludeId)
+  }
+  if (limit) {
+    displayProducts = displayProducts.slice(0, limit)
   }
 
   if (displayProducts.length === 0) {
@@ -77,7 +102,7 @@ export default function ProductCarousel({
         <CarouselContent className="gap-6 pb-4">
           {displayProducts.map((product) => (
             <CarouselItem
-              key={product.id}
+              key={product._id}
               className="w-[280px] shrink-0 snap-start sm:w-[320px]"
             >
               <ProductCard product={product} />

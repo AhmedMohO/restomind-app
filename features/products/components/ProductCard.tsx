@@ -3,25 +3,25 @@
 import React, { useState } from "react"
 import { Link, useRouter } from "@/i18n/routing"
 import { Star, Plus, Heart } from "lucide-react"
-import { Product } from "../types"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
+import { ApiProduct } from "../api"
 
 interface ProductCardProps {
-  product: Product
+  product: ApiProduct
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { toggleWishlist, wishlist } = useCart()
+  const { addToCart, toggleWishlist, wishlist } = useCart()
   const { isAuthenticated } = useAuth()
   const router = useRouter()
   const [added, setAdded] = useState(false)
   const t = useTranslations("Offers")
 
-  const isFavorite = wishlist.includes(product.id)
+  const isFavorite = wishlist.includes(product._id)
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -33,7 +33,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       return
     }
 
-    // Strict constraint: UI feedback only, no cart API calls or state mutations yet
+    addToCart(product, 1)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -41,16 +41,16 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    toggleWishlist(product.id)
+    toggleWishlist(product._id)
   }
 
   return (
     <div className="group flex flex-col justify-between overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white shadow-sm transition-all duration-350 hover:-translate-y-1 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
-      <Link href={`/offers/${product.id}`} className="block">
+      <Link href={`/offers/${product._id}`} className="block">
         {/* Product Image Container (extends to edges of the card) */}
         <div className="dark:bg-neutral-850 relative aspect-[4/3] w-full overflow-hidden bg-[#FAF7F2]">
           <Image
-            src={product.image}
+            src={product.image.secure_url}
             alt={product.title}
             fill
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"

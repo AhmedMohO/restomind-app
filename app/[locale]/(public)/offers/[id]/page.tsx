@@ -6,6 +6,7 @@ import ProductDetails from "@/features/products/components/ProductDetails"
 import { productMetadata } from "@/lib/seo/metadata"
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo/json-ld"
 import { ArrowLeft, Search } from "lucide-react"
+import { MOCK_PRODUCTS } from "@/features/products/data"
 import { getCachedProduct } from "./product-cache"
 
 interface ProductPageProps {
@@ -13,11 +14,10 @@ interface ProductPageProps {
 }
 
 export async function generateStaticParams() {
-  const { MOCK_PRODUCTS } = await import("@/features/products/data")
   return routing.locales.flatMap((locale) =>
     MOCK_PRODUCTS.map((product) => ({
       locale,
-      id: product.id,
+      id: product._id,
     }))
   )
 }
@@ -25,16 +25,16 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { locale, id } = await params
   const product = await getCachedProduct(id)
-  if (!product) return { title: "Product Not Found" }
+  if (!product) return { title: "Product" }
 
   return productMetadata(
     {
-      id: product.id,
+      id: product._id,
       title: product.title,
       description: product.description,
       price: product.price,
-      image: product.image,
-      category: product.category,
+      image: product.image?.secure_url || "",
+      category: product.category?.name || "",
     },
     locale
   )
@@ -48,12 +48,17 @@ function ProductDetailLoading() {
   )
 }
 
-async function ProductContent({ params }: ProductPageProps) {
+async function ProductDetailsFetcher({ params }: ProductPageProps) {
   const { locale, id } = await params
   setRequestLocale(locale)
   const t = await getTranslations({ locale, namespace: "Offers" })
 
-  const product = await getCachedProduct(id)
+  let product = null
+  try {
+    product = await getCachedProduct(id)
+  } catch (error) {
+    console.error(`[ProductDetailsFetcher] Error loading product ${id}:`, error)
+  }
 
   if (!product) {
     return (
@@ -81,19 +86,19 @@ async function ProductContent({ params }: ProductPageProps) {
   }
 
   const jsonLd = productJsonLd({
-    id: product.id,
+    id: product._id,
     title: product.title,
     description: product.description,
     price: product.price,
-    image: product.image,
-    category: product.category,
+    image: product.image?.secure_url || "",
+    category: product.category?.name || "",
     isAvailable: product.isAvailable,
   })
 
   const breadcrumbItems = [
     { name: "Home", url: "/" },
     { name: "Offers", url: "/offers" },
-    { name: product.title, url: `/offers/${product.id}` },
+    { name: product.title, url: `/offers/${product._id}` },
   ]
   const breadcrumbLd = breadcrumbJsonLd(breadcrumbItems)
 
@@ -115,7 +120,7 @@ async function ProductContent({ params }: ProductPageProps) {
 export default function ProductPage({ params }: ProductPageProps) {
   return (
     <Suspense fallback={<ProductDetailLoading />}>
-      <ProductContent params={params} />
+      <ProductDetailsFetcher params={params} />
     </Suspense>
   )
 }

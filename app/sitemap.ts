@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next"
-import { MOCK_PRODUCTS } from "@/features/products/data"
+import { getProducts } from "@/features/products/api"
 import { routing } from "@/i18n/routing"
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
@@ -17,7 +17,15 @@ function getAlternates(path: string) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const productSlugs = MOCK_PRODUCTS.map((p) => p.id)
+  let productSlugs: string[] = []
+  try {
+    const res = await getProducts({ limit: 200 })
+    if (res?.items) {
+      productSlugs = res.items.map((p) => p._id)
+    }
+  } catch {
+    productSlugs = []
+  }
 
   const allPaths = [
     ...staticPaths.map((path) => ({
