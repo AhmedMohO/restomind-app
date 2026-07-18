@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { routing } from "@/i18n/routing"
 import { SmoothScrollProvider } from "@/providers/smooth-scroll-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import LocaleHtml from "@/components/locale-html"
 
 const oxaniumHeading = Oxanium({
   subsets: ["latin"],
@@ -42,28 +43,26 @@ export default async function LocaleLayout({
   const messages = await getMessages()
 
   return (
-    <html
-      lang={locale}
-      dir={locale === "ar" ? "rtl" : "ltr"}
-      suppressHydrationWarning
-      className={cn(
-        "antialiased",
-        fontMono.variable,
-        "font-sans",
-        outfit.variable,
-        oxaniumHeading.variable,
-        cairo.variable
-      )}
-    >
-      <body suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>
-            <TooltipProvider>
-              <SmoothScrollProvider>{children} </SmoothScrollProvider>
-            </TooltipProvider>
-          </ThemeProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider messages={messages}>
+      {/* sets lang + dir on <html> client-side; dir is also on the div below for SSR CSS */}
+      <LocaleHtml locale={locale} />
+      <div
+        dir={locale === "ar" ? "rtl" : "ltr"}
+        className={cn(
+          "antialiased",
+          fontMono.variable,
+          "font-sans",
+          outfit.variable,
+          oxaniumHeading.variable,
+          cairo.variable
+        )}
+      >
+        <ThemeProvider>
+          <TooltipProvider>
+            <SmoothScrollProvider>{children}</SmoothScrollProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </div>
+    </NextIntlClientProvider>
   )
 }
