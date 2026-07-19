@@ -21,6 +21,9 @@ Protected endpoints require a JWT bearer token sent via the `Authorization` head
 - **Refresh Token Authorization**: (Only used for generating a new access token)
   - Header: `Authorization`
   - Format: `Bearer <refreshToken>`
+- **Reset Token Authorization**: (Only used for resetting password after OTP confirmation)
+  - Header: `Authorization`
+  - Format: `Bearer <resetToken>`
 
 ### Standard Error Response Format
 All validation, authentication, and logical errors follow this standard structure:
@@ -50,6 +53,20 @@ interface Image {
 }
 ```
 
+### User Address Schema
+```typescript
+interface UserAddress {
+  _id: string;          // ObjectId
+  label?: string;       // e.g. "Home", "Work"
+  fullName: string;
+  phoneNumber: string;
+  street: string;
+  city: string;
+  country?: string;
+  isDefault: boolean;
+}
+```
+
 ### User Schema
 ```typescript
 interface User {
@@ -58,12 +75,38 @@ interface User {
   lastName: string;
   email: string;
   role: 'admin' | 'customer' | 'manager';
-  gender: 'male' | 'female';    // Optional
+  gender?: 'male' | 'female';
   phone: string;                // Encrypted on DB, plain string on API boundaries
   isEmailVerified: boolean;
   DOB?: string;                 // ISO Date String
   image?: Image;                // Profile picture object
+  restaurantId?: string;        // Associated Restaurant ObjectId (for manager role)
+  addresses?: UserAddress[];    // Saved delivery addresses
   isDeleted: boolean;
+  createdAt: string;            // ISO Date String
+  updatedAt: string;            // ISO Date String
+}
+```
+
+### Restaurant Schema
+```typescript
+interface RestaurantAddress {
+  street?: string;
+  city?: string;
+  country?: string;
+}
+
+interface Restaurant {
+  _id: string;                  // ObjectId
+  name: string;
+  ownerUserId: string;          // User ObjectId of manager/owner
+  description?: string;
+  logoUrl?: string;
+  phone?: string;
+  address?: RestaurantAddress;
+  isActive: boolean;
+  isDeleted: boolean;
+  deletedAt?: string;           // ISO Date String
   createdAt: string;            // ISO Date String
   updatedAt: string;            // ISO Date String
 }
@@ -87,6 +130,7 @@ interface Category {
 interface Product {
   _id: string;
   title: string;
+  slug: string;
   description: string;
   longDescription: string;
   price: number;
@@ -97,6 +141,7 @@ interface Product {
   isAvailable: boolean;
   image: Image;
   category: string | Category;  // Category ID or populated Category object
+  restaurantId: string | Restaurant; // Associated Restaurant ID or populated Restaurant object
   freshnessWindow: number;      // Freshness window in days
   tags: string[];
   isDeleted: boolean;
@@ -144,15 +189,29 @@ interface OrderItem {
   quantity: number;
 }
 
+interface DeliveryAddress {
+  addressId?: string;
+  street: string;
+  city: string;
+  country: string;
+}
+
 interface Order {
   _id: string;
   userId: string;
+  restaurantId: string;         // Associated Restaurant ID
   items: OrderItem[];
   totalOriginalPrice: number;
   totalDiscount: number;
   finalTotalPrice: number;
   totalQuantity: number;
-  paymentMethod: 'CASH';
+  fullName: string;
+  phoneNumber: string;
+  emailAddress: string;
+  deliveryMethod: 'Home Delivery' | 'Store Pickup';
+  deliveryAddress?: DeliveryAddress;
+  specialNotes?: string;
+  paymentMethod: 'Cash on Delivery';
   status: 'Pending' | 'Confirmed' | 'Preparing' | 'Out For Delivery' | 'Delivered' | 'Cancelled';
   createdAt: string;
   updatedAt: string;
@@ -174,7 +233,7 @@ Registers a new customer. Automatically fires an email verification OTP to the u
   | `lastName` | String | Yes | Min length 3, max length 20 | User's last name |
   | `email` | String | Yes | Must be valid email format | Unique email address |
   | `password` | String | Yes | Min length 6 | Security password |
-  | `phone` | String | No | Valid phone number format | Contact number |
+  | `phone` | String | Yes | Valid phone number format | Contact number |
   | `gender` | String | No | Must be `'male'` or `'female'` | User's gender |
   | `DOB` | String | No | ISO Date format (`YYYY-MM-DD`) | Date of birth |
   | `role` | String | No | Must be one of `RolesEnum` | Default is `'customer'` |
@@ -259,6 +318,7 @@ Returns the profile info of the authenticated user.
     "phone": "+1234567890",
     "isEmailVerified": true,
     "DOB": "1995-10-15T00:00:00.000Z",
+    "addresses": [],
     "isDeleted": false,
     "createdAt": "2026-07-17T18:40:00.000Z",
     "updatedAt": "2026-07-17T18:45:00.000Z"
@@ -316,7 +376,7 @@ Resends verification OTP or reset password OTP.
   | Field | Type | Required | Rules | Description |
   | :--- | :--- | :--- | :--- | :--- |
   | `email` | String | Yes | Valid email | Target email |
-  | `type` | String | Yes | `'confirmation'` or `'forgetPassword'` | Type of OTP flow |
+  | `type` | String | Yes | `'confirmation'` or `'reset-password'` | Type of OTP flow |
 
   *Request Example*:
   ```json
@@ -335,9 +395,9 @@ Resends verification OTP or reset password OTP.
 
 ---
 
-### 3.7 Forget Password
+### 3.7 Forgot Password
 Generates password reset OTP code and emails it to the user.
-- **Method / URL**: `POST /auth/forget-password`
+- **Method / URL**: `POST /auth/forgot-password`
 - **Auth Level**: Public
 - **Request Body (`application/json`)**:
   | Field | Type | Required | Description |
@@ -375,18 +435,19 @@ Uses a valid refresh token to get a new short-lived access token.
 ---
 
 ### 3.9 Confirm Reset OTP
-Verifies the password reset OTP.
+Verifies the password reset OTP and returns a temporary `resetToken`.
 - **Method / URL**: `PATCH /auth/confirm-reset-otp`
-- **Auth Level**: Access Token (`admin` or `customer`)
-- **Headers**: `Authorization: Bearer <accessToken>`
+- **Auth Level**: Public
 - **Request Body (`application/json`)**:
   | Field | Type | Required | Description |
   | :--- | :--- | :--- | :--- |
+  | `email` | String | Yes | Account email address |
   | `otp` | String | Yes | 6-digit OTP code |
 
   *Request Example*:
   ```json
   {
+    "email": "johndoe@example.com",
     "otp": "459012"
   }
   ```
@@ -394,17 +455,18 @@ Verifies the password reset OTP.
 - **Response (200 OK)**:
   ```json
   {
-    "message": "Reset OTP confirmed successfully"
+    "message": "OTP verified successfully",
+    "resetToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
   ```
 
 ---
 
 ### 3.10 Reset Password
-Updates the password for the user. (Revokes all previous session tokens on completion).
+Updates the password for the user using the `resetToken` received from OTP verification.
 - **Method / URL**: `PATCH /auth/reset-password`
-- **Auth Level**: Access Token (`admin` or `customer`)
-- **Headers**: `Authorization: Bearer <accessToken>`
+- **Auth Level**: Reset Token
+- **Headers**: `Authorization: Bearer <resetToken>`
 - **Request Body (`application/json`)**:
   | Field | Type | Required | Rules | Description |
   | :--- | :--- | :--- | :--- | :--- |
@@ -445,25 +507,85 @@ Updates the active user's details and/or uploads a profile photo.
 
 - **Response (200 OK)**:
   *Returns the updated user object.*
+
+---
+
+### 3.12 Add Delivery Address
+Saves a new delivery address to the logged-in user's profile.
+- **Method / URL**: `POST /auth/addresses`
+- **Auth Level**: Access Token (`admin` or `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+  | Field | Type | Required | Rules | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `label` | String | No | None | Address label (e.g. `'Home'`, `'Work'`) |
+  | `fullName` | String | No | None | Recipient name (defaults to user name) |
+  | `phoneNumber` | String | Yes | Valid phone number | Contact phone number |
+  | `street` | String | Yes | Non-empty string | Street address |
+  | `city` | String | Yes | Non-empty string | City |
+  | `country` | String | No | None | Country |
+  | `isDefault` | Boolean | No | Boolean | Set as default address |
+
+  *Request Example*:
   ```json
   {
-    "_id": "64b0f9f36f6d5c001cfef2b8",
-    "firstName": "Johnny",
-    "lastName": "Doey",
-    "email": "johndoe@example.com",
-    "role": "customer",
-    "gender": "male",
-    "phone": "+1987654321",
-    "isEmailVerified": true,
-    "image": {
-      "public_id": "restomind/users/64b0f9f36f6d5c001cfef2b8/avatar",
-      "secure_url": "https://res.cloudinary.com/demo/image/upload/v12345/restomind/users/avatar.jpg"
-    },
-    "isDeleted": false,
-    "createdAt": "2026-07-17T18:40:00.000Z",
-    "updatedAt": "2026-07-17T18:50:00.000Z"
+    "label": "Home",
+    "phoneNumber": "+1234567890",
+    "street": "12 Nile St",
+    "city": "Cairo",
+    "country": "Egypt",
+    "isDefault": true
   }
   ```
+
+- **Response (201 Created)**:
+  *Returns the newly added address object.*
+
+---
+
+### 3.13 Get My Saved Addresses
+Retrieves all delivery addresses saved in the user's profile.
+- **Method / URL**: `GET /auth/addresses`
+- **Auth Level**: Access Token (`admin` or `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**:
+  *Returns an array of `UserAddress` objects.*
+
+---
+
+### 3.14 Update Saved Address
+Updates an existing saved delivery address.
+- **Method / URL**: `PATCH /auth/addresses/:addressId`
+- **Auth Level**: Access Token (`admin` or `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**: Accepts optional fields from `Add Delivery Address`.
+
+- **Response (200 OK)**:
+  *Returns the updated address object.*
+
+---
+
+### 3.15 Delete Saved Address
+Deletes a saved address from the user's profile.
+- **Method / URL**: `DELETE /auth/addresses/:addressId`
+- **Auth Level**: Access Token (`admin` or `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**:
+  ```json
+  {
+    "message": "Address deleted successfully"
+  }
+  ```
+
+---
+
+### 3.16 Set Address as Default
+Sets the specified address as the default delivery address for the user.
+- **Method / URL**: `PATCH /auth/addresses/:addressId/default`
+- **Auth Level**: Access Token (`admin` or `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**:
+  *Returns the updated address list.*
 
 ---
 
@@ -484,6 +606,7 @@ Updates the active user's details and/or uploads a profile photo.
   | `role` | String | No | `'admin' \| 'customer' \| 'manager'` | Default is `'customer'` |
   | `gender` | String | No | `'male' \| 'female'` | Gender |
   | `DOB` | String | No | ISO Date string | Date of Birth |
+  | `restaurantId` | String | No | Valid Restaurant ObjectId | Assigned restaurant (for managers) |
 
   *Request Example*:
   ```json
@@ -494,7 +617,8 @@ Updates the active user's details and/or uploads a profile photo.
     "password": "securepassword456",
     "phone": "+1555555555",
     "role": "manager",
-    "gender": "female"
+    "gender": "female",
+    "restaurantId": "64b0f9f36f6d5c001cfef2b8"
   }
   ```
 
@@ -509,6 +633,7 @@ Updates the active user's details and/or uploads a profile photo.
       "role": "manager",
       "gender": "female",
       "phone": "+1555555555",
+      "restaurantId": "64b0f9f36f6d5c001cfef2b8",
       "isEmailVerified": false,
       "isDeleted": false,
       "createdAt": "2026-07-17T18:55:00.000Z",
@@ -530,32 +655,9 @@ Updates the active user's details and/or uploads a profile photo.
   | `limit` | String | No | `10` | Size of page result |
   | `search` | String | No | *None* | Match first/last name or email (case-insensitive) |
   | `role` | String | No | *None* | Filter by role |
-  | `sort` | String | No | `createdAt` | Sort attribute |
-  | `order` | String | No | `desc` | `'asc'` or `'desc'` |
 
 - **Response (200 OK)**:
-  ```json
-  {
-    "items": [
-      {
-        "_id": "64b0f9f36f6d5c001cfef2b8",
-        "firstName": "John",
-        "lastName": "Doe",
-        "email": "johndoe@example.com",
-        "role": "customer",
-        "gender": "male",
-        "phone": "+1234567890",
-        "isEmailVerified": true,
-        "isDeleted": false,
-        "createdAt": "2026-07-17T18:40:00.000Z",
-        "updatedAt": "2026-07-17T18:45:00.000Z"
-      }
-    ],
-    "page": 1,
-    "limit": 10,
-    "totalPages": 1
-  }
-  ```
+  Standard paginated response with `items`, `page`, `limit`, and `totalPages`.
 
 ---
 
@@ -563,24 +665,7 @@ Updates the active user's details and/or uploads a profile photo.
 - **Method / URL**: `GET /users/:id`
 - **Auth Level**: Access Token (`admin` or `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b0f9f36f6d5c001cfef2b8",
-      "firstName": "John",
-      "lastName": "Doe",
-      "email": "johndoe@example.com",
-      "role": "customer",
-      "gender": "male",
-      "phone": "+1234567890",
-      "isEmailVerified": true,
-      "isDeleted": false,
-      "createdAt": "2026-07-17T18:40:00.000Z",
-      "updatedAt": "2026-07-17T18:45:00.000Z"
-    }
-  }
-  ```
+- **Response (200 OK)**: Single user object wrapped in `data`.
 
 ---
 
@@ -588,42 +673,9 @@ Updates the active user's details and/or uploads a profile photo.
 - **Method / URL**: `PATCH /users/:id`
 - **Auth Level**: Access Token (`admin` or `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`application/json`)**:
-  | Field | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `firstName` | String | No | First name |
-  | `lastName` | String | No | Last name |
-  | `phone` | String | No | Phone number |
-  | `gender` | String | No | `'male' \| 'female'` |
-  | `DOB` | String | No | ISO Date String |
-  | `role` | String | No | `'admin' \| 'customer' \| 'manager'` |
+- **Request Body (`application/json`)**: Accepts optional fields from `Create User` (including `restaurantId`).
 
-  *Request Example*:
-  ```json
-  {
-    "firstName": "Jane Modified",
-    "phone": "+1444444444"
-  }
-  ```
-
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b0fc086f6d5c001cfef2c2",
-      "firstName": "Jane Modified",
-      "lastName": "Doe",
-      "email": "janedoe@example.com",
-      "role": "manager",
-      "gender": "female",
-      "phone": "+1444444444",
-      "isEmailVerified": false,
-      "isDeleted": false,
-      "createdAt": "2026-07-17T18:55:00.000Z",
-      "updatedAt": "2026-07-17T19:00:00.000Z"
-    }
-  }
-  ```
+- **Response (200 OK)**: Updated user object wrapped in `data`.
 
 ---
 
@@ -653,23 +705,7 @@ Updates the active user's details and/or uploads a profile photo.
   | `description` | String | Yes | None | Category explanation |
   | `image` | File | Yes | Image format (png, jpg, etc.) | Category icon / photo file |
 
-- **Response (201 Created)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b0feaa6f6d5c001cfef2d0",
-      "name": "Fresh Vegetables",
-      "description": "Organic farm-fresh green vegetables and herbs.",
-      "image": {
-        "public_id": "restomind/categories/64b0feaa6f6d5c001cfef2d0/icon",
-        "secure_url": "https://res.cloudinary.com/demo/image/upload/v123/categories/veg.jpg"
-      },
-      "isDeleted": false,
-      "createdAt": "2026-07-17T19:10:00.000Z",
-      "updatedAt": "2026-07-17T19:10:00.000Z"
-    }
-  }
-  ```
+- **Response (201 Created)**: Created category entity wrapped in `data`.
 
 ---
 
@@ -677,69 +713,24 @@ Updates the active user's details and/or uploads a profile photo.
 - **Method / URL**: `PATCH /categories/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`multipart/form-data`)**:
-  | Field | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `name` | String | No | Updated category name |
-  | `description`| String | No | Updated category description |
-  | `image` | File | No | New image file replacing old image |
+- **Request Body (`multipart/form-data`)**: Accepts optional `name`, `description`, and `image` file.
 
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b0feaa6f6d5c001cfef2d0",
-      "name": "Organic Farm Vegetables",
-      "description": "100% organic farm-fresh greens.",
-      "image": {
-        "public_id": "restomind/categories/64b0feaa6f6d5c001cfef2d0/icon",
-        "secure_url": "https://res.cloudinary.com/demo/image/upload/v456/categories/veg_new.jpg"
-      },
-      "isDeleted": false,
-      "createdAt": "2026-07-17T19:10:00.000Z",
-      "updatedAt": "2026-07-17T19:15:00.000Z"
-    }
-  }
-  ```
+- **Response (200 OK)**: Updated category object wrapped in `data`.
 
 ---
 
 ### 5.3 Delete Category (Soft Delete)
-Deletes the category metadata and its remote file assets.
 - **Method / URL**: `DELETE /categories/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "message": "Category deleted successfully"
-  }
-  ```
+- **Response (200 OK)**: Success message.
 
 ---
 
 ### 5.4 View All Categories
 - **Method / URL**: `GET /categories`
-- **Auth Level**: Public (No auth headers required)
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": [
-      {
-        "_id": "64b0feaa6f6d5c001cfef2d0",
-        "name": "Organic Farm Vegetables",
-        "description": "100% organic farm-fresh greens.",
-        "image": {
-          "public_id": "restomind/categories/64b0feaa6f6d5c001cfef2d0/icon",
-          "secure_url": "https://res.cloudinary.com/demo/image/upload/v456/categories/veg_new.jpg"
-        },
-        "isDeleted": false,
-        "createdAt": "2026-07-17T19:10:00.000Z",
-        "updatedAt": "2026-07-17T19:15:00.000Z"
-      }
-    ]
-  }
-  ```
+- **Auth Level**: Public
+- **Response (200 OK)**: Array of category entities wrapped in `data`.
 
 ---
 
@@ -747,23 +738,7 @@ Deletes the category metadata and its remote file assets.
 - **Method / URL**: `GET /categories/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b0feaa6f6d5c001cfef2d0",
-      "name": "Organic Farm Vegetables",
-      "description": "100% organic farm-fresh greens.",
-      "image": {
-        "public_id": "restomind/categories/64b0feaa6f6d5c001cfef2d0/icon",
-        "secure_url": "https://res.cloudinary.com/demo/image/upload/v456/categories/veg_new.jpg"
-      },
-      "isDeleted": false,
-      "createdAt": "2026-07-17T19:10:00.000Z",
-      "updatedAt": "2026-07-17T19:15:00.000Z"
-    }
-  }
-  ```
+- **Response (200 OK)**: Single category entity wrapped in `data`.
 
 ---
 
@@ -782,39 +757,14 @@ Deletes the category metadata and its remote file assets.
   | `price` | Number | Yes | Min 0 | Default selling price |
   | `discountedPrice` | Number | No | Min 0, Must be <= `price` | Discount price. Defaults to `price` if omitted. |
   | `category` | String | Yes | Valid Category ObjectId | Associated category |
+  | `restaurantId` | String | Yes | Valid Restaurant ObjectId | Associated restaurant ID |
   | `freshnessWindow` | Number | Yes | Min 0 | Duration (in days) the product stays fresh |
   | `tags` | String or Array | No | String containing comma-separated tags or array | Tags for searches (e.g. `'organic, green, spinach'`) |
   | `isBestseller` | Boolean | No | Converts string `'true'` / `'false'` | Bestseller flag |
   | `isAvailable` | Boolean | No | Converts string `'true'` / `'false'` | Availability flag |
   | `image` | File | Yes | Image mimetype | Product photograph |
 
-- **Response (201 Created)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b100996f6d5c001cfef2ea",
-      "title": "Fresh Organic Spinach",
-      "description": "Rich in iron, fresh green spinach leaves.",
-      "longDescription": "Harvested early in the morning and delivered straight to your door. Great for salads and cooking.",
-      "price": 10,
-      "discountedPrice": 8.5,
-      "rating": 0,
-      "reviewsCount": 0,
-      "isBestseller": true,
-      "isAvailable": true,
-      "image": {
-        "public_id": "restomind/products/64b100996f6d5c001cfef2ea/photo",
-        "secure_url": "https://res.cloudinary.com/demo/image/upload/v1/products/spinach.jpg"
-      },
-      "category": "64b0feaa6f6d5c001cfef2d0",
-      "freshnessWindow": 5,
-      "tags": ["organic", "green", "spinach"],
-      "isDeleted": false,
-      "createdAt": "2026-07-17T19:30:00.000Z",
-      "updatedAt": "2026-07-17T19:30:00.000Z"
-    }
-  }
-  ```
+- **Response (201 Created)**: Created product object wrapped in `data`.
 
 ---
 
@@ -822,36 +772,9 @@ Deletes the category metadata and its remote file assets.
 - **Method / URL**: `PATCH /products/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`multipart/form-data`)**:
-  *Accepts all fields from "Create Product" as optional values, plus an optional replacement image file.*
+- **Request Body (`multipart/form-data`)**: Accepts all fields from `Create Product` as optional values, plus an optional replacement `image` file.
 
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b100996f6d5c001cfef2ea",
-      "title": "Fresh Organic Spinach",
-      "description": "Rich in iron, fresh green spinach leaves.",
-      "longDescription": "Harvested early in the morning and delivered straight to your door.",
-      "price": 12,
-      "discountedPrice": 10,
-      "rating": 4.5,
-      "reviewsCount": 12,
-      "isBestseller": true,
-      "isAvailable": true,
-      "image": {
-        "public_id": "restomind/products/64b100996f6d5c001cfef2ea/photo",
-        "secure_url": "https://res.cloudinary.com/demo/image/upload/v2/products/spinach_new.jpg"
-      },
-      "category": "64b0feaa6f6d5c001cfef2d0",
-      "freshnessWindow": 5,
-      "tags": ["organic", "green", "spinach"],
-      "isDeleted": false,
-      "createdAt": "2026-07-17T19:30:00.000Z",
-      "updatedAt": "2026-07-17T19:40:00.000Z"
-    }
-  }
-  ```
+- **Response (200 OK)**: Updated product object wrapped in `data`.
 
 ---
 
@@ -859,12 +782,7 @@ Deletes the category metadata and its remote file assets.
 - **Method / URL**: `DELETE /products/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "message": "Product deleted successfully"
-  }
-  ```
+- **Response (200 OK)**: Success message.
 
 ---
 
@@ -873,31 +791,8 @@ Directly toggle availability state of a product.
 - **Method / URL**: `PATCH /products/:id/availability`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`application/json`)**:
-  | Field | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `isAvailable` | Boolean | Yes | Availability state flag |
-
-  *Request Example*:
-  ```json
-  {
-    "isAvailable": false
-  }
-  ```
-
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b100996f6d5c001cfef2ea",
-      "title": "Fresh Organic Spinach",
-      "isAvailable": false,
-      "price": 12,
-      "discountedPrice": 10
-      // ...other fields
-    }
-  }
-  ```
+- **Request Body (`application/json`)**: `{ "isAvailable": boolean }`
+- **Response (200 OK)**: Updated product object wrapped in `data`.
 
 ---
 
@@ -906,30 +801,8 @@ Sets the discounted price of a product.
 - **Method / URL**: `PATCH /products/:id/discount`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `discountedPrice` | Number | Yes | Min 0, <= product price | New discounted price |
-
-  *Request Example*:
-  ```json
-  {
-    "discountedPrice": 7.00
-  }
-  ```
-
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b100996f6d5c001cfef2ea",
-      "price": 12,
-      "discountedPrice": 7,
-      "isAvailable": false
-      // ...other fields
-    }
-  }
-  ```
+- **Request Body (`application/json`)**: `{ "discountedPrice": number }`
+- **Response (200 OK)**: Updated product object wrapped in `data`.
 
 ---
 
@@ -942,120 +815,29 @@ Sets the discounted price of a product.
   | `page` | String | No | `1` | Page index |
   | `limit` | String | No | `10` | Items count per page |
   | `category` | String | No | *None* | Filter by Category ObjectId |
+  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId |
   | `search` | String | No | *None* | Partial title match |
   | `tag` | String | No | *None* | Tag keyword match |
   | `sort` | String | No | `createdAt` | Sort attribute |
   | `order` | String | No | `desc` | `'asc'` or `'desc'` |
 
-- **Response (200 OK)**:
-  *Returns items array where category field is populated as Category object.*
-  ```json
-  {
-    "items": [
-      {
-        "_id": "64b100996f6d5c001cfef2ea",
-        "title": "Fresh Organic Spinach",
-        "description": "Rich in iron, fresh green spinach leaves.",
-        "longDescription": "Harvested early in the morning and delivered straight to your door.",
-        "price": 12,
-        "discountedPrice": 7,
-        "rating": 4.5,
-        "reviewsCount": 12,
-        "isBestseller": true,
-        "isAvailable": true,
-        "image": {
-          "public_id": "restomind/products/spinach/photo",
-          "secure_url": "https://res.cloudinary.com/demo/image/upload/v1/spinach.jpg"
-        },
-        "category": {
-          "_id": "64b0feaa6f6d5c001cfef2d0",
-          "name": "Organic Farm Vegetables",
-          "description": "100% organic farm-fresh greens.",
-          "image": {
-            "public_id": "restomind/categories/veg",
-            "secure_url": "https://res.cloudinary.com/demo/image/upload/v1/veg.jpg"
-          }
-        },
-        "freshnessWindow": 5,
-        "tags": ["organic", "green", "spinach"],
-        "isDeleted": false,
-        "createdAt": "2026-07-17T19:30:00.000Z",
-        "updatedAt": "2026-07-17T19:40:00.000Z"
-      }
-    ],
-    "page": 1,
-    "limit": 10,
-    "total": 1,
-    "totalPages": 1
-  }
-  ```
+- **Response (200 OK)**: Paginated product schema with populated category object.
 
 ---
 
 ### 6.7 Get Recommended Discounted Products
-Gets a list of products that currently have an active discount (where `discountedPrice < price`).
+Gets a list of products that currently have an active discount.
 - **Method / URL**: `GET /products/recommendations`
 - **Auth Level**: Public
-- **Query Parameters**:
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `page` | String | No | `1` | Page index |
-  | `limit` | String | No | `10` | Items count per page |
-
-- **Response (200 OK)**:
-  *Returns standard paginated schema with populated category object.*
-  ```json
-  {
-    "items": [
-      {
-        "_id": "64b100996f6d5c001cfef2ea",
-        "title": "Fresh Organic Spinach",
-        "price": 12,
-        "discountedPrice": 7,
-        "category": {
-          "_id": "64b0feaa6f6d5c001cfef2d0",
-          "name": "Organic Farm Vegetables"
-          // ...other category fields
-        }
-        // ...other product fields
-      }
-    ],
-    "page": 1,
-    "limit": 10,
-    "total": 1,
-    "totalPages": 1
-  }
-  ```
+- **Query Parameters**: `page`, `limit`
+- **Response (200 OK)**: Paginated product list.
 
 ---
 
 ### 6.8 Get Product Details
 - **Method / URL**: `GET /products/:id`
 - **Auth Level**: Public
-- **Response (200 OK)**:
-  *Returns the product populated with its Category object.*
-  ```json
-  {
-    "data": {
-      "_id": "64b100996f6d5c001cfef2ea",
-      "title": "Fresh Organic Spinach",
-      "price": 12,
-      "discountedPrice": 7,
-      "category": {
-        "_id": "64b0feaa6f6d5c001cfef2d0",
-        "name": "Organic Farm Vegetables",
-        "description": "100% organic farm-fresh greens.",
-        "image": {
-          "public_id": "restomind/categories/veg",
-          "secure_url": "https://res.cloudinary.com/demo/image/upload/v1/veg.jpg"
-        }
-      },
-      "freshnessWindow": 5,
-      "tags": ["organic", "green", "spinach"]
-      // ...other fields
-    }
-  }
-  ```
+- **Response (200 OK)**: Product object populated with Category object.
 
 ---
 
@@ -1065,18 +847,7 @@ Gets a list of products that currently have an active discount (where `discounte
 - **Method / URL**: `POST /favorites/:productId`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (201 Created)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b104996f6d5c001cfef2fb",
-      "userId": "64b0f9f36f6d5c001cfef2b8",
-      "productId": "64b100996f6d5c001cfef2ea",
-      "createdAt": "2026-07-17T20:00:00.000Z",
-      "updatedAt": "2026-07-17T20:00:00.000Z"
-    }
-  }
-  ```
+- **Response (201 Created)**: Favorite record wrapped in `data`.
 
 ---
 
@@ -1084,12 +855,7 @@ Gets a list of products that currently have an active discount (where `discounte
 - **Method / URL**: `DELETE /favorites/:productId`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "message": "Product removed from favorites"
-  }
-  ```
+- **Response (200 OK)**: Success message.
 
 ---
 
@@ -1097,25 +863,7 @@ Gets a list of products that currently have an active discount (where `discounte
 - **Method / URL**: `GET /favorites`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  *Returns an array of populated product details within data field (removes any deleted product associations).*
-  ```json
-  {
-    "data": [
-      {
-        "_id": "64b100996f6d5c001cfef2ea",
-        "title": "Fresh Organic Spinach",
-        "price": 12,
-        "discountedPrice": 7,
-        "category": {
-          "_id": "64b0feaa6f6d5c001cfef2d0",
-          "name": "Organic Farm Vegetables"
-        }
-        // ...other product fields
-      }
-    ]
-  }
-  ```
+- **Response (200 OK)**: Array of populated product objects wrapped in `data`.
 
 ---
 
@@ -1123,55 +871,18 @@ Gets a list of products that currently have an active discount (where `discounte
 - **Method / URL**: `GET /favorites/:productId/status`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "isFavorite": true
-  }
-  ```
+- **Response (200 OK)**: `{ "isFavorite": boolean }`
 
 ---
 
 ## 8. Cart Module (`/cart`)
 
 ### 8.1 Get Current Cart
-Gets or initializes an active cart for the authenticated customer. Returns item-level calculations and overall cart summary totals.
+Gets or initializes an active cart for the authenticated customer.
 - **Method / URL**: `GET /cart`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": {
-      "_id": "64b108506f6d5c001cfef310",
-      "userId": "64b0f9f36f6d5c001cfef2b8",
-      "items": [
-        {
-          "product": {
-            "_id": "64b100996f6d5c001cfef2ea",
-            "title": "Fresh Organic Spinach",
-            "description": "Rich in iron, fresh green spinach leaves.",
-            "price": 12,
-            "discountedPrice": 7,
-            "image": {
-              "public_id": "restomind/products/spinach/photo",
-              "secure_url": "https://res.cloudinary.com/demo/image/upload/v1/spinach.jpg"
-            },
-            "isAvailable": true
-          },
-          "quantity": 2,
-          "unitPrice": 12,
-          "discountedPrice": 7,
-          "totalItemPrice": 14
-        }
-      ],
-      "totalQuantity": 2,
-      "totalOriginalPrice": 24,
-      "totalDiscount": 10,
-      "finalTotalPrice": 14
-    }
-  }
-  ```
+- **Response (200 OK)**: Cart object wrapped in `data`.
 
 ---
 
@@ -1180,23 +891,8 @@ Adds or increments quantity of a product in the cart.
 - **Method / URL**: `POST /cart`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `productId` | String | Yes | Valid Product ObjectId | Product to add |
-  | `quantity` | Number | Yes | Min 1 integer | Quantity to append |
-
-  *Request Example*:
-  ```json
-  {
-    "productId": "64b100996f6d5c001cfef2ea",
-    "quantity": 2
-  }
-  ```
-
-- **Response (200 OK)**:
-  *Returns the updated cart object.*
-  *(Matches the response format in `GET /cart`)*
+- **Request Body (`application/json`)**: `{ "productId": string, "quantity": number }`
+- **Response (200 OK)**: Updated cart object wrapped in `data`.
 
 ---
 
@@ -1204,9 +900,7 @@ Adds or increments quantity of a product in the cart.
 - **Method / URL**: `DELETE /cart/:productId`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  *Returns the updated cart object.*
-  *(Matches the response format in `GET /cart`)*
+- **Response (200 OK)**: Updated cart object wrapped in `data`.
 
 ---
 
@@ -1215,21 +909,8 @@ Directly overwrites the quantity of a product in the cart.
 - **Method / URL**: `PATCH /cart/:productId`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `quantity` | Number | Yes | Min 1 integer | Absolute target quantity |
-
-  *Request Example*:
-  ```json
-  {
-    "quantity": 5
-  }
-  ```
-
-- **Response (200 OK)**:
-  *Returns the updated cart object.*
-  *(Matches the response format in `GET /cart`)*
+- **Request Body (`application/json`)**: `{ "quantity": number }`
+- **Response (200 OK)**: Updated cart object wrapped in `data`.
 
 ---
 
@@ -1238,29 +919,75 @@ Removes all items from the cart.
 - **Method / URL**: `DELETE /cart`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "message": "Cart cleared successfully"
-  }
-  ```
+- **Response (200 OK)**: Success message.
 
 ---
 
 ## 9. Orders Module (`/orders`)
 
 ### 9.1 Create Order from Cart
-Converts active cart items into a pending order, locks price details, and empties the cart.
+Converts active cart items into pending order(s), locks price details, and empties the cart.
+*Note: If the cart contains products from multiple restaurants, the system automatically splits checkout into separate Order documents (one per `restaurantId`) and returns an array of orders.*
+
 - **Method / URL**: `POST /orders`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body**: *None (Send empty object `{}`)*
+- **Request Body (`application/json`)**:
+  | Field | Type | Required | Rules | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `deliveryMethod` | String | Yes | Enum: `'Home Delivery'` \| `'Store Pickup'` | Delivery preference |
+  | `deliveryAddress` | Object | Conditional | Required if `Home Delivery`, must be omitted/null if `Store Pickup` | Delivery address details |
+  | `deliveryAddress.addressId` | String | Optional | Valid User Address Mongo ID | Use an existing saved address from profile |
+  | `deliveryAddress.street` | String | Conditional | Required if `addressId` is not provided | Street address |
+  | `deliveryAddress.city` | String | Conditional | Required if `addressId` is not provided | City |
+  | `deliveryAddress.country` | String | Conditional | Required if `addressId` is not provided | Country |
+  | `specialNotes` | String | No | None | Special delivery/pickup instructions |
+  | `paymentMethod` | String | Yes | Enum: `'Cash on Delivery'` | Payment method |
+  | `saveAddress` | Boolean | No | Boolean | Save new inline address to user profile |
+
+  *Request Example 1 (Home Delivery with inline address)*:
+  ```json
+  {
+    "deliveryMethod": "Home Delivery",
+    "deliveryAddress": {
+      "street": "12 Nile St",
+      "city": "Cairo",
+      "country": "Egypt"
+    },
+    "specialNotes": "Ring the bell twice",
+    "paymentMethod": "Cash on Delivery",
+    "saveAddress": true
+  }
+  ```
+
+  *Request Example 2 (Home Delivery using saved profile `addressId`)*:
+  ```json
+  {
+    "deliveryMethod": "Home Delivery",
+    "deliveryAddress": {
+      "addressId": "64b108506f6d5c001cfef310"
+    },
+    "specialNotes": "Leave at front door",
+    "paymentMethod": "Cash on Delivery"
+  }
+  ```
+
+  *Request Example 3 (Store Pickup)*:
+  ```json
+  {
+    "deliveryMethod": "Store Pickup",
+    "specialNotes": "Prepare it extra hot",
+    "paymentMethod": "Cash on Delivery"
+  }
+  ```
+
 - **Response (201 Created)**:
   ```json
   {
     "data": {
       "_id": "64b10dff6f6d5c001cfef35a",
       "userId": "64b0f9f36f6d5c001cfef2b8",
+      "restaurantId": "64b0f9f36f6d5c001cfef2b0",
       "items": [
         {
           "productId": "64b100996f6d5c001cfef2ea",
@@ -1274,7 +1001,17 @@ Converts active cart items into a pending order, locks price details, and emptie
       "totalDiscount": 10,
       "finalTotalPrice": 14,
       "totalQuantity": 2,
-      "paymentMethod": "CASH",
+      "fullName": "John Doe",
+      "phoneNumber": "+1234567890",
+      "emailAddress": "johndoe@example.com",
+      "deliveryMethod": "Home Delivery",
+      "deliveryAddress": {
+        "street": "12 Nile St",
+        "city": "Cairo",
+        "country": "Egypt"
+      },
+      "specialNotes": "Ring the bell twice",
+      "paymentMethod": "Cash on Delivery",
       "status": "Pending",
       "createdAt": "2026-07-17T20:30:00.000Z",
       "updatedAt": "2026-07-17T20:30:00.000Z"
@@ -1285,47 +1022,24 @@ Converts active cart items into a pending order, locks price details, and emptie
 ---
 
 ### 9.2 Get My Orders
-Retrieves history list of orders placed by the active customer.
+Retrieves history list of orders placed by the active user.
 - **Method / URL**: `GET /orders/me`
-- **Auth Level**: Access Token (`customer` only)
+- **Auth Level**: Access Token (`customer`, `admin`, `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": [
-      {
-        "_id": "64b10dff6f6d5c001cfef35a",
-        "userId": "64b0f9f36f6d5c001cfef2b8",
-        "items": [
-          {
-            "productId": "64b100996f6d5c001cfef2ea",
-            "title": "Fresh Organic Spinach",
-            "price": 12,
-            "discountedPrice": 7,
-            "quantity": 2
-          }
-        ],
-        "totalOriginalPrice": 24,
-        "totalDiscount": 10,
-        "finalTotalPrice": 14,
-        "totalQuantity": 2,
-        "paymentMethod": "CASH",
-        "status": "Pending",
-        "createdAt": "2026-07-17T20:30:00.000Z",
-        "updatedAt": "2026-07-17T20:30:00.000Z"
-      }
-    ]
-  }
-  ```
+- **Query Parameters**:
+  | Parameter | Type | Required | Description |
+  | :--- | :--- | :--- | :--- |
+  | `restaurantId` | String | No | Filter orders by Restaurant ObjectId |
+
+- **Response (200 OK)**: Array of order objects wrapped in `data`.
 
 ---
 
 ### 9.3 Get My Order Details
 - **Method / URL**: `GET /orders/me/:id`
-- **Auth Level**: Access Token (`customer` only)
+- **Auth Level**: Access Token (`customer`, `admin`, `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  *Returns single order object (matches format in `GET /orders/me`).*
+- **Response (200 OK)**: Single order object wrapped in `data`.
 
 ---
 
@@ -1333,38 +1047,25 @@ Retrieves history list of orders placed by the active customer.
 - **Method / URL**: `GET /orders`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Response (200 OK)**:
-  ```json
-  {
-    "data": [
-      {
-        "_id": "64b10dff6f6d5c001cfef35a",
-        "userId": "64b0f9f36f6d5c001cfef2b8",
-        "items": [
-          {
-            "productId": "64b100996f6d5c001cfef2ea",
-            "title": "Fresh Organic Spinach",
-            "price": 12,
-            "discountedPrice": 7,
-            "quantity": 2
-          }
-        ],
-        "totalOriginalPrice": 24,
-        "totalDiscount": 10,
-        "finalTotalPrice": 14,
-        "totalQuantity": 2,
-        "paymentMethod": "CASH",
-        "status": "Pending",
-        "createdAt": "2026-07-17T20:30:00.000Z",
-        "updatedAt": "2026-07-17T20:30:00.000Z"
-      }
-    ]
-  }
-  ```
+- **Query Parameters**:
+  | Parameter | Type | Required | Description |
+  | :--- | :--- | :--- | :--- |
+  | `restaurantId` | String | No | Filter orders by Restaurant ObjectId |
+
+- **Response (200 OK)**: Array of all order objects wrapped in `data`.
 
 ---
 
-### 9.5 Update Order Status (Admin Only)
+### 9.5 Get Restaurant Orders (Admin / Manager)
+Retrieves orders associated with a specific restaurant. Managers can only query their own assigned `restaurantId`.
+- **Method / URL**: `GET /orders/restaurant/:restaurantId`
+- **Auth Level**: Access Token (`admin` or `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**: Array of restaurant order objects wrapped in `data`.
+
+---
+
+### 9.6 Update Order Status (Admin Only)
 Updates the lifecycle state of an order. Finalized orders (`Delivered` or `Cancelled`) can no longer have their status modified.
 - **Method / URL**: `PATCH /orders/:id/status`
 - **Auth Level**: Access Token (`admin` only)
@@ -1381,16 +1082,142 @@ Updates the lifecycle state of an order. Finalized orders (`Delivered` or `Cance
   }
   ```
 
-- **Response (200 OK)**:
+- **Response (200 OK)**: Updated order object wrapped in `data`.
+
+---
+
+## 10. Restaurant Module (`/restaurants`)
+
+### 10.1 Create Restaurant
+Creates a new restaurant record and assigns an owner manager user.
+- **Method / URL**: `POST /restaurants`
+- **Auth Level**: Access Token (`admin` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+  | Field | Type | Required | Description |
+  | :--- | :--- | :--- | :--- |
+  | `name` | String | Yes | Restaurant name |
+  | `ownerUserId` | String | Yes | User ObjectId of the manager/owner |
+  | `description` | String | No | Brief description |
+  | `phone` | String | No | Restaurant contact number |
+  | `address` | Object | No | Location address (`street`, `city`, `country`) |
+
+  *Request Example*:
   ```json
   {
-    "data": {
-      "_id": "64b10dff6f6d5c001cfef35a",
-      "status": "Confirmed",
-      "totalOriginalPrice": 24,
-      "totalDiscount": 10,
-      "finalTotalPrice": 14
-      // ...other order fields
+    "name": "Bella Italia",
+    "ownerUserId": "64b0fc086f6d5c001cfef2c2",
+    "description": "Authentic Italian restaurant",
+    "phone": "+1122334455",
+    "address": {
+      "street": "15 Roma St",
+      "city": "Cairo",
+      "country": "Egypt"
     }
   }
   ```
+
+- **Response (201 Created)**:
+  ```json
+  {
+    "data": {
+      "_id": "64b0f9f36f6d5c001cfef2b0",
+      "name": "Bella Italia",
+      "ownerUserId": "64b0fc086f6d5c001cfef2c2",
+      "description": "Authentic Italian restaurant",
+      "phone": "+1122334455",
+      "address": {
+        "street": "15 Roma St",
+        "city": "Cairo",
+        "country": "Egypt"
+      },
+      "isActive": true,
+      "isDeleted": false,
+      "createdAt": "2026-07-18T19:50:00.000Z",
+      "updatedAt": "2026-07-18T19:50:00.000Z"
+    }
+  }
+  ```
+
+---
+
+### 10.2 Get All Restaurants (Paginated)
+- **Method / URL**: `GET /restaurants`
+- **Auth Level**: Access Token (`admin` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+  | Parameter | Type | Required | Default | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `page` | String | No | `1` | Page number |
+  | `limit` | String | No | `10` | Page size |
+  | `search` | String | No | *None* | Restaurant name search query |
+
+- **Response (200 OK)**: Paginated restaurant list wrapped in `data`.
+
+---
+
+### 10.3 Get My Restaurant
+Returns the restaurant details linked to the authenticated manager's `restaurantId`.
+- **Method / URL**: `GET /restaurants/me`
+- **Auth Level**: Access Token (`manager` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**: Single restaurant object wrapped in `data`.
+
+---
+
+### 10.4 Get Restaurant by ID
+- **Method / URL**: `GET /restaurants/:id`
+- **Auth Level**: Access Level: Access Token (`admin` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**: Single restaurant object wrapped in `data`.
+
+---
+
+### 10.5 Update Restaurant
+Updates restaurant details. Managers can only update their own assigned restaurant.
+- **Method / URL**: `PATCH /restaurants/:id`
+- **Auth Level**: Access Token (`admin`, or `manager` for own restaurant)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**: Accepts optional fields (`name`, `description`, `phone`, `address`, `isActive`, `logoUrl`).
+
+- **Response (200 OK)**: Updated restaurant object wrapped in `data`.
+
+---
+
+### 10.6 Delete Restaurant (Soft Delete)
+- **Method / URL**: `DELETE /restaurants/:id`
+- **Auth Level**: Access Token (`admin` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**:
+  ```json
+  {
+    "message": "Restaurant deleted successfully"
+  }
+  ```
+
+---
+
+## 11. End-to-End Shopping & Order Workflow
+
+To execute a complete shopping & ordering lifecycle, follow this sequence:
+
+1. **Create Restaurant** (Admin):
+   * Call `POST /restaurants` to create a new Restaurant and assign a manager `ownerUserId`.
+2. **Create Category & Product** (Admin):
+   * Create categories using `POST /categories`.
+   * Create products using `POST /products`, passing the required `restaurantId`.
+3. **Manage Saved Delivery Addresses** (Customer):
+   * Add delivery addresses via `POST /auth/addresses` to build up user address profile.
+4. **Add Products to Cart** (Customer):
+   * Call `POST /cart` with `{ "productId": "<productId>", "quantity": 2 }`.
+5. **Verify Cart Totals** (Customer):
+   * Call `GET /cart` to see itemized and calculated cart summary.
+6. **Place Order** (Customer):
+   * Call `POST /orders` providing `deliveryMethod`, `deliveryAddress` (inline or `addressId`), `paymentMethod` (`"Cash on Delivery"`), and optional `saveAddress`.
+   * *If cart contains products from multiple restaurants, the API automatically creates separate Order documents per `restaurantId`.*
+7. **Retrieve Orders**:
+   * Customer: View orders via `GET /orders/me`.
+   * Manager: View restaurant-specific orders via `GET /orders/restaurant/:restaurantId` or `GET /restaurants/me`.
+   * Admin: View all orders via `GET /orders` or filter by `restaurantId`.
+8. **Update Order Status** (Admin):
+   * Admin updates lifecycle state via `PATCH /orders/:id/status`. Finalized orders (`Delivered` or `Cancelled`) can no longer be updated.

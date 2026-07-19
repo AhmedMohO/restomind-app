@@ -1,11 +1,16 @@
 import type { Metadata } from "next"
 import { Geist_Mono, Outfit, Oxanium, Cairo } from "next/font/google"
 import { NextIntlClientProvider } from "next-intl"
-import { getMessages, getTranslations, setRequestLocale } from "next-intl/server"
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
 import "../globals.css"
+import { ScrollToTop } from "@/components/scroll-to-top"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { routing } from "@/i18n/routing"
@@ -104,7 +109,9 @@ export async function generateMetadata({
     },
     icons: {
       icon: [{ url: "/favicon.ico", sizes: "32x32" }],
-      apple: [{ url: "/images/logo.webp", sizes: "192x192", type: "image/webp" }],
+      apple: [
+        { url: "/images/logo.webp", sizes: "192x192", type: "image/webp" },
+      ],
     },
   }
 }
@@ -154,7 +161,10 @@ export default async function LocaleLayout({
               <TooltipProvider>
                 <SmoothScrollProvider>
                   <Suspense fallback={null}>
-                    <LocaleMessages>{children}</LocaleMessages>
+                    <LocaleMessages>
+                      <ScrollToTop />
+                      {children}
+                    </LocaleMessages>
                   </Suspense>
                 </SmoothScrollProvider>
               </TooltipProvider>

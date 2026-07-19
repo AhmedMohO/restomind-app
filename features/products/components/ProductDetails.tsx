@@ -32,7 +32,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           sort: "price",
           order: "asc",
         })
-        console.log(res, "test")
 
         if (isMounted && res?.items) {
           setSimilarProducts(res.items.filter((p) => p._id !== product._id))

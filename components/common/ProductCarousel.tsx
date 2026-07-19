@@ -69,7 +69,7 @@ export default function ProductCarousel({
           </div>
         </div>
 
-        <CarouselContent className="gap-6 pb-4">
+        <CarouselContent className="flex gap-6 pb-4">
           {displayProducts.map((product) => (
             <CarouselItem
               key={product._id}

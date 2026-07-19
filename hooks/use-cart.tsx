@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { toast } from "sonner"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { useRouter } from "@/i18n/routing"
 import {
@@ -55,6 +56,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Helper: Enforce authentication guard check
   const checkAuthOrRedirect = useCallback((): boolean => {
     if (!isAuthenticated) {
+      toast.error("Please login to continue")
       router.push("/login")
       return false
     }
@@ -106,6 +108,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [...prevCart, { product, quantity }]
     })
 
+    toast.success("Added to cart")
+
     // Server API call
     const res = await addToCartAction({ productId: product._id, quantity })
     if (res.success) {
@@ -121,6 +125,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!checkAuthOrRedirect()) return
 
     setCart((prevCart) => prevCart.filter((item) => item.product._id !== productId))
+    toast.success("Item removed from cart")
 
     const res = await removeFromCartAction(productId)
     if (res.success) {
@@ -167,6 +172,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         : [...prevWishlist, productId]
     )
 
+    toast.success(wasFavorite ? "Removed from favorites" : "Added to favorites")
+
     // Call server action directly
     const res = wasFavorite
       ? await removeFavoriteAction(productId)
@@ -192,6 +199,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!checkAuthOrRedirect()) return
 
     setCart([])
+    toast.success("Cart cleared")
     const res = await clearCartAction()
     if (res && !res.success && res.error === "UNAUTHENTICATED") {
       router.push("/login")

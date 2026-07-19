@@ -15,37 +15,37 @@ export function getZodErrorMap(locale: string) {
   return (issue: ZodLocaleIssue) => {
     // 1. Check if a custom translation key was passed via issue.message or issue.params?.key
     if (issue.message && dict?.[issue.message]) {
-      return { message: dict[issue.message] }
+      return dict[issue.message]
     }
 
     const customKey = (issue as any).params?.key
     if (customKey && dict?.[customKey]) {
-      return { message: dict[customKey] }
+      return dict[customKey]
     }
 
     // 2. Generic required field
     if (issue.code === "invalid_type" && issue.input === undefined) {
-      return { message: dict?.required ?? (isAr ? "هذا الحقل مطلوب" : "This field is required") }
+      return dict?.required ?? (isAr ? "هذا الحقل مطلوب" : "This field is required")
     }
 
     // 3. Generic string min/max/exact length
     if (issue.code === "too_small" && issue.origin === "string") {
       if (issue.exact) {
         const tmpl = dict?.exactLength ?? (isAr ? "يجب أن يكون مكوناً من {length} أرقام/أحرف بالظبط" : "Must be exactly {length} characters")
-        return { message: tmpl.replace("{length}", String(issue.minimum)) }
+        return tmpl.replace("{length}", String(issue.minimum))
       }
       const tmpl = dict?.minChars ?? (isAr ? "يجب أن يحتوي على {min} أحرف على الأقل" : "Must be at least {min} characters")
-      return { message: tmpl.replace("{min}", String(issue.minimum)) }
+      return tmpl.replace("{min}", String(issue.minimum))
     }
 
     if (issue.code === "too_big" && issue.origin === "string") {
       const tmpl = dict?.maxChars ?? (isAr ? "يجب ألا يتجاوز {max} حرفاً" : "Must be at most {max} characters")
-      return { message: tmpl.replace("{max}", String(issue.maximum)) }
+      return tmpl.replace("{max}", String(issue.maximum))
     }
 
     // 4. Generic email format
     if (issue.code === "invalid_format" && issue.format === "email") {
-      return { message: dict?.invalidEmail ?? (isAr ? "البريد الإلكتروني غير صحيح" : "Must be a valid email address") }
+      return dict?.invalidEmail ?? (isAr ? "البريد الإلكتروني غير صحيح" : "Must be a valid email address")
     }
 
     // Fallback to Zod native locale error map

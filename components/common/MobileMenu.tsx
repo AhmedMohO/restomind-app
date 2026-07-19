@@ -107,6 +107,23 @@ export default function MobileMenu() {
               />
             ))}
 
+            <SignedIn>
+              <SheetClose
+                nativeButton={false}
+                render={
+                  <ActLink
+                    href="/profile"
+                    className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-start text-base font-medium transition-colors"
+                    activeClassName="bg-accent text-accent-foreground"
+                    inactiveClassName="text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                  >
+                    <User className="size-4" />
+                    <span>{t("profile")}</span>
+                  </ActLink>
+                }
+              />
+            </SignedIn>
+
             <HasRole roles={["admin", "manager"]}>
               <SheetClose
                 nativeButton={false}

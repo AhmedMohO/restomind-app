@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "sonner"
+import { useZodResolver } from "@/lib/zod-locale"
 import { useRouter } from "@/i18n/routing"
 import { useTranslations } from "next-intl"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
@@ -41,7 +42,7 @@ export function LoginForm({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
+    resolver: useZodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   })
 
@@ -51,9 +52,13 @@ export function LoginForm({
     const result = await loginAction(data)
 
     if (!result.success) {
-      setServerError(result.message ?? "Login failed")
+      const errMsg = result.message ?? "Login failed"
+      setServerError(errMsg)
+      toast.error(errMsg)
       return
     }
+
+    toast.success(t("loginSuccess") || "Logged in successfully")
 
     // Sync Zustand store immediately on success
     if (result.user) {

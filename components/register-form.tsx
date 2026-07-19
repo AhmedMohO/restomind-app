@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "sonner"
+import { useZodResolver } from "@/lib/zod-locale"
 import { useTranslations } from "next-intl"
 import { Eye, EyeOff, Loader2, MailCheck, RefreshCw } from "lucide-react"
 
@@ -68,7 +69,7 @@ export function RegisterForm({
   // Step 1 — Registration form
   // -----------------------------------------------------------------------
   const registerForm = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema),
+    resolver: useZodResolver(registerSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -91,10 +92,13 @@ export function RegisterForm({
     })
 
     if (!result.success) {
-      setServerError(result.message ?? "Registration failed")
+      const msg = result.message ?? "Registration failed"
+      setServerError(msg)
+      toast.error(msg)
       return
     }
 
+    toast.success(result.message ?? "Verification code sent to your email")
     setRegisteredEmail(data.email)
     setRegisteredPassword(data.password)
     setServerSuccess(result.message ?? null)
@@ -107,7 +111,7 @@ export function RegisterForm({
   // Step 2 — OTP confirmation form
   // -----------------------------------------------------------------------
   const otpForm = useForm<OtpInput>({
-    resolver: zodResolver(otpSchema),
+    resolver: useZodResolver(otpSchema),
     defaultValues: { email: "", otp: "" },
   })
 
@@ -119,9 +123,13 @@ export function RegisterForm({
     const confirmResult = await confirmEmailAction(registeredEmail, data.otp)
 
     if (!confirmResult.success) {
-      setServerError(confirmResult.message ?? "OTP verification failed")
+      const msg = confirmResult.message ?? "OTP verification failed"
+      setServerError(msg)
+      toast.error(msg)
       return
     }
+
+    toast.success("Account verified successfully!")
 
     // Auto-login after successful email confirmation
     const loginResult = await loginAction({

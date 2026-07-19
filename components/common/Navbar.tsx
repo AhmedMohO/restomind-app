@@ -145,6 +145,13 @@ export default function Navbar() {
                     </DropdownMenuItem>
                   </HasRole>
                   <DropdownMenuItem
+                    onClick={() => router.push("/profile")}
+                    className="cursor-pointer gap-2 py-2"
+                  >
+                    <User className="size-4 text-muted-foreground" />
+                    <span>{t("profile")}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onClick={() => router.push("/orders")}
                     className="cursor-pointer gap-2 py-2"
                   >

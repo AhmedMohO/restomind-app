@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "sonner"
+import { useZodResolver } from "@/lib/zod-locale"
 import { useTranslations } from "next-intl"
 import {
   Eye,
@@ -63,13 +64,13 @@ export function ForgotPasswordForm() {
 
   // Step 1: Email Form
   const emailForm = useForm<ForgotPasswordInput>({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: useZodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   })
 
   // Step 2: OTP Form
   const otpForm = useForm<OtpInput>({
-    resolver: zodResolver(otpSchema),
+    resolver: useZodResolver(otpSchema),
     defaultValues: { email: "", otp: "" },
   })
 
@@ -77,7 +78,7 @@ export function ForgotPasswordForm() {
 
   // Step 3: New Password Form
   const resetForm = useForm<ResetPasswordInput>({
-    resolver: zodResolver(resetPasswordSchema),
+    resolver: useZodResolver(resetPasswordSchema),
     defaultValues: { password: "", confirmPassword: "" },
   })
 
@@ -100,13 +101,17 @@ export function ForgotPasswordForm() {
     const result = await forgotPasswordAction(data.email)
 
     if (!result.success) {
-      setServerError(result.message ?? "Failed to send reset OTP")
+      const msg = result.message ?? "Failed to send reset OTP"
+      setServerError(msg)
+      toast.error(msg)
       return
     }
 
     setTargetEmail(data.email)
     otpForm.setValue("email", data.email, { shouldValidate: true })
-    setServerSuccess(result.message ?? "Reset code sent to your email")
+    const successMsg = result.message ?? "Reset code sent to your email"
+    setServerSuccess(successMsg)
+    toast.success(successMsg)
     setStep("otp")
     startResendCooldown()
   }
@@ -120,12 +125,15 @@ export function ForgotPasswordForm() {
     )
 
     if (!result.success || !result.data?.resetToken) {
-      setServerError(result.message ?? "Invalid or expired OTP")
+      const msg = result.message ?? "Invalid or expired OTP"
+      setServerError(msg)
+      toast.error(msg)
       return
     }
 
     setResetToken(result.data.resetToken)
     setServerSuccess(null)
+    toast.success("Code verified successfully. Enter your new password.")
     setStep("reset")
   }
 
@@ -139,11 +147,15 @@ export function ForgotPasswordForm() {
     setIsResending(false)
 
     if (!result.success) {
-      setServerError(result.message ?? "Failed to resend OTP")
+      const msg = result.message ?? "Failed to resend OTP"
+      setServerError(msg)
+      toast.error(msg)
       return
     }
 
-    setServerSuccess("A new reset code has been sent to your email.")
+    const msg = "A new reset code has been sent to your email."
+    setServerSuccess(msg)
+    toast.success(msg)
     startResendCooldown()
   }
 
@@ -156,11 +168,15 @@ export function ForgotPasswordForm() {
     )
 
     if (!result.success) {
-      setServerError(result.message ?? "Failed to reset password")
+      const msg = result.message ?? "Failed to reset password"
+      setServerError(msg)
+      toast.error(msg)
       return
     }
 
-    setServerSuccess(t("resetPasswordSuccess"))
+    const successMsg = t("resetPasswordSuccess")
+    setServerSuccess(successMsg)
+    toast.success(successMsg)
 
     setTimeout(() => {
       router.push("/login")
