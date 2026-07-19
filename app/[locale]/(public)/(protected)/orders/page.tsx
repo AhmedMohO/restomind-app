@@ -1,93 +1,131 @@
-"use client"
+import { setRequestLocale } from "next-intl/server"
+import { getTranslations } from "next-intl/server"
+import { getMyOrders } from "@/features/orders/api"
+import OrdersClient from "@/features/orders/OrdersClient"
+import { AlertCircle } from "lucide-react"
+import type { OrderStatus, ApiOrder } from "@/features/orders/api/type"
 
-import React, { useState, useMemo } from "react"
-import { useTranslations } from "next-intl"
-import { ClipboardList, ShoppingBag } from "lucide-react"
-import { Link } from "@/i18n/routing"
-import { MOCK_ORDERS, OrderStatus } from "@/features/orders/data"
-import OrderCard from "@/features/orders/OrderCard"
-import { cn } from "@/lib/utils"
+export type FilterStatus = "all" | OrderStatus
+export type SortOption = "newest" | "oldest" | "highestTotal"
 
-type FilterStatus = "all" | OrderStatus
+const PAGE_SIZE = 6
 
-export default function OrdersPage() {
-  const t = useTranslations("Orders")
-  const [activeTab, setActiveTab] = useState<FilterStatus>("all")
+export default async function OrdersPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{
+    status?: string
+    q?: string
+    sort?: string
+    page?: string
+  }>
+}) {
+  const { locale } = await params
+  const { status, q, sort, page } = await searchParams
 
-  const filteredOrders = useMemo(() => {
-    if (activeTab === "all") {
-      return MOCK_ORDERS
-    }
-    return MOCK_ORDERS.filter((order) => order.status === activeTab)
-  }, [activeTab])
+  setRequestLocale(locale)
+  const t = await getTranslations("Orders")
 
-  const tabs: { key: FilterStatus; labelKey: string }[] = [
-    { key: "all", labelKey: "statusAll" },
-    { key: "pending", labelKey: "statusPending" },
-    { key: "out_for_delivery", labelKey: "statusOutForDelivery" },
-    { key: "delivered", labelKey: "statusDelivered" },
-    { key: "cancelled", labelKey: "statusCancelled" },
-  ]
+  let allOrders: ApiOrder[] = []
+  let fetchError: string | null = null
 
-  return (
-    <div className="container mx-auto min-h-[70vh] space-y-8 px-4">
-      <h1 className="font-serif text-3xl font-bold tracking-tight text-[#2B1B15] sm:text-4xl dark:text-neutral-100">
-        {t("title")}
-      </h1>
+  try {
+    const result = await getMyOrders()
+    allOrders = result.data ?? []
+  } catch (err) {
+    console.error("[OrdersPage] Failed to fetch orders:", err)
+    fetchError = err instanceof Error ? err.message : t("errorLoadingOrders")
+  }
 
-      <div className="dark:scrollbar-thumb-neutral-850 -mx-4 flex scrollbar-thin scrollbar-thumb-neutral-200 gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.key
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                "rounded-full border px-4 py-2 text-xs font-semibold whitespace-nowrap transition-all active:translate-y-px",
-                isActive
-                  ? "border-[#7C4A27] bg-[#7C4A27] text-white shadow-xs dark:border-[#C2733C] dark:bg-[#C2733C]"
-                  : "dark:hover:bg-neutral-850 border-[#ECE6DB] bg-white text-muted-foreground hover:bg-neutral-50 hover:text-foreground dark:border-neutral-800 dark:bg-neutral-900 dark:hover:text-neutral-200"
-              )}
-            >
-              {t(tab.labelKey)}
-            </button>
-          )
-        })}
-      </div>
-
-      {filteredOrders.length > 0 ? (
-        <div className="flex flex-col gap-6 pt-2 pl-1 md:pl-2">
-          {filteredOrders.map((order, idx) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              isFirst={idx === 0}
-              isLast={idx === filteredOrders.length - 1}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="flex animate-in flex-col items-center justify-center space-y-5 rounded-[24px] border border-dashed border-[#ECE6DB] bg-white p-8 py-16 text-center duration-300 fade-in dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="dark:bg-neutral-850 rounded-full bg-[#FAF2ED] p-5 text-[#7C4A27] transition-colors dark:text-[#E68A49]">
-            <ClipboardList size={44} className="stroke-[1.5]" />
+  if (fetchError) {
+    return (
+      <div className="container mx-auto min-h-[70vh] px-4 py-12 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="rounded-full bg-rose-50 dark:bg-rose-950/30 p-5">
+            <AlertCircle className="size-10 text-rose-500" />
           </div>
           <div className="space-y-1.5">
-            <h3 className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
-              {t("empty")}
-            </h3>
-            <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">
-              {t("emptyDesc")}
-            </p>
+            <h2 className="font-serif text-xl font-bold text-[#2B1B15] dark:text-neutral-100">
+              {t("errorLoadingOrders")}
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-sm">{fetchError}</p>
           </div>
-          <Link
-            href="/offers"
-            className="inline-flex h-9 items-center justify-center rounded-full bg-[#7C4A27] px-6 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
-          >
-            <ShoppingBag className="mr-1.5 size-3.5 rtl:mr-0 rtl:ml-1.5" />
-            <span>{t("statusAll")}</span>
-          </Link>
         </div>
-      )}
+      </div>
+    )
+  }
+
+  // 1. Calculate tab counts across all user orders
+  const tabCounts: Record<string, number> = { all: allOrders.length }
+  for (const order of allOrders) {
+    tabCounts[order.status] = (tabCounts[order.status] || 0) + 1
+  }
+
+  // Active filter states from URL search params
+  const activeStatus: FilterStatus =
+    status && (status === "all" || ["Pending", "Confirmed", "Preparing", "Out For Delivery", "Delivered", "Cancelled"].includes(status))
+      ? (status as FilterStatus)
+      : "all"
+
+  const searchQuery = q ? q.trim() : ""
+  const sortBy: SortOption =
+    sort && ["newest", "oldest", "highestTotal"].includes(sort)
+      ? (sort as SortOption)
+      : "newest"
+
+  const currentPage = page && !isNaN(Number(page)) && Number(page) > 0 ? Number(page) : 1
+
+  // 2. Server-side Filtering
+  let filtered = [...allOrders]
+
+  if (activeStatus !== "all") {
+    filtered = filtered.filter((o) => o.status === activeStatus)
+  }
+
+  if (searchQuery) {
+    const queryLower = searchQuery.toLowerCase()
+    filtered = filtered.filter(
+      (o) =>
+        o._id.toLowerCase().includes(queryLower) ||
+        o.restaurantId.name.toLowerCase().includes(queryLower)
+    )
+  }
+
+  // Server-side Sorting
+  filtered.sort((a, b) => {
+    if (sortBy === "newest") {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    }
+    if (sortBy === "oldest") {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    }
+    if (sortBy === "highestTotal") {
+      return b.finalTotalPrice - a.finalTotalPrice
+    }
+    return 0
+  })
+
+  // 3. Server-side Pagination
+  const totalItems = filtered.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE))
+  const safePage = Math.min(currentPage, totalPages)
+  const startIndex = (safePage - 1) * PAGE_SIZE
+  const paginatedOrders = filtered.slice(startIndex, startIndex + PAGE_SIZE)
+
+  return (
+    <div className="container mx-auto min-h-[70vh] px-4 py-8">
+      <OrdersClient
+        orders={paginatedOrders}
+        tabCounts={tabCounts}
+        activeStatus={activeStatus}
+        searchQuery={searchQuery}
+        sortBy={sortBy}
+        currentPage={safePage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+      />
     </div>
   )
 }

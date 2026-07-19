@@ -214,7 +214,7 @@ interface DeliveryAddress {
 interface Order {
   _id: string;
   userId: string;
-  restaurantId: string;         // Associated Restaurant ObjectId
+  restaurantId: Restaurant;         // Associated Restaurant ObjectId
   items: OrderItem[];
   totalOriginalPrice: number;
   totalDiscount: number;
