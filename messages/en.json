@@ -214,6 +214,7 @@
     "deliveryMethod": "Delivery Method",
     "homeDelivery": "Home Delivery",
     "storePickup": "Store Pickup",
+    "pickDate": "Pick a date",
     "paymentMethod": "Payment Method",
     "cashOnDelivery": "Cash on Delivery",
     "specialNotes": "Special Notes",
