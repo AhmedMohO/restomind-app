@@ -19,6 +19,7 @@ export interface ApiProduct {
   isDeleted: boolean
   createdAt: string
   updatedAt: string
+  slug: string
 }
 
 export interface PaginatedProducts {

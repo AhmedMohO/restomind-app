@@ -41,12 +41,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    toggleWishlist(product._id)
+    toggleWishlist(product.slug)
   }
 
   return (
     <div className="group flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white shadow-sm transition-all duration-350 hover:-translate-y-1 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
-      <Link href={`/offers/${product._id}`} className="block">
+      <Link href={`/offers/${product.slug}`} className="block">
         {/* Product Image Container (extends to edges of the card) */}
         <div className="dark:bg-neutral-850 relative aspect-[4/3] w-full overflow-hidden bg-[#FAF7F2]">
           <Image
