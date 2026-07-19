@@ -52,22 +52,21 @@ export async function apiClient(
     throw new AuthenticationError("You must be logged in to access this resource")
   }
 
+  let accessToken = session.tokens!.accessToken
+
   // Proactively refresh if within the buffer window
   if (shouldRefresh(session)) {
-    await refreshSession()
-    // Re-read the session to get the updated access token
-    const freshSession = await getSession()
-    return makeRequest(freshSession.tokens!.accessToken, path, init)
+    accessToken = await refreshSession(session)
+    return makeRequest(accessToken, path, init)
   }
 
-  const response = await makeRequest(session.tokens!.accessToken, path, init)
+  const response = await makeRequest(accessToken, path, init)
 
   // Defensive 401 handling: refresh once and retry
   if (response.status === 401 && !isRetry) {
     console.warn("[api-client] Got 401, attempting token refresh and retry")
-    await refreshSession()
-    const freshSession = await getSession()
-    return makeRequest(freshSession.tokens!.accessToken, path, init, true)
+    accessToken = await refreshSession(session)
+    return makeRequest(accessToken, path, init, true)
   }
 
   return response

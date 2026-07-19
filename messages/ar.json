@@ -6,7 +6,10 @@
     "maxChars": "يجب ألا يتجاوز {max} حرفاً",
     "exactLength": "يجب أن يكون مكوناً من {length} أرقام/أحرف بالظبط",
     "passwordsMismatch": "كلمات المرور غير متطابقة",
-    "otpDigitsOnly": "يجب أن يحتوي رمز التحقق على أرقام فقط"
+    "otpDigitsOnly": "يجب أن يحتوي رمز التحقق على أرقام فقط",
+    "errorValidPhone": "يجب أن يكون رقم الهاتف صحيحاً (8 أرقام على الأقل)",
+    "errorMinStreet": "يجب أن يتكون الشارع من {min} أحرف على الأقل",
+    "errorMinCity": "يجب أن تتكون المدينة من {min} أحرف على الأقل"
   },
   "Navbar": {
     "home": "الرئيسية",
@@ -134,7 +137,13 @@
     "checkout": "الذهاب للدفع",
     "clear": "تفريغ السلة",
     "remove": "إزالة",
-    "items": "منتجات"
+    "items": "منتجات",
+    "loginToContinue": "الرجاء تسجيل الدخول للمتابعة",
+    "addedToCart": "تمت الإضافة إلى السلة",
+    "removedFromCart": "تمت إزالة المنتج من السلة",
+    "addedToFavorites": "تمت الإضافة إلى المفضلة",
+    "removedFromFavorites": "تمت الإزالة من المفضلة",
+    "cartCleared": "تم تفريغ السلة"
   },
   "Checkout": {
     "title": "الدفع",
@@ -310,6 +319,10 @@
     "forgotPasswordTitle": "نسيت كلمة المرور؟",
     "forgotPasswordDescription": "أدخل بريدك الإلكتروني وسنرسل لك رمز إعادة التعيين.",
     "forgotPasswordButton": "إرسال رمز إعادة التعيين",
+    "loginSuccess": "تم تسجيل الدخول بنجاح",
+    "accountVerified": "تم تأكيد الحساب بنجاح!",
+    "codeVerified": "تم تأكيد الرمز بنجاح. أدخل كلمة المرور الجديدة.",
+    "verificationCodeSent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني",
     "forgotPasswordSuccess": "تحقق من بريدك الإلكتروني للحصول على رمز إعادة التعيين.",
     "backToLogin": "العودة لتسجيل الدخول",
     "verifyCodeButton": "تأكيد الرمز",

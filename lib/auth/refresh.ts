@@ -32,7 +32,7 @@ import {
 // Refresh lock
 // ---------------------------------------------------------------------------
 
-let refreshLock: Promise<void> | null = null
+let refreshLock: Promise<string> | null = null
 
 // ---------------------------------------------------------------------------
 // refreshSession
@@ -45,26 +45,30 @@ let refreshLock: Promise<void> | null = null
  * - Updates only the accessToken + expiresAt (no rotation from this API).
  * - Destroys the session and throws if the refresh fails.
  *
+ * @param existingSession - Optional already-loaded session object
+ * @returns The newly issued access token
+ *
  * @throws {RefreshTokenExpiredError} if the backend rejects the refresh token
  * @throws {AuthenticationError} if there is no session or no refresh token
  */
-export async function refreshSession(): Promise<void> {
+export async function refreshSession(
+  existingSession?: Awaited<ReturnType<typeof getSession>>
+): Promise<string> {
   // If a refresh is already in-flight, wait for it rather than making a second
   if (refreshLock !== null) {
-    await refreshLock
-    return
+    return await refreshLock
   }
 
-  let resolve!: () => void
+  let resolve!: (token: string) => void
   let reject!: (err: unknown) => void
 
-  refreshLock = new Promise<void>((res, rej) => {
+  refreshLock = new Promise<string>((res, rej) => {
     resolve = res
     reject = rej
   })
 
   try {
-    const session = await getSession()
+    const session = existingSession ?? (await getSession())
 
     if (!session.isLoggedIn || !session.tokens?.refreshToken) {
       throw new AuthenticationError("No refresh token available")
@@ -116,7 +120,8 @@ export async function refreshSession(): Promise<void> {
     })
 
     console.info("[auth] Access token refreshed successfully")
-    resolve()
+    resolve(data.accessToken)
+    return data.accessToken
   } catch (error) {
     reject(error)
     throw error

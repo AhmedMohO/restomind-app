@@ -38,11 +38,30 @@ export async function getSession(): Promise<ReturnType<typeof getIronSession<Ses
 /**
  * Persists the current session data back to the encrypted cookie.
  * Must be called after any mutation (login, token update, etc.).
+ *
+ * Safe for Server Components (RSC): Next.js forbids cookie mutations during RSC render.
+ * When called in RSC, cookie persistence is skipped and a warning is logged,
+ * while in-memory session changes remain valid for the current request.
  */
 export async function saveSession(
   session: Awaited<ReturnType<typeof getSession>>
 ): Promise<void> {
-  await session.save()
+  try {
+    await session.save()
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes(
+        "Cookies can only be modified in a Server Action or Route Handler"
+      )
+    ) {
+      console.warn(
+        "[session] Cookie persistence skipped during Server Component rendering. In-memory session updated for current request."
+      )
+      return
+    }
+    throw error
+  }
 }
 
 /**
@@ -52,7 +71,22 @@ export async function saveSession(
 export async function destroySession(
   session: Awaited<ReturnType<typeof getSession>>
 ): Promise<void> {
-  session.destroy()
+  try {
+    session.destroy()
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes(
+        "Cookies can only be modified in a Server Action or Route Handler"
+      )
+    ) {
+      console.warn(
+        "[session] Cookie destruction skipped during Server Component rendering."
+      )
+      return
+    }
+    throw error
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -68,7 +102,7 @@ export async function updateTokens(
   tokens: SessionTokens
 ): Promise<void> {
   session.tokens = tokens
-  await session.save()
+  await saveSession(session)
 }
 
 // ---------------------------------------------------------------------------

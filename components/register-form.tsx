@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useEffect, useRef, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 import { useZodResolver } from "@/lib/zod-locale"
@@ -47,16 +48,23 @@ type Step = "register" | "otp"
 // Component
 // ---------------------------------------------------------------------------
 
-export function RegisterForm({
+function RegisterFormContent({
   className,
   ...props
 }: React.ComponentProps<"form">) {
   const t = useTranslations("Auth")
   const router = useRouter()
   const setUser = useAuthStore((s) => s.setUser)
+  const searchParams = useSearchParams()
 
-  const [step, setStep] = useState<Step>("register")
-  const [registeredEmail, setRegisteredEmail] = useState("")
+  const paramEmail = searchParams.get("email") || ""
+  const paramStep = searchParams.get("step")
+  const paramResend = searchParams.get("resend") === "true"
+
+  const [step, setStep] = useState<Step>(
+    paramStep === "otp" && paramEmail ? "otp" : "register"
+  )
+  const [registeredEmail, setRegisteredEmail] = useState(paramEmail)
   const [registeredPassword, setRegisteredPassword] = useState("")
   const [serverError, setServerError] = useState<string | null>(null)
   const [serverSuccess, setServerSuccess] = useState<string | null>(null)
@@ -65,6 +73,19 @@ export function RegisterForm({
   const [resendCooldown, setResendCooldown] = useState(0)
   const [isResending, setIsResending] = useState(false)
 
+  const autoResendRef = useRef(false)
+  function startResendCooldown(seconds = 60) {
+    setResendCooldown(seconds)
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
   // -----------------------------------------------------------------------
   // Step 1 — Registration form
   // -----------------------------------------------------------------------
@@ -73,7 +94,7 @@ export function RegisterForm({
     defaultValues: {
       firstName: "",
       lastName: "",
-      email: "",
+      email: paramEmail,
       password: "",
       confirmPassword: "",
       phone: "",
@@ -98,7 +119,7 @@ export function RegisterForm({
       return
     }
 
-    toast.success(result.message ?? "Verification code sent to your email")
+    toast.success(result.message ?? t("verificationCodeSent"))
     setRegisteredEmail(data.email)
     setRegisteredPassword(data.password)
     setServerSuccess(result.message ?? null)
@@ -112,10 +133,41 @@ export function RegisterForm({
   // -----------------------------------------------------------------------
   const otpForm = useForm<OtpInput>({
     resolver: useZodResolver(otpSchema),
-    defaultValues: { email: "", otp: "" },
+    defaultValues: { email: paramEmail, otp: "" },
   })
 
   const otpValue = useWatch({ control: otpForm.control, name: "otp" }) ?? ""
+
+  // Sync searchParams step and email during render if needed
+  if (paramStep === "otp" && paramEmail) {
+    if (step !== "otp") setStep("otp")
+    if (registeredEmail !== paramEmail) setRegisteredEmail(paramEmail)
+  }
+
+  useEffect(() => {
+    if (paramStep === "otp" && paramEmail && paramResend && !autoResendRef.current) {
+      autoResendRef.current = true
+      setIsResending(true)
+      sendOtpAction(paramEmail, "confirmation")
+        .then((res) => {
+          setIsResending(false)
+          if (res.success) {
+            const msg =
+              res.message ??
+              "A new verification code has been sent to your email."
+            setServerSuccess(msg)
+            toast.success(msg)
+            startResendCooldown()
+          } else {
+            setServerError(res.message ?? "Failed to resend OTP")
+          }
+        })
+        .catch(() => {
+          setIsResending(false)
+          setServerError("Failed to resend OTP")
+        })
+    }
+  }, [paramStep, paramEmail, paramResend])
 
   async function onOtpSubmit(data: OtpInput) {
     setServerError(null)
@@ -129,39 +181,29 @@ export function RegisterForm({
       return
     }
 
-    toast.success("Account verified successfully!")
+    toast.success(t("accountVerified"))
 
-    // Auto-login after successful email confirmation
-    const loginResult = await loginAction({
-      email: registeredEmail,
-      password: registeredPassword,
-    })
+    // Auto-login after successful email confirmation if password available
+    if (registeredPassword) {
+      const loginResult = await loginAction({
+        email: registeredEmail,
+        password: registeredPassword,
+      })
 
-    if (loginResult.success && loginResult.user) {
-      setUser(loginResult.user)
-      router.push("/")
-      router.refresh()
-    } else {
-      // Confirmation succeeded but auto-login failed — send to login page
-      router.push("/login")
+      if (loginResult.success && loginResult.user) {
+        setUser(loginResult.user)
+        router.push("/")
+        router.refresh()
+        return
+      }
     }
+
+    router.push("/login")
   }
 
   // -----------------------------------------------------------------------
   // Resend OTP
-  // -----------------------------------------------------------------------
-  function startResendCooldown(seconds = 60) {
-    setResendCooldown(seconds)
-    const interval = setInterval(() => {
-      setResendCooldown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-  }
+  // ----------------------------------------------------------------------
 
   async function handleResendOtp() {
     if (resendCooldown > 0 || isResending) return
@@ -331,14 +373,9 @@ export function RegisterForm({
             <FieldError errors={[errors.confirmPassword]} />
           </Field>
 
-          {/* Phone (optional) */}
+          {/* Phone */}
           <Field data-invalid={!!errors.phone}>
-            <FieldLabel htmlFor="reg-phone">
-              {t("phoneLabel")}{" "}
-              <span className="font-normal text-muted-foreground">
-                ({t("optional")})
-              </span>
-            </FieldLabel>
+            <FieldLabel htmlFor="reg-phone">{t("phoneLabel")} </FieldLabel>
             <Input
               id="reg-phone"
               type="tel"
@@ -534,5 +571,19 @@ export function RegisterForm({
         </Field>
       </FieldGroup>
     </form>
+  )
+}
+
+export function RegisterForm(props: React.ComponentProps<"form">) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center p-6">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <RegisterFormContent {...props} />
+    </Suspense>
   )
 }

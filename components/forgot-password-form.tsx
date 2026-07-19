@@ -133,7 +133,7 @@ export function ForgotPasswordForm() {
 
     setResetToken(result.data.resetToken)
     setServerSuccess(null)
-    toast.success("Code verified successfully. Enter your new password.")
+    toast.success(t("codeVerified"))
     setStep("reset")
   }
 

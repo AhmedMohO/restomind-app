@@ -6,7 +6,10 @@
     "maxChars": "Must be at most {max} characters",
     "exactLength": "Must be exactly {length} characters",
     "passwordsMismatch": "Passwords do not match",
-    "otpDigitsOnly": "OTP must contain only digits"
+    "otpDigitsOnly": "OTP must contain only digits",
+    "errorValidPhone": "Must be a valid phone number (min 8 digits)",
+    "errorMinStreet": "Street must be at least {min} characters",
+    "errorMinCity": "City must be at least {min} characters"
   },
   "Navbar": {
     "home": "Home",
@@ -134,7 +137,13 @@
     "checkout": "Proceed to Checkout",
     "clear": "Clear Cart",
     "remove": "Remove",
-    "items": "items"
+    "items": "items",
+    "loginToContinue": "Please login to continue",
+    "addedToCart": "Added to cart",
+    "removedFromCart": "Item removed from cart",
+    "addedToFavorites": "Added to favorites",
+    "removedFromFavorites": "Removed from favorites",
+    "cartCleared": "Cart cleared"
   },
   "Checkout": {
     "title": "Checkout",
@@ -310,6 +319,10 @@
     "forgotPasswordTitle": "Forgot password?",
     "forgotPasswordDescription": "Enter your email and we'll send you a reset code.",
     "forgotPasswordButton": "Send Reset Code",
+    "loginSuccess": "Logged in successfully",
+    "accountVerified": "Account verified successfully!",
+    "codeVerified": "Code verified successfully. Enter your new password.",
+    "verificationCodeSent": "Verification code sent to your email",
     "forgotPasswordSuccess": "Check your email for the reset code.",
     "backToLogin": "Back to login",
     "verifyCodeButton": "Verify Code",

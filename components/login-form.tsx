@@ -53,6 +53,21 @@ export function LoginForm({
 
     if (!result.success) {
       const errMsg = result.message ?? "Login failed"
+
+      const isUnverifiedEmail =
+        errMsg.toLowerCase().includes("please confirm your email first") ||
+        errMsg === "Please confirm your email first" ||
+        (result.error === "Authentication Failed" &&
+          errMsg.toLowerCase().includes("confirm your email"))
+
+      if (isUnverifiedEmail) {
+        toast.info(errMsg)
+        router.push(
+          `/register?email=${encodeURIComponent(data.email)}&step=otp&resend=true`
+        )
+        return
+      }
+
       setServerError(errMsg)
       toast.error(errMsg)
       return

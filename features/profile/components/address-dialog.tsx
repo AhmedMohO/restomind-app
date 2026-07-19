@@ -132,9 +132,7 @@ export function AddressDialog({
                 placeholder={t("phoneNumberPlaceholder")}
                 disabled={isSubmitting}
               />
-              {errors.phoneNumber && (
-                <FieldError>{errors.phoneNumber.message}</FieldError>
-              )}
+              <FieldError errors={[errors.phoneNumber]} />
             </Field>
 
             {/* Street Address */}
@@ -145,9 +143,7 @@ export function AddressDialog({
                 placeholder={t("streetPlaceholder")}
                 disabled={isSubmitting}
               />
-              {errors.street && (
-                <FieldError>{errors.street.message}</FieldError>
-              )}
+              <FieldError errors={[errors.street]} />
             </Field>
 
             {/* City */}
@@ -158,7 +154,7 @@ export function AddressDialog({
                 placeholder={t("cityPlaceholder")}
                 disabled={isSubmitting}
               />
-              {errors.city && <FieldError>{errors.city.message}</FieldError>}
+              <FieldError errors={[errors.city]} />
             </Field>
 
             {/* Country */}

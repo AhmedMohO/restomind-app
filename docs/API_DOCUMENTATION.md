@@ -7,14 +7,18 @@ This documentation provides comprehensive details for integrating with the **Res
 ## 1. General Setup & Configurations
 
 ### Base URL
+
 - **Local Development**: `http://localhost:3000` (or the port defined in your `.env`)
 
 ### Content Type
+
 - Default: `application/json`
 - File Uploads: `multipart/form-data`
 
 ### Authentication & Headers
+
 Protected endpoints require a JWT bearer token sent via the `Authorization` header.
+
 - **Access Token Authorization**:
   - Header: `Authorization`
   - Format: `Bearer <accessToken>`
@@ -26,7 +30,9 @@ Protected endpoints require a JWT bearer token sent via the `Authorization` head
   - Format: `Bearer <resetToken>`
 
 ### Standard Error Response Format
+
 All validation, authentication, and logical errors follow this standard structure:
+
 ```json
 {
   "statusCode": 400,
@@ -37,7 +43,8 @@ All validation, authentication, and logical errors follow this standard structur
   "error": "Bad Request"
 }
 ```
-*Note: For single errors, `"message"` is a string instead of an array of strings.*
+
+_Note: For single errors, `"message"` is a string instead of an array of strings._
 
 ---
 
@@ -46,6 +53,7 @@ All validation, authentication, and logical errors follow this standard structur
 Below are the typescript-equivalent structures of the primary entities returned by the API.
 
 ### Image Object
+
 ```typescript
 interface Image {
   public_id: string;   // Cloudinary or file storage identifier
@@ -54,6 +62,7 @@ interface Image {
 ```
 
 ### User Address Schema
+
 ```typescript
 interface UserAddress {
   _id: string;          // ObjectId
@@ -68,6 +77,7 @@ interface UserAddress {
 ```
 
 ### User Schema
+
 ```typescript
 interface User {
   _id: string;                  // ObjectId
@@ -89,6 +99,7 @@ interface User {
 ```
 
 ### Restaurant Schema
+
 ```typescript
 interface RestaurantAddress {
   street?: string;
@@ -113,6 +124,7 @@ interface Restaurant {
 ```
 
 ### Category Schema
+
 ```typescript
 interface Category {
   _id: string;
@@ -126,6 +138,7 @@ interface Category {
 ```
 
 ### Product Schema
+
 ```typescript
 interface Product {
   _id: string;
@@ -151,6 +164,7 @@ interface Product {
 ```
 
 ### Cart Item Schema
+
 ```typescript
 interface CartItem {
   product: {
@@ -180,6 +194,7 @@ interface Cart {
 ```
 
 ### Order Schema
+
 ```typescript
 interface OrderItem {
   productId: string;
@@ -199,7 +214,7 @@ interface DeliveryAddress {
 interface Order {
   _id: string;
   userId: string;
-  restaurantId: string;         // Associated Restaurant ID
+  restaurantId: string;         // Associated Restaurant ObjectId
   items: OrderItem[];
   totalOriginalPrice: number;
   totalDiscount: number;
@@ -223,22 +238,26 @@ interface Order {
 ## 3. Authentication Module (`/auth`)
 
 ### 3.1 Sign Up
+
 Registers a new customer. Automatically fires an email verification OTP to the user's email.
+
 - **Method / URL**: `POST /auth/signUp`
 - **Auth Level**: Public
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `firstName` | String | Yes | Min length 3, max length 20 | User's first name |
-  | `lastName` | String | Yes | Min length 3, max length 20 | User's last name |
-  | `email` | String | Yes | Must be valid email format | Unique email address |
-  | `password` | String | Yes | Min length 6 | Security password |
-  | `phone` | String | Yes | Valid phone number format | Contact number |
-  | `gender` | String | No | Must be `'male'` or `'female'` | User's gender |
-  | `DOB` | String | No | ISO Date format (`YYYY-MM-DD`) | Date of birth |
-  | `role` | String | No | Must be one of `RolesEnum` | Default is `'customer'` |
 
-  *Request Example*:
+  | Field       | Type   | Required | Rules                          | Description             |
+  | :---------- | :----- | :------- | :----------------------------- | :---------------------- |
+  | `firstName` | String | Yes      | Min length 3, max length 20    | User's first name       |
+  | `lastName`  | String | Yes      | Min length 3, max length 20    | User's last name        |
+  | `email`     | String | Yes      | Must be valid email format     | Unique email address    |
+  | `password`  | String | Yes      | Min length 6                   | Security password       |
+  | `phone`     | String | Yes      | Valid phone number format      | Contact number          |
+  | `gender`    | String | No       | Must be `'male'` or `'female'` | User's gender           |
+  | `DOB`       | String | No       | ISO Date format (`YYYY-MM-DD`) | Date of birth           |
+  | `role`      | String | No       | Must be one of `RolesEnum`     | Default is `'customer'` |
+
+  _Request Example_:
+
   ```json
   {
     "firstName": "John",
@@ -252,7 +271,7 @@ Registers a new customer. Automatically fires an email verification OTP to the u
   ```
 
 - **Response (201 Created)**:
-  *Returns the newly created user object (excluding password).*
+  _Returns the newly created user object (excluding password)._
   ```json
   {
     "_id": "64b0f9f36f6d5c001cfef2b8",
@@ -273,16 +292,20 @@ Registers a new customer. Automatically fires an email verification OTP to the u
 ---
 
 ### 3.2 Log In
+
 Authenticates user. Returns access and refresh JWT tokens.
+
 - **Method / URL**: `POST /auth/login`
 - **Auth Level**: Public
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `email` | String | Yes | Valid email format | User's email |
-  | `password` | String | Yes | Min length 6 | User's password |
 
-  *Request Example*:
+  | Field      | Type   | Required | Rules              | Description     |
+  | :--------- | :----- | :------- | :----------------- | :-------------- |
+  | `email`    | String | Yes      | Valid email format | User's email    |
+  | `password` | String | Yes      | Min length 6       | User's password |
+
+  _Request Example_:
+
   ```json
   {
     "email": "johndoe@example.com",
@@ -301,12 +324,14 @@ Authenticates user. Returns access and refresh JWT tokens.
 ---
 
 ### 3.3 Get My Profile
+
 Returns the profile info of the authenticated user.
+
 - **Method / URL**: `GET /auth/me`
 - **Auth Level**: Access Token (`admin` or `customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Response (200 OK)**:
-  *Returns the active user object.*
+  _Returns the active user object._
   ```json
   {
     "_id": "64b0f9f36f6d5c001cfef2b8",
@@ -328,16 +353,20 @@ Returns the profile info of the authenticated user.
 ---
 
 ### 3.4 Confirm Email
+
 Verifies email address using the 6-digit code sent via email.
+
 - **Method / URL**: `PATCH /auth/confirm-email`
 - **Auth Level**: Public
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `email` | String | Yes | Verified email address |
-  | `otp` | String | Yes | 6-digit OTP code |
 
-  *Request Example*:
+  | Field   | Type   | Required | Description            |
+  | :------ | :----- | :------- | :--------------------- |
+  | `email` | String | Yes      | Verified email address |
+  | `otp`   | String | Yes      | 6-digit OTP code       |
+
+  _Request Example_:
+
   ```json
   {
     "email": "johndoe@example.com",
@@ -355,7 +384,9 @@ Verifies email address using the 6-digit code sent via email.
 ---
 
 ### 3.5 Log Out
+
 Blacklists the current access token.
+
 - **Method / URL**: `POST /auth/logout`
 - **Auth Level**: Access Token (`admin` or `customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -369,16 +400,20 @@ Blacklists the current access token.
 ---
 
 ### 3.6 Send OTP
+
 Resends verification OTP or reset password OTP.
+
 - **Method / URL**: `POST /auth/send-otp`
 - **Auth Level**: Public
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `email` | String | Yes | Valid email | Target email |
-  | `type` | String | Yes | `'confirmation'` or `'reset-password'` | Type of OTP flow |
 
-  *Request Example*:
+  | Field   | Type   | Required | Rules                                  | Description      |
+  | :------ | :----- | :------- | :------------------------------------- | :--------------- |
+  | `email` | String | Yes      | Valid email                            | Target email     |
+  | `type`  | String | Yes      | `'confirmation'` or `'reset-password'` | Type of OTP flow |
+
+  _Request Example_:
+
   ```json
   {
     "email": "johndoe@example.com",
@@ -396,15 +431,19 @@ Resends verification OTP or reset password OTP.
 ---
 
 ### 3.7 Forgot Password
+
 Generates password reset OTP code and emails it to the user.
+
 - **Method / URL**: `POST /auth/forgot-password`
 - **Auth Level**: Public
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `email` | String | Yes | Account email address |
 
-  *Request Example*:
+  | Field   | Type   | Required | Description           |
+  | :------ | :----- | :------- | :-------------------- |
+  | `email` | String | Yes      | Account email address |
+
+  _Request Example_:
+
   ```json
   {
     "email": "johndoe@example.com"
@@ -421,7 +460,9 @@ Generates password reset OTP code and emails it to the user.
 ---
 
 ### 3.8 Generate Access Token (Token Refresh)
+
 Uses a valid refresh token to get a new short-lived access token.
+
 - **Method / URL**: `POST /auth/generate-access-token`
 - **Auth Level**: Refresh Token (`admin`, `customer`, `manager`)
 - **Headers**: `Authorization: Bearer <refreshToken>`
@@ -435,16 +476,20 @@ Uses a valid refresh token to get a new short-lived access token.
 ---
 
 ### 3.9 Confirm Reset OTP
+
 Verifies the password reset OTP and returns a temporary `resetToken`.
+
 - **Method / URL**: `PATCH /auth/confirm-reset-otp`
 - **Auth Level**: Public
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `email` | String | Yes | Account email address |
-  | `otp` | String | Yes | 6-digit OTP code |
 
-  *Request Example*:
+  | Field   | Type   | Required | Description           |
+  | :------ | :----- | :------- | :-------------------- |
+  | `email` | String | Yes      | Account email address |
+  | `otp`   | String | Yes      | 6-digit OTP code      |
+
+  _Request Example_:
+
   ```json
   {
     "email": "johndoe@example.com",
@@ -463,17 +508,21 @@ Verifies the password reset OTP and returns a temporary `resetToken`.
 ---
 
 ### 3.10 Reset Password
+
 Updates the password for the user using the `resetToken` received from OTP verification.
+
 - **Method / URL**: `PATCH /auth/reset-password`
 - **Auth Level**: Reset Token
 - **Headers**: `Authorization: Bearer <resetToken>`
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `password` | String | Yes | Min length 6 | New password |
-  | `confirmPassword`| String | Yes | Min length 6 | Must match `password` |
 
-  *Request Example*:
+  | Field             | Type   | Required | Rules        | Description           |
+  | :---------------- | :----- | :------- | :----------- | :-------------------- |
+  | `password`        | String | Yes      | Min length 6 | New password          |
+  | `confirmPassword` | String | Yes      | Min length 6 | Must match `password` |
+
+  _Request Example_:
+
   ```json
   {
     "password": "newSecurePassword123",
@@ -491,42 +540,49 @@ Updates the password for the user using the `resetToken` received from OTP verif
 ---
 
 ### 3.11 Update Me
+
 Updates the active user's details and/or uploads a profile photo.
+
 - **Method / URL**: `PATCH /auth/update-me`
 - **Auth Level**: Access Token (`admin` or `customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`multipart/form-data`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `firstName` | String | No | Min length 3, max length 20 | Updated first name |
-  | `lastName` | String | No | Min length 3, max length 20 | Updated last name |
-  | `phone` | String | No | Valid phone number | Updated phone number |
-  | `gender` | String | No | `'male'` or `'female'` | Updated gender |
-  | `DOB` | String | No | Date format | Updated Date of Birth |
-  | `image` | File | No | Image mimetype format | Profile photo file upload |
+
+  | Field       | Type   | Required | Rules                       | Description               |
+  | :---------- | :----- | :------- | :-------------------------- | :------------------------ |
+  | `firstName` | String | No       | Min length 3, max length 20 | Updated first name        |
+  | `lastName`  | String | No       | Min length 3, max length 20 | Updated last name         |
+  | `phone`     | String | No       | Valid phone number          | Updated phone number      |
+  | `gender`    | String | No       | `'male'` or `'female'`      | Updated gender            |
+  | `DOB`       | String | No       | Date format                 | Updated Date of Birth     |
+  | `image`     | File   | No       | Image mimetype format       | Profile photo file upload |
 
 - **Response (200 OK)**:
-  *Returns the updated user object.*
+  _Returns the updated user object._
 
 ---
 
 ### 3.12 Add Delivery Address
+
 Saves a new delivery address to the logged-in user's profile.
+
 - **Method / URL**: `POST /auth/addresses`
 - **Auth Level**: Access Token (`admin` or `customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `label` | String | No | None | Address label (e.g. `'Home'`, `'Work'`) |
-  | `fullName` | String | No | None | Recipient name (defaults to user name) |
-  | `phoneNumber` | String | Yes | Valid phone number | Contact phone number |
-  | `street` | String | Yes | Non-empty string | Street address |
-  | `city` | String | Yes | Non-empty string | City |
-  | `country` | String | No | None | Country |
-  | `isDefault` | Boolean | No | Boolean | Set as default address |
 
-  *Request Example*:
+  | Field         | Type    | Required | Rules              | Description                             |
+  | :------------ | :------ | :------- | :----------------- | :-------------------------------------- |
+  | `label`       | String  | No       | None               | Address label (e.g. `'Home'`, `'Work'`) |
+  | `fullName`    | String  | No       | None               | Recipient name (defaults to user name)  |
+  | `phoneNumber` | String  | Yes      | Valid phone number | Contact phone number                    |
+  | `street`      | String  | Yes      | Non-empty string   | Street address                          |
+  | `city`        | String  | Yes      | Non-empty string   | City                                    |
+  | `country`     | String  | No       | None               | Country                                 |
+  | `isDefault`   | Boolean | No       | Boolean            | Set as default address                  |
+
+  _Request Example_:
+
   ```json
   {
     "label": "Home",
@@ -539,34 +595,40 @@ Saves a new delivery address to the logged-in user's profile.
   ```
 
 - **Response (201 Created)**:
-  *Returns the newly added address object.*
+  _Returns the newly added address object._
 
 ---
 
 ### 3.13 Get My Saved Addresses
+
 Retrieves all delivery addresses saved in the user's profile.
+
 - **Method / URL**: `GET /auth/addresses`
 - **Auth Level**: Access Token (`admin` or `customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Response (200 OK)**:
-  *Returns an array of `UserAddress` objects.*
+  _Returns an array of `UserAddress` objects._
 
 ---
 
 ### 3.14 Update Saved Address
+
 Updates an existing saved delivery address.
+
 - **Method / URL**: `PATCH /auth/addresses/:addressId`
 - **Auth Level**: Access Token (`admin` or `customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**: Accepts optional fields from `Add Delivery Address`.
 
 - **Response (200 OK)**:
-  *Returns the updated address object.*
+  _Returns the updated address object._
 
 ---
 
 ### 3.15 Delete Saved Address
+
 Deletes a saved address from the user's profile.
+
 - **Method / URL**: `DELETE /auth/addresses/:addressId`
 - **Auth Level**: Access Token (`admin` or `customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -580,35 +642,40 @@ Deletes a saved address from the user's profile.
 ---
 
 ### 3.16 Set Address as Default
+
 Sets the specified address as the default delivery address for the user.
+
 - **Method / URL**: `PATCH /auth/addresses/:addressId/default`
 - **Auth Level**: Access Token (`admin` or `customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Response (200 OK)**:
-  *Returns the updated address list.*
+  _Returns the updated address list._
 
 ---
 
 ## 4. User Management Module (`/users`)
 
 ### 4.1 Create User (Admin / Manager)
+
 - **Method / URL**: `POST /users`
 - **Auth Level**: Access Token (`admin` or `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `firstName` | String | Yes | Min length 3, max length 20 | First name |
-  | `lastName` | String | Yes | Min length 3, max length 20 | Last name |
-  | `email` | String | Yes | Valid email | Unique email |
-  | `password` | String | Yes | Min length 6 | Password |
-  | `phone` | String | Yes | Valid phone number | Mobile number |
-  | `role` | String | No | `'admin' \| 'customer' \| 'manager'` | Default is `'customer'` |
-  | `gender` | String | No | `'male' \| 'female'` | Gender |
-  | `DOB` | String | No | ISO Date string | Date of Birth |
-  | `restaurantId` | String | No | Valid Restaurant ObjectId | Assigned restaurant (for managers) |
 
-  *Request Example*:
+  | Field          | Type   | Required | Rules                                | Description                        |
+  | :------------- | :----- | :------- | :----------------------------------- | :--------------------------------- |
+  | `firstName`    | String | Yes      | Min length 3, max length 20          | First name                         |
+  | `lastName`     | String | Yes      | Min length 3, max length 20          | Last name                          |
+  | `email`        | String | Yes      | Valid email                          | Unique email                       |
+  | `password`     | String | Yes      | Min length 6                         | Password                           |
+  | `phone`        | String | Yes      | Valid phone number                   | Mobile number                      |
+  | `role`         | String | No       | `'admin' \| 'customer' \| 'manager'` | Default is `'customer'`            |
+  | `gender`       | String | No       | `'male' \| 'female'`                 | Gender                             |
+  | `DOB`          | String | No       | ISO Date string                      | Date of Birth                      |
+  | `restaurantId` | String | No       | Valid Restaurant ObjectId            | Assigned restaurant (for managers) |
+
+  _Request Example_:
+
   ```json
   {
     "firstName": "Jane",
@@ -645,16 +712,18 @@ Sets the specified address as the default delivery address for the user.
 ---
 
 ### 4.2 Find All Users (Paginated)
+
 - **Method / URL**: `GET /users`
 - **Auth Level**: Access Token (`admin` or `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `page` | String | No | `1` | Page number |
-  | `limit` | String | No | `10` | Size of page result |
-  | `search` | String | No | *None* | Match first/last name or email (case-insensitive) |
-  | `role` | String | No | *None* | Filter by role |
+
+  | Parameter | Type   | Required | Default | Description                                       |
+  | :-------- | :----- | :------- | :------ | :------------------------------------------------ |
+  | `page`    | String | No       | `1`     | Page number                                       |
+  | `limit`   | String | No       | `10`    | Size of page result                               |
+  | `search`  | String | No       | _None_  | Match first/last name or email (case-insensitive) |
+  | `role`    | String | No       | _None_  | Filter by role                                    |
 
 - **Response (200 OK)**:
   Standard paginated response with `items`, `page`, `limit`, and `totalPages`.
@@ -662,6 +731,7 @@ Sets the specified address as the default delivery address for the user.
 ---
 
 ### 4.3 Find User by ID
+
 - **Method / URL**: `GET /users/:id`
 - **Auth Level**: Access Token (`admin` or `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -670,6 +740,7 @@ Sets the specified address as the default delivery address for the user.
 ---
 
 ### 4.4 Update User by ID
+
 - **Method / URL**: `PATCH /users/:id`
 - **Auth Level**: Access Token (`admin` or `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -680,6 +751,7 @@ Sets the specified address as the default delivery address for the user.
 ---
 
 ### 4.5 Soft Delete User
+
 - **Method / URL**: `DELETE /users/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -695,21 +767,24 @@ Sets the specified address as the default delivery address for the user.
 ## 5. Categories Module (`/categories`)
 
 ### 5.1 Create Category
+
 - **Method / URL**: `POST /categories`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`multipart/form-data`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `name` | String | Yes | Unique category name | Category title |
-  | `description` | String | Yes | None | Category explanation |
-  | `image` | File | Yes | Image format (png, jpg, etc.) | Category icon / photo file |
+
+  | Field         | Type   | Required | Rules                         | Description                |
+  | :------------ | :----- | :------- | :---------------------------- | :------------------------- |
+  | `name`        | String | Yes      | Unique category name          | Category title             |
+  | `description` | String | Yes      | None                          | Category explanation       |
+  | `image`       | File   | Yes      | Image format (png, jpg, etc.) | Category icon / photo file |
 
 - **Response (201 Created)**: Created category entity wrapped in `data`.
 
 ---
 
 ### 5.2 Update Category
+
 - **Method / URL**: `PATCH /categories/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -720,6 +795,7 @@ Sets the specified address as the default delivery address for the user.
 ---
 
 ### 5.3 Delete Category (Soft Delete)
+
 - **Method / URL**: `DELETE /categories/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -728,6 +804,7 @@ Sets the specified address as the default delivery address for the user.
 ---
 
 ### 5.4 View All Categories
+
 - **Method / URL**: `GET /categories`
 - **Auth Level**: Public
 - **Response (200 OK)**: Array of category entities wrapped in `data`.
@@ -735,6 +812,7 @@ Sets the specified address as the default delivery address for the user.
 ---
 
 ### 5.5 Get Category by ID
+
 - **Method / URL**: `GET /categories/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -745,30 +823,33 @@ Sets the specified address as the default delivery address for the user.
 ## 6. Products Module (`/products`)
 
 ### 6.1 Create Product
+
 - **Method / URL**: `POST /products`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`multipart/form-data`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `title` | String | Yes | None | Product title |
-  | `description` | String | Yes | None | Brief product description |
-  | `longDescription` | String | Yes | None | Full detail product info |
-  | `price` | Number | Yes | Min 0 | Default selling price |
-  | `discountedPrice` | Number | No | Min 0, Must be <= `price` | Discount price. Defaults to `price` if omitted. |
-  | `category` | String | Yes | Valid Category ObjectId | Associated category |
-  | `restaurantId` | String | Yes | Valid Restaurant ObjectId | Associated restaurant ID |
-  | `freshnessWindow` | Number | Yes | Min 0 | Duration (in days) the product stays fresh |
-  | `tags` | String or Array | No | String containing comma-separated tags or array | Tags for searches (e.g. `'organic, green, spinach'`) |
-  | `isBestseller` | Boolean | No | Converts string `'true'` / `'false'` | Bestseller flag |
-  | `isAvailable` | Boolean | No | Converts string `'true'` / `'false'` | Availability flag |
-  | `image` | File | Yes | Image mimetype | Product photograph |
+
+  | Field             | Type            | Required | Rules                                           | Description                                          |
+  | :---------------- | :-------------- | :------- | :---------------------------------------------- | :--------------------------------------------------- |
+  | `title`           | String          | Yes      | None                                            | Product title                                        |
+  | `description`     | String          | Yes      | None                                            | Brief product description                            |
+  | `longDescription` | String          | Yes      | None                                            | Full detail product info                             |
+  | `price`           | Number          | Yes      | Min 0                                           | Default selling price                                |
+  | `discountedPrice` | Number          | No       | Min 0, Must be <= `price`                       | Discount price. Defaults to `price` if omitted.      |
+  | `category`        | String          | Yes      | Valid Category ObjectId                         | Associated category                                  |
+  | `restaurantId`    | String          | Yes      | Valid Restaurant ObjectId                       | Associated restaurant ID                             |
+  | `freshnessWindow` | Number          | Yes      | Min 0                                           | Duration (in days) the product stays fresh           |
+  | `tags`            | String or Array | No       | String containing comma-separated tags or array | Tags for searches (e.g. `'organic, green, spinach'`) |
+  | `isBestseller`    | Boolean         | No       | Converts string `'true'` / `'false'`            | Bestseller flag                                      |
+  | `isAvailable`     | Boolean         | No       | Converts string `'true'` / `'false'`            | Availability flag                                    |
+  | `image`           | File            | Yes      | Image mimetype                                  | Product photograph                                   |
 
 - **Response (201 Created)**: Created product object wrapped in `data`.
 
 ---
 
 ### 6.2 Update Product
+
 - **Method / URL**: `PATCH /products/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -779,6 +860,7 @@ Sets the specified address as the default delivery address for the user.
 ---
 
 ### 6.3 Delete Product (Soft Delete)
+
 - **Method / URL**: `DELETE /products/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -787,7 +869,9 @@ Sets the specified address as the default delivery address for the user.
 ---
 
 ### 6.4 Change Availability
+
 Directly toggle availability state of a product.
+
 - **Method / URL**: `PATCH /products/:id/availability`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -797,7 +881,9 @@ Directly toggle availability state of a product.
 ---
 
 ### 6.5 Update Discount
+
 Sets the discounted price of a product.
+
 - **Method / URL**: `PATCH /products/:id/discount`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -807,26 +893,30 @@ Sets the discounted price of a product.
 ---
 
 ### 6.6 Get All Products (Filtered & Paginated)
+
 - **Method / URL**: `GET /products`
 - **Auth Level**: Public
 - **Query Parameters**:
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `page` | String | No | `1` | Page index |
-  | `limit` | String | No | `10` | Items count per page |
-  | `category` | String | No | *None* | Filter by Category ObjectId |
-  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId |
-  | `search` | String | No | *None* | Partial title match |
-  | `tag` | String | No | *None* | Tag keyword match |
-  | `sort` | String | No | `createdAt` | Sort attribute |
-  | `order` | String | No | `desc` | `'asc'` or `'desc'` |
+
+  | Parameter      | Type   | Required | Default     | Description                   |
+  | :------------- | :----- | :------- | :---------- | :---------------------------- |
+  | `page`         | String | No       | `1`         | Page index                    |
+  | `limit`        | String | No       | `10`        | Items count per page          |
+  | `category`     | String | No       | _None_      | Filter by Category ObjectId   |
+  | `restaurantId` | String | No       | _None_      | Filter by Restaurant ObjectId |
+  | `search`       | String | No       | _None_      | Partial title match           |
+  | `tag`          | String | No       | _None_      | Tag keyword match             |
+  | `sort`         | String | No       | `createdAt` | Sort attribute                |
+  | `order`        | String | No       | `desc`      | `'asc'` or `'desc'`           |
 
 - **Response (200 OK)**: Paginated product schema with populated category object.
 
 ---
 
 ### 6.7 Get Recommended Discounted Products
+
 Gets a list of products that currently have an active discount.
+
 - **Method / URL**: `GET /products/recommendations`
 - **Auth Level**: Public
 - **Query Parameters**: `page`, `limit`
@@ -835,6 +925,7 @@ Gets a list of products that currently have an active discount.
 ---
 
 ### 6.8 Get Product Details
+
 - **Method / URL**: `GET /products/:id`
 - **Auth Level**: Public
 - **Response (200 OK)**: Product object populated with Category object.
@@ -844,6 +935,7 @@ Gets a list of products that currently have an active discount.
 ## 7. Favorites Module (`/favorites`)
 
 ### 7.1 Add Product to Favorites
+
 - **Method / URL**: `POST /favorites/:productId`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -852,6 +944,7 @@ Gets a list of products that currently have an active discount.
 ---
 
 ### 7.2 Remove Product from Favorites
+
 - **Method / URL**: `DELETE /favorites/:productId`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -860,6 +953,7 @@ Gets a list of products that currently have an active discount.
 ---
 
 ### 7.3 Get All Favorite Products
+
 - **Method / URL**: `GET /favorites`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -868,6 +962,7 @@ Gets a list of products that currently have an active discount.
 ---
 
 ### 7.4 Check If Product is Favorite
+
 - **Method / URL**: `GET /favorites/:productId/status`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -878,7 +973,9 @@ Gets a list of products that currently have an active discount.
 ## 8. Cart Module (`/cart`)
 
 ### 8.1 Get Current Cart
+
 Gets or initializes an active cart for the authenticated customer.
+
 - **Method / URL**: `GET /cart`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -887,7 +984,9 @@ Gets or initializes an active cart for the authenticated customer.
 ---
 
 ### 8.2 Add Product to Cart
+
 Adds or increments quantity of a product in the cart.
+
 - **Method / URL**: `POST /cart`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -897,6 +996,7 @@ Adds or increments quantity of a product in the cart.
 ---
 
 ### 8.3 Remove Product from Cart
+
 - **Method / URL**: `DELETE /cart/:productId`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -905,7 +1005,9 @@ Adds or increments quantity of a product in the cart.
 ---
 
 ### 8.4 Update Item Quantity in Cart
+
 Directly overwrites the quantity of a product in the cart.
+
 - **Method / URL**: `PATCH /cart/:productId`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -915,7 +1017,9 @@ Directly overwrites the quantity of a product in the cart.
 ---
 
 ### 8.5 Clear Entire Cart
+
 Removes all items from the cart.
+
 - **Method / URL**: `DELETE /cart`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -926,26 +1030,29 @@ Removes all items from the cart.
 ## 9. Orders Module (`/orders`)
 
 ### 9.1 Create Order from Cart
+
 Converts active cart items into pending order(s), locks price details, and empties the cart.
-*Note: If the cart contains products from multiple restaurants, the system automatically splits checkout into separate Order documents (one per `restaurantId`) and returns an array of orders.*
+_Note: If the cart contains products from multiple restaurants, the system automatically splits checkout into separate Order documents (one per `restaurantId`) and returns an array of orders._
 
 - **Method / URL**: `POST /orders`
 - **Auth Level**: Access Token (`customer` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `deliveryMethod` | String | Yes | Enum: `'Home Delivery'` \| `'Store Pickup'` | Delivery preference |
-  | `deliveryAddress` | Object | Conditional | Required if `Home Delivery`, must be omitted/null if `Store Pickup` | Delivery address details |
-  | `deliveryAddress.addressId` | String | Optional | Valid User Address Mongo ID | Use an existing saved address from profile |
-  | `deliveryAddress.street` | String | Conditional | Required if `addressId` is not provided | Street address |
-  | `deliveryAddress.city` | String | Conditional | Required if `addressId` is not provided | City |
-  | `deliveryAddress.country` | String | Conditional | Required if `addressId` is not provided | Country |
-  | `specialNotes` | String | No | None | Special delivery/pickup instructions |
-  | `paymentMethod` | String | Yes | Enum: `'Cash on Delivery'` | Payment method |
-  | `saveAddress` | Boolean | No | Boolean | Save new inline address to user profile |
 
-  *Request Example 1 (Home Delivery with inline address)*:
+  | Field                       | Type    | Required    | Rules                                                               | Description                                |
+  | :-------------------------- | :------ | :---------- | :------------------------------------------------------------------ | :----------------------------------------- |
+  | `deliveryMethod`            | String  | Yes         | Enum: `'Home Delivery'` \| `'Store Pickup'`                         | Delivery preference                        |
+  | `deliveryAddress`           | Object  | Conditional | Required if `Home Delivery`, must be omitted/null if `Store Pickup` | Delivery address details                   |
+  | `deliveryAddress.addressId` | String  | Optional    | Valid User Address Mongo ID                                         | Use an existing saved address from profile |
+  | `deliveryAddress.street`    | String  | Conditional | Required if `addressId` is not provided                             | Street address                             |
+  | `deliveryAddress.city`      | String  | Conditional | Required if `addressId` is not provided                             | City                                       |
+  | `deliveryAddress.country`   | String  | Conditional | Required if `addressId` is not provided                             | Country                                    |
+  | `specialNotes`              | String  | No          | None                                                                | Special delivery/pickup instructions       |
+  | `paymentMethod`             | String  | Yes         | Enum: `'Cash on Delivery'`                                          | Payment method                             |
+  | `saveAddress`               | Boolean | No          | Boolean                                                             | Save new inline address to user profile    |
+
+  _Request Example 1 (Home Delivery with inline address)_:
+
   ```json
   {
     "deliveryMethod": "Home Delivery",
@@ -960,7 +1067,8 @@ Converts active cart items into pending order(s), locks price details, and empti
   }
   ```
 
-  *Request Example 2 (Home Delivery using saved profile `addressId`)*:
+  _Request Example 2 (Home Delivery using saved profile `addressId`)_:
+
   ```json
   {
     "deliveryMethod": "Home Delivery",
@@ -972,7 +1080,8 @@ Converts active cart items into pending order(s), locks price details, and empti
   }
   ```
 
-  *Request Example 3 (Store Pickup)*:
+  _Request Example 3 (Store Pickup)_:
+
   ```json
   {
     "deliveryMethod": "Store Pickup",
@@ -1022,20 +1131,24 @@ Converts active cart items into pending order(s), locks price details, and empti
 ---
 
 ### 9.2 Get My Orders
+
 Retrieves history list of orders placed by the active user.
+
 - **Method / URL**: `GET /orders/me`
 - **Auth Level**: Access Token (`customer`, `admin`, `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
-  | Parameter | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `restaurantId` | String | No | Filter orders by Restaurant ObjectId |
+
+  | Parameter      | Type   | Required | Description                          |
+  | :------------- | :----- | :------- | :----------------------------------- |
+  | `restaurantId` | String | No       | Filter orders by Restaurant ObjectId |
 
 - **Response (200 OK)**: Array of order objects wrapped in `data`.
 
 ---
 
 ### 9.3 Get My Order Details
+
 - **Method / URL**: `GET /orders/me/:id`
 - **Auth Level**: Access Token (`customer`, `admin`, `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -1044,20 +1157,24 @@ Retrieves history list of orders placed by the active user.
 ---
 
 ### 9.4 Get All Orders (Admin Only)
+
 - **Method / URL**: `GET /orders`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
-  | Parameter | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `restaurantId` | String | No | Filter orders by Restaurant ObjectId |
+
+  | Parameter      | Type   | Required | Description                          |
+  | :------------- | :----- | :------- | :----------------------------------- |
+  | `restaurantId` | String | No       | Filter orders by Restaurant ObjectId |
 
 - **Response (200 OK)**: Array of all order objects wrapped in `data`.
 
 ---
 
 ### 9.5 Get Restaurant Orders (Admin / Manager)
+
 Retrieves orders associated with a specific restaurant. Managers can only query their own assigned `restaurantId`.
+
 - **Method / URL**: `GET /orders/restaurant/:restaurantId`
 - **Auth Level**: Access Token (`admin` or `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -1066,16 +1183,20 @@ Retrieves orders associated with a specific restaurant. Managers can only query 
 ---
 
 ### 9.6 Update Order Status (Admin Only)
+
 Updates the lifecycle state of an order. Finalized orders (`Delivered` or `Cancelled`) can no longer have their status modified.
+
 - **Method / URL**: `PATCH /orders/:id/status`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Rules | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `status` | String | Yes | Enum: `'Pending' \| 'Confirmed' \| 'Preparing' \| 'Out For Delivery' \| 'Delivered' \| 'Cancelled'` | New status for the order |
 
-  *Request Example*:
+  | Field    | Type   | Required | Rules                                                                                               | Description              |
+  | :------- | :----- | :------- | :-------------------------------------------------------------------------------------------------- | :----------------------- |
+  | `status` | String | Yes      | Enum: `'Pending' \| 'Confirmed' \| 'Preparing' \| 'Out For Delivery' \| 'Delivered' \| 'Cancelled'` | New status for the order |
+
+  _Request Example_:
+
   ```json
   {
     "status": "Confirmed"
@@ -1089,20 +1210,24 @@ Updates the lifecycle state of an order. Finalized orders (`Delivered` or `Cance
 ## 10. Restaurant Module (`/restaurants`)
 
 ### 10.1 Create Restaurant
+
 Creates a new restaurant record and assigns an owner manager user.
+
 - **Method / URL**: `POST /restaurants`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**:
-  | Field | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `name` | String | Yes | Restaurant name |
-  | `ownerUserId` | String | Yes | User ObjectId of the manager/owner |
-  | `description` | String | No | Brief description |
-  | `phone` | String | No | Restaurant contact number |
-  | `address` | Object | No | Location address (`street`, `city`, `country`) |
 
-  *Request Example*:
+  | Field         | Type   | Required | Description                                    |
+  | :------------ | :----- | :------- | :--------------------------------------------- |
+  | `name`        | String | Yes      | Restaurant name                                |
+  | `ownerUserId` | String | Yes      | User ObjectId of the manager/owner             |
+  | `description` | String | No       | Brief description                              |
+  | `phone`       | String | No       | Restaurant contact number                      |
+  | `address`     | Object | No       | Location address (`street`, `city`, `country`) |
+
+  _Request Example_:
+
   ```json
   {
     "name": "Bella Italia",
@@ -1142,22 +1267,26 @@ Creates a new restaurant record and assigns an owner manager user.
 ---
 
 ### 10.2 Get All Restaurants (Paginated)
+
 - **Method / URL**: `GET /restaurants`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `page` | String | No | `1` | Page number |
-  | `limit` | String | No | `10` | Page size |
-  | `search` | String | No | *None* | Restaurant name search query |
+
+  | Parameter | Type   | Required | Default | Description                  |
+  | :-------- | :----- | :------- | :------ | :--------------------------- |
+  | `page`    | String | No       | `1`     | Page number                  |
+  | `limit`   | String | No       | `10`    | Page size                    |
+  | `search`  | String | No       | _None_  | Restaurant name search query |
 
 - **Response (200 OK)**: Paginated restaurant list wrapped in `data`.
 
 ---
 
 ### 10.3 Get My Restaurant
+
 Returns the restaurant details linked to the authenticated manager's `restaurantId`.
+
 - **Method / URL**: `GET /restaurants/me`
 - **Auth Level**: Access Token (`manager` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -1166,6 +1295,7 @@ Returns the restaurant details linked to the authenticated manager's `restaurant
 ---
 
 ### 10.4 Get Restaurant by ID
+
 - **Method / URL**: `GET /restaurants/:id`
 - **Auth Level**: Access Level: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -1174,7 +1304,9 @@ Returns the restaurant details linked to the authenticated manager's `restaurant
 ---
 
 ### 10.5 Update Restaurant
+
 Updates restaurant details. Managers can only update their own assigned restaurant.
+
 - **Method / URL**: `PATCH /restaurants/:id`
 - **Auth Level**: Access Token (`admin`, or `manager` for own restaurant)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -1185,6 +1317,7 @@ Updates restaurant details. Managers can only update their own assigned restaura
 ---
 
 ### 10.6 Delete Restaurant (Soft Delete)
+
 - **Method / URL**: `DELETE /restaurants/:id`
 - **Auth Level**: Access Token (`admin` only)
 - **Headers**: `Authorization: Bearer <accessToken>`
@@ -1202,22 +1335,22 @@ Updates restaurant details. Managers can only update their own assigned restaura
 To execute a complete shopping & ordering lifecycle, follow this sequence:
 
 1. **Create Restaurant** (Admin):
-   * Call `POST /restaurants` to create a new Restaurant and assign a manager `ownerUserId`.
+   - Call `POST /restaurants` to create a new Restaurant and assign a manager `ownerUserId`.
 2. **Create Category & Product** (Admin):
-   * Create categories using `POST /categories`.
-   * Create products using `POST /products`, passing the required `restaurantId`.
+   - Create categories using `POST /categories`.
+   - Create products using `POST /products`, passing the required `restaurantId`.
 3. **Manage Saved Delivery Addresses** (Customer):
-   * Add delivery addresses via `POST /auth/addresses` to build up user address profile.
+   - Add delivery addresses via `POST /auth/addresses` to build up user address profile.
 4. **Add Products to Cart** (Customer):
-   * Call `POST /cart` with `{ "productId": "<productId>", "quantity": 2 }`.
+   - Call `POST /cart` with `{ "productId": "<productId>", "quantity": 2 }`.
 5. **Verify Cart Totals** (Customer):
-   * Call `GET /cart` to see itemized and calculated cart summary.
+   - Call `GET /cart` to see itemized and calculated cart summary.
 6. **Place Order** (Customer):
-   * Call `POST /orders` providing `deliveryMethod`, `deliveryAddress` (inline or `addressId`), `paymentMethod` (`"Cash on Delivery"`), and optional `saveAddress`.
-   * *If cart contains products from multiple restaurants, the API automatically creates separate Order documents per `restaurantId`.*
+   - Call `POST /orders` providing `deliveryMethod`, `deliveryAddress` (inline or `addressId`), `paymentMethod` (`"Cash on Delivery"`), and optional `saveAddress`.
+   - _If cart contains products from multiple restaurants, the API automatically creates separate Order documents per `restaurantId`._
 7. **Retrieve Orders**:
-   * Customer: View orders via `GET /orders/me`.
-   * Manager: View restaurant-specific orders via `GET /orders/restaurant/:restaurantId` or `GET /restaurants/me`.
-   * Admin: View all orders via `GET /orders` or filter by `restaurantId`.
+   - Customer: View orders via `GET /orders/me`.
+   - Manager: View restaurant-specific orders via `GET /orders/restaurant/:restaurantId` or `GET /restaurants/me`.
+   - Admin: View all orders via `GET /orders` or filter by `restaurantId`.
 8. **Update Order Status** (Admin):
-   * Admin updates lifecycle state via `PATCH /orders/:id/status`. Finalized orders (`Delivered` or `Cancelled`) can no longer be updated.
+   - Admin updates lifecycle state via `PATCH /orders/:id/status`. Finalized orders (`Delivered` or `Cancelled`) can no longer be updated.

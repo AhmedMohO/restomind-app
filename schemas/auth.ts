@@ -11,7 +11,7 @@ export const registerSchema = z
     email: z.email(),
     password: z.string().min(6),
     confirmPassword: z.string().min(6),
-    phone: z.string().optional(),
+    phone: z.string().min(8, { message: "errorValidPhone" }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "passwordsMismatch",

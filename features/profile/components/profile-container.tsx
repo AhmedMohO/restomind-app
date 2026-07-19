@@ -52,11 +52,23 @@ export function ProfileContainer({
   // Handle Profile Update (Form)
   const handleUpdateProfile = async (data: UpdateProfileInput) => {
     const formData = new FormData()
-    formData.append("firstName", data.firstName)
-    formData.append("lastName", data.lastName)
-    if (data.phone) formData.append("phone", data.phone)
-    if (data.gender) formData.append("gender", data.gender)
-    if (data.DOB) formData.append("DOB", data.DOB)
+
+    // Only append fields that actually changed
+    if (data.firstName !== user.firstName) formData.append("firstName", data.firstName)
+    if (data.lastName !== user.lastName) formData.append("lastName", data.lastName)
+    if (data.phone !== (user.phone ?? "")) {
+      if (data.phone) formData.append("phone", data.phone)
+    }
+    if (data.gender !== (user.gender ?? undefined)) {
+      if (data.gender) formData.append("gender", data.gender)
+    }
+
+    const initialDOB = user.DOB ? new Date(user.DOB).toISOString().split("T")[0] : ""
+    if (data.DOB !== initialDOB) {
+      if (data.DOB) formData.append("DOB", data.DOB)
+    }
+
+    if ([...formData.keys()].length === 0) return
 
     startTransition(async () => {
       const res = await updateProfileAction(formData)

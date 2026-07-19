@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { useRouter } from "@/i18n/routing"
 import {
@@ -15,7 +16,6 @@ import {
   getFavoritesAction,
   addFavoriteAction,
   removeFavoriteAction,
-  toggleFavoriteAction,
 } from "@/features/favorites/actions"
 import type { ApiCart } from "@/features/cart/api/type"
 import { ApiProduct } from "@/features/products/api/type"
@@ -52,43 +52,55 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [wishlist, setWishlist] = useState<string[]>([])
   const { isAuthenticated, isHydrated } = useAuth()
   const router = useRouter()
+  const t = useTranslations("Cart")
 
   // Helper: Enforce authentication guard check
   const checkAuthOrRedirect = useCallback((): boolean => {
     if (!isAuthenticated) {
-      toast.error("Please login to continue")
+      toast.error(t("loginToContinue"))
       router.push("/login")
       return false
     }
     return true
-  }, [isAuthenticated, router])
-
-  // Sync cart & favorites with backend server when user is authenticated
-  const syncServerData = useCallback(async () => {
-    if (!isAuthenticated) {
-      setCart([])
-      setWishlist([])
-      return
-    }
-
-    // 1. Sync Cart
-    const cartRes = await fetchCartAction()
-    if (cartRes.success) {
-      setCart(mapApiCartToClientCart(cartRes.data))
-    }
-
-    // 2. Sync Favorites
-    const favsRes = await getFavoritesAction()
-    if (favsRes.success) {
-      setWishlist(favsRes.data.map((p) => p._id))
-    }
-  }, [isAuthenticated])
+  }, [isAuthenticated, router, t])
 
   useEffect(() => {
-    if (isHydrated) {
-      syncServerData()
+    if (!isHydrated) return
+
+    let isMounted = true
+
+    if (isAuthenticated) {
+      const fetchData = async () => {
+        const [cartRes, favsRes] = await Promise.all([
+          fetchCartAction(),
+          getFavoritesAction(),
+        ])
+
+        if (!isMounted) return
+
+        if (cartRes.success) {
+          setCart(mapApiCartToClientCart(cartRes.data))
+        }
+
+        if (favsRes.success) {
+          setWishlist(favsRes.data.map((p) => p._id))
+        }
+      }
+
+      fetchData()
+    } else {
+      queueMicrotask(() => {
+        if (isMounted) {
+          setCart((prev) => (prev.length > 0 ? [] : prev))
+          setWishlist((prev) => (prev.length > 0 ? [] : prev))
+        }
+      })
     }
-  }, [isHydrated, syncServerData])
+
+    return () => {
+      isMounted = false
+    }
+  }, [isHydrated, isAuthenticated])
 
   // Guarded Add to Cart action
   const addToCart = async (product: ApiProduct, quantity = 1) => {
@@ -108,7 +120,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [...prevCart, { product, quantity }]
     })
 
-    toast.success("Added to cart")
+    toast.success(t("addedToCart"))
 
     // Server API call
     const res = await addToCartAction({ productId: product._id, quantity })
@@ -125,7 +137,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!checkAuthOrRedirect()) return
 
     setCart((prevCart) => prevCart.filter((item) => item.product._id !== productId))
-    toast.success("Item removed from cart")
+    toast.success(t("removedFromCart"))
 
     const res = await removeFromCartAction(productId)
     if (res.success) {
@@ -172,7 +184,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         : [...prevWishlist, productId]
     )
 
-    toast.success(wasFavorite ? "Removed from favorites" : "Added to favorites")
+    toast.success(t(wasFavorite ? "removedFromFavorites" : "addedToFavorites"))
 
     // Call server action directly
     const res = wasFavorite
@@ -199,7 +211,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!checkAuthOrRedirect()) return
 
     setCart([])
-    toast.success("Cart cleared")
+    toast.success(t("cartCleared"))
     const res = await clearCartAction()
     if (res && !res.success && res.error === "UNAUTHENTICATED") {
       router.push("/login")
