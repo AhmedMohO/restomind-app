@@ -231,6 +231,31 @@ interface Order {
   createdAt: string;
   updatedAt: string;
 }
+
+### Offer Schema
+
+```typescript
+interface Offer {
+  _id: string;                      // ObjectId
+  productId: string | Product;      // Associated Product ID or populated Product
+  restaurantId: string | Restaurant; // Associated Restaurant ID or populated Restaurant
+  discountPercentage: number;       // Discount % (1 - 100)
+  startDate: string;                // ISO Date String
+  endDate: string;                  // ISO Date String
+  status: 'draft' | 'scheduled' | 'active' | 'expired' | 'cancelled';
+  source: 'manual' | 'ai_recommendation';
+  recommendationId?: string;        // Optional AI recommendation ID
+  featured: boolean;                // Featured offer flag
+  estimatedWasteReduction?: number; // Optional analytics metrics
+  estimatedRevenueRecovery?: number;
+  actualUnitsSold?: number;
+  actualRevenueRecovered?: number;
+  createdBy: string;                // User ObjectId of creator
+  isDeleted: boolean;
+  createdAt: string;                // ISO Date String
+  updatedAt: string;                // ISO Date String
+}
+```
 ```
 
 ---
@@ -718,12 +743,14 @@ Sets the specified address as the default delivery address for the user.
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
 
-  | Parameter | Type   | Required | Default | Description                                       |
-  | :-------- | :----- | :------- | :------ | :------------------------------------------------ |
-  | `page`    | String | No       | `1`     | Page number                                       |
-  | `limit`   | String | No       | `10`    | Size of page result                               |
-  | `search`  | String | No       | _None_  | Match first/last name or email (case-insensitive) |
-  | `role`    | String | No       | _None_  | Filter by role                                    |
+  | Parameter | Type   | Required | Default     | Description                                       |
+  | :-------- | :----- | :------- | :---------- | :------------------------------------------------ |
+  | `page`    | String | No       | `1`         | Page number                                       |
+  | `limit`   | String | No       | `10`        | Size of page result                               |
+  | `search`  | String | No       | _None_      | Match first/last name or email (case-insensitive) |
+  | `role`    | String | No       | _None_      | Filter by role                                    |
+  | `sort`    | String | No       | _None_      | Sort field name (e.g. `'createdAt'`)              |
+  | `order`   | String | No       | `'asc'`     | Sort direction (`'asc'` or `'desc'`)              |
 
 - **Response (200 OK)**:
   Standard paginated response with `items`, `page`, `limit`, and `totalPages`.
@@ -882,12 +909,27 @@ Directly toggle availability state of a product.
 
 ### 6.5 Update Discount
 
-Sets the discounted price of a product.
+Sets the discounted price and/or sale end date of a product.
 
 - **Method / URL**: `PATCH /products/:id/discount`
-- **Auth Level**: Access Token (`admin` only)
+- **Auth Level**: Access Token (`admin` or `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`application/json`)**: `{ "discountedPrice": number }`
+- **Request Body (`application/json`)**:
+
+  | Field             | Type   | Required | Rules                 | Description                              |
+  | :---------------- | :----- | :------- | :-------------------- | :--------------------------------------- |
+  | `discountedPrice` | Number | No       | Min 0                 | Discounted price value                   |
+  | `endDate`         | String | No       | Valid ISO Date string | Expiration date for the discount pricing |
+
+  _Request Example_:
+
+  ```json
+  {
+    "discountedPrice": 15.99,
+    "endDate": "2026-08-01T00:00:00.000Z"
+  }
+  ```
+
 - **Response (200 OK)**: Updated product object wrapped in `data`.
 
 ---
@@ -1330,7 +1372,123 @@ Updates restaurant details. Managers can only update their own assigned restaura
 
 ---
 
-## 11. End-to-End Shopping & Order Workflow
+---
+
+## 11. Offers Module (`/offers`)
+
+### 11.1 Create Offer
+
+Creates a new product offer / discount promotion for a restaurant.
+
+- **Method / URL**: `POST /offers`
+- **Auth Level**: Access Token (`manager` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field                | Type    | Required | Rules                          | Description                      |
+  | :------------------- | :------ | :------- | :----------------------------- | :------------------------------- |
+  | `productId`          | String  | Yes      | Valid Product ObjectId         | Target product                   |
+  | `discountPercentage` | Number  | Yes      | Min 1, Max 100                 | Percentage discount rate         |
+  | `startDate`          | String  | Yes      | Valid ISO Date or `YYYY-MM-DD` | Start date of offer promotion    |
+  | `endDate`            | String  | Yes      | Valid ISO Date or `YYYY-MM-DD` | Expiration date of offer         |
+  | `featured`           | Boolean | No       | Boolean                        | Set as featured promotional item |
+
+  _Request Example_:
+
+  ```json
+  {
+    "productId": "64b100996f6d5c001cfef2ea",
+    "discountPercentage": 25,
+    "startDate": "2026-07-20T00:00:00.000Z",
+    "endDate": "2026-07-27T23:59:59.000Z",
+    "featured": true
+  }
+  ```
+
+- **Response (201 Created)**: Created offer object wrapped in `data`.
+
+---
+
+### 11.2 Get Active Offers (Public)
+
+Retrieves a paginated list of currently active promotional offers.
+
+- **Method / URL**: `GET /offers/active`
+- **Auth Level**: Public
+- **Query Parameters**:
+
+  | Parameter | Type   | Required | Default | Description |
+  | :-------- | :----- | :------- | :------ | :---------- |
+  | `page`    | String | No       | `1`     | Page number |
+  | `limit`   | String | No       | `10`    | Page size   |
+
+- **Response (200 OK)**: Paginated active offers list wrapped in `data`.
+
+---
+
+### 11.3 Get Active Offer by ID (Public)
+
+- **Method / URL**: `GET /offers/active/:id`
+- **Auth Level**: Public
+- **Response (200 OK)**: Single active offer details wrapped in `data`.
+
+---
+
+### 11.4 Get Restaurant Offers (Manager)
+
+Retrieves all promotional offers created for the logged-in manager's restaurant.
+
+- **Method / URL**: `GET /offers`
+- **Auth Level**: Access Token (`manager` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter   | Type   | Required | Default | Description                                                     |
+  | :---------- | :----- | :------- | :------ | :-------------------------------------------------------------- |
+  | `status`    | String | No       | _None_  | `'draft' \| 'scheduled' \| 'active' \| 'expired' \| 'cancelled'`|
+  | `productId` | String | No       | _None_  | Filter by Product ObjectId                                      |
+  | `source`    | String | No       | _None_  | `'manual' \| 'ai_recommendation'`                               |
+  | `page`      | String | No       | `1`     | Page number                                                     |
+  | `limit`     | String | No       | `10`    | Page size                                                       |
+
+- **Response (200 OK)**: Paginated offers list wrapped in `data`.
+
+---
+
+### 11.5 Get Offer Details by ID (Manager)
+
+- **Method / URL**: `GET /offers/:id`
+- **Auth Level**: Access Token (`manager` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**: Single offer object wrapped in `data`.
+
+---
+
+### 11.6 Update Offer (Manager)
+
+Updates an existing offer's attributes or status.
+
+- **Method / URL**: `PATCH /offers/:id`
+- **Auth Level**: Access Token (`manager` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**: Accepts optional fields (`productId`, `discountPercentage`, `startDate`, `endDate`, `featured`, `status`).
+
+- **Response (200 OK)**: Updated offer object wrapped in `data`.
+
+---
+
+### 11.7 Cancel Offer (Manager)
+
+Cancels an active or scheduled offer.
+
+- **Method / URL**: `PATCH /offers/:id/cancel`
+- **Auth Level**: Access Token (`manager` only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**: Updated offer object with status set to `'cancelled'`.
+
+---
+
+## 12. End-to-End Shopping & Order Workflow
 
 To execute a complete shopping & ordering lifecycle, follow this sequence:
 
@@ -1339,18 +1497,20 @@ To execute a complete shopping & ordering lifecycle, follow this sequence:
 2. **Create Category & Product** (Admin):
    - Create categories using `POST /categories`.
    - Create products using `POST /products`, passing the required `restaurantId`.
-3. **Manage Saved Delivery Addresses** (Customer):
+3. **Create Promotional Offers** (Manager):
+   - Restaurant managers create active discounts or promotions using `POST /offers` or update product discount prices via `PATCH /products/:id/discount`.
+4. **Manage Saved Delivery Addresses** (Customer):
    - Add delivery addresses via `POST /auth/addresses` to build up user address profile.
-4. **Add Products to Cart** (Customer):
+5. **Add Products to Cart** (Customer):
    - Call `POST /cart` with `{ "productId": "<productId>", "quantity": 2 }`.
-5. **Verify Cart Totals** (Customer):
+6. **Verify Cart Totals** (Customer):
    - Call `GET /cart` to see itemized and calculated cart summary.
-6. **Place Order** (Customer):
+7. **Place Order** (Customer):
    - Call `POST /orders` providing `deliveryMethod`, `deliveryAddress` (inline or `addressId`), `paymentMethod` (`"Cash on Delivery"`), and optional `saveAddress`.
    - _If cart contains products from multiple restaurants, the API automatically creates separate Order documents per `restaurantId`._
-7. **Retrieve Orders**:
+8. **Retrieve Orders**:
    - Customer: View orders via `GET /orders/me`.
    - Manager: View restaurant-specific orders via `GET /orders/restaurant/:restaurantId` or `GET /restaurants/me`.
    - Admin: View all orders via `GET /orders` or filter by `restaurantId`.
-8. **Update Order Status** (Admin):
+9. **Update Order Status** (Admin):
    - Admin updates lifecycle state via `PATCH /orders/:id/status`. Finalized orders (`Delivered` or `Cancelled`) can no longer be updated.

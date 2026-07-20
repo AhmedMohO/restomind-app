@@ -1,66 +1,164 @@
 import { getTranslations } from "next-intl/server"
-import { Scale } from "lucide-react"
+import {
+  Scale,
+  FileText,
+  Store,
+  ShoppingBag,
+  Truck,
+  CreditCard,
+  Cpu,
+  RefreshCw,
+  HelpCircle,
+  UserLockIcon,
+} from "lucide-react"
 
 export default async function TermsPage() {
   const t = await getTranslations("Terms")
 
   const sections = [
-    { title: t("section1Title"), body: t("section1Body") },
-    { title: t("section2Title"), body: t("section2Body") },
-    { title: t("section3Title"), body: t("section3Body") },
-    { title: t("section4Title"), body: t("section4Body") },
-    { title: t("section5Title"), body: t("section5Body") },
-    { title: t("section6Title"), body: t("section6Body") },
-    { title: t("section7Title"), body: t("section7Body") },
-    { title: t("section8Title"), body: t("section8Body") },
-    { title: t("section9Title"), body: t("section9Body") },
+    {
+      title: t("section1Title"),
+      body: t("section1Body"),
+      icon: FileText,
+      id: "purpose",
+    },
+    {
+      title: t("section2Title"),
+      body: t("section2Body"),
+      icon: Store,
+      id: "vendors",
+    },
+    {
+      title: t("section3Title"),
+      body: t("section3Body"),
+      icon: ShoppingBag,
+      id: "surplus-orders",
+    },
+    {
+      title: t("section4Title"),
+      body: t("section4Body"),
+      icon: Truck,
+      id: "delivery-pickup",
+    },
+    {
+      title: t("section5Title"),
+      body: t("section5Body"),
+      icon: CreditCard,
+      id: "pricing-refunds",
+    },
+    {
+      title: t("section6Title"),
+      body: t("section6Body"),
+      icon: UserLockIcon,
+      id: "account-integrity",
+    },
+    {
+      title: t("section7Title"),
+      body: t("section7Body"),
+      icon: Cpu,
+      id: "ip-ai",
+    },
+    {
+      title: t("section8Title"),
+      body: t("section8Body"),
+      icon: RefreshCw,
+      id: "amendments",
+    },
+    {
+      title: t("section9Title"),
+      body: t("section9Body"),
+      icon: HelpCircle,
+      id: "support",
+    },
   ]
 
   return (
-    <main className="w-full">
-      {/* Header */}
-      <section className="relative overflow-hidden bg-primary pt-32 pb-16 md:pt-40 md:pb-20">
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-10 end-10 size-80 rounded-full bg-primary-foreground/20 blur-3xl" />
-        </div>
-        <div className="container relative mx-auto px-4 sm:px-6 md:px-8">
-          <span className="inline-block rounded-full border border-primary-foreground/30 bg-primary-foreground/10 px-4 py-1.5 text-xs font-bold tracking-wider text-primary-foreground/80 uppercase mb-4">
+    <main className="w-full pb-20 dark:bg-neutral-950">
+      {/* Header Banner */}
+      <section
+        className="relative overflow-hidden bg-cover bg-center bg-no-repeat pt-32 pb-16 text-white md:pt-40 md:pb-20"
+        style={{ backgroundImage: "url('/images/Landing/hero.webp')" }}
+      >
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-stone-950/75 backdrop-blur-[2px]" />
+
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 md:px-8">
+          <span className="mb-4 inline-block rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-[#E6BF8F] uppercase backdrop-blur-md">
             {t("badge")}
           </span>
           <div className="flex items-center gap-4">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-primary-foreground/10 backdrop-blur-sm">
-              <Scale className="size-7 text-primary-foreground" />
+            <div className="flex size-14 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-[#E6BF8F] backdrop-blur-md">
+              <Scale className="size-7" />
             </div>
-            <h1 className="font-heading text-3xl font-extrabold text-primary-foreground sm:text-4xl lg:text-5xl">
-              {t("title")}
-            </h1>
+            <div>
+              <h1 className="font-serif text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+                {t("title")}
+              </h1>
+              <p className="mt-1 text-xs text-stone-300">{t("lastUpdated")}</p>
+            </div>
           </div>
-          <p className="mt-4 text-sm text-primary-foreground/60">{t("lastUpdated")}</p>
         </div>
       </section>
 
-      {/* Content */}
+      {/* Main Content Area */}
       <section className="py-12 md:py-16">
-        <div className="container mx-auto max-w-3xl px-4 sm:px-6 md:px-8">
-          {/* Intro */}
-          <div className="rounded-3xl border border-border/30 bg-secondary/40 p-6 sm:p-8">
-            <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
-              {t("intro")}
-            </p>
-          </div>
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6 md:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            {/* Left: Quick Navigation Sidebar */}
+            <aside className="lg:col-span-4">
+              <div className="sticky top-4 rounded-3xl border border-[#ECE6DB] bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                <h3 className="mb-4 border-b border-border/50 pb-2 font-serif text-base font-bold text-[#2B1B15] dark:text-neutral-100">
+                  {t("topicsTitle")}
+                </h3>
+                <nav className="space-y-1.5">
+                  {sections.map((s, i) => (
+                    <a
+                      key={i}
+                      href={`#${s.id}`}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-neutral-100 hover:text-foreground dark:hover:bg-neutral-800"
+                    >
+                      <s.icon className="size-3.5 shrink-0 text-[#7C4A27] dark:text-[#E68A49]" />
+                      <span className="truncate">{s.title}</span>
+                    </a>
+                  ))}
+                </nav>
+              </div>
+            </aside>
 
-          {/* Sections */}
-          <div className="mt-8 space-y-0 divide-y divide-border/50">
-            {sections.map((section, i) => (
-              <div key={i} className="py-8">
-                <h2 className="font-heading text-xl font-bold text-foreground sm:text-2xl">
-                  {section.title}
-                </h2>
-                <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                  {section.body}
+            {/* Right: Detailed Content Cards */}
+            <div className="space-y-6 lg:col-span-8">
+              {/* Intro Banner */}
+              <div className="rounded-3xl border border-[#ECE6DB] bg-white p-6 shadow-sm sm:p-8 dark:border-neutral-800 dark:bg-neutral-900">
+                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  {t("intro")}
                 </p>
               </div>
-            ))}
+
+              {/* Sections Cards */}
+              {sections.map((section, i) => {
+                const Icon = section.icon
+                return (
+                  <div
+                    key={i}
+                    id={section.id}
+                    className="scroll-mt-28 rounded-3xl border border-[#ECE6DB] bg-white p-6 shadow-sm transition-all hover:border-[#7C4A27]/30 sm:p-8 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-[#E68A49]/30"
+                  >
+                    <div className="mb-4 flex items-center gap-3.5">
+                      <div className="flex size-10 items-center justify-center rounded-2xl bg-[#7C4A27]/10 text-[#7C4A27] dark:bg-[#C2733C]/20 dark:text-[#E68A49]">
+                        <Icon className="size-5" />
+                      </div>
+                      <h2 className="font-serif text-lg font-bold text-[#2B1B15] sm:text-xl dark:text-neutral-100">
+                        {section.title}
+                      </h2>
+                    </div>
+
+                    <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                      {section.body}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </section>
