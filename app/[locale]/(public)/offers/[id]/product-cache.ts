@@ -1,13 +1,13 @@
 import { cacheLife, cacheTag } from "next/cache"
-import { getProductById, type ApiProduct } from "@/features/products/api"
+import { getActiveOffer, type ApiOffer } from "@/features/offers/api"
 
-export async function getCachedProduct(id: string): Promise<ApiProduct | null> {
+export async function getCachedOffer(id: string): Promise<ApiOffer | null> {
   "use cache"
-  cacheTag(`product:${id}`, "products")
+  cacheTag(`offer:${id}`, "offers")
   cacheLife("hours")
 
   try {
-    const res = await getProductById(id)
+    const res = await getActiveOffer(id)
     if (res?.data) return res.data
   } catch {
     // API unavailable during prerendering

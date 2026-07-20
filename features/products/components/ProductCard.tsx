@@ -7,21 +7,29 @@ import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
-import { useLocale, useTranslations } from "next-intl"
-import { ApiProduct } from "../api"
+import { useTranslations } from "next-intl"
+import type { ApiProduct } from "../api"
+import type { ApiOffer } from "@/features/offers/api/type"
 
 interface ProductCardProps {
-  product: ApiProduct
+  product?: ApiProduct | ApiOffer
+  offer?: ApiOffer
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product: rawProduct, offer: rawOffer }: ProductCardProps) {
   const { addToCart, toggleWishlist, wishlist } = useCart()
   const { isAuthenticated } = useAuth()
   const router = useRouter()
   const [added, setAdded] = useState(false)
   const t = useTranslations("Offers")
 
+  if (!rawProduct && !rawOffer) return null
+
+  const offer = rawOffer || (rawProduct && "productId" in rawProduct ? (rawProduct as ApiOffer) : undefined)
+  const product: ApiProduct = offer ? offer.productId : (rawProduct as ApiProduct)
   const isFavorite = wishlist.includes(product._id)
+  const discountedPrice = product.discountedPrice
+  const discountPercentage = offer ? offer.discountPercentage : 0
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -41,27 +49,37 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    toggleWishlist(product.slug)
+    toggleWishlist(product._id)
   }
+
+  const detailSlug = product.slug
 
   return (
     <div className="group flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white shadow-sm transition-all duration-350 hover:-translate-y-1 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
-      <Link href={`/offers/${product.slug}`} className="block">
+      <Link href={`/offers/${detailSlug}`} className="block">
         {/* Product Image Container (extends to edges of the card) */}
         <div className="dark:bg-neutral-850 relative aspect-[4/3] w-full overflow-hidden bg-[#FAF7F2]">
           <Image
-            src={product.image.secure_url}
+            src={product.image?.secure_url || "/placeholder.svg"}
             alt={product.title}
             fill
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
-          {/* Bestseller Badge */}
-          {product.isBestseller && (
-            <span className="absolute start-3 top-3 rounded-full bg-[#E6BF8F] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#2B1B15] uppercase shadow-sm">
-              {t("bestseller")}
-            </span>
-          )}
+          {/* Badges Container: Offer Discount percentage & Bestseller */}
+          <div className="absolute start-3 top-3 z-10 flex flex-wrap items-center gap-1.5">
+            {discountPercentage > 0 && (
+              <span className="rounded-full bg-[#7C4A27] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm dark:bg-[#C2733C]">
+                {t("discountBadge", { percent: discountPercentage })}
+              </span>
+            )}
+
+            {product.isBestseller && (
+              <span className="rounded-full bg-[#E6BF8F] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#2B1B15] uppercase shadow-sm">
+                {t("bestseller")}
+              </span>
+            )}
+          </div>
           {/* Wishlist Toggle Button */}
           <button
             onClick={handleToggleWishlist}
@@ -102,9 +120,14 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           {/* Price & Availability */}
           <div className="flex items-center justify-between border-t border-dashed border-[#ECE6DB] pt-1 dark:border-neutral-800">
-            <span className="font-serif text-base font-bold text-[#2B1B15] dark:text-neutral-100">
-              {product.price} {t("egp")}
-            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-serif text-base font-bold text-[#2B1B15] dark:text-neutral-100">
+                {discountedPrice} {t("egp")}
+              </span>
+              <span className="text-xs text-muted-foreground line-through">
+                {product.price} {t("egp")}
+              </span>
+            </div>
             <div className="flex items-center gap-1.5">
               <span
                 className={cn(

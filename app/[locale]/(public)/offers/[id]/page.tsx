@@ -6,8 +6,8 @@ import ProductDetails from "@/features/products/components/ProductDetails"
 import { productMetadata } from "@/lib/seo/metadata"
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo/json-ld"
 import { ArrowLeft, Search } from "lucide-react"
-import { getProducts } from "@/features/products/api"
-import { getCachedProduct } from "./product-cache"
+import { getActiveOffers } from "@/features/offers/api"
+import { getCachedOffer } from "./product-cache"
 
 interface ProductPageProps {
   params: Promise<{ locale: string; id: string }>
@@ -15,16 +15,16 @@ interface ProductPageProps {
 
 export async function generateStaticParams() {
   try {
-    const res = await getProducts({ limit: 5 })
+    const res = await getActiveOffers({ limit: 5 })
     return routing.locales.flatMap((locale) =>
-      (res?.items || []).map((product) => ({
+      (res?.items || []).map((offer) => ({
         locale,
-        id: product._id,
+        id: offer.productId.slug || offer._id,
       }))
     )
   } catch (error) {
     console.error(
-      "[generateStaticParams] Failed to fetch products for static params:",
+      "[generateStaticParams] Failed to fetch active offers for static params:",
       error
     )
     return []
@@ -35,8 +35,10 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { locale, id } = await params
-  const product = await getCachedProduct(id)
-  if (!product) return { title: "Product" }
+  const offer = await getCachedOffer(id)
+  if (!offer || !offer.productId) return { title: "Offer" }
+
+  const product = offer.productId
 
   return productMetadata(
     {
@@ -64,14 +66,14 @@ async function ProductDetailsFetcher({ params }: ProductPageProps) {
   setRequestLocale(locale)
   const t = await getTranslations({ locale, namespace: "Offers" })
 
-  let product = null
+  let offer = null
   try {
-    product = await getCachedProduct(id)
+    offer = await getCachedOffer(id)
   } catch (error) {
-    console.error(`[ProductDetailsFetcher] Error loading product ${id}:`, error)
+    console.error(`[ProductDetailsFetcher] Error loading offer ${id}:`, error)
   }
 
-  if (!product) {
+  if (!offer || !offer.productId) {
     return (
       <div className="flex flex-col items-center justify-center space-y-4 py-20 text-center">
         <div className="dark:bg-neutral-850 rounded-full bg-[#FAF2ED] p-4 text-primary dark:text-[#E68A49]">
@@ -96,6 +98,8 @@ async function ProductDetailsFetcher({ params }: ProductPageProps) {
     )
   }
 
+  const product = offer.productId
+
   const jsonLd = productJsonLd({
     id: product._id,
     title: product.title,
@@ -109,7 +113,7 @@ async function ProductDetailsFetcher({ params }: ProductPageProps) {
   const breadcrumbItems = [
     { name: "Home", url: "/" },
     { name: "Offers", url: "/offers" },
-    { name: product.title, url: `/offers/${product._id}` },
+    { name: product.title, url: `/offers/${product.slug || offer._id}` },
   ]
   const breadcrumbLd = breadcrumbJsonLd(breadcrumbItems)
 
@@ -123,7 +127,7 @@ async function ProductDetailsFetcher({ params }: ProductPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
-      <ProductDetails product={product} />
+      <ProductDetails product={offer} />
     </>
   )
 }
@@ -135,3 +139,4 @@ export default function ProductPage({ params }: ProductPageProps) {
     </Suspense>
   )
 }
+

@@ -4,7 +4,7 @@ import type { Metadata } from "next"
 import { getAlternates } from "@/lib/seo/metadata"
 import { webpageJsonLd } from "@/lib/seo/json-ld"
 import OffersContentClient from "./offers-content-client"
-import { getProducts } from "@/features/products/api"
+import { getActiveOffers } from "@/features/offers/api"
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -19,10 +19,11 @@ function OffersLoading() {
 }
 
 async function OffersListFetcher() {
-  const initialPage = await getProducts({ page: 1, limit: 12 })
+  const initialPage = await getActiveOffers({ page: 1, limit: 12 }).catch(() => undefined)
 
   return <OffersContentClient initialPage={initialPage} />
 }
+
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params

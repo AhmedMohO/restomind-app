@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { Link } from "@/i18n/routing"
 import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star } from "lucide-react"
 import type { ApiProduct } from "@/features/products/api/type"
-import { fetchProductsAction } from "@/features/products/actions"
+import type { ApiOffer } from "@/features/offers/api/type"
+import { useActiveOffers } from "@/features/offers/hooks"
 import { useCart } from "@/hooks/use-cart"
 import { cn } from "@/lib/utils"
 import ProductCarousel from "@/components/common/ProductCarousel"
@@ -12,41 +13,31 @@ import { useTranslations } from "next-intl"
 import Image from "next/image"
 
 interface ProductDetailsProps {
-  product: ApiProduct
+  product: ApiOffer
 }
 
-export default function ProductDetails({ product }: ProductDetailsProps) {
+export default function ProductDetails({ product: rawProduct }: ProductDetailsProps) {
+  const t = useTranslations("Offers")
+  const product = rawProduct.productId
   const { addToCart, toggleWishlist, wishlist } = Object(useCart())
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
-  const [similarProducts, setSimilarProducts] = useState<ApiProduct[]>([])
-  const t = useTranslations("Offers")
+  const { data: similarRes } = useActiveOffers({
+    limit: 10,
+    category: product.category?._id,
+    sort: "price",
+    order: "asc",
+  })
 
-  useEffect(() => {
-    let isMounted = true
-    async function loadSimilar() {
-      try {
-        const res = await fetchProductsAction({
-          limit: 10,
-          category: product.category?._id,
-          sort: "price",
-          order: "asc",
-        })
+  const similarOffers = (similarRes?.items ?? []).filter(
+    (o) => o._id !== rawProduct._id && o.productId._id !== product._id
+  )
 
-        if (isMounted && res?.items) {
-          setSimilarProducts(res.items.filter((p) => p._id !== product._id))
-        }
-      } catch (error) {
-        console.error("[loadSimilar] Error fetching similar products:", error)
-      }
-    }
-    loadSimilar()
-    return () => {
-      isMounted = false
-    }
-  }, [product._id, product.category?._id])
+  if (!product) return null
 
   const isFavorite = wishlist.includes(product._id)
+  const activePrice = product.discountedPrice ;
+  const discountPercentage = rawProduct.discountPercentage || 0;
 
   const getCategoryLabel = (cat: string) => {
     switch (cat) {
@@ -112,9 +103,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           <div className="space-y-4">
             {/* Top row: Tags and wishlist button */}
             <div className="flex items-center justify-between">
-              <span className="rounded-full bg-[#E2F7EB] px-3 py-1 text-xs font-semibold text-[#2F6D44] dark:bg-emerald-950/30 dark:text-emerald-400">
-                {t("dailyFresh")}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-[#E2F7EB] px-3 py-1 text-xs font-semibold text-[#2F6D44] dark:bg-emerald-950/30 dark:text-emerald-400">
+                  {t("dailyFresh")}
+                </span>
+                <span className="rounded-full bg-[#7C4A27] px-3 py-1 text-xs font-bold text-white uppercase dark:bg-[#C2733C]">
+                  {t("discountBadge", { percent: discountPercentage })}
+                </span>
+              </div>
               <button
                 onClick={() => toggleWishlist(product._id)}
                 className={cn(
@@ -145,7 +141,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     key={i}
                     size={16}
                     className={cn(
-                      i < Math.floor(product.rating)
+                      i < Math.floor(product.rating ?? 5)
                         ? "fill-current"
                         : "opacity-30"
                     )}
@@ -153,21 +149,26 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 ))}
               </div>
               <span className="text-xs font-semibold text-[#2B1B15] dark:text-neutral-300">
-                {product.rating}
+                {product.rating ?? 5}
               </span>
               <span className="text-xs text-muted-foreground">
-                {t("reviews", { count: product.reviewsCount })}
+                {t("reviews", { count: product.reviewsCount ?? 0 })}
               </span>
             </div>
 
             {/* Large Price Display */}
-            <div className="font-serif text-3xl font-bold text-[#2B1B15] dark:text-neutral-100">
-              {product.price} {t("egp")}
+            <div className="flex items-baseline gap-3">
+              <span className="font-serif text-3xl font-bold text-[#2B1B15] dark:text-neutral-100">
+                {activePrice} {t("egp")}
+              </span>
+              <span className="text-lg text-muted-foreground line-through">
+                {product.price} {t("egp")}
+              </span>
             </div>
 
             {/* Description */}
             <p className="text-sm leading-relaxed text-muted-foreground">
-              {product.longDescription}
+              {product.longDescription || product.description}
             </p>
           </div>
 
@@ -212,7 +213,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 {added
                   ? t("addedToCart")
                   : t("addToCartPrice", {
-                      price: (product.price * quantity).toLocaleString(),
+                      price: (activePrice * quantity).toLocaleString(),
                     })}
               </span>
             </button>
@@ -221,10 +222,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       </div>
 
       {/* Similar offers carousel */}
-      {similarProducts.length > 0 && (
+      {similarOffers.length > 0 && (
         <div className="mt-12 border-t border-[#ECE6DB] pt-12 transition-colors dark:border-neutral-800">
           <ProductCarousel
-            products={similarProducts}
+            products={similarOffers}
             title={t("similarTitle")}
             subtitle={t("similarSubtitle", {
               category: getCategoryLabel(product.category?.name || ""),
@@ -235,3 +236,4 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     </div>
   )
 }
+

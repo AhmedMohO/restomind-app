@@ -1,53 +1,28 @@
 "use client"
 
-import React, { useCallback, useEffect, useReducer, useState } from "react"
-import type { ApiProduct } from "@/features/products/api/type"
-import { fetchProductsAction } from "@/features/products/actions"
-import type { GetProductsParams } from "@/features/products/api/type"
-import type { PaginatedProducts } from "@/features/products/api/type"
+import React, { useMemo, useState } from "react"
+import type { GetActiveOffersParams, PaginatedOffers } from "@/features/offers/api/type"
+import { useActiveOffers } from "@/features/offers/hooks"
 import { FilterState, SortOption } from "@/features/products/types"
 import ProductCard from "@/features/products/components/ProductCard"
 import FilterSidebar from "@/features/products/components/FilterSidebar"
 import SortBar from "@/features/products/components/SortBar"
 import { Pagination } from "@/components/ui/pagination"
-import { usePagination, type PaginationState } from "@/hooks/use-pagination"
 import { Filter, Search, Loader2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 interface OffersContentClientProps {
-  initialPage?: PaginatedProducts
+  initialPage?: PaginatedOffers
 }
 
 const DEFAULT_FILTERS: FilterState = {
   searchQuery: "",
   priceRange: [0, 500],
-  availability: { inStock: false, outOfStock: false },
   categories: [],
   tags: [],
-}
-
-type PaginationAction =
-  | { type: "SET_PAGE"; page: number }
-  | { type: "SET_LIMIT"; limit: number }
-  | { type: "SET_RESULT"; result: PaginatedProducts }
-
-function paginationReducer(
-  state: PaginationState,
-  action: PaginationAction
-): PaginationState {
-  switch (action.type) {
-    case "SET_PAGE":
-      return { ...state, page: action.page }
-    case "SET_LIMIT":
-      return { ...state, limit: action.limit, page: 1 }
-    case "SET_RESULT":
-      return {
-        page: action.result.page,
-        limit: action.result.limit,
-        total: action.result.total,
-        totalPages: action.result.totalPages,
-      }
-  }
+  isBestseller: false,
+  featuredOnly: false,
+  minDiscount: 0,
 }
 
 export default function OffersContentClient({ initialPage }: OffersContentClientProps) {
@@ -55,66 +30,132 @@ export default function OffersContentClient({ initialPage }: OffersContentClient
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
   const [sortBy, setSortBy] = useState<SortOption>("default")
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
-  const [products, setProducts] = useState<ApiProduct[]>(initialPage?.items ?? [])
-  const [loading, setLoading] = useState(false)
+  const [page, setPage] = useState(initialPage?.page ?? 1)
+  const [limit, setLimit] = useState(initialPage?.limit ?? 12)
 
-  const [pState, dispatch] = useReducer(paginationReducer, {
-    page: initialPage?.page ?? 1,
-    limit: initialPage?.limit ?? 12,
-    total: initialPage?.total ?? 0,
-    totalPages: initialPage?.totalPages ?? 0,
-  })
+  // Fetch all active offers from API (large limit to enable client-side filter)
+  const queryParams: GetActiveOffersParams = useMemo(() => ({
+    page: 1,
+    limit: 100,
+  }), [])
 
-  const pag = usePagination(pState, (update) => {
-    for (const [k, v] of Object.entries(update)) {
-      if (k === "page") dispatch({ type: "SET_PAGE", page: v as number })
-      if (k === "limit") dispatch({ type: "SET_LIMIT", limit: v as number })
-    }
-  })
+  const { data, isLoading } = useActiveOffers(queryParams, initialPage)
 
-  const fetchPage = useCallback(
-    async (params: GetProductsParams) => {
-      setLoading(true)
-      try {
-        const res = await fetchProductsAction(params)
-        if (res) {
-          setProducts(res.items)
-          dispatch({ type: "SET_RESULT", result: res })
-        }
-      } catch {
-        // silently fail
-      } finally {
-        setLoading(false)
+  const rawOffers = data?.items ?? []
+
+  // Reactive Client-side Filter
+  const filteredOffers = useMemo(() => {
+    return rawOffers.filter((offer) => {
+      const prod = offer.productId as any
+      const rest = offer.restaurantId as any
+
+      // 1. Search Query
+      if (filters.searchQuery) {
+        const q = filters.searchQuery.toLowerCase()
+        const titleMatch = prod?.title?.toLowerCase().includes(q)
+        const descMatch = prod?.description?.toLowerCase().includes(q)
+        const restMatch = rest?.name?.toLowerCase().includes(q)
+        if (!titleMatch && !descMatch && !restMatch) return false
       }
-    },
-    []
-  )
 
-  useEffect(() => {
-    if (!initialPage) {
-      fetchPage({ page: 1, limit: 12 })
-    }
-  }, [])
+      // 2. Price Range
+      const price = prod?.discountedPrice ?? prod?.price ?? 0
+      if (price < filters.priceRange[0] || price > filters.priceRange[1]) {
+        return false
+      }
 
-  useEffect(() => {
-    const params: GetProductsParams = {
-      page: pag.page,
-      limit: pag.limit,
-    }
-    if (sortBy !== "default") {
-      const [sort, order] = sortBy.split("-") as [string, "asc" | "desc"]
-      params.sort = sort
-      params.order = order
-    }
-    if (filters.searchQuery) params.search = filters.searchQuery
-    if (filters.categories.length === 1) params.category = filters.categories[0]
+      // 3. Categories
+      if (filters.categories && filters.categories.length > 0) {
+        const prodCat = prod?.category
+        const catId = typeof prodCat === "object" ? prodCat?._id : prodCat
+        const catName = typeof prodCat === "object" ? prodCat?.name : prodCat
+        const matchesCat = filters.categories.some(
+          (c) => c === catId || c === catName
+        )
+        if (!matchesCat) return false
+      }
 
-    fetchPage(params)
-  }, [pag.page, pag.limit, sortBy, filters.searchQuery, filters.categories])
+      // 4. Tags
+      if (filters.tags && filters.tags.length > 0) {
+        const prodTags: string[] = prod?.tags ?? []
+        const hasTag = filters.tags.some((t) => prodTags.includes(t))
+        if (!hasTag) return false
+      }
+
+      // 5. Bestseller Only
+      if (filters.isBestseller) {
+        if (!prod?.isBestseller) return false
+      }
+
+      // 6. Featured Offers Only
+      if (filters.featuredOnly) {
+        if (!offer.featured) return false
+      }
+
+      // 7. Minimum Discount
+      if (filters.minDiscount && filters.minDiscount > 0) {
+        if ((offer.discountPercentage ?? 0) < filters.minDiscount) return false
+      }
+
+      return true
+    })
+  }, [rawOffers, filters])
+
+  // Sorting
+  const sortedOffers = useMemo(() => {
+    const list = [...filteredOffers]
+    if (sortBy === "price-asc") {
+      list.sort(
+        (a, b) =>
+          ((a.productId as any)?.discountedPrice ?? 0) -
+          ((b.productId as any)?.discountedPrice ?? 0)
+      )
+    } else if (sortBy === "price-desc") {
+      list.sort(
+        (a, b) =>
+          ((b.productId as any)?.discountedPrice ?? 0) -
+          ((a.productId as any)?.discountedPrice ?? 0)
+      )
+    } else if (sortBy === "rating-desc") {
+      list.sort(
+        (a, b) =>
+          ((b.productId as any)?.rating ?? b.discountPercentage ?? 0) -
+          ((a.productId as any)?.rating ?? a.discountPercentage ?? 0)
+      )
+    }
+    return list
+  }, [filteredOffers, sortBy])
+
+  const totalCount = sortedOffers.length
+  const totalPages = Math.ceil(totalCount / limit) || 1
+  const displayedOffers = useMemo(() => {
+    const start = (page - 1) * limit
+    return sortedOffers.slice(start, start + limit)
+  }, [sortedOffers, page, limit])
 
   const handleClearFilters = () => {
     setFilters(DEFAULT_FILTERS)
-    pag.resetPage()
+    setPage(1)
+  }
+
+  const handleSearchChange = (query: string) => {
+    setFilters((prev) => ({ ...prev, searchQuery: query }))
+    setPage(1)
+  }
+
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters)
+    setPage(1)
+  }
+
+  const handleSortChange = (newSort: SortOption) => {
+    setSortBy(newSort)
+    setPage(1)
+  }
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit)
+    setPage(1)
   }
 
   return (
@@ -132,7 +173,7 @@ export default function OffersContentClient({ initialPage }: OffersContentClient
         <aside className="sticky top-4 hidden lg:col-span-1 lg:block">
           <FilterSidebar
             filters={filters}
-            onFiltersChange={setFilters}
+            onFiltersChange={handleFiltersChange}
             onClear={handleClearFilters}
           />
         </aside>
@@ -152,10 +193,7 @@ export default function OffersContentClient({ initialPage }: OffersContentClient
                 type="text"
                 placeholder={t("searchPlaceholderShort")}
                 value={filters.searchQuery}
-                onChange={(e) => {
-                  setFilters({ ...filters, searchQuery: e.target.value })
-                  pag.resetPage()
-                }}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full bg-transparent text-xs outline-none"
               />
             </div>
@@ -167,10 +205,7 @@ export default function OffersContentClient({ initialPage }: OffersContentClient
               type="text"
               placeholder={t("searchPlaceholder")}
               value={filters.searchQuery}
-              onChange={(e) => {
-                setFilters({ ...filters, searchQuery: e.target.value })
-                pag.resetPage()
-              }}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full bg-transparent text-sm outline-none"
             />
           </div>
@@ -179,7 +214,7 @@ export default function OffersContentClient({ initialPage }: OffersContentClient
             <div className="animate-in rounded-[20px] bg-[#FAF7F2] p-1 duration-200 fade-in lg:hidden dark:bg-neutral-950">
               <FilterSidebar
                 filters={filters}
-                onFiltersChange={setFilters}
+                onFiltersChange={handleFiltersChange}
                 onClear={handleClearFilters}
               />
             </div>
@@ -187,30 +222,27 @@ export default function OffersContentClient({ initialPage }: OffersContentClient
 
           <SortBar
             sortBy={sortBy}
-            onSortChange={(val) => {
-              setSortBy(val)
-              pag.resetPage()
-            }}
-            pageSize={pag.limit}
-            onPageSizeChange={pag.setLimit}
-            totalCount={pag.total}
+            onSortChange={handleSortChange}
+            pageSize={limit}
+            onPageSizeChange={handleLimitChange}
+            totalCount={totalCount}
           />
 
-          {loading ? (
+          {isLoading ? (
             <div className="flex min-h-[40vh] items-center justify-center">
               <Loader2 className="size-8 animate-spin text-primary" />
             </div>
-          ) : products.length > 0 ? (
+          ) : displayedOffers.length > 0 ? (
             <>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-                {products.map((product) => (
-                  <ProductCard key={product._id} product={product} />
+                {displayedOffers.map((offer) => (
+                  <ProductCard key={offer._id} product={offer} />
                 ))}
               </div>
               <Pagination
-                page={pag.page}
-                totalPages={pag.totalPages}
-                onPageChange={pag.setPage}
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
                 className="pt-4"
               />
             </>

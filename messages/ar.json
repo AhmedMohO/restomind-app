@@ -281,6 +281,7 @@
     "noProductsFound": "لم نجد أي مخبوزات",
     "noProductsDesc": "تعذر العثور على منتجات تطابق الفلاتر الحالية.",
     "bestseller": "الأكثر مبيعاً",
+    "discountBadge": "خصم {percent}%",
     "dailyFresh": "طازج يومياً",
     "available": "متوفر",
     "addToCart": "إضافة للسلة",

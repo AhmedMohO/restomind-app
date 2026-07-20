@@ -9,9 +9,10 @@ import {
 } from "@/components/ui/carousel"
 import ProductCard from "@/features/products/components/ProductCard"
 import type { ApiProduct } from "@/features/products/api/type"
+import type { ApiOffer } from "@/features/offers/api/type"
 
 interface ProductCarouselProps {
-  products?: ApiProduct[]
+  products?: (ApiProduct | ApiOffer)[]
   category?: string
   excludeId?: string
   title: string
@@ -32,9 +33,10 @@ export default function ProductCarousel({
   let displayProducts = products
 
   if (category) {
-    displayProducts = displayProducts.filter(
-      (p) => p.category.name.toLowerCase() === category.toLowerCase()
-    )
+    displayProducts = displayProducts.filter((p) => {
+      const catName = "productId" in p ? p.productId.category?.name : p.category?.name
+      return catName?.toLowerCase() === category.toLowerCase()
+    })
   }
   if (excludeId) {
     displayProducts = displayProducts.filter((p) => p._id !== excludeId)
