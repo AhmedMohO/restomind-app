@@ -2,7 +2,7 @@
 
 import React, { useSyncExternalStore } from "react"
 import { useCart } from "@/hooks/use-cart"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { Link } from "@/i18n/routing"
 import Image from "next/image"
 import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag } from "lucide-react"
@@ -24,6 +24,8 @@ const getServerSnapshot = () => false
 
 export default function CartSheet() {
   const t = useTranslations("Cart")
+  const tOffers = useTranslations("Offers")
+  const locale = useLocale()
   const {
     cart,
     cartCount,
@@ -51,7 +53,7 @@ export default function CartSheet() {
           >
             <ShoppingCart className="size-4" />
             {isMounted && cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 animate-in items-center justify-center rounded-full bg-[#7C4A27] text-[10px] font-bold text-white ring-2 ring-background duration-200 zoom-in dark:bg-[#C2733C]">
+              <span className="absolute -top-1.5 end-[-6px] flex h-5 w-5 animate-in items-center justify-center rounded-full bg-[#7C4A27] text-[10px] font-bold text-white ring-2 ring-background duration-200 zoom-in dark:bg-[#C2733C]">
                 {cartCount}
               </span>
             )}
@@ -60,15 +62,15 @@ export default function CartSheet() {
       />
       <SheetContent
         side="right"
-        className="flex h-full w-[380px] flex-col border-l border-border/40 bg-white p-0 sm:w-[450px] dark:border-neutral-800 dark:bg-neutral-900"
+        className="flex h-full w-[380px] flex-col border-s border-border/40 bg-white p-0 sm:w-[450px] dark:border-neutral-800 dark:bg-neutral-900"
       >
         {/* Header */}
-        <SheetHeader className="flex flex-row items-center justify-between border-b border-border/50 p-6 dark:border-neutral-800">
+        <SheetHeader className="flex flex-row items-center justify-between border-b border-border/50 p-6 text-start dark:border-neutral-800">
           <div className="space-y-0.5">
-            <SheetTitle className="text-left font-serif text-xl font-bold text-[#2B1B15] rtl:text-right dark:text-neutral-100">
+            <SheetTitle className="text-start font-serif text-xl font-bold text-[#2B1B15] dark:text-neutral-100">
               {t("title")}
             </SheetTitle>
-            <SheetDescription className="text-left text-xs text-muted-foreground rtl:text-right">
+            <SheetDescription className="text-start text-xs text-muted-foreground">
               {isMounted ? `${cartCount} ${t("items")}` : `0 ${t("items")}`}
             </SheetDescription>
           </div>
@@ -77,7 +79,7 @@ export default function CartSheet() {
               variant="ghost"
               size="xs"
               onClick={clearCart}
-              className="h-7 shrink-0 gap-1.5 rounded-full px-3 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase transition-colors hover:bg-red-500/10 hover:text-red-500 dark:hover:bg-red-950/20"
+              className="me-6 h-7 shrink-0 gap-1.5 rounded-full px-3 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase transition-colors hover:bg-red-500/10 hover:text-red-500 dark:hover:bg-red-950/20"
               nativeButton
             >
               <Trash2 className="size-3" />
@@ -119,13 +121,13 @@ export default function CartSheet() {
             <div className="space-y-6">
               {cart.map((item) => (
                 <div
-                  key={item.product.id}
+                  key={item.product._id}
                   className="flex items-center justify-between gap-4 border-b border-dashed border-[#ECE6DB] pb-5 transition-colors last:border-0 last:pb-0 dark:border-neutral-800"
                 >
                   {/* Product Image */}
                   <div className="dark:bg-neutral-850 relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] border border-[#ECE6DB] bg-[#FAF7F2] dark:border-neutral-800">
                     <Image
-                      src={item.product.image}
+                      src={item.product.image?.secure_url || "/placeholder.svg"}
                       alt={item.product.title}
                       width={64}
                       height={64}
@@ -134,59 +136,59 @@ export default function CartSheet() {
                   </div>
 
                   {/* Product Details & Quantity controls */}
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    <h4 className="truncate pr-2 font-serif text-sm font-bold text-[#2B1B15] rtl:pr-0 rtl:pl-2 dark:text-neutral-100">
+                  <div className="min-w-0 flex-1 space-y-1.5 text-start">
+                    <h4 className="truncate pe-2 font-serif text-sm font-bold text-[#2B1B15] dark:text-neutral-100">
                       {item.product.title}
                     </h4>
-                    <p className="text-xs font-medium text-[#7C4A27] dark:text-[#E68A49]">
-                      {item.product.price} EGP
-                    </p>
+                      <p className="text-xs font-medium text-[#7C4A27] dark:text-[#E68A49]">
+                        {item.product.price} {tOffers("egp")}
+                      </p>
 
-                    {/* Quantity controls */}
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex items-center rounded-full border border-[#ECE6DB] bg-white px-1 py-0.5 dark:border-neutral-800 dark:bg-neutral-900">
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.product.id, item.quantity - 1)
-                          }
-                          className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] dark:hover:bg-neutral-800"
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus size={10} />
-                        </button>
-                        <span className="min-w-[14px] px-2 text-center text-xs font-bold text-[#2B1B15] dark:text-neutral-200">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.product.id, item.quantity + 1)
-                          }
-                          className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] dark:hover:bg-neutral-800"
-                          aria-label="Increase quantity"
-                        >
-                          <Plus size={10} />
-                        </button>
+                      {/* Quantity controls */}
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex items-center rounded-full border border-[#ECE6DB] bg-white px-1 py-0.5 dark:border-neutral-800 dark:bg-neutral-900">
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.product._id, item.quantity - 1)
+                            }
+                            className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] dark:hover:bg-neutral-800"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus size={10} />
+                          </button>
+                          <span className="min-w-[14px] px-2 text-center text-xs font-bold text-[#2B1B15] dark:text-neutral-200">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.product._id, item.quantity + 1)
+                            }
+                            className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] dark:hover:bg-neutral-800"
+                            aria-label="Increase quantity"
+                          >
+                            <Plus size={10} />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Actions & Price */}
-                  <div className="flex flex-col items-end justify-between self-stretch py-0.5">
-                    <button
-                      onClick={() => removeFromCart(item.product.id)}
-                      className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-500"
-                      title={t("remove")}
-                      aria-label={t("remove")}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                    <p className="text-xs font-bold text-[#2B1B15] dark:text-neutral-100">
-                      {(item.product.price * item.quantity).toLocaleString()}{" "}
-                      EGP
-                    </p>
+                    {/* Actions & Price */}
+                    <div className="flex flex-col items-end justify-between self-stretch py-0.5">
+                      <button
+                        onClick={() => removeFromCart(item.product._id)}
+                        className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-500"
+                        title={t("remove")}
+                        aria-label={t("remove")}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                      <p className="text-xs font-bold text-[#2B1B15] dark:text-neutral-100">
+                        {(item.product.price * item.quantity).toLocaleString()}{" "}
+                        {tOffers("egp")}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>
@@ -199,7 +201,7 @@ export default function CartSheet() {
                 {t("subtotal")}
               </span>
               <span className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
-                {cartTotal.toLocaleString()} EGP
+                {cartTotal.toLocaleString()} {tOffers("egp")}
               </span>
             </div>
             <SheetClose

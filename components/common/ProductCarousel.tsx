@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import {
   Carousel,
   CarouselContent,
@@ -8,12 +7,11 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel"
-import ProductCard from "@/features/products/ProductCard"
-import { MOCK_PRODUCTS } from "@/features/products/data"
-import { Product } from "@/features/products/types"
+import ProductCard from "@/features/products/components/ProductCard"
+import type { ApiProduct } from "@/features/products/api/type"
 
 interface ProductCarouselProps {
-  products?: Product[]
+  products?: ApiProduct[]
   category?: string
   excludeId?: string
   title: string
@@ -23,29 +21,26 @@ interface ProductCarouselProps {
 }
 
 export default function ProductCarousel({
-  products,
+  products = [],
   category,
   excludeId,
   title,
   subtitle,
-  limit,
+  limit = 8,
   className,
 }: ProductCarouselProps) {
-  // Use passed products or fallback to MOCK_PRODUCTS with filtering
-  let displayProducts = products ? [...products] : [...MOCK_PRODUCTS]
+  let displayProducts = products
 
-  if (!products) {
-    if (category) {
-      displayProducts = displayProducts.filter(
-        (p) => p.category.toLowerCase() === category.toLowerCase()
-      )
-    }
-    if (excludeId) {
-      displayProducts = displayProducts.filter((p) => p.id !== excludeId)
-    }
-    if (limit) {
-      displayProducts = displayProducts.slice(0, limit)
-    }
+  if (category) {
+    displayProducts = displayProducts.filter(
+      (p) => p.category.name.toLowerCase() === category.toLowerCase()
+    )
+  }
+  if (excludeId) {
+    displayProducts = displayProducts.filter((p) => p._id !== excludeId)
+  }
+  if (limit) {
+    displayProducts = displayProducts.slice(0, limit)
   }
 
   if (displayProducts.length === 0) {
@@ -55,30 +50,30 @@ export default function ProductCarousel({
   return (
     <div className={className}>
       <Carousel className="w-full">
-        <div className="flex items-end justify-between mb-6 px-1">
+        <div className="mb-6 flex items-end justify-between px-1">
           <div className="space-y-1.5 text-start">
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#2B1B15] dark:text-neutral-100">
+            <h2 className="font-serif text-2xl font-bold tracking-tight text-[#2B1B15] sm:text-3xl dark:text-neutral-100">
               {title}
             </h2>
             {subtitle && (
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
                 {subtitle}
               </p>
             )}
           </div>
 
           {/* Navigation buttons wrapper */}
-          <div className="flex items-center gap-2 relative h-9 w-20 shrink-0">
-            <CarouselPrevious className="relative left-0 right-0 top-0 translate-y-0 size-9 flex items-center justify-center cursor-pointer" />
-            <CarouselNext className="relative left-0 right-0 top-0 translate-y-0 size-9 flex items-center justify-center cursor-pointer" />
+          <div className="relative flex h-9 w-20 shrink-0 items-center gap-2">
+            <CarouselPrevious className="relative top-0 right-0 left-0 flex size-9 translate-y-0 cursor-pointer items-center justify-center" />
+            <CarouselNext className="relative top-0 right-0 left-0 flex size-9 translate-y-0 cursor-pointer items-center justify-center" />
           </div>
         </div>
 
-        <CarouselContent className="gap-6 pb-4">
+        <CarouselContent className="flex gap-6 pb-4">
           {displayProducts.map((product) => (
             <CarouselItem
-              key={product.id}
-              className="w-[280px] sm:w-[320px] shrink-0 snap-start"
+              key={product._id}
+              className="w-[280px] shrink-0 snap-start sm:w-[320px]"
             >
               <ProductCard product={product} />
             </CarouselItem>

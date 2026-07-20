@@ -1,19 +1,15 @@
 import { Play } from "lucide-react"
-import { getTranslations, getLocale } from "next-intl/server"
+import { getTranslations } from "next-intl/server"
 import { Link } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 export default async function HeroSection() {
   const t = await getTranslations("Hero")
-  const locale = await getLocale()
 
   return (
     <main className="relative flex min-h-screen w-full items-center overflow-hidden bg-cover bg-center bg-no-repeat">
       <div
-        className={cn(
-          "absolute inset-0 bg-cover bg-center bg-no-repeat",
-          locale === "ar" && "-scale-x-100"
-        )}
+        className={cn("absolute inset-0 bg-cover bg-center bg-no-repeat")}
         style={{ backgroundImage: "url('/images/Landing/hero.webp')" }}
       />
       {/* Main Container */}
@@ -34,14 +30,14 @@ export default async function HeroSection() {
 
               {/* Buttons Row */}
               <div className="mt-8 flex flex-wrap items-center gap-4 sm:gap-6">
-                <Link href="/order" passHref>
+                <Link href="/offers" passHref>
                   <Button className="h-auto cursor-pointer rounded-full border-0 bg-white px-6 py-3.5 text-sm font-semibold tracking-wider text-stone-900 uppercase shadow-md transition-transform duration-200 hover:scale-105 hover:bg-stone-100 active:scale-95 sm:px-8 sm:py-4">
                     {t("ctaOrder")}
                   </Button>
                 </Link>
 
                 <Link
-                  href="/video"
+                  href="#"
                   className="group flex cursor-pointer items-center gap-3 font-sans text-sm font-semibold tracking-wider text-white uppercase transition-colors hover:text-white/80"
                 >
                   <span>{t("ctaVideo")}</span>

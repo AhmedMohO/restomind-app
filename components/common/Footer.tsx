@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl"
+import { getTranslations } from "next-intl/server"
 import { Link } from "@/i18n/routing"
 import Image from "next/image"
 import {
@@ -9,10 +9,11 @@ import {
   X,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import CopyrightYear from "./CopyrightYear"
 
-export default function Footer() {
-  const t = useTranslations("Footer")
-  const tNavbar = useTranslations("Navbar")
+export default async function Footer() {
+  const t = await getTranslations("Footer")
+  const tNavbar = await getTranslations("Navbar")
 
   const socialLinks = [
     {
@@ -192,7 +193,7 @@ export default function Footer() {
         {/* Fine Print Copyright Bar */}
         <div className="mt-16 flex flex-col items-center justify-between border-t border-stone-200/60 pt-8 text-xs text-stone-500 sm:flex-row dark:border-stone-900/40 dark:text-stone-500">
           <p>
-            © {new Date().getFullYear()} RestoMind. {t("rights")}
+            © <CopyrightYear /> RestoMind. {t("rights")}
           </p>
           <p className="mt-2 sm:mt-0">Made with ❤️ in Cairo, Egypt</p>
         </div>

@@ -1,19 +1,36 @@
-"use client"
-
+import { setRequestLocale, getTranslations } from "next-intl/server"
+import type { Metadata } from "next"
 import { RegisterForm } from "@/components/register-form"
 import Image from "next/image"
 import { Link } from "@/i18n/routing"
-import { useTranslations } from "next-intl"
 import LangToggle from "@/components/common/LangToggle"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { getAlternates } from "@/lib/seo/metadata"
 
-export default function RegisterPage() {
-  const t = useTranslations("Auth")
+type Props = {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Auth" })
+
+  return {
+    title: t("registerTitle"),
+    description: t("registerDescription"),
+    alternates: getAlternates(locale, "/register"),
+  }
+}
+
+export default async function RegisterPage({ params }: Props) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations("Auth")
 
   return (
     <div className="grid min-h-svh bg-background select-none lg:grid-cols-2">
       {/* Form panel */}
-      <div className="flex flex-col p-6 md:p-10">
+      <div className="flex flex-col p-6 md:p-8">
         {/* Auth Page Header */}
         <div className="flex w-full items-center justify-between">
           <Link
@@ -36,8 +53,8 @@ export default function RegisterPage() {
         </div>
 
         {/* Form container */}
-        <div className="flex flex-1 items-center justify-center py-10">
-          <div className="w-full max-w-sm rounded-2xl border border-border/40 bg-card p-6 shadow-xs md:p-8">
+        <div className="flex flex-1 items-center justify-center py-8">
+          <div className="w-full max-w-md rounded-2xl border border-border/40 bg-card p-6 shadow-xs md:p-8">
             <RegisterForm />
           </div>
         </div>
@@ -53,7 +70,6 @@ export default function RegisterPage() {
           height={1080}
           priority
         />
-        {/* Overlay with glassmorphic styling */}
         <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-neutral-950/85 via-neutral-950/40 to-transparent p-12 text-white">
           <div className="max-w-md space-y-3 rounded-2xl border border-white/10 bg-neutral-950/20 p-6 shadow-lg backdrop-blur-xs">
             <h2 className="font-heading text-3xl font-extrabold tracking-wide">

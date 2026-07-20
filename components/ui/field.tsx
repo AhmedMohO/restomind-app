@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
+import { useTranslations } from "next-intl"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -181,7 +182,14 @@ function FieldError({
 }: React.ComponentProps<"div"> & {
   errors?: Array<{ message?: string } | undefined>
 }) {
+  const tValidation = useTranslations("Validation")
+
   const content = useMemo(() => {
+    const translateMsg = (msg?: string) => {
+      if (!msg) return ""
+      return tValidation.has(msg as any) ? tValidation(msg as any) : msg
+    }
+
     if (children) {
       return children
     }
@@ -195,18 +203,18 @@ function FieldError({
     ]
 
     if (uniqueErrors?.length == 1) {
-      return uniqueErrors[0]?.message
+      return translateMsg(uniqueErrors[0]?.message)
     }
 
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
         {uniqueErrors.map(
           (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>
+            error?.message && <li key={index}>{translateMsg(error.message)}</li>
         )}
       </ul>
     )
-  }, [children, errors])
+  }, [children, errors, tValidation])
 
   if (!content) {
     return null

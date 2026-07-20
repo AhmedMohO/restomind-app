@@ -3,6 +3,8 @@
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 
+import { Toaster } from "@/components/ui/sonner"
+
 // Suppress the React 19 "Encountered a script tag" warning
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   const orig = console.error
@@ -28,6 +30,7 @@ function ThemeProvider({
     >
       <ThemeHotkey />
       {children}
+      <Toaster position="top-center" richColors />
     </NextThemesProvider>
   )
 }
@@ -58,7 +61,7 @@ function ThemeHotkey() {
         return
       }
 
-      if (event.key.toLowerCase() !== "d") {
+      if (!event.key || event.key.toLowerCase() !== "d") {
         return
       }
 
