@@ -24,8 +24,8 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   if (!rawProduct) return null
 
   const product = rawProduct.productId
-  const isFavorite = wishlist.includes(product._id)
-  const discountedPrice = product.discountedPrice
+  const isFavorite = wishlist.includes(rawProduct._id)
+  const discountedPrice = rawProduct.offerPrice ?? product.discountedPrice
   const discountPercentage = rawProduct.discountPercentage || 0
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -38,7 +38,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
       return
     }
 
-    addToCart(product, 1)
+    addToCart(rawProduct, 1)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -46,7 +46,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    toggleWishlist(product._id)
+    toggleWishlist(rawProduct._id)
   }
 
   const detailSlug = product.slug

@@ -51,10 +51,10 @@ export async function addToCartAction(
 
 /** Server Action: Remove item from cart */
 export async function removeFromCartAction(
-  productId: string
+  offerId: string
 ): Promise<ActionResult<ApiCart>> {
   try {
-    const res = await removeFromCart(productId)
+    const res = await removeFromCart(offerId)
     return { success: true, data: res.data }
   } catch (error) {
     if (error instanceof AuthenticationError) {
@@ -69,11 +69,11 @@ export async function removeFromCartAction(
 
 /** Server Action: Update cart item quantity */
 export async function updateCartQuantityAction(
-  productId: string,
+  offerId: string,
   quantity: number
 ): Promise<ActionResult<ApiCart>> {
   try {
-    const res = await updateCartItemQuantity(productId, quantity)
+    const res = await updateCartItemQuantity(offerId, quantity)
     return { success: true, data: res.data }
   } catch (error) {
     if (error instanceof AuthenticationError) {

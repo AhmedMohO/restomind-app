@@ -15,7 +15,7 @@ import type { ActionResult } from "@/features/cart/actions"
 export async function getFavoritesAction(): Promise<ActionResult<ApiOffer[]>> {
   try {
     const res = await getFavorites()
-    return { success: true, data: res.offers || [] }
+    return { success: true, data: res.data || [] }
   } catch (error) {
     if (error instanceof AuthenticationError) {
       return { success: false, error: "UNAUTHENTICATED" }
@@ -27,12 +27,12 @@ export async function getFavoritesAction(): Promise<ActionResult<ApiOffer[]>> {
   }
 }
 
-/** Server Action: Add product to favorites */
+/** Server Action: Add offer to favorites */
 export async function addFavoriteAction(
-  productId: string
+  offerId: string
 ): Promise<ActionResult<ApiFavorite>> {
   try {
-    const res = await addFavorite(productId)
+    const res = await addFavorite(offerId)
     return { success: true, data: res.data }
   } catch (error) {
     if (error instanceof AuthenticationError) {
@@ -45,12 +45,12 @@ export async function addFavoriteAction(
   }
 }
 
-/** Server Action: Remove product from favorites */
+/** Server Action: Remove offer from favorites */
 export async function removeFavoriteAction(
-  productId: string
+  offerId: string
 ): Promise<ActionResult<{ message: string }>> {
   try {
-    const res = await removeFavorite(productId)
+    const res = await removeFavorite(offerId)
     return { success: true, data: res }
   } catch (error) {
     if (error instanceof AuthenticationError) {
@@ -63,17 +63,17 @@ export async function removeFavoriteAction(
   }
 }
 
-/** Server Action: Toggle favorite status for a product */
+/** Server Action: Toggle favorite status for an offer */
 export async function toggleFavoriteAction(
-  productId: string
+  offerId: string
 ): Promise<ActionResult<{ isFavorite: boolean }>> {
   try {
-    const statusRes = await checkIsFavorite(productId)
+    const statusRes = await checkIsFavorite(offerId)
     if (statusRes.isFavorite) {
-      await removeFavorite(productId)
+      await removeFavorite(offerId)
       return { success: true, data: { isFavorite: false } }
     } else {
-      await addFavorite(productId)
+      await addFavorite(offerId)
       return { success: true, data: { isFavorite: true } }
     }
   } catch (error) {

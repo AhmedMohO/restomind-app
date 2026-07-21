@@ -11,14 +11,17 @@ interface FavouritesListProps {
   initialFavorites: ApiOffer[]
 }
 
-export default function FavouritesList({ initialFavorites }: FavouritesListProps) {
+export default function FavouritesList({
+  initialFavorites,
+}: FavouritesListProps) {
   const t = useTranslations("Favourites")
-  const { wishlist } = useCart()
+  const { wishlist, isWishlistLoaded } = useCart()
 
-  // Filter products by active wishlist IDs in context
-  const activeProducts = initialFavorites.filter((product) =>
-    wishlist.includes(product._id)
-  )
+  // Filter products by active wishlist IDs in context once wishlist is loaded on client.
+  // Before wishlist is loaded, display initialFavorites from server rendering.
+  const activeProducts = isWishlistLoaded
+    ? initialFavorites.filter((product) => wishlist.includes(product._id))
+    : initialFavorites
 
   if (activeProducts.length === 0) {
     return (

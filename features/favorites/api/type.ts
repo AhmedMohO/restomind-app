@@ -1,9 +1,9 @@
-import { ApiOffer } from "@/features/offers/api"
+import type { ApiOffer } from "@/features/offers/api"
 
 export interface ApiFavorite {
   _id: string
   userId: string
-  productId: string
+  offerId: string | ApiOffer
   createdAt: string
   updatedAt: string
 }
@@ -13,5 +13,5 @@ export interface FavoriteStatusResponse {
 }
 
 export type FavoritesListResponse = {
-  offers: ApiOffer[]
+  data: ApiOffer[]
 }

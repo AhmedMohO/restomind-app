@@ -233,13 +233,13 @@ export default async function OrderDetailsPage({
 
           <div className="space-y-3.5">
             {order.items.map((item, idx) => {
-              const itemHasDiscount = item.discountedPrice < item.price
-              const itemSavings =
-                (item.price - item.discountedPrice) * item.quantity
+              const origPrice = item.originalPrice ?? item.price ?? 0
+              const offPrice = item.offerPrice ?? item.discountedPrice ?? origPrice
+              const itemTitle = item.productTitle || item.title || ""
+              const itemHasDiscount = offPrice < origPrice && origPrice > 0
+              const itemSavings = (origPrice - offPrice) * item.quantity
               const itemDiscountPct = itemHasDiscount
-                ? Math.round(
-                    ((item.price - item.discountedPrice) / item.price) * 100
-                  )
+                ? Math.round(((origPrice - offPrice) / origPrice) * 100)
                 : 0
 
               return (
@@ -253,13 +253,13 @@ export default async function OrderDetailsPage({
                     </span>
                     <div className="min-w-0 space-y-1">
                       <h3 className="truncate text-sm font-semibold text-[#2B1B15] dark:text-neutral-100">
-                        {item.title}
+                        {itemTitle}
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        {t("unitPrice")}: {item.discountedPrice.toFixed(2)} EGP
+                        {t("unitPrice")}: {offPrice.toFixed(2)} EGP
                         {itemHasDiscount && (
                           <span className="ms-1.5 text-neutral-400 line-through">
-                            {item.price.toFixed(2)} EGP
+                            {origPrice.toFixed(2)} EGP
                           </span>
                         )}
                       </p>
@@ -269,11 +269,11 @@ export default async function OrderDetailsPage({
                   <div className="flex shrink-0 items-center justify-between gap-1 border-t border-[#ECE6DB] pt-2 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0 dark:border-neutral-800">
                     <div className="text-start sm:text-end">
                       <span className="font-serif text-base font-bold text-[#2B1B15] dark:text-neutral-100">
-                        {(item.discountedPrice * item.quantity).toFixed(2)} EGP
+                        {(item.lineTotal ?? offPrice * item.quantity).toFixed(2)} EGP
                       </span>
                       {itemHasDiscount && (
                         <div className="text-xs text-neutral-400 line-through">
-                          {(item.price * item.quantity).toFixed(2)} EGP
+                          {(origPrice * item.quantity).toFixed(2)} EGP
                         </div>
                       )}
                     </div>

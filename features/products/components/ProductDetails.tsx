@@ -20,7 +20,7 @@ export default function ProductDetails({
 }: ProductDetailsProps) {
   const t = useTranslations("Offers")
   const product = rawProduct.productId
-  const { addToCart, toggleWishlist, wishlist } = Object(useCart())
+  const { addToCart, toggleWishlist, wishlist } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const { data: similarRes } = useActiveOffers({
@@ -36,8 +36,8 @@ export default function ProductDetails({
 
   if (!product) return null
 
-  const isFavorite = wishlist.includes(product._id)
-  const activePrice = product.discountedPrice
+  const isFavorite = wishlist.includes(rawProduct._id)
+  const activePrice = rawProduct.offerPrice ?? product.discountedPrice
   const discountPercentage = rawProduct.discountPercentage || 0
 
   const getCategoryLabel = (cat: string) => {
@@ -66,7 +66,7 @@ export default function ProductDetails({
   }
 
   const handleAddToCart = () => {
-    addToCart(product, quantity)
+    addToCart(rawProduct, quantity)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -113,7 +113,7 @@ export default function ProductDetails({
                 </span>
               </div>
               <button
-                onClick={() => toggleWishlist(product._id)}
+                onClick={() => toggleWishlist(rawProduct._id)}
                 className={cn(
                   "rounded-full border border-[#ECE6DB] p-2.5 transition-colors hover:bg-[#FAF7F2] dark:border-neutral-800 dark:hover:bg-neutral-800",
                   isFavorite

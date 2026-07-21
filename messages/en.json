@@ -9,7 +9,11 @@
     "otpDigitsOnly": "OTP must contain only digits",
     "errorValidPhone": "Must be a valid phone number (min 8 digits)",
     "errorMinStreet": "Street must be at least {min} characters",
-    "errorMinCity": "City must be at least {min} characters"
+    "errorMinCity": "City must be at least {min} characters",
+    "restaurantNameMin": "Restaurant name must be at least 3 characters",
+    "restaurantNameMax": "Restaurant name must be at most 60 characters",
+    "restaurantDescMax": "Description cannot exceed 500 characters",
+    "invalidLogoUrl": "Logo URL must be a valid web address"
   },
   "Navbar": {
     "home": "Home",
