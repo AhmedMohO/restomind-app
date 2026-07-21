@@ -325,7 +325,8 @@
     "minimumDiscount": "الحد الأدنى للخصم",
     "active": "نشط:",
     "off": "خصم {percent}%+",
-    "tags": "الوسوم"
+    "tags": "الوسوم",
+    "restaurants": "المطاعم"
   },
   "Auth": {
     "loginTitle": "تسجيل الدخول إلى حسابك",

@@ -94,7 +94,7 @@
     "errorValidPhone": "Please enter a valid phone number"
   },
   "Hero": {
-    "titleLine1": "Rescue Delicious Meals,",
+    "titleLine1": "Buy your favorite meals AND",
     "titleLine2": "Enjoy Unbeatable Deals",
     "description": "Discover fresh daily surplus from top local bakeries and restaurants at up to 70% off. Powered by AI waste prediction, RestoMind connects you with amazing meals while helping save delicious food from going to waste.",
     "ctaOrder": "Explore Daily Offers",
@@ -216,7 +216,7 @@
     "orderDetails": "Order Details",
     "orderDetailsDesc": "Full details for this order including items, delivery, and payment info.",
     "sharedInfo": "Shared Info",
-    "readyCounter": "{ready} of {total} ready",
+    "readyCounter": "{ready} of {total} done",
     "previousOrder": "Previous order",
     "nextOrder": "Next order",
     "backToOrders": "Back to My Orders",
@@ -325,7 +325,8 @@
     "minimumDiscount": "Minimum Discount",
     "active": "Active:",
     "off": "{percent}%+ Off",
-    "tags": "Tags"
+    "tags": "Tags",
+    "restaurants": "Restaurants"
   },
   "Auth": {
     "loginTitle": "Login to your account",

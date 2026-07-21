@@ -58,7 +58,7 @@ export default async function Page({ params }: Props) {
       />
       <HeroSection />
       <PartnersSection />
-      {/* <RecommendedSection /> */}
+      <RecommendedSection />
       <StorySection />
     </>
   )

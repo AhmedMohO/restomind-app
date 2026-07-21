@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import OrderHeader from "@/features/orders/OrderHeader"
-import RestaurantTabs from "@/features/orders/RestaurantTabs"
+import RestaurantOrderCarousel from "@/features/orders/RestaurantOrderCarousel"
 import SharedInfoPanel from "@/features/orders/SharedInfoPanel"
 import type { ApiOrderGroup } from "@/features/orders/api/type"
 
@@ -34,8 +34,10 @@ export default function OrderDetailsPage({
       />
       <SharedInfoPanel orderGroup={orderGroup} t={t} mobile />
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_320px] lg:items-start">
-        <RestaurantTabs orderGroup={orderGroup} t={t} />
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div className="min-w-0">
+          <RestaurantOrderCarousel orderGroup={orderGroup} t={t} />
+        </div>
         <SharedInfoPanel
           orderGroup={orderGroup}
           t={t}

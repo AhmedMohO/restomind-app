@@ -39,8 +39,3 @@ export interface GetProductsParams {
   sort?: string
   order?: "asc" | "desc"
 }
-
-export interface GetRecommendedProductsParams {
-  page?: number
-  limit?: number
-}

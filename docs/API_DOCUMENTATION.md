@@ -893,10 +893,84 @@ Returns currently active promotional offers (`status = active` and `endDate >= n
 
 - **Method / URL**: `GET /offers/active/:id`
 - **Auth Level**: Public
+- **Description**: Accepts Offer ObjectId, Product ObjectId, or Product Slug.
 
 ---
 
-### 11.4 Get Restaurant Offers (Manager)
+### 11.4 Get Offer Recommendations (Public Customer Store)
+
+Returns active promotional offers sorted by backend recommendation scoring algorithm (`featured` desc, `discountPercentage` desc, `endDate` asc, `availableQuantity` desc, `createdAt` desc). Only returns active offers with `remainingQuantity > 0`.
+
+- **Method / URL**: `GET /offers/recommendations`
+- **Auth Level**: Public
+- **Query Parameters**:
+
+  | Parameter | Type | Required | Default | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId |
+  | `categoryId` | String | No | *None* | Filter by Category ObjectId |
+  | `search` | String | No | *None* | Search in product title/description |
+  | `minPrice` | Number | No | *None* | Minimum offer price |
+  | `maxPrice` | Number | No | *None* | Maximum offer price |
+  | `page` | String | No | `1` | Page index |
+  | `limit` | String | No | `10` | Items count per page |
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "items": [
+      {
+        "_id": "64b102996f6d5c001cfef2ff",
+        "originalPrice": 25,
+        "offerPrice": 20,
+        "discountPercentage": 20,
+        "availableQuantity": 50,
+        "remainingQuantity": 45,
+        "maxPerCustomer": 3,
+        "startDate": "2026-07-20T00:00:00.000Z",
+        "endDate": "2026-07-30T23:59:59.999Z",
+        "status": "active",
+        "source": "manual",
+        "featured": true,
+        "productId": {
+          "_id": "64b100996f6d5c001cfef2ea",
+          "title": "Fresh Organic Spinach",
+          "description": "Rich in iron, fresh green spinach leaves.",
+          "price": 25,
+          "image": {
+            "public_id": "restomind/products/spinach",
+            "secure_url": "https://res.cloudinary.com/demo/image/upload/v1/spinach.jpg"
+          },
+          "category": {
+            "_id": "64b0feaa6f6d5c001cfef2d0",
+            "name": "Organic Vegetables"
+          },
+          "slug": "fresh-organic-spinach",
+          "isAvailable": true
+        },
+        "restaurantId": {
+          "_id": "64b0fd116f6d5c001cfef2c2",
+          "name": "Green Garden Bistro",
+          "description": "Farm to table restaurant",
+          "phone": "+1234567890",
+          "address": {
+            "street": "123 Main St",
+            "city": "Cairo",
+            "country": "Egypt"
+          }
+        }
+      }
+    ],
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "totalPages": 1
+  }
+  ```
+
+---
+
+### 11.5 Get Restaurant Offers (Manager)
 
 - **Method / URL**: `GET /offers`
 - **Auth Level**: Access Token (`manager`)
@@ -904,14 +978,15 @@ Returns currently active promotional offers (`status = active` and `endDate >= n
 
 ---
 
-### 11.5 Get Offer Details by ID (Manager)
+### 11.6 Get Offer Details by ID or Slug (Manager)
 
 - **Method / URL**: `GET /offers/:id`
 - **Auth Level**: Access Token (`manager`)
+- **Description**: Accepts Offer ObjectId, Product ObjectId, or Product Slug.
 
 ---
 
-### 11.6 Update Offer (Manager)
+### 11.7 Update Offer (Manager)
 
 Allows updating `discountPercentage`, `startDate`, `endDate`, `featured`, or `productId` for `draft` or `scheduled` offers.
 
@@ -920,7 +995,7 @@ Allows updating `discountPercentage`, `startDate`, `endDate`, `featured`, or `pr
 
 ---
 
-### 11.7 Cancel Offer (Manager)
+### 11.8 Cancel Offer (Manager)
 
 - **Method / URL**: `PATCH /offers/:id/cancel`
 - **Auth Level**: Access Token (`manager`)
@@ -995,7 +1070,7 @@ The Ingredients module allows restaurant managers to manage raw material invento
 4. **Create Promotional Offers** (Manager):
    - `POST /offers` with `availableQuantity` and discount percentage.
 5. **Customer Browses Offers**:
-   - `GET /offers/active` with search, filtering, and sorting parameters.
+   - `GET /offers/active` or `GET /offers/recommendations` with search, filtering, and sorting parameters.
 6. **Add Offers to Cart / Favorites**:
    - `POST /cart` with `{ "offerId": "<offerId>", "quantity": N }`.
    - `POST /favorites/:offerId`.
@@ -1006,3 +1081,4 @@ The Ingredients module allows restaurant managers to manage raw material invento
    - Customer checks `GET /orders/me`.
    - Manager checks `GET /orders/restaurant/:restaurantId`.
    - Admin checks `GET /orders` and updates status via `PATCH /orders/:id/status`.
+

@@ -69,3 +69,14 @@ export interface GetActiveOffersParams {
   order?: "asc" | "desc"
   category?: string
 }
+
+export interface GetRecommendedOffersParams {
+  restaurantId?: string
+  categoryId?: string
+  search?: string
+  minPrice?: number
+  maxPrice?: number
+  page?: number | string
+  limit?: number | string
+}
+

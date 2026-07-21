@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { usePathname, useRouter } from "@/i18n/routing"
 import { useTranslations } from "next-intl"
-import { X, SlidersHorizontal, RotateCcw, Percent } from "lucide-react"
+import { X, SlidersHorizontal, RotateCcw } from "lucide-react"
 import {
   Accordion,
   AccordionItem,
@@ -19,9 +19,15 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import type { ApiCategory } from "@/features/categories/api/type"
 
+export interface ApiRestaurantFilter {
+  _id: string
+  name: string
+}
+
 interface ProductFilterSidebarProps {
   availableCategories: ApiCategory[]
   availableTags: string[]
+  availableRestaurants?: ApiRestaurantFilter[]
   minPriceLimit?: number
   maxPriceLimit?: number
   startTransition?: React.TransitionStartFunction
@@ -32,6 +38,7 @@ const DISCOUNT_OPTIONS = [0, 15, 25, 40]
 export function ProductFilterSidebar({
   availableCategories,
   availableTags,
+  availableRestaurants = [],
   minPriceLimit = 0,
   maxPriceLimit = 500,
   startTransition,
@@ -44,6 +51,8 @@ export function ProductFilterSidebar({
   // Active filter params from URL
   const activeCategories =
     searchParams.get("categories")?.split(",").filter(Boolean) || []
+  const activeRestaurants =
+    searchParams.get("restaurants")?.split(",").filter(Boolean) || []
   const activeTags = searchParams.get("tags")?.split(",").filter(Boolean) || []
   const isBestseller = searchParams.get("bestseller") === "true"
   const featuredOnly = searchParams.get("featured") === "true"
@@ -116,6 +125,16 @@ export function ProductFilterSidebar({
     })
   }
 
+  const handleRestaurantToggle = (restId: string, checked: boolean) => {
+    const newRestaurants = checked
+      ? [...activeRestaurants.filter((r) => r !== restId), restId]
+      : activeRestaurants.filter((r) => r !== restId)
+
+    updateUrl({
+      restaurants: newRestaurants.length > 0 ? newRestaurants.join(",") : null,
+    })
+  }
+
   const handleTagToggle = (tag: string, checked: boolean) => {
     const newTags = checked
       ? [...activeTags.filter((t) => t !== tag), tag]
@@ -143,6 +162,7 @@ export function ProductFilterSidebar({
 
   const hasActiveFilters =
     activeCategories.length > 0 ||
+    activeRestaurants.length > 0 ||
     activeTags.length > 0 ||
     isBestseller ||
     featuredOnly ||
@@ -166,7 +186,7 @@ export function ProductFilterSidebar({
   }
 
   return (
-    <div className="w-full space-y-6 rounded-[20px] border border-[#ECE6DB] bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="w-full space-y-6 border border-[#ECE6DB] bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
       {/* Sidebar Header */}
       <div className="flex items-center justify-between border-b border-dashed border-[#ECE6DB] pb-3 dark:border-neutral-800">
         <div className="flex items-center gap-2">
@@ -188,7 +208,7 @@ export function ProductFilterSidebar({
 
       <Accordion
         multiple
-        defaultValue={["categories", "price", "badges", "tags"]}
+        defaultValue={["categories", "restaurants", "price", "badges", "tags"]}
         className="space-y-4"
       >
         {/* PRICE RANGE SECTION */}
@@ -263,7 +283,7 @@ export function ProductFilterSidebar({
             <AccordionTriggerPlus className="pb-2">
               {t("categories")}
             </AccordionTriggerPlus>
-            <AccordionContent className="max-h-[220px] scrollbar-thin overflow-y-auto pe-1 pt-2">
+            <AccordionContent className="max-h-[220px] overflow-y-auto pe-1 pt-2">
               <div className="space-y-2.5">
                 {availableCategories.map((cat) => {
                   const isChecked =
@@ -283,6 +303,41 @@ export function ProductFilterSidebar({
                         className="flex cursor-pointer items-center gap-1.5 text-xs font-normal text-muted-foreground hover:text-foreground"
                       >
                         {getCategoryLabel(cat.name)}
+                      </Label>
+                    </div>
+                  )
+                })}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {/* RESTAURANTS SECTION (Checkboxes) */}
+        {availableRestaurants.length > 0 && (
+          <AccordionItem value="restaurants" className="border-none">
+            <AccordionTriggerPlus className="pb-2">
+              {t("restaurants")}
+            </AccordionTriggerPlus>
+            <AccordionContent className="max-h-[220px] overflow-y-auto pe-1 pt-2">
+              <div className="space-y-2.5">
+                {availableRestaurants.map((rest) => {
+                  const isChecked =
+                    activeRestaurants.includes(rest._id) ||
+                    activeRestaurants.includes(rest.name)
+                  return (
+                    <div key={rest._id} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`rest-${rest._id}`}
+                        checked={isChecked}
+                        onCheckedChange={(c) =>
+                          handleRestaurantToggle(rest._id, !!c)
+                        }
+                      />
+                      <Label
+                        htmlFor={`rest-${rest._id}`}
+                        className="flex cursor-pointer items-center gap-1.5 text-xs font-normal text-muted-foreground hover:text-foreground"
+                      >
+                        {rest.name}
                       </Label>
                     </div>
                   )
@@ -403,8 +458,10 @@ export function ProductFilterSidebar({
 // Removable Active Filter Chips Component (Chips above product grid)
 export function ActiveFilters({
   availableCategories,
+  availableRestaurants = [],
 }: {
   availableCategories: ApiCategory[]
+  availableRestaurants?: ApiRestaurantFilter[]
 }) {
   const t = useTranslations("Offers")
   const router = useRouter()
@@ -413,6 +470,8 @@ export function ActiveFilters({
 
   const activeCategories =
     searchParams.get("categories")?.split(",").filter(Boolean) || []
+  const activeRestaurants =
+    searchParams.get("restaurants")?.split(",").filter(Boolean) || []
   const activeTags = searchParams.get("tags")?.split(",").filter(Boolean) || []
   const isBestseller = searchParams.get("bestseller") === "true"
   const featuredOnly = searchParams.get("featured") === "true"
@@ -452,6 +511,7 @@ export function ActiveFilters({
 
   const hasChips =
     activeCategories.length > 0 ||
+    activeRestaurants.length > 0 ||
     activeTags.length > 0 ||
     isBestseller ||
     featuredOnly ||
@@ -464,6 +524,13 @@ export function ActiveFilters({
   const getCatName = (idOrName: string) => {
     const found = availableCategories.find(
       (c) => c._id === idOrName || c.name === idOrName
+    )
+    return found ? found.name : idOrName
+  }
+
+  const getRestName = (idOrName: string) => {
+    const found = availableRestaurants.find(
+      (r) => r._id === idOrName || r.name === idOrName
     )
     return found ? found.name : idOrName
   }
@@ -482,6 +549,18 @@ export function ActiveFilters({
           className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
         >
           <span>{getCatName(c)}</span>
+          <X className="h-3 w-3" />
+        </button>
+      ))}
+
+      {/* Restaurant Chips */}
+      {activeRestaurants.map((r) => (
+        <button
+          key={r}
+          onClick={() => removeParamItem("restaurants", r)}
+          className="inline-flex items-center gap-1 rounded-full border border-[#7C4A27]/30 bg-[#7C4A27]/10 px-2.5 py-0.5 text-xs font-semibold text-[#7C4A27] transition-colors hover:bg-[#7C4A27]/20 dark:border-[#C2733C]/30 dark:bg-[#C2733C]/10 dark:text-[#C2733C]"
+        >
+          <span>{getRestName(r)}</span>
           <X className="h-3 w-3" />
         </button>
       ))}

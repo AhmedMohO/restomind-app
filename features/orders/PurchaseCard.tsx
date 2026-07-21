@@ -18,20 +18,22 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
   const t = useTranslations("Orders")
   const statusMeta = getStatusMeta(order.overallStatus)
   const StatusIcon = statusMeta.Icon
-  const restaurantNames = order.orders.map((item) => item.restaurant.name)
+  const restaurantNames = (order.orders || []).map((item) => item.restaurant?.name || t("restaurant"))
   const purchaseTitle =
     restaurantNames.length > 2
       ? `${restaurantNames.slice(0, 2).join(", ")} +${restaurantNames.length - 2} ${t("more")}`
       : restaurantNames.join(", ")
-  const formattedDate = new Intl.DateTimeFormat(undefined, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(order.createdAt))
-  const shortGroupId = order.orderGroupId.slice(-8).toUpperCase()
+  const formattedDate = order.createdAt
+    ? new Intl.DateTimeFormat(undefined, {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }).format(new Date(order.createdAt))
+    : ""
+  const shortGroupId = (order.orderGroupId || "").slice(-8).toUpperCase()
   const hasDiscount = order.totalDiscount > 0
   const discountPercent =
     hasDiscount && order.totalOriginalPrice > 0

@@ -6,6 +6,7 @@ import { webpageJsonLd } from "@/lib/seo/json-ld"
 import { OffersContentClient } from "./offers-content-client"
 import { getActiveOffers } from "@/features/offers/api"
 import { getCategories } from "@/features/categories/api"
+import { getRestaurants } from "@/features/restaurant/api"
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -13,14 +14,14 @@ type Props = {
 
 function OffersLoadingSkeleton() {
   return (
-    <div className="container mx-auto space-y-6 pt-6 animate-pulse">
+    <div className="container mx-auto animate-pulse space-y-6 pt-6">
       <div className="space-y-2">
         <div className="h-8 w-48 rounded bg-muted/30" />
         <div className="h-4 w-64 rounded bg-muted/20" />
       </div>
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-4">
-        <div className="hidden lg:block h-96 rounded-2xl bg-muted/20" />
-        <div className="lg:col-span-3 space-y-4">
+        <div className="hidden h-96 rounded-2xl bg-muted/20 lg:block" />
+        <div className="space-y-4 lg:col-span-3">
           <div className="h-10 w-full rounded-xl bg-muted/20" />
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -34,18 +35,21 @@ function OffersLoadingSkeleton() {
 }
 
 async function OffersListFetcher() {
-  const [offersRes, categoriesRes] = await Promise.all([
+  const [offersRes, categoriesRes, restaurantsRes] = await Promise.all([
     getActiveOffers({ page: 1, limit: 100 }).catch(() => undefined),
     getCategories().catch(() => undefined),
+    getRestaurants({ page: 1, limit: 100 }).catch(() => undefined),
   ])
 
   const initialOffers = offersRes?.items ?? []
   const allCategories = categoriesRes?.data ?? []
+  const allRestaurants = restaurantsRes?.items ?? []
 
   return (
     <OffersContentClient
       initialOffers={initialOffers}
       allCategories={allCategories}
+      allRestaurants={allRestaurants}
     />
   )
 }

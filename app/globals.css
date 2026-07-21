@@ -152,7 +152,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply rounded bg-primary;
+    @apply bg-primary;
   }
 
   ::-webkit-scrollbar-thumb:hover {

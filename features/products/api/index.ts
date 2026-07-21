@@ -5,7 +5,6 @@ import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
 import type {
   ApiProduct,
   GetProductsParams,
-  GetRecommendedProductsParams,
   PaginatedProducts,
 } from "./type"
 
@@ -16,15 +15,6 @@ export async function getProducts(params: GetProductsParams = {}): Promise<Pagin
   const qs = buildQueryString(params)
   const response = await publicApiClient(`/products${qs}`)
   return parseOrThrow<PaginatedProducts>(response, "getProducts")
-}
-
-/** GET /products/recommendations — discounted products (public) */
-export async function getRecommendedProducts(
-  params: GetRecommendedProductsParams = {}
-): Promise<PaginatedProducts> {
-  const qs = buildQueryString(params)
-    const response = await publicApiClient(`/products/recommendations${qs}`)
-    return parseOrThrow<PaginatedProducts>(response, "getRecommendedProducts")
 }
 
 /** GET /products/:id — product details (public) */

@@ -27,31 +27,36 @@ import type { ApiRestaurant } from "@/features/orders/api/type"
 interface OffersContentClientProps {
   initialOffers: ApiOffer[]
   allCategories: ApiCategory[]
+  allRestaurants?: ApiRestaurant[]
 }
 
-const getPageNumbers = (current: number, totalPages: number) => {
-  const pages: (number | string)[] = []
+const getPageNumbers = (
+  current: number,
+  totalPages: number
+): (number | string)[] => {
   if (totalPages <= 5) {
-    for (let i = 1; i <= totalPages; i++) pages.push(i)
-  } else {
-    pages.push(1)
-    if (current > 3) pages.push("...")
-
-    const start = Math.max(2, current - 1)
-    const end = Math.min(totalPages - 1, current + 1)
-    for (let i = start; i <= end; i++) {
-      if (!pages.includes(i)) pages.push(i)
-    }
-
-    if (current < totalPages - 2) pages.push("...")
-    if (!pages.includes(totalPages)) pages.push(totalPages)
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
   }
+
+  const pages: (number | string)[] = [1]
+  if (current > 3) pages.push("...")
+
+  const start = Math.max(2, current - 1)
+  const end = Math.min(totalPages - 1, current + 1)
+  for (let i = start; i <= end; i++) {
+    if (!pages.includes(i)) pages.push(i)
+  }
+
+  if (current < totalPages - 2) pages.push("...")
+  if (!pages.includes(totalPages)) pages.push(totalPages)
+
   return pages
 }
 
 export function OffersContentClient({
   initialOffers,
   allCategories,
+  allRestaurants = [],
 }: OffersContentClientProps) {
   const t = useTranslations("Offers")
   const searchParams = useSearchParams()
@@ -59,172 +64,216 @@ export function OffersContentClient({
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
 
-  // 1. URL Query Parameter String Primitives
-  const categoriesParam = searchParams.get("categories") || ""
-  const tagsParam = searchParams.get("tags") || ""
-  const isBestseller = searchParams.get("bestseller") === "true"
-  const featuredOnly = searchParams.get("featured") === "true"
-  const minDiscountParam = Number(searchParams.get("minDiscount")) || 0
-  const minPrice = searchParams.get("minPrice")
-    ? Number(searchParams.get("minPrice"))
-    : 0
-  const maxPrice = searchParams.get("maxPrice")
-    ? Number(searchParams.get("maxPrice"))
-    : 500
-  const q = searchParams.get("q") || ""
-  const sort = searchParams.get("sort") || "default"
-  const pageParam = Number(searchParams.get("page")) || 1
-  const limitParam = Number(searchParams.get("limit")) || 12
+  // 1. Parsed URL Filter State
+  const filterState = useMemo(() => {
+    const q = searchParams.get("q") || ""
+    const sort = searchParams.get("sort") || "default"
+    const page = Math.max(1, Number(searchParams.get("page")) || 1)
+    const limit = Math.max(1, Number(searchParams.get("limit")) || 12)
+    const minPrice = searchParams.has("minPrice")
+      ? Number(searchParams.get("minPrice"))
+      : 0
+    const maxPrice = searchParams.has("maxPrice")
+      ? Number(searchParams.get("maxPrice"))
+      : 500
+    const minDiscount = Number(searchParams.get("minDiscount")) || 0
+    const isBestseller = searchParams.get("bestseller") === "true"
+    const featuredOnly = searchParams.get("featured") === "true"
 
-  // Memoize active array primitives to ensure stable useMemo dependencies
-  const activeCategories = useMemo(
-    () => categoriesParam.split(",").filter(Boolean),
-    [categoriesParam]
-  )
-  const activeTags = useMemo(
-    () => tagsParam.split(",").filter(Boolean),
-    [tagsParam]
-  )
+    const categories =
+      searchParams.get("categories")?.split(",").filter(Boolean) || []
+    const restaurants =
+      searchParams.get("restaurants")?.split(",").filter(Boolean) || []
+    const tags = searchParams.get("tags")?.split(",").filter(Boolean) || []
 
-  // 2. Extract available tags from initialOffers (strongly typed)
+    return {
+      q,
+      sort,
+      page,
+      limit,
+      minPrice,
+      maxPrice,
+      minDiscount,
+      isBestseller,
+      featuredOnly,
+      categories,
+      restaurants,
+      tags,
+    }
+  }, [searchParams])
+
+  // 2. Extract available tags from initialOffers
   const availableTags = useMemo(() => {
-    return Array.from(
-      new Set(initialOffers.flatMap((offer) => offer.productId?.tags ?? []))
-    ).filter((tag): tag is string => typeof tag === "string" && Boolean(tag))
+    const tagSet = new Set<string>()
+    for (const offer of initialOffers) {
+      const prodTags = offer.productId?.tags
+      if (Array.isArray(prodTags)) {
+        for (const tag of prodTags) {
+          if (tag) tagSet.add(tag)
+        }
+      }
+    }
+    return Array.from(tagSet)
   }, [initialOffers])
 
-  // 3. Extract available categories from initialOffers (strongly typed)
-  const availableCategoryIds = useMemo(() => {
-    return Array.from(
-      new Set(
-        initialOffers
-          .flatMap((offer) => {
-            const cat = offer.productId?.category
-            if (!cat) return []
-            if (typeof cat === "object")
-              return [cat._id, cat.name].filter(Boolean)
-            return [cat]
-          })
-          .filter((c): c is string => typeof c === "string" && Boolean(c))
-      )
-    )
-  }, [initialOffers])
+  // 3. Extract available restaurants from initialOffers & allRestaurants prop
+  const availableRestaurants = useMemo(() => {
+    const map = new Map<string, { _id: string; name: string }>()
 
+    if (allRestaurants.length > 0) {
+      for (const rest of allRestaurants) {
+        if (rest?._id && rest?.name) {
+          map.set(rest._id, { _id: rest._id, name: rest.name })
+        }
+      }
+    }
+
+    for (const offer of initialOffers) {
+      const rest = offer.restaurantId as ApiRestaurant | string | undefined
+      if (typeof rest === "object" && rest?._id && rest?.name) {
+        map.set(rest._id, { _id: rest._id, name: rest.name })
+      }
+    }
+
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
+  }, [initialOffers, allRestaurants])
+
+  // 4. Extract available categories from initialOffers & allCategories
   const availableCategories = useMemo(() => {
-    if (availableCategoryIds.length === 0) return allCategories
+    const categoryIdentifiers = new Set<string>()
+
+    for (const offer of initialOffers) {
+      const cat = offer.productId?.category
+      if (cat) {
+        if (typeof cat === "object") {
+          if (cat._id) categoryIdentifiers.add(cat._id)
+          if (cat.name) categoryIdentifiers.add(cat.name)
+        } else if (typeof cat === "string") {
+          categoryIdentifiers.add(cat)
+        }
+      }
+    }
+
+    if (categoryIdentifiers.size === 0) return allCategories
+
     return allCategories.filter(
       (cat) =>
-        availableCategoryIds.includes(cat._id) ||
-        availableCategoryIds.includes(cat.name)
+        categoryIdentifiers.has(cat._id) || categoryIdentifiers.has(cat.name)
     )
-  }, [allCategories, availableCategoryIds])
+  }, [initialOffers, allCategories])
 
-  // 4. Reactive Filtering over initialOffers (strongly typed)
+  // 5. Reactive Filtering
   const filteredOffers = useMemo(() => {
+    const {
+      q,
+      minPrice,
+      maxPrice,
+      categories,
+      restaurants,
+      tags,
+      isBestseller,
+      featuredOnly,
+      minDiscount,
+    } = filterState
+
+    const searchQuery = q.trim().toLowerCase()
+
     return initialOffers.filter((offer) => {
       const prod = offer.productId
       const rest = offer.restaurantId as ApiRestaurant | string | undefined
 
-      // Search Query
-      if (q) {
-        const query = q.toLowerCase()
-        const titleMatch = prod?.title?.toLowerCase().includes(query)
-        const descMatch = prod?.description?.toLowerCase().includes(query)
+      // Search Query Match (Title, Description, Restaurant Name)
+      if (searchQuery) {
+        const titleMatch = prod?.title?.toLowerCase().includes(searchQuery)
+        const descMatch = prod?.description?.toLowerCase().includes(searchQuery)
         const restName = typeof rest === "object" ? rest?.name : undefined
-        const restMatch = restName?.toLowerCase().includes(query)
+        const restMatch = restName?.toLowerCase().includes(searchQuery)
         if (!titleMatch && !descMatch && !restMatch) return false
       }
 
-      // Price Range
+      // Price Range Match
       const price = prod?.discountedPrice ?? prod?.price ?? 0
-      if (price < minPrice || price > maxPrice) {
-        return false
-      }
+      if (price < minPrice || price > maxPrice) return false
 
-      // Categories
-      if (activeCategories.length > 0) {
+      // Categories Filter Match
+      if (categories.length > 0) {
         const prodCat = prod?.category
         const catId = typeof prodCat === "object" ? prodCat?._id : prodCat
         const catName = typeof prodCat === "object" ? prodCat?.name : prodCat
-        const matchesCat = activeCategories.some(
-          (c) => c === catId || c === catName
-        )
+        const matchesCat = categories.some((c) => c === catId || c === catName)
         if (!matchesCat) return false
       }
 
-      // Tags
-      if (activeTags.length > 0) {
-        const prodTags: string[] = prod?.tags ?? []
-        const hasTag = activeTags.some((tag) => prodTags.includes(tag))
+      // Restaurants Filter Match
+      if (restaurants.length > 0) {
+        const restId = typeof rest === "object" ? rest?._id : rest
+        const restName = typeof rest === "object" ? rest?.name : undefined
+        const matchesRest = restaurants.some(
+          (r) => r === restId || r === restName
+        )
+        if (!matchesRest) return false
+      }
+
+      // Tags Filter Match
+      if (tags.length > 0) {
+        const prodTags = prod?.tags ?? []
+        const hasTag = tags.some((t) => prodTags.includes(t))
         if (!hasTag) return false
       }
 
-      // Bestseller Only
-      if (isBestseller && !prod?.isBestseller) {
-        return false
-      }
+      // Bestseller Only Match
+      if (isBestseller && !prod?.isBestseller) return false
 
-      // Featured Offers Only
-      if (featuredOnly && !offer.featured) {
-        return false
-      }
+      // Featured Offers Only Match
+      if (featuredOnly && !offer.featured) return false
 
-      // Minimum Discount
-      if (
-        minDiscountParam > 0 &&
-        (offer.discountPercentage ?? 0) < minDiscountParam
-      ) {
+      // Minimum Discount Match
+      if (minDiscount > 0 && (offer.discountPercentage ?? 0) < minDiscount) {
         return false
       }
 
       return true
     })
-  }, [
-    initialOffers,
-    q,
-    minPrice,
-    maxPrice,
-    activeCategories,
-    activeTags,
-    isBestseller,
-    featuredOnly,
-    minDiscountParam,
-  ])
+  }, [initialOffers, filterState])
 
-  // 5. Sorting (strongly typed)
+  // 6. Sorting
   const sortedOffers = useMemo(() => {
     const list = [...filteredOffers]
-    if (sort === "price-asc") {
-      list.sort(
-        (a, b) =>
-          (a.productId?.discountedPrice ?? 0) -
-          (b.productId?.discountedPrice ?? 0)
-      )
-    } else if (sort === "price-desc") {
-      list.sort(
-        (a, b) =>
-          (b.productId?.discountedPrice ?? 0) -
-          (a.productId?.discountedPrice ?? 0)
-      )
-    } else if (sort === "rating-desc") {
-      list.sort(
-        (a, b) =>
-          (b.productId?.rating ?? b.discountPercentage ?? 0) -
-          (a.productId?.rating ?? a.discountPercentage ?? 0)
-      )
+
+    switch (filterState.sort) {
+      case "price-asc":
+        return list.sort(
+          (a, b) =>
+            (a.productId?.discountedPrice ?? 0) -
+            (b.productId?.discountedPrice ?? 0)
+        )
+      case "price-desc":
+        return list.sort(
+          (a, b) =>
+            (b.productId?.discountedPrice ?? 0) -
+            (a.productId?.discountedPrice ?? 0)
+        )
+      case "rating-desc":
+        return list.sort(
+          (a, b) =>
+            (b.productId?.rating ?? b.discountPercentage ?? 0) -
+            (a.productId?.rating ?? a.discountPercentage ?? 0)
+        )
+      default:
+        return list
     }
-    return list
-  }, [filteredOffers, sort])
+  }, [filteredOffers, filterState.sort])
 
-  // 6. Pagination Calculations
+  // 7. Pagination
   const totalCount = sortedOffers.length
-  const totalPages = Math.ceil(totalCount / limitParam) || 1
-  const startIdx = (pageParam - 1) * limitParam
-  const displayedOffers = useMemo(() => {
-    return sortedOffers.slice(startIdx, startIdx + limitParam)
-  }, [sortedOffers, startIdx, limitParam])
+  const totalPages = Math.ceil(totalCount / filterState.limit) || 1
+  const startIdx = (filterState.page - 1) * filterState.limit
 
-  const pageNumbers = getPageNumbers(pageParam, totalPages)
+  const displayedOffers = useMemo(() => {
+    return sortedOffers.slice(startIdx, startIdx + filterState.limit)
+  }, [sortedOffers, startIdx, filterState.limit])
+
+  const pageNumbers = getPageNumbers(filterState.page, totalPages)
 
   const buildUrlWithPage = (p: number) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -277,6 +326,7 @@ export function OffersContentClient({
               <ProductFilterSidebar
                 availableCategories={availableCategories}
                 availableTags={availableTags}
+                availableRestaurants={availableRestaurants}
                 startTransition={startTransition}
               />
             </SheetContent>
@@ -287,10 +337,11 @@ export function OffersContentClient({
       {/* 2-Column Sidebar & Grid Layout */}
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-4">
         {/* Desktop Left Sidebar */}
-        <aside className="sticky top-4 hidden max-h-[calc(100vh-8rem)] scrollbar-thin overflow-y-auto lg:col-span-1 lg:block">
+        <aside className="sticky top-4 hidden max-h-[calc(100vh-8rem)] overflow-y-auto lg:col-span-1 lg:block">
           <ProductFilterSidebar
             availableCategories={availableCategories}
             availableTags={availableTags}
+            availableRestaurants={availableRestaurants}
             startTransition={startTransition}
           />
         </aside>
@@ -299,10 +350,13 @@ export function OffersContentClient({
         <section className="min-w-0 space-y-6 lg:col-span-3">
           <ProductsFilterBar startTransition={startTransition} />
 
-          <ActiveFilters availableCategories={allCategories} />
+          <ActiveFilters
+            availableCategories={allCategories}
+            availableRestaurants={availableRestaurants}
+          />
 
           <div className="relative">
-            {/* Smooth Overlay on Transition */}
+            {/* Transition Loading Overlay */}
             {isPending && (
               <div className="absolute inset-0 z-10 flex items-start justify-center rounded-2xl bg-white/40 pt-20 backdrop-blur-[1px] dark:bg-neutral-950/40">
                 <div className="flex items-center gap-2 rounded-full border border-[#ECE6DB] bg-white px-4 py-2 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
@@ -327,18 +381,20 @@ export function OffersContentClient({
                   ))}
                 </div>
 
-                {/* Pagination */}
+                {/* Pagination Controls */}
                 {totalPages > 1 && (
                   <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-[#ECE6DB] pt-8 dark:border-neutral-800">
                     <Link
-                      href={buildUrlWithPage(pageParam - 1)}
+                      href={buildUrlWithPage(filterState.page - 1)}
                       onClick={(e) => {
                         e.preventDefault()
-                        if (pageParam > 1) handlePageChange(pageParam - 1)
+                        if (filterState.page > 1)
+                          handlePageChange(filterState.page - 1)
                       }}
                       className={cn(
                         "flex h-9 w-9 items-center justify-center rounded-xl border border-[#ECE6DB] bg-white text-xs transition-colors dark:border-neutral-800 dark:bg-neutral-900",
-                        pageParam === 1 && "pointer-events-none opacity-30"
+                        filterState.page === 1 &&
+                          "pointer-events-none opacity-30"
                       )}
                     >
                       <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
@@ -362,7 +418,7 @@ export function OffersContentClient({
                           }}
                           className={cn(
                             "flex h-9 w-9 items-center justify-center rounded-xl border text-xs font-semibold transition-colors",
-                            p === pageParam
+                            p === filterState.page
                               ? "border-[#7C4A27] bg-[#7C4A27] text-white dark:border-[#C2733C] dark:bg-[#C2733C]"
                               : "border-[#ECE6DB] bg-white text-muted-foreground hover:bg-[#FAF7F2] dark:border-neutral-800 dark:bg-neutral-900"
                           )}
@@ -373,15 +429,15 @@ export function OffersContentClient({
                     )}
 
                     <Link
-                      href={buildUrlWithPage(pageParam + 1)}
+                      href={buildUrlWithPage(filterState.page + 1)}
                       onClick={(e) => {
                         e.preventDefault()
-                        if (pageParam < totalPages)
-                          handlePageChange(pageParam + 1)
+                        if (filterState.page < totalPages)
+                          handlePageChange(filterState.page + 1)
                       }}
                       className={cn(
                         "flex h-9 w-9 items-center justify-center rounded-xl border border-[#ECE6DB] bg-white text-xs transition-colors dark:border-neutral-800 dark:bg-neutral-900",
-                        pageParam === totalPages &&
+                        filterState.page === totalPages &&
                           "pointer-events-none opacity-30"
                       )}
                     >
