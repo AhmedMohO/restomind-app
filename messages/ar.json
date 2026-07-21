@@ -307,7 +307,15 @@
     "richDessert": "حلوى غنية",
     "dairyFree": "خالٍ من الألبان",
     "glutenFree": "خالٍ من الجلوتين",
-    "nutFree": "خالٍ من المكسرات"
+    "nutFree": "خالٍ من المكسرات",
+    "applyPriceFilter": "تطبيق الفلتر",
+    "offerHighlights": "أبرز العروض",
+    "bestsellersOnly": "الأكثر مبيعاً فقط",
+    "featuredOffers": "العروض المميزة",
+    "minimumDiscount": "الحد الأدنى للخصم",
+    "active": "نشط:",
+    "off": "خصم {percent}%+",
+    "tags": "الوسوم"
   },
   "Auth": {
     "loginTitle": "تسجيل الدخول إلى حسابك",

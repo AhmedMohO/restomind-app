@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { egyptianPhoneSchema } from "@/lib/phone"
 
 // ---------------------------------------------------------------------------
 // Register
@@ -11,7 +12,7 @@ export const registerSchema = z
     email: z.email(),
     password: z.string().min(6),
     confirmPassword: z.string().min(6),
-    phone: z.string().min(8, { message: "errorValidPhone" }),
+    phone: egyptianPhoneSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "passwordsMismatch",

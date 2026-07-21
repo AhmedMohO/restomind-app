@@ -41,6 +41,7 @@
     "male": "Male",
     "female": "Female",
     "dobLabel": "Date of Birth",
+    "pickDate": "Pick a date",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "updateSuccess": "Profile updated successfully!",
@@ -306,7 +307,15 @@
     "richDessert": "Rich Dessert",
     "dairyFree": "Dairy Free",
     "glutenFree": "Gluten Free",
-    "nutFree": "Nut Free"
+    "nutFree": "Nut Free",
+    "applyPriceFilter": "Apply Price Filter",
+    "offerHighlights": "Offer Highlights",
+    "bestsellersOnly": "Bestsellers Only",
+    "featuredOffers": "Featured Offers",
+    "minimumDiscount": "Minimum Discount",
+    "active": "Active:",
+    "off": "{percent}%+ Off",
+    "tags": "Tags"
   },
   "Auth": {
     "loginTitle": "Login to your account",

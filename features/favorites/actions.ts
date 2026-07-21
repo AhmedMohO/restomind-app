@@ -7,15 +7,15 @@ import {
   checkIsFavorite,
   type ApiFavorite,
 } from "./api"
-import type { ApiProduct } from "@/features/products/api/type"
+import type { ApiOffer } from "@/features/offers/api"
 import { AuthenticationError } from "@/lib/auth/errors"
 import type { ActionResult } from "@/features/cart/actions"
 
 /** Server Action: Fetch user favorites */
-export async function getFavoritesAction(): Promise<ActionResult<ApiProduct[]>> {
+export async function getFavoritesAction(): Promise<ActionResult<ApiOffer[]>> {
   try {
     const res = await getFavorites()
-    return { success: true, data: res.data || [] }
+    return { success: true, data: res.offers || [] }
   } catch (error) {
     if (error instanceof AuthenticationError) {
       return { success: false, error: "UNAUTHENTICATED" }

@@ -3,7 +3,6 @@
 import React, { useState } from "react"
 import { Link } from "@/i18n/routing"
 import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star } from "lucide-react"
-import type { ApiProduct } from "@/features/products/api/type"
 import type { ApiOffer } from "@/features/offers/api/type"
 import { useActiveOffers } from "@/features/offers/hooks"
 import { useCart } from "@/hooks/use-cart"
@@ -16,7 +15,9 @@ interface ProductDetailsProps {
   product: ApiOffer
 }
 
-export default function ProductDetails({ product: rawProduct }: ProductDetailsProps) {
+export default function ProductDetails({
+  product: rawProduct,
+}: ProductDetailsProps) {
   const t = useTranslations("Offers")
   const product = rawProduct.productId
   const { addToCart, toggleWishlist, wishlist } = Object(useCart())
@@ -30,14 +31,14 @@ export default function ProductDetails({ product: rawProduct }: ProductDetailsPr
   })
 
   const similarOffers = (similarRes?.items ?? []).filter(
-    (o) => o._id !== rawProduct._id && o.productId._id !== product._id
+    (o: ApiOffer) => o._id !== rawProduct._id && o.productId._id !== product._id
   )
 
   if (!product) return null
 
   const isFavorite = wishlist.includes(product._id)
-  const activePrice = product.discountedPrice ;
-  const discountPercentage = rawProduct.discountPercentage || 0;
+  const activePrice = product.discountedPrice
+  const discountPercentage = rawProduct.discountPercentage || 0
 
   const getCategoryLabel = (cat: string) => {
     switch (cat) {
@@ -236,4 +237,3 @@ export default function ProductDetails({ product: rawProduct }: ProductDetailsPr
     </div>
   )
 }
-

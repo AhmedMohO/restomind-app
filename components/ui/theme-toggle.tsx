@@ -11,9 +11,9 @@ export function ThemeToggle() {
     defaultTheme: "system",
   })
 
-  React.useEffect(() => {
+  if (typeof window !== "undefined" && !mounted) {
     setMounted(true)
-  }, [])
+  }
 
   if (!mounted) {
     return (

@@ -182,6 +182,7 @@ export default function Navbar() {
                 href="/login"
                 className={buttonVariants({
                   variant: "outline",
+                  className: "!text-foreground",
                 })}
               >
                 {t("login")}
@@ -189,6 +190,7 @@ export default function Navbar() {
               <ActLink
                 className={buttonVariants({
                   variant: "outline",
+                  className: "!text-foreground",
                 })}
                 href="/register"
               >

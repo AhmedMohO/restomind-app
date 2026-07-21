@@ -2,13 +2,13 @@
 
 import { useCart } from "@/hooks/use-cart"
 import ProductCard from "@/features/products/components/ProductCard"
-import type { ApiProduct } from "@/features/products/api/type"
 import { useTranslations } from "next-intl"
 import { Heart, ShoppingBag } from "lucide-react"
 import { Link } from "@/i18n/routing"
+import { ApiOffer } from "@/features/offers/api"
 
 interface FavouritesListProps {
-  initialFavorites: ApiProduct[]
+  initialFavorites: ApiOffer[]
 }
 
 export default function FavouritesList({ initialFavorites }: FavouritesListProps) {
