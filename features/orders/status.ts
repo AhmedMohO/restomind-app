@@ -13,6 +13,7 @@ export const STATUS_ORDER: OrderStatus[] = [
   "Pending",
   "Confirmed",
   "Preparing",
+  "Ready",
   "Out For Delivery",
   "Delivered",
 ]
@@ -38,10 +39,18 @@ export function getStatusMeta(status: OrderStatus): StatusMeta {
     case "Preparing":
       return {
         Icon: ChefHat,
-        bg: "bg-orange-500 text-white",
+        bg: "bg-blue-500 text-white",
         badgeClass:
-          "bg-orange-50 text-orange-800 border-orange-200/80 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-900/60",
+          "bg-blue-50 text-blue-800 border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/60",
         labelKey: "statusPreparing",
+      }
+    case "Ready":
+      return {
+        Icon: CheckCircle2,
+        bg: "bg-green-500 text-white",
+        badgeClass:
+          "bg-green-50 text-green-800 border-green-200/80 dark:bg-green-950/40 dark:text-green-300 dark:border-green-900/60",
+        labelKey: "statusReady",
       }
     case "Out For Delivery":
       return {
@@ -54,9 +63,9 @@ export function getStatusMeta(status: OrderStatus): StatusMeta {
     case "Delivered":
       return {
         Icon: CheckCircle2,
-        bg: "bg-[#2E7D4F] text-white",
+        bg: "bg-gray-500 text-white",
         badgeClass:
-          "bg-emerald-50 text-emerald-800 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60",
+          "bg-gray-50 text-gray-700 border-gray-200/80 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700",
         labelKey: "statusDelivered",
       }
     case "Cancelled":

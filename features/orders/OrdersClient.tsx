@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl"
 import { Search, ClipboardList, ShoppingBag, ArrowUpDown } from "lucide-react"
 import { Link, useRouter, usePathname } from "@/i18n/routing"
 import { useSearchParams } from "next/navigation"
-import OrderCard from "@/features/orders/OrderCard"
-import type { ApiOrder, OrderStatus } from "@/features/orders/api/type"
+import PurchaseCard from "@/features/orders/PurchaseCard"
+import type { ApiOrderGroup, OrderStatus } from "@/features/orders/api/type"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -40,25 +40,23 @@ const TABS: TabItem[] = [
 ]
 
 interface OrdersClientProps {
-  orders: ApiOrder[]
+  orderGroups: ApiOrderGroup[]
   tabCounts: Record<string, number>
   activeStatus: FilterStatus
   searchQuery: string
   sortBy: SortOption
   currentPage: number
   totalPages: number
-  totalItems: number
 }
 
 export default function OrdersClient({
-  orders,
+  orderGroups,
   tabCounts,
   activeStatus,
   searchQuery,
   sortBy,
   currentPage,
   totalPages,
-  totalItems,
 }: OrdersClientProps) {
   const t = useTranslations("Orders")
   const router = useRouter()
@@ -197,12 +195,12 @@ export default function OrdersClient({
 
       {/* Orders List */}
       <div className={isPending ? "opacity-60 transition-opacity" : ""}>
-        {orders.length > 0 ? (
+        {orderGroups.length > 0 ? (
           <div className="space-y-4">
             <div className="flex flex-col gap-4">
-              {orders.map((order) => (
-                <OrderCard key={order._id} order={order} />
-              ))}
+              {orderGroups.map((group) => {
+                return <PurchaseCard key={group.orderGroupId} order={group} />
+              })}
             </div>
 
             {/* Pagination */}

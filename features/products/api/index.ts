@@ -23,8 +23,8 @@ export async function getRecommendedProducts(
   params: GetRecommendedProductsParams = {}
 ): Promise<PaginatedProducts> {
   const qs = buildQueryString(params)
-  const response = await publicApiClient(`/products/recommendations${qs}`)
-  return parseOrThrow<PaginatedProducts>(response, "getRecommendedProducts")
+    const response = await publicApiClient(`/products/recommendations${qs}`)
+    return parseOrThrow<PaginatedProducts>(response, "getRecommendedProducts")
 }
 
 /** GET /products/:id — product details (public) */

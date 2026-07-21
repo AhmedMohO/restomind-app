@@ -1,73 +1,69 @@
-// ─── Order Status ────────────────────────────────────────────────────────────
 export type OrderStatus =
   | "Pending"
   | "Confirmed"
   | "Preparing"
+  | "Ready"
   | "Out For Delivery"
   | "Delivered"
   | "Cancelled"
 
-// ─── Sub-Schemas (matching API docs exactly) ─────────────────────────────────
-
-export interface ApiOrderItem {
-  productId: string
-  title: string
-  price: number
-  discountedPrice: number
-  quantity: number
-}
-
 export interface ApiDeliveryAddress {
-  addressId?: string
+  addressId: string
   street: string
   city: string
   country: string
 }
 
-/** Populated Restaurant object (restaurantId is populated in GET /orders/me) */
 export interface ApiRestaurant {
   _id: string
   name: string
-  ownerUserId: string
-  description?: string
-  logoUrl?: string
-  phone?: string
-  address?: {
-    street?: string
-    city?: string
-    country?: string
-  }
-  isActive: boolean
-  isDeleted: boolean
-  createdAt: string
-  updatedAt: string
 }
 
-// ─── Main Order Schema ────────────────────────────────────────────────────────
+export interface ApiOrderItem {
+  offerId: string
+  productId: string
+  productTitle: string
+  productImage: string
+  restaurantId: string
+  restaurantName: string
+  originalPrice: number
+  offerPrice: number
+  discountPercentage: number
+  quantity: number
+  purchasedAt: string
+  lineTotal: number
+}
 
-export interface ApiOrder {
-  _id: string
-  userId: string
-  /** The restaurant is populated as a full object in the GET /orders/me response */
-  restaurantId: ApiRestaurant
+export interface ApiRestaurantOrder {
+  orderId: string
+  restaurant: ApiRestaurant
   items: ApiOrderItem[]
   totalOriginalPrice: number
   totalDiscount: number
   finalTotalPrice: number
   totalQuantity: number
+  status: OrderStatus
+  createdAt: string
+}
+
+export interface ApiOrderGroup {
+  orderGroupId: string
+  userId: string
   fullName: string
   phoneNumber: string
   emailAddress: string
   deliveryMethod: "Home Delivery" | "Store Pickup"
-  deliveryAddress?: ApiDeliveryAddress
-  specialNotes?: string
+  deliveryAddress: ApiDeliveryAddress | null
+  specialNotes: string
   paymentMethod: "Cash on Delivery"
-  status: OrderStatus
+  totalOriginalPrice: number
+  totalDiscount: number
+  finalTotalPrice: number
+  totalQuantity: number
+  overallStatus: OrderStatus
+  orders: ApiRestaurantOrder[]
   createdAt: string
-  updatedAt: string
 }
-
-// ─── Request Payloads ─────────────────────────────────────────────────────────
 
 export interface UpdateOrderStatusPayload {
   status: OrderStatus
