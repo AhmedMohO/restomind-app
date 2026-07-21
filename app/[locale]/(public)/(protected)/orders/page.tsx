@@ -47,7 +47,7 @@ export default async function OrdersPage({
             <AlertCircle className="size-10 text-rose-500" />
           </div>
           <div className="space-y-1.5">
-            <h2 className="font-serif text-xl font-bold text-[#2B1B15] dark:text-neutral-100">
+            <h2 className="font-serif text-xl font-bold text-foreground">
               {t("errorLoadingOrders")}
             </h2>
             <p className="text-sm text-muted-foreground max-w-sm">{fetchError}</p>

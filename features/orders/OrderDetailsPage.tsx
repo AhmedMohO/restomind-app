@@ -41,7 +41,7 @@ export default function OrderDetailsPage({
         <SharedInfoPanel
           orderGroup={orderGroup}
           t={t}
-          className="lg:sticky lg:top-24"
+          className="lg:sticky lg:top-4"
         />
       </div>
     </>

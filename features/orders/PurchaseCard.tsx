@@ -41,23 +41,23 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
       : 0
 
   return (
-    <Card className="overflow-hidden rounded-[24px] border-[#ECE6DB] bg-white shadow-2xs transition-all duration-200 hover:border-[#7C4A27]/40 hover:shadow-sm md:rounded-[28px] dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700">
-      <CardHeader className="border-b border-[#ECE6DB]/60 p-4 pb-3 md:p-5 dark:border-neutral-800/60">
+    <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-2xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm md:rounded-[28px]">
+      <CardHeader className="border-b border-border p-4 pb-3 md:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3 text-start">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-[#ECE6DB]/60 bg-[#F5EDE5] text-[#7C4A27] dark:border-neutral-700/60 dark:bg-neutral-800 dark:text-[#C2733C]">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-muted text-primary">
               <PackageCheck className="size-5" />
             </div>
             <div className="min-w-0 space-y-0.5">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <h3 className="truncate text-base font-bold text-[#1A0F0A] dark:text-neutral-100">
+                <h3 className="truncate text-base font-bold text-foreground">
                   {purchaseTitle || t("restaurant")}
                 </h3>
-                <span className="font-mono text-xs font-semibold text-[#8C7060] dark:text-neutral-400">
+                <span className="font-mono text-xs font-semibold text-muted-foreground">
                   #{shortGroupId}
                 </span>
               </div>
-              <p className="text-xs font-medium text-[#6B4C3B] dark:text-neutral-400">
+              <p className="text-xs font-medium text-muted-foreground">
                 {formattedDate} · {order.totalQuantity} {t("items")}
               </p>
             </div>
@@ -76,7 +76,7 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
               render={<Link href={`/orders/${order.orderGroupId}`} />}
               variant="outline"
               size="sm"
-              className="shrink-0 rounded-full border-[#ECE6DB] text-xs font-semibold text-[#4A2E1E] hover:bg-[#FAF7F2] dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              className="shrink-0 rounded-full border-border text-xs font-semibold text-foreground hover:bg-accent hover:text-accent-foreground"
             >
               <Eye className="me-1 size-3.5" />
               <span>{t("viewDetails")}</span>
@@ -96,16 +96,16 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
           return (
             <div
               key={restaurantOrder.orderId}
-              className="rounded-2xl border border-[#ECE6DB]/80 bg-[#FAF7F2]/60 p-3.5 dark:border-neutral-800/80 dark:bg-neutral-850/60"
+              className="rounded-2xl border border-border bg-muted/40 p-3.5"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1 space-y-2 text-start">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Store className="size-4 shrink-0 text-[#7C4A27] dark:text-[#C2733C]" />
-                    <span className="text-sm font-bold text-[#1A0F0A] dark:text-neutral-100">
+                    <Store className="size-4 shrink-0 text-primary" />
+                    <span className="text-sm font-bold text-foreground">
                       {restaurantOrder.restaurant.name}
                     </span>
-                    <span className="font-mono text-[11px] font-semibold text-[#8C7060] dark:text-neutral-400">
+                    <span className="font-mono text-[11px] font-semibold text-muted-foreground">
                       #{shortOrderId}
                     </span>
                     <Badge
@@ -122,9 +122,9 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
                       <Badge
                         key={item.offerId}
                         variant="secondary"
-                        className="max-w-[220px] truncate rounded-full border border-[#ECE6DB] bg-white px-2.5 py-1 text-xs font-medium text-[#2B1B15] dark:border-neutral-750 dark:bg-neutral-800/80 dark:text-neutral-200"
+                        className="max-w-[220px] truncate rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground"
                       >
-                        <span className="me-1 font-bold text-[#7C4A27] dark:text-[#C2733C]">
+                        <span className="me-1 font-bold text-primary">
                           {item.quantity}×
                         </span>
                         <span className="truncate">{item.productTitle}</span>
@@ -133,7 +133,7 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
                     {remainingCount > 0 && (
                       <Badge
                         variant="outline"
-                        className="rounded-full border-[#ECE6DB] bg-white px-2.5 py-1 text-xs font-semibold text-[#6B4C3B] dark:border-neutral-750 dark:bg-neutral-850 dark:text-neutral-400"
+                        className="rounded-full border-border bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground"
                       >
                         +{remainingCount} {t("more")}
                       </Badge>
@@ -141,8 +141,8 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-center justify-end border-t border-[#ECE6DB] pt-3 sm:border-t-0 sm:pt-0 dark:border-neutral-800">
-                  <span className="font-serif text-lg font-extrabold text-[#1A0F0A] dark:text-neutral-100">
+                <div className="flex shrink-0 items-center justify-end border-t border-border pt-3 sm:border-t-0 sm:pt-0">
+                  <span className="font-serif text-lg font-extrabold text-foreground">
                     {restaurantOrder.finalTotalPrice.toFixed(2)} EGP
                   </span>
                 </div>
@@ -152,14 +152,14 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
         })}
       </CardContent>
 
-      <CardFooter className="flex flex-col gap-3 border-t border-[#ECE6DB]/60 p-4 pt-3 sm:flex-row sm:items-center sm:justify-between md:p-5 dark:border-neutral-800/60">
+      <CardFooter className="flex flex-col gap-3 border-t border-border p-4 pt-3 sm:flex-row sm:items-center sm:justify-between md:p-5">
         <div className="space-y-1 self-stretch text-start sm:self-auto">
           <div className="flex items-baseline gap-2">
-            <span className="font-serif text-lg font-extrabold text-[#1A0F0A] md:text-xl dark:text-neutral-100">
+            <span className="font-serif text-lg font-extrabold text-foreground md:text-xl">
               {order.finalTotalPrice.toFixed(2)} EGP
             </span>
             {hasDiscount && (
-              <span className="text-xs font-medium text-[#9E7E6C] line-through dark:text-neutral-500">
+              <span className="text-xs font-medium text-muted-foreground line-through">
                 {order.totalOriginalPrice.toFixed(2)} EGP
               </span>
             )}

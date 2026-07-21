@@ -24,19 +24,19 @@ function OrderItemRow({ item, t }: OrderItemRowProps) {
   const itemHasDiscount = item.offerPrice < item.originalPrice
 
   return (
-    <div className="dark:bg-neutral-850/60 flex min-w-0 flex-col gap-4 rounded-2xl border border-[#ECE6DB]/80 bg-[#FAF7F2]/70 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:p-4 dark:border-neutral-800/80">
+    <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-muted/40 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:p-4">
       <div className="flex min-w-0 items-center gap-3.5">
-        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#7C4A27] text-xs font-bold text-white shadow-2xs dark:bg-[#C2733C]">
+        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-xs font-bold text-primary-foreground shadow-2xs">
           {item.quantity}x
         </span>
         <div className="min-w-0 space-y-1 text-start">
-          <h3 className="truncate text-sm font-semibold text-[#2B1B15] dark:text-neutral-100">
+          <h3 className="truncate text-sm font-semibold text-foreground">
             {item.productTitle}
           </h3>
           <p className="text-xs text-muted-foreground">
             {t("unitPrice")}: {item.offerPrice.toFixed(2)} EGP
             {itemHasDiscount && (
-              <span className="ms-1.5 text-neutral-400 line-through">
+              <span className="ms-1.5 text-muted-foreground/70 line-through">
                 {item.originalPrice.toFixed(2)} EGP
               </span>
             )}
@@ -44,7 +44,7 @@ function OrderItemRow({ item, t }: OrderItemRowProps) {
         </div>
       </div>
 
-      <span className="shrink-0 text-start font-serif text-base font-bold text-[#2B1B15] sm:text-end dark:text-neutral-100">
+      <span className="shrink-0 text-start font-serif text-base font-bold text-foreground sm:text-end">
         {item.lineTotal.toFixed(2)} EGP
       </span>
     </div>
@@ -64,20 +64,20 @@ export default function RestaurantOrderCard({
   return (
     <Card
       className={cn(
-        "rounded-[28px] border-[#ECE6DB] bg-white p-0 shadow-xs md:rounded-[32px] dark:border-neutral-800 dark:bg-neutral-900",
+        "rounded-[28px] border-border bg-card p-0 shadow-xs md:rounded-[32px]",
         className
       )}
     >
       <CardHeader className="flex flex-col gap-3 p-4 pb-0 sm:flex-row sm:items-center sm:justify-between sm:p-5 sm:pb-0 md:p-6 md:pb-0">
         <div className="flex min-w-0 items-center gap-3 text-start">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-[#ECE6DB]/70 bg-[#FAF2ED] text-[#7C4A27] dark:border-neutral-800 dark:bg-neutral-800 dark:text-[#C2733C]">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-muted/60 text-primary">
             <Store className="size-5" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
+            <h2 className="truncate font-serif text-lg font-bold text-foreground">
               {restaurantName}
             </h2>
-            <p className="font-mono text-xs font-semibold text-[#8C7060] dark:text-neutral-400">
+            <p className="font-mono text-xs font-semibold text-muted-foreground">
               #{shortOrderId}
             </p>
           </div>
@@ -96,7 +96,7 @@ export default function RestaurantOrderCard({
       </CardHeader>
 
       <CardContent className="space-y-5 p-4 sm:p-5 md:p-6">
-        <Separator className="bg-[#ECE6DB] dark:bg-neutral-800" />
+        <Separator className="bg-border" />
 
         <div className="space-y-3" aria-label={t("items")}>
           {order.items.map((item, idx) => (
@@ -104,23 +104,23 @@ export default function RestaurantOrderCard({
           ))}
         </div>
 
-        <div className="rounded-2xl border border-[#ECE6DB] bg-white/55 p-4 dark:border-neutral-800 dark:bg-neutral-900/55">
+        <div className="rounded-2xl border border-border bg-muted/20 p-4">
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between gap-3 text-muted-foreground">
               <span>{t("subtotal")}</span>
-              <span className="font-semibold">
+              <span className="font-semibold text-foreground">
                 {order.totalOriginalPrice.toFixed(2)} EGP
               </span>
             </div>
             {hasDiscount && (
-              <div className="flex items-center justify-between gap-3 font-semibold text-[#529E66] dark:text-emerald-400">
+              <div className="flex items-center justify-between gap-3 font-semibold text-emerald-600 dark:text-emerald-400">
                 <span>{t("discount")}</span>
                 <span>- {order.totalDiscount.toFixed(2)} EGP</span>
               </div>
             )}
-            <div className="flex items-baseline justify-between gap-3 font-serif font-bold text-[#2B1B15] dark:text-neutral-100">
+            <div className="flex items-baseline justify-between gap-3 font-serif font-bold text-foreground">
               <span>{t("grandTotal")}</span>
-              <span className="text-xl font-extrabold text-[#7C4A27] dark:text-[#C2733C]">
+              <span className="text-xl font-extrabold text-primary">
                 {order.finalTotalPrice.toFixed(2)} EGP
               </span>
             </div>

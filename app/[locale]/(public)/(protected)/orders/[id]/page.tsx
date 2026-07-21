@@ -37,7 +37,7 @@ export default async function OrderDetailsPage({
             <AlertCircle className="size-10 text-rose-500" />
           </div>
           <div className="space-y-1.5">
-            <h2 className="font-serif text-xl font-bold text-[#2B1B15] dark:text-neutral-100">
+            <h2 className="font-serif text-xl font-bold text-foreground">
               {t("errorLoadingOrder")}
             </h2>
             <p className="max-w-sm text-sm text-muted-foreground">
@@ -46,7 +46,7 @@ export default async function OrderDetailsPage({
           </div>
           <Link
             href="/orders"
-            className="inline-flex h-9 items-center justify-center rounded-full bg-[#7C4A27] px-6 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
+            className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-6 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90"
           >
             {t("backToOrders")}
           </Link>
@@ -59,7 +59,7 @@ export default async function OrderDetailsPage({
     <div className="container mx-auto min-h-[75vh] max-w-5xl space-y-6 px-4 py-8">
       <Link
         href="/orders"
-        className="dark:hover:bg-neutral-850 inline-flex items-center gap-2 rounded-full border border-[#ECE6DB] bg-white px-4 py-2 text-xs font-semibold text-[#2B1B15] shadow-2xs transition-all hover:bg-[#FAF7F2] dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+        className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground shadow-2xs transition-all hover:bg-accent hover:text-accent-foreground"
       >
         {isRtl ? (
           <ArrowRight className="size-4" />

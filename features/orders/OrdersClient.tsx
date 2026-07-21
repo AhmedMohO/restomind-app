@@ -123,11 +123,11 @@ export default function OrdersClient({
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="text-start space-y-1">
-        <h1 className="font-serif text-3xl font-extrabold tracking-tight text-[#1A0F0A] sm:text-4xl dark:text-neutral-100">
+      <div className="space-y-1 text-start">
+        <h1 className="font-serif text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
           {t("title")}
         </h1>
-        <p className="text-xs sm:text-sm text-[#6B4C3B] dark:text-neutral-400">
+        <p className="text-xs text-muted-foreground sm:text-sm">
           {t("subtitle")}
         </p>
       </div>
@@ -135,19 +135,19 @@ export default function OrdersClient({
       {/* Static (Non-Sticky) Tabs Bar */}
       <div className="w-full py-2">
         <Tabs value={activeStatus} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="h-auto p-1 bg-[#F5EDE5]/80 dark:bg-neutral-850 rounded-full flex w-max min-w-full sm:min-w-0 overflow-x-auto gap-1 border border-[#ECE6DB] dark:border-neutral-800 scrollbar-none">
+          <TabsList className="flex h-auto w-max min-w-full gap-1 overflow-x-auto rounded-full border border-border bg-muted/70 p-1 scrollbar-none sm:min-w-0">
             {TABS.map((tab) => {
               const count = tabCounts[tab.key] || 0
               return (
                 <TabsTrigger
                   key={tab.key}
                   value={tab.key}
-                  className="rounded-full px-3.5 py-1.5 text-xs font-semibold data-active:bg-[#7C4A27] data-active:text-white dark:data-active:bg-[#C2733C] transition-all flex items-center gap-1.5 shrink-0"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all data-active:bg-primary data-active:text-primary-foreground"
                 >
-                  <span>{t(tab.labelKey )}</span>
+                  <span>{t(tab.labelKey)}</span>
                   <Badge
                     variant="secondary"
-                    className="h-4 px-1.5 rounded-full text-[10px] font-bold bg-[#E2D9CE] text-[#4A2E1E] dark:bg-neutral-750 dark:text-neutral-300 group-data-active/tabs-trigger:bg-white/20 group-data-active/tabs-trigger:text-white"
+                    className="h-4 rounded-full bg-muted-foreground/15 px-1.5 text-[10px] font-bold text-muted-foreground group-data-active/tabs-trigger:bg-primary-foreground/20 group-data-active/tabs-trigger:text-primary-foreground"
                   >
                     {count}
                   </Badge>
@@ -159,10 +159,10 @@ export default function OrdersClient({
       </div>
 
       {/* Toolbar: Search Input + Sort Select */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
         {/* Search Box */}
-        <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+        <form onSubmit={handleSearchSubmit} className="relative max-w-md flex-1">
+          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             value={localSearch}
@@ -170,21 +170,21 @@ export default function OrdersClient({
             onKeyDown={handleSearchKeyDown}
             onBlur={() => updateUrlParams({ q: localSearch, page: "1" })}
             placeholder={t("searchPlaceholder")}
-            className="ps-9 h-10 rounded-full border-[#ECE6DB] bg-white dark:bg-neutral-900 dark:border-neutral-800 text-xs focus-visible:ring-[#7C4A27]"
+            className="h-10 rounded-full border-input bg-background ps-9 text-xs focus-visible:ring-primary"
           />
         </form>
 
         {/* Sort Dropdown */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-muted-foreground font-medium hidden sm:inline-block">
-            <ArrowUpDown className="size-3.5 inline-block me-1" />
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="hidden text-xs font-medium text-muted-foreground sm:inline-block">
+            <ArrowUpDown className="me-1 inline-block size-3.5" />
             {t("sortBy")}:
           </span>
           <Select value={sortBy} onValueChange={handleSortChange}>
-            <SelectTrigger className="h-10 min-w-[150px] rounded-full border-[#ECE6DB] bg-white dark:bg-neutral-900 dark:border-neutral-800 text-xs font-medium">
+            <SelectTrigger className="h-10 min-w-[150px] rounded-full border-input bg-background text-xs font-medium">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-[#ECE6DB] dark:border-neutral-800">
+            <SelectContent className="rounded-xl border-border bg-popover">
               <SelectItem value="newest">{t("newest")}</SelectItem>
               <SelectItem value="oldest">{t("oldest")}</SelectItem>
               <SelectItem value="highestTotal">{t("highestTotal")}</SelectItem>
@@ -204,7 +204,7 @@ export default function OrdersClient({
             </div>
 
             {/* Pagination */}
-            <div className="pt-4 flex justify-center">
+            <div className="flex justify-center pt-4">
               <Pagination
                 page={currentPage}
                 totalPages={totalPages}
@@ -214,23 +214,23 @@ export default function OrdersClient({
           </div>
         ) : (
           /* Empty State Card built on shadcn Card */
-          <Card className="rounded-[28px] border-dashed border-[#ECE6DB] dark:border-neutral-800 bg-white dark:bg-neutral-900 p-8 py-16 text-center">
+          <Card className="rounded-[28px] border-dashed border-border bg-card p-8 py-16 text-center">
             <CardContent className="flex flex-col items-center justify-center space-y-5 p-0">
-              <div className="rounded-2xl bg-[#FAF2ED] dark:bg-neutral-800 p-5 text-[#7C4A27] dark:text-[#E68A49] shadow-2xs">
+              <div className="rounded-2xl bg-muted p-5 text-primary shadow-2xs">
                 <ClipboardList size={44} className="stroke-[1.5]" />
               </div>
-              <div className="space-y-1.5 max-w-sm">
-                <h3 className="font-serif text-lg font-bold text-[#1A0F0A] dark:text-neutral-100">
+              <div className="max-w-sm space-y-1.5">
+                <h3 className="font-serif text-lg font-bold text-foreground">
                   {t("empty")}
                 </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs leading-relaxed text-muted-foreground">
                   {t("emptyDesc")}
                 </p>
               </div>
-              <Button 
+              <Button
                 nativeButton={false}
                 render={<Link href="/offers" />}
-                className="rounded-full bg-[#7C4A27] text-white hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432] shadow-xs px-6"
+                className="rounded-full bg-primary px-6 text-primary-foreground shadow-xs hover:bg-primary/90"
               >
                 <ShoppingBag className="me-2 size-4" />
                 <span>{t("browseOffers")}</span>

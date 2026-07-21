@@ -94,7 +94,7 @@ export function getStatusMeta(status?: OrderStatus | string | null): StatusMeta 
         Icon: Clock,
         bg: "bg-amber-500 text-white",
         badgeClass:
-          "bg-amber-50 text-[#7C4A27] border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/60",
+          "bg-amber-50 text-amber-800 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/60",
         labelKey: "statusPending",
       }
   }

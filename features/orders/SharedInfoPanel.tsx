@@ -42,14 +42,14 @@ function SharedInfoContent({
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <div className="flex items-center gap-2 text-[#7C4A27] dark:text-[#C2733C]">
+        <div className="flex items-center gap-2 text-primary">
           <User className="size-4" />
           <h4 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
             {t("customer")}
           </h4>
         </div>
         <div className="space-y-1.5 text-start text-xs text-muted-foreground">
-          <p className="font-semibold text-[#2B1B15] dark:text-neutral-200">
+          <p className="font-semibold text-foreground">
             {orderGroup.fullName}
           </p>
           <p className="flex min-w-0 items-center gap-1.5">
@@ -63,16 +63,16 @@ function SharedInfoContent({
         </div>
       </section>
 
-      <Separator className="bg-[#ECE6DB] dark:bg-neutral-800" />
+      <Separator className="bg-border" />
 
       <section className="space-y-2">
-        <div className="flex items-center gap-2 text-[#7C4A27] dark:text-[#C2733C]">
+        <div className="flex items-center gap-2 text-primary">
           <Truck className="size-4" />
           <h4 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
             {t("deliveryMethod")}
           </h4>
         </div>
-        <p className="text-start text-sm font-semibold text-[#2B1B15] dark:text-neutral-200">
+        <p className="text-start text-sm font-semibold text-foreground">
           {orderGroup.deliveryMethod === "Home Delivery"
             ? t("homeDelivery")
             : t("storePickup")}
@@ -85,16 +85,16 @@ function SharedInfoContent({
         )}
       </section>
 
-      <Separator className="bg-[#ECE6DB] dark:bg-neutral-800" />
+      <Separator className="bg-border" />
 
       <section className="space-y-2">
-        <div className="flex items-center gap-2 text-[#7C4A27] dark:text-[#C2733C]">
+        <div className="flex items-center gap-2 text-primary">
           <CreditCard className="size-4" />
           <h4 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
             {t("paymentMethod")}
           </h4>
         </div>
-        <p className="text-start text-sm font-semibold text-[#2B1B15] dark:text-neutral-200">
+        <p className="text-start text-sm font-semibold text-foreground">
           {orderGroup.paymentMethod === "Cash on Delivery"
             ? t("cashOnDelivery")
             : orderGroup.paymentMethod}
@@ -103,15 +103,15 @@ function SharedInfoContent({
 
       {orderGroup.specialNotes && (
         <>
-          <Separator className="bg-[#ECE6DB] dark:bg-neutral-800" />
+          <Separator className="bg-border" />
           <section className="space-y-2">
-            <div className="flex items-center gap-2 text-[#7C4A27] dark:text-[#C2733C]">
+            <div className="flex items-center gap-2 text-primary">
               <FileText className="size-4" />
               <h4 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                 {t("specialNotes")}
               </h4>
             </div>
-            <p className="dark:bg-neutral-850 rounded-2xl border border-[#ECE6DB]/60 bg-[#FAF7F2] p-3.5 text-start text-xs leading-relaxed text-muted-foreground italic dark:border-neutral-800">
+            <p className="rounded-2xl border border-border bg-muted/40 p-3.5 text-start text-xs leading-relaxed text-muted-foreground italic">
               &quot;{orderGroup.specialNotes}&quot;
             </p>
           </section>
@@ -132,9 +132,9 @@ export default function SharedInfoPanel({
       <Accordion className={cn("lg:hidden", className)} defaultValue={[]}>
         <AccordionItem
           value="shared-info"
-          className="rounded-2xl border border-[#ECE6DB] bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900"
+          className="rounded-2xl border border-border bg-card px-4"
         >
-          <AccordionTrigger className="py-3 font-serif text-base font-bold text-[#2B1B15] hover:no-underline dark:text-neutral-100">
+          <AccordionTrigger className="py-3 font-serif text-base font-bold text-foreground hover:no-underline">
             {t("sharedInfo")}
           </AccordionTrigger>
           <AccordionContent className="pb-4">
@@ -148,12 +148,12 @@ export default function SharedInfoPanel({
   return (
     <Card
       className={cn(
-        "hidden rounded-[24px] border-[#ECE6DB] bg-white p-0 shadow-xs lg:flex dark:border-neutral-800 dark:bg-neutral-900",
+        "hidden rounded-[24px] border-border bg-card p-0 shadow-xs lg:flex",
         className
       )}
     >
       <CardHeader className="px-5 pt-5 pb-0">
-        <h2 className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
+        <h2 className="font-serif text-lg font-bold text-foreground">
           {t("sharedInfo")}
         </h2>
       </CardHeader>
