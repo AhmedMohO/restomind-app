@@ -4,6 +4,11 @@ import { useState } from "react"
 import { useRouter } from "@/i18n/routing"
 import { useTranslations } from "next-intl"
 import { AnimatePresence, motion } from "framer-motion"
+import { toast } from "sonner"
+
+import { useCart } from "@/hooks/use-cart"
+import { createOrderAction } from "@/features/orders/actions"
+import type { UserAddress } from "@/features/profile/api/profile"
 
 import CheckoutStepper from "./components/CheckoutStepper"
 import OrderSummary from "./components/OrderSummary"
@@ -28,23 +33,41 @@ const variants = {
   }),
 }
 
-export default function CheckoutFlow() {
+interface CheckoutFlowProps {
+  initialAddresses: UserAddress[]
+  customer: {
+    fullName: string
+    email: string
+    phone: string
+  }
+}
+
+export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlowProps) {
   const t = useTranslations("Checkout")
   const router = useRouter()
+  const { refreshCart } = useCart()
 
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [direction, setDirection] = useState(1)
 
   const [formData, setFormData] = useState<DetailsFormData>({
-    fullName: "",
-    phoneNumber: "",
-    email: "",
-    deliveryAddress: "",
+    fullName: customer.fullName,
+    phoneNumber: customer.phone,
+    email: customer.email,
     specialNotes: "",
   })
+
+  // Saved delivery addresses (mutable so an inline-added address appears instantly)
+  const [addresses, setAddresses] = useState<UserAddress[]>(initialAddresses)
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+    initialAddresses.find((a) => a.isDefault)?._id ??
+      initialAddresses[0]?._id ??
+      null
+  )
+
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("home")
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash")
-  const [promoCode, setPromoCode] = useState("")
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false)
 
   function goForward(next: 1 | 2 | 3) {
     setDirection(1)
@@ -56,8 +79,51 @@ export default function CheckoutFlow() {
     setStep(prev)
   }
 
-  function handlePlaceOrder() {
-    router.push("/checkout/confirmed")
+  // Called after the inline AddressDialog successfully saves a new address.
+  function handleAddressesChange(updated: UserAddress[], newAddressId?: string) {
+    setAddresses(updated)
+    if (newAddressId) {
+      setSelectedAddressId(newAddressId)
+    } else if (!selectedAddressId && updated.length > 0) {
+      setSelectedAddressId(updated.find((a) => a.isDefault)?._id ?? updated[0]._id)
+    }
+  }
+
+  async function handlePlaceOrder() {
+    const isHomeDelivery = deliveryMethod === "home"
+
+    // Home Delivery requires a saved address; Store Pickup must omit it.
+    if (isHomeDelivery && !selectedAddressId) {
+      toast.error(t("selectAddressError"))
+      setDirection(-1)
+      setStep(1)
+      return
+    }
+
+    setIsPlacingOrder(true)
+    // NOTE: The API only supports "Cash on Delivery"; the card option in the UI
+    // is currently mapped to COD until online payment is implemented server-side.
+    const res = await createOrderAction({
+      deliveryMethod: isHomeDelivery ? "Home Delivery" : "Store Pickup",
+      ...(isHomeDelivery && selectedAddressId
+        ? { deliveryAddress: { addressId: selectedAddressId } }
+        : {}),
+      ...(formData.specialNotes ? { specialNotes: formData.specialNotes } : {}),
+      paymentMethod: "Cash on Delivery",
+    })
+
+    if (res.success) {
+      await refreshCart()
+      router.push("/checkout/confirmed")
+      return
+    }
+
+    setIsPlacingOrder(false)
+    if (res.error === "UNAUTHENTICATED") {
+      router.push("/login")
+      return
+    }
+    toast.error(res.message || t("orderError"))
   }
 
   const deliveryFee = deliveryMethod === "home" ? DELIVERY_FEE : 0
@@ -84,6 +150,12 @@ export default function CheckoutFlow() {
               {step === 1 && (
                 <DetailsStep
                   initialData={formData}
+                  addresses={addresses}
+                  selectedAddressId={selectedAddressId}
+                  defaultPhone={customer.phone}
+                  defaultName={customer.fullName}
+                  onSelectAddress={setSelectedAddressId}
+                  onAddressesChange={handleAddressesChange}
                   onContinue={(data) => {
                     setFormData(data)
                     goForward(2)
@@ -93,9 +165,7 @@ export default function CheckoutFlow() {
               {step === 2 && (
                 <DeliveryStep
                   deliveryMethod={deliveryMethod}
-                  promoCode={promoCode}
                   onDeliveryMethodChange={setDeliveryMethod}
-                  onPromoCodeChange={setPromoCode}
                   onContinue={() => goForward(3)}
                   onBack={() => goBack(1)}
                 />
@@ -104,6 +174,7 @@ export default function CheckoutFlow() {
                 <PaymentStep
                   paymentMethod={paymentMethod}
                   deliveryFee={deliveryFee}
+                  isPlacingOrder={isPlacingOrder}
                   onPaymentMethodChange={setPaymentMethod}
                   onPlaceOrder={handlePlaceOrder}
                   onBack={() => goBack(2)}

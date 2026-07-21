@@ -72,3 +72,17 @@ export interface ApiOrder {
 export interface UpdateOrderStatusPayload {
   status: OrderStatus
 }
+
+/**
+ * Payload for POST /orders (create order from active cart).
+ * For "Store Pickup" the `deliveryAddress` must be omitted.
+ * For "Home Delivery" pass an existing saved address via `deliveryAddress.addressId`.
+ */
+export interface CreateOrderPayload {
+  deliveryMethod: "Home Delivery" | "Store Pickup"
+  deliveryAddress?: {
+    addressId: string
+  }
+  specialNotes?: string
+  paymentMethod: "Cash on Delivery"
+}

@@ -2,24 +2,33 @@
 
 import { useState } from "react"
 import { useLocale, useTranslations } from "next-intl"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, MapPin, Plus, Check, Home, Building2 } from "lucide-react"
+import { toast } from "sonner"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { getZodErrorMap } from "@/lib/zod-locale"
+import { AddressDialog } from "@/features/profile/components/address-dialog"
+import { addAddressAction } from "@/features/profile/actions/profile-actions"
+import type { UserAddress, AddressPayload } from "@/features/profile/api/profile"
 
 export interface DetailsFormData {
   fullName: string
   phoneNumber: string
   email: string
-  deliveryAddress: string
   specialNotes: string
 }
 
 interface DetailsStepProps {
   initialData: DetailsFormData
+  addresses: UserAddress[]
+  selectedAddressId: string | null
+  defaultName?: string
+  defaultPhone?: string
+  onSelectAddress: (addressId: string) => void
+  onAddressesChange: (updated: UserAddress[], newAddressId?: string) => void
   onContinue: (data: DetailsFormData) => void
 }
 
@@ -27,7 +36,6 @@ const detailsSchema = z.object({
   fullName: z.string().min(2),
   phoneNumber: z.string().min(8),
   email: z.string().email(),
-  deliveryAddress: z.string().min(5),
   specialNotes: z.string().optional(),
 })
 
@@ -36,15 +44,53 @@ const inputClass =
 
 const inputErrorClass = "ring-1 ring-destructive focus-visible:ring-destructive"
 
-export default function DetailsStep({ initialData, onContinue }: DetailsStepProps) {
+function AddressIcon({ label }: { label?: string }) {
+  const lower = (label || "").toLowerCase()
+  const Icon = lower.includes("work") || lower.includes("office") ? Building2 : Home
+  return <Icon className="size-5" />
+}
+
+export default function DetailsStep({
+  initialData,
+  addresses,
+  selectedAddressId,
+  defaultName = "",
+  defaultPhone = "",
+  onSelectAddress,
+  onAddressesChange,
+  onContinue,
+}: DetailsStepProps) {
   const t = useTranslations("Checkout")
   const locale = useLocale()
   const [form, setForm] = useState<DetailsFormData>(initialData)
   const [errors, setErrors] = useState<Partial<Record<keyof DetailsFormData, string>>>({})
+  const [addressError, setAddressError] = useState<string | null>(null)
+
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [isAddingAddress, setIsAddingAddress] = useState(false)
 
   function handleChange(field: keyof DetailsFormData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }))
+  }
+
+  async function handleAddAddress(payload: AddressPayload) {
+    setIsAddingAddress(true)
+    try {
+      const prevIds = new Set(addresses.map((a) => a._id))
+      const res = await addAddressAction(payload)
+      if (res.success && res.data) {
+        const newId = res.data.find((a) => !prevIds.has(a._id))?._id
+        onAddressesChange(res.data, newId)
+        setAddressError(null)
+        setDialogOpen(false)
+        toast.success(res.message || t("addressAdded"))
+      } else {
+        toast.error(res.message || t("addressAddError"))
+      }
+    } finally {
+      setIsAddingAddress(false)
+    }
   }
 
   function handleSubmit() {
@@ -60,6 +106,13 @@ export default function DetailsStep({ initialData, onContinue }: DetailsStepProp
       setErrors(translatedErrors)
       return
     }
+
+    // If the user has saved addresses, require one to be selected before continuing.
+    if (addresses.length > 0 && !selectedAddressId) {
+      setAddressError(t("selectAddressError"))
+      return
+    }
+
     onContinue(form)
   }
 
@@ -114,17 +167,90 @@ export default function DetailsStep({ initialData, onContinue }: DetailsStepProp
           )}
         </div>
 
-        {/* Delivery Address */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">{t("deliveryAddress")}</label>
-          <Input
-            className={cn(inputClass, errors.deliveryAddress && inputErrorClass)}
-            placeholder={t("deliveryAddress")}
-            value={form.deliveryAddress}
-            onChange={(e) => handleChange("deliveryAddress", e.target.value)}
-          />
-          {errors.deliveryAddress && (
-            <p className="text-xs text-destructive px-5">{errors.deliveryAddress}</p>
+        {/* Delivery Address — select from saved addresses */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-foreground">
+              {t("deliveryAddress")}
+            </label>
+            <button
+              type="button"
+              onClick={() => setDialogOpen(true)}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80"
+            >
+              <Plus className="size-3.5" />
+              {t("addNewAddress")}
+            </button>
+          </div>
+
+          {addresses.length === 0 ? (
+            <button
+              type="button"
+              onClick={() => setDialogOpen(true)}
+              className="w-full flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border py-8 text-center hover:border-primary/40 transition-colors"
+            >
+              <div className="flex size-11 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <MapPin className="size-5" />
+              </div>
+              <span className="text-sm font-medium text-foreground">
+                {t("noSavedAddresses")}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {t("addAddressPrompt")}
+              </span>
+            </button>
+          ) : (
+            <div className="space-y-3">
+              {addresses.map((address) => {
+                const selected = selectedAddressId === address._id
+                return (
+                  <button
+                    key={address._id}
+                    type="button"
+                    onClick={() => {
+                      onSelectAddress(address._id)
+                      setAddressError(null)
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-4 rounded-xl p-4 text-start transition-colors duration-200",
+                      selected
+                        ? "border-2 border-primary bg-secondary/60"
+                        : "border border-border hover:border-primary/40 bg-card"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "size-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                        selected
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <AddressIcon label={address.label} />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {address.label || address.street}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {address.street}
+                        {address.city ? `, ${address.city}` : ""}
+                        {address.country ? `, ${address.country}` : ""}
+                      </p>
+                    </div>
+
+                    {selected && (
+                      <Check className="size-4 text-primary shrink-0" strokeWidth={2.5} />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {addressError && (
+            <p className="text-xs text-destructive px-1">{addressError}</p>
           )}
         </div>
 
@@ -148,6 +274,16 @@ export default function DetailsStep({ initialData, onContinue }: DetailsStepProp
         {t("continue")}
         <ChevronRight className="size-4 rtl:-scale-x-100" />
       </Button>
+
+      {/* Inline add-address dialog (reused from profile) */}
+      <AddressDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        defaultUserName={defaultName}
+        defaultUserPhone={defaultPhone}
+        onSubmit={handleAddAddress}
+        isSubmitting={isAddingAddress}
+      />
     </div>
   )
 }

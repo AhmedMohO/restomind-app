@@ -2,17 +2,23 @@ import "server-only"
 
 import { apiClient } from "@/lib/api/client"
 import { parseOrThrow } from "@/lib/api/utils"
-import type { ApiOrder, OrderStatus } from "./type"
+import type { ApiOrder, OrderStatus, CreateOrderPayload } from "./type"
 
 export * from "./type"
 
-/** POST /orders — create order from active cart (customer only) */
-export async function createOrder(): Promise<{ data: ApiOrder }> {
+/**
+ * POST /orders — create order from active cart (customer only).
+ * If the cart contains products from multiple restaurants the API returns an
+ * array of orders (one per restaurant); we normalise to `ApiOrder | ApiOrder[]`.
+ */
+export async function createOrder(
+  payload: CreateOrderPayload
+): Promise<{ data: ApiOrder | ApiOrder[] }> {
   const response = await apiClient("/orders", {
     method: "POST",
-    body: JSON.stringify({}),
+    body: JSON.stringify(payload),
   })
-  return parseOrThrow<{ data: ApiOrder }>(response, "createOrder")
+  return parseOrThrow<{ data: ApiOrder | ApiOrder[] }>(response, "createOrder")
 }
 
 /** GET /orders/me — get customer order history (customer only) */
