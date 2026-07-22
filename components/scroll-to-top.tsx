@@ -9,7 +9,11 @@ export function ScrollToTop() {
   const lenis = useLenis()
 
   useEffect(() => {
-    lenis?.scrollTo(0, { immediate: true, lerp: 0.05 })
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true })
+    } else {
+      window.scrollTo(0, 0)
+    }
   }, [pathname, lenis])
 
   return null

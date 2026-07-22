@@ -1,9 +1,11 @@
+import { Suspense } from "react"
 import { setRequestLocale, getTranslations } from "next-intl/server"
 import type { Metadata } from "next"
 import HeroSection from "@/features/landing/components/HeroSection"
 import StorySection from "@/features/landing/components/StorySection"
 import PartnersSection from "@/features/landing/components/PartnersSection"
 import RecommendedSection from "@/features/landing/components/RecommendedSection"
+import RecommendedSkeleton from "@/features/landing/components/RecommendedSkeleton"
 import { websiteJsonLd, homepageJsonLd } from "@/lib/seo/json-ld"
 
 type Props = {
@@ -58,7 +60,9 @@ export default async function Page({ params }: Props) {
       />
       <HeroSection />
       <PartnersSection />
-      <RecommendedSection />
+      <Suspense fallback={<RecommendedSkeleton />}>
+        <RecommendedSection />
+      </Suspense>
       <StorySection />
     </>
   )

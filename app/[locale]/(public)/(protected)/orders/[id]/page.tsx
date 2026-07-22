@@ -1,7 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server"
 import { Link } from "@/i18n/routing"
 import { getMyOrderById } from "@/features/orders/api"
-import OrderDetailsPageContent from "@/features/orders/OrderDetailsPage"
+import OrderDetailsPageContent from "@/features/orders/components/OrderDetailsPage"
 import type { ApiOrderGroup } from "@/features/orders/api/type"
 import { ArrowLeft, ArrowRight, AlertCircle } from "lucide-react"
 

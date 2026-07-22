@@ -177,13 +177,11 @@ export default function MobileMenu() {
               <SheetClose
                 nativeButton={false}
                 render={
-                  <Link href="/register" passHref className="w-full">
-                    <Button
-                      variant="outline"
-                      className="h-10 w-full cursor-pointer rounded-full border-stone-300 text-sm font-semibold tracking-wider text-stone-900 uppercase transition-all dark:border-stone-800 dark:text-stone-100 dark:hover:bg-stone-900"
-                    >
-                      {t("register")}
-                    </Button>
+                  <Link
+                    href="/register"
+                    className="flex h-10 w-full items-center justify-center rounded-full border border-stone-300 text-sm font-semibold tracking-wider text-stone-900 uppercase transition-all dark:border-stone-800 dark:text-stone-100 dark:hover:bg-stone-900"
+                  >
+                    {t("register")}
                   </Link>
                 }
               />

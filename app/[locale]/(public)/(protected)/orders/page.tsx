@@ -1,7 +1,7 @@
 import { setRequestLocale } from "next-intl/server"
 import { getTranslations } from "next-intl/server"
 import { getMyOrders } from "@/features/orders/api"
-import OrdersClient from "@/features/orders/OrdersClient"
+import OrdersClient from "@/features/orders/components/OrdersClient"
 import { AlertCircle } from "lucide-react"
 import type { ApiOrderGroup, OrderStatus } from "@/features/orders/api/type"
 
@@ -41,16 +41,18 @@ export default async function OrdersPage({
 
   if (fetchError) {
     return (
-      <div className="container mx-auto min-h-[70vh] px-4 py-12 flex items-center justify-center">
+      <div className="container mx-auto flex min-h-[70vh] items-center justify-center px-4 py-12">
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="rounded-full bg-rose-50 dark:bg-rose-950/30 p-5">
+          <div className="rounded-full bg-rose-50 p-5 dark:bg-rose-950/30">
             <AlertCircle className="size-10 text-rose-500" />
           </div>
           <div className="space-y-1.5">
             <h2 className="font-serif text-xl font-bold text-foreground">
               {t("errorLoadingOrders")}
             </h2>
-            <p className="text-sm text-muted-foreground max-w-sm">{fetchError}</p>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              {fetchError}
+            </p>
           </div>
         </div>
       </div>
@@ -82,7 +84,8 @@ export default async function OrdersPage({
       ? (sort as SortOption)
       : "newest"
 
-  const currentPage = page && !isNaN(Number(page)) && Number(page) > 0 ? Number(page) : 1
+  const currentPage =
+    page && !isNaN(Number(page)) && Number(page) > 0 ? Number(page) : 1
 
   let filtered = [...orderGroups]
 
@@ -100,7 +103,7 @@ export default async function OrdersPage({
         group.emailAddress.toLowerCase().includes(queryLower) ||
         group.orders.some(
           (order) =>
-          order.orderId.toLowerCase().includes(queryLower) ||
+            order.orderId.toLowerCase().includes(queryLower) ||
             order.restaurant.name.toLowerCase().includes(queryLower) ||
             order.items.some((item) =>
               item.productTitle.toLowerCase().includes(queryLower)
@@ -126,7 +129,10 @@ export default async function OrdersPage({
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE))
   const safePage = Math.min(currentPage, totalPages)
   const startIndex = (safePage - 1) * PAGE_SIZE
-  const paginatedOrderGroups = filtered.slice(startIndex, startIndex + PAGE_SIZE)
+  const paginatedOrderGroups = filtered.slice(
+    startIndex,
+    startIndex + PAGE_SIZE
+  )
 
   return (
     <div className="container mx-auto min-h-[70vh] px-4 py-8">

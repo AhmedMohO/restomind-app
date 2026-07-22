@@ -2,7 +2,7 @@ import "server-only"
 
 import { apiClient } from "@/lib/api/client"
 import { parseOrThrow } from "@/lib/api/utils"
-import type { ApiOrder, OrderStatus, CreateOrderPayload, ApiOrderGroup, ApiRestaurantOrder, OrderStatus } from "./type"
+import type { CreateOrderPayload, ApiOrderGroup, ApiRestaurantOrder, OrderStatus } from "./type"
 
 export * from "./type"
 
@@ -13,12 +13,12 @@ export * from "./type"
  */
 export async function createOrder(
   payload: CreateOrderPayload
-): Promise<{ data: ApiOrder | ApiOrder[] }> {
+): Promise<{ data: ApiOrderGroup | ApiOrderGroup[] }> {
   const response = await apiClient("/orders", {
     method: "POST",
     body: JSON.stringify(payload),
   })
-  return parseOrThrow<{ data: ApiOrder | ApiOrder[] }>(response, "createOrder")
+  return parseOrThrow<{ data: ApiOrderGroup | ApiOrderGroup[] }>(response, "createOrder")
 }
 
 /** GET /orders/me — get customer order history (customer only) */

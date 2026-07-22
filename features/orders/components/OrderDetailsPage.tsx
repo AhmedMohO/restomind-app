@@ -1,9 +1,9 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import OrderHeader from "@/features/orders/OrderHeader"
-import RestaurantOrderCarousel from "@/features/orders/RestaurantOrderCarousel"
-import SharedInfoPanel from "@/features/orders/SharedInfoPanel"
+import OrderHeader from "@/features/orders/components/OrderHeader"
+import RestaurantOrderCarousel from "@/features/orders/components/RestaurantOrderCarousel"
+import SharedInfoPanel from "@/features/orders/components/SharedInfoPanel"
 import type { ApiOrderGroup } from "@/features/orders/api/type"
 
 interface OrderDetailsPageProps {

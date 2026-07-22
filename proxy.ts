@@ -9,7 +9,6 @@
  * ProtectedRoute / requireRole(). This keeps all other routes fully static.
  */
 
-import { getIronSession } from "iron-session"
 import createMiddleware from "next-intl/middleware"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
@@ -17,15 +16,7 @@ import { routing } from "./i18n/routing"
 import {
   SESSION_COOKIE_NAME,
   ROUTE_ROLE_MAP,
-  sessionOptions,
-  API_URL,
 } from "./lib/auth/config"
-import {
-  isAuthenticated,
-  shouldRefresh,
-  computeExpiresAt,
-} from "./lib/auth/session"
-import type { SessionData } from "./features/auth/auth"
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -112,45 +103,6 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   // Set x-pathname for canonical URL resolution in layout metadata
   intlResponse.headers.set("x-pathname", pathname)
-
-  // Proactive token refresh in Proxy where cookie mutation IS supported
-  if (request.cookies.has(SESSION_COOKIE_NAME)) {
-    try {
-      const session = await getIronSession<SessionData>(
-        request,
-        intlResponse,
-        sessionOptions
-      )
-      if (isAuthenticated(session) && shouldRefresh(session)) {
-        console.info("[proxy] Proactively refreshing access token")
-        const refreshRes = await fetch(
-          `${API_URL}/auth/generate-access-token`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${session.tokens!.refreshToken}`,
-              "Content-Type": "application/json",
-            },
-            cache: "no-store",
-          }
-        )
-        if (refreshRes.ok) {
-          const data = (await refreshRes.json()) as { accessToken?: string }
-          if (data.accessToken) {
-            session.tokens = {
-              accessToken: data.accessToken,
-              refreshToken: session.tokens!.refreshToken,
-              expiresAt: computeExpiresAt(),
-            }
-            await session.save()
-            console.info("[proxy] Token refreshed and saved to response cookie")
-          }
-        }
-      }
-    } catch (err) {
-      console.warn("[proxy] Proactive session refresh failed:", err)
-    }
-  }
 
   const isLoggedIn = !!request.cookies.get(SESSION_COOKIE_NAME)?.value
 

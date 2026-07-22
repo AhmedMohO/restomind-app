@@ -124,7 +124,7 @@ export default async function Footer() {
               <ul className="space-y-3.5 text-sm">
                 <li>
                   <Link
-                    href="/contact"
+                    href="/about"
                     className="text-stone-600 transition-colors hover:text-[#111111] dark:text-stone-400 dark:hover:text-stone-100"
                   >
                     {t("contact")}
@@ -132,7 +132,7 @@ export default async function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/faq"
+                    href="/about"
                     className="text-stone-600 transition-colors hover:text-[#111111] dark:text-stone-400 dark:hover:text-stone-100"
                   >
                     {t("faq")}

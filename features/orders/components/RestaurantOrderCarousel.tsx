@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { ChevronLeft, ChevronRight, Store } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import RestaurantOrderCard from "@/features/orders/RestaurantOrderCard"
+import RestaurantOrderCard from "@/features/orders/components/RestaurantOrderCard"
 import type { ApiOrderGroup, OrderStatus } from "@/features/orders/api/type"
 import { cn } from "@/lib/utils"
 
@@ -227,7 +227,7 @@ export default function RestaurantOrderCarousel({
               type="button"
               onClick={() => handleBulletClick(idx)}
               className={cn(
-                "group relative flex shrink-0 cursor-pointer items-center gap-2.5 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/40",
+                "group relative flex shrink-0 cursor-pointer items-center gap-2.5 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-200 focus:ring-2 focus:ring-primary/40 focus:outline-none",
                 isActive
                   ? "border-primary bg-primary text-primary-foreground shadow-xs"
                   : "border-border bg-card text-foreground hover:border-primary/50 hover:bg-accent hover:text-accent-foreground"

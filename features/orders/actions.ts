@@ -1,6 +1,6 @@
 "use server"
 
-import { createOrder, type ApiOrder, type CreateOrderPayload } from "./api"
+import { ApiOrderGroup, createOrder, type CreateOrderPayload } from "./api"
 import { AuthenticationError } from "@/lib/auth/errors"
 import { extractApiMessage } from "@/lib/api/utils"
 
@@ -11,7 +11,7 @@ export type ActionResult<T> =
 /** Server Action: Create an order from the active cart. */
 export async function createOrderAction(
   payload: CreateOrderPayload
-): Promise<ActionResult<ApiOrder | ApiOrder[]>> {
+): Promise<ActionResult<ApiOrderGroup | ApiOrderGroup[]>> {
   try {
     const res = await createOrder(payload)
     return { success: true, data: res.data }

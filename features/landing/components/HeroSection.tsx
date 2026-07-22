@@ -1,8 +1,9 @@
 import { Play } from "lucide-react"
 import { getTranslations, getLocale } from "next-intl/server"
 import { Link } from "@/i18n/routing"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+
 export default async function HeroSection() {
   const t = await getTranslations("Hero")
   const locale = await getLocale()
@@ -20,7 +21,7 @@ export default async function HeroSection() {
       />
       {/* Main Container */}
       <div className="relative z-10 container mx-auto w-full px-4 pt-28 pb-16 sm:px-6 md:px-8 md:pt-20">
-        <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-12">
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
           {/* Content Column (moves to the right on Arabic RTL dynamically) */}
           <div className="flex flex-col justify-center md:col-span-7 lg:col-span-6">
             {/* Glassmorphic card for mobile layout, transparent on desktop */}
@@ -36,10 +37,14 @@ export default async function HeroSection() {
 
               {/* Buttons Row */}
               <div className="mt-8 flex flex-wrap items-center gap-4 sm:gap-6">
-                <Link href="/offers" passHref>
-                  <Button className="h-auto cursor-pointer rounded-full border-0 bg-white px-6 py-3.5 text-sm font-semibold tracking-wider text-stone-900 uppercase shadow-md transition-transform duration-200 hover:scale-105 hover:bg-stone-100 active:scale-95 sm:px-8 sm:py-4">
-                    {t("ctaOrder")}
-                  </Button>
+                <Link
+                  href="/offers"
+                  className={cn(
+                    buttonVariants(),
+                    "h-auto cursor-pointer rounded-full border-0 bg-white px-6 py-3.5 text-sm font-semibold tracking-wider text-stone-900 uppercase shadow-md transition-transform duration-200 hover:scale-105 hover:bg-stone-100 active:scale-95 sm:px-8 sm:py-4"
+                  )}
+                >
+                  {t("ctaOrder")}
                 </Link>
 
                 <Link
