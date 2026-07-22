@@ -42,6 +42,7 @@ export async function updateProfileAction(
     }
 
     revalidatePath("/[locale]/profile", "page")
+    revalidatePath("/[locale]/dashboard/profile", "page")
 
     return {
       success: true,
@@ -77,6 +78,7 @@ export async function addAddressAction(
 
     const updatedAddresses = await addAddressApi(payload)
     revalidatePath("/[locale]/profile", "page")
+    revalidatePath("/[locale]/dashboard/profile", "page")
 
     return {
       success: true,
@@ -104,6 +106,7 @@ export async function updateAddressAction(
   try {
     const updated = await updateAddressApi(addressId, payload)
     revalidatePath("/[locale]/profile", "page")
+    revalidatePath("/[locale]/dashboard/profile", "page")
 
     return {
       success: true,
@@ -130,6 +133,7 @@ export async function deleteAddressAction(
   try {
     const remainingAddresses = await deleteAddressApi(addressId)
     revalidatePath("/[locale]/profile", "page")
+    revalidatePath("/[locale]/dashboard/profile", "page")
 
     return {
       success: true,
@@ -156,6 +160,7 @@ export async function setDefaultAddressAction(
   try {
     const updatedList = await setDefaultAddressApi(addressId)
     revalidatePath("/[locale]/profile", "page")
+    revalidatePath("/[locale]/dashboard/profile", "page")
 
     return {
       success: true,

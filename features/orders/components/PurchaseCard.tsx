@@ -18,10 +18,12 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
   const t = useTranslations("Orders")
   const statusMeta = getStatusMeta(order.overallStatus)
   const StatusIcon = statusMeta.Icon
-  const restaurantNames = (order.orders || []).map((item) => item.restaurant?.name || t("restaurant"))
+  const restaurantNames = (order.orders || []).map(
+    (item) => item.restaurant?.name || t("restaurant")
+  )
   const purchaseTitle =
     restaurantNames.length > 2
-      ? `${restaurantNames.slice(0, 2).join(", ")} +${restaurantNames.length - 2} ${t("more")}`
+      ? `${restaurantNames.slice(0, 2).join(", ")} +${restaurantNames.length - 2}`
       : restaurantNames.join(", ")
   const formattedDate = order.createdAt
     ? new Intl.DateTimeFormat(undefined, {
@@ -66,7 +68,10 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
           <div className="flex shrink-0 items-center gap-2 self-start sm:self-auto">
             <Badge
               variant="outline"
-              className={cn("gap-1.5 px-3 py-1 text-xs font-bold", statusMeta.badgeClass)}
+              className={cn(
+                "gap-1.5 px-3 py-1 text-xs font-bold",
+                statusMeta.badgeClass
+              )}
             >
               <StatusIcon className="size-3.5" />
               <span>{t(statusMeta.labelKey)}</span>
@@ -91,7 +96,8 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
           const RestaurantStatusIcon = meta.Icon
           const shortOrderId = restaurantOrder.orderId.slice(-8).toUpperCase()
           const visibleItems = restaurantOrder.items.slice(0, 3)
-          const remainingCount = restaurantOrder.items.length - visibleItems.length
+          const remainingCount =
+            restaurantOrder.items.length - visibleItems.length
 
           return (
             <div
@@ -110,7 +116,10 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
                     </span>
                     <Badge
                       variant="outline"
-                      className={cn("gap-1 px-2 py-0.5 text-[11px] font-bold", meta.badgeClass)}
+                      className={cn(
+                        "gap-1 px-2 py-0.5 text-[11px] font-bold",
+                        meta.badgeClass
+                      )}
                     >
                       <RestaurantStatusIcon className="size-3" />
                       <span>{t(meta.labelKey)}</span>

@@ -6,8 +6,14 @@ import { egyptianPhoneSchema, optionalEgyptianPhoneSchema } from "@/lib/phone"
 // ---------------------------------------------------------------------------
 
 export const updateProfileSchema = z.object({
-  firstName: z.string().min(3).max(20),
-  lastName: z.string().min(3).max(20),
+  firstName: z
+    .string()
+    .min(3, { message: "firstNameMin" })
+    .max(20, { message: "firstNameMax" }),
+  lastName: z
+    .string()
+    .min(3, { message: "lastNameMin" })
+    .max(20, { message: "lastNameMax" }),
   phone: optionalEgyptianPhoneSchema,
   gender: z.enum(["male", "female"]).optional().nullable(),
   DOB: z.string().optional().nullable(),

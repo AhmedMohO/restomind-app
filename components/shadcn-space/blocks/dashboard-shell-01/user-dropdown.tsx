@@ -1,6 +1,11 @@
 "use client";
 
+import { useTransition } from "react";
 import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -11,47 +16,62 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  LucideIcon,
-  CircleUserRound,
-  CreditCard,
-  ReceiptText,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { Loader2, Settings, LogOut } from "lucide-react";
+
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { logoutAction } from "@/features/auth/actions/login";
+import { useQueryClient } from "@tanstack/react-query";
+import { useProfile } from "@/features/profile/hooks/use-profile";
 
 type Props = {
   trigger: ReactNode;
   defaultOpen?: boolean;
   align?: "start" | "center" | "end";
-};
-
-type MenuItem = {
-  label: string;
-  icon: LucideIcon;
-  destructive?: boolean;
-};
-
-const PROFILE_ITEMS: MenuItem[] = [
-  { label: "My Profile", icon: CircleUserRound },
-  { label: "My Subscription", icon: CreditCard },
-  { label: "My Invoice", icon: ReceiptText },
-];
-
-const SETTINGS_ITEMS: MenuItem[] = [
-  { label: "Account Settings", icon: Settings },
-];
-
-const LOGOUT_ITEM: MenuItem = {
-  label: "Signout",
-  icon: LogOut,
-  destructive: true,
+  /** Current locale, used to build locale-prefixed logout/profile links. */
+  locale?: string;
 };
 
 const itemClass =
   "p-2 text-sm font-medium text-popover-foreground cursor-pointer gap-2";
 
-const UserDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
+function getInitials(first?: string, last?: string): string {
+  const f = first?.[0]?.toUpperCase() ?? "";
+  const l = last?.[0]?.toUpperCase() ?? "";
+  return f + l || "U";
+}
+
+const UserDropdown = ({
+  trigger,
+  defaultOpen,
+  align = "end",
+  locale = "en",
+}: Props) => {
+  const t = useTranslations("Dashboard.nav");
+  const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
+  const { data: profileUser } = useProfile();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [isPending, startTransition] = useTransition();
+
+  const displayName = user
+    ? `${user.firstName} ${user.lastName}`.trim()
+    : "";
+  const initials = getInitials(user?.firstName, user?.lastName);
+  const avatarUrl = profileUser?.image?.secure_url;
+
+  // Mirrors the logout flow used by the customer Navbar: clears the Zustand
+  // store, invalidates the /api/auth/me query, and refreshes the RSC tree.
+  const handleLogout = () => {
+    startTransition(async () => {
+      await logoutAction();
+      setUser(null);
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      router.refresh();
+      router.push(`/${locale}`);
+    });
+  };
+
   return (
     <div className="flex items-center justify-center">
       <DropdownMenu defaultOpen={defaultOpen}>
@@ -65,21 +85,18 @@ const UserDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
             <DropdownMenuLabel className="flex items-center gap-3 px-4 py-3">
               <div className="relative">
                 <Avatar className="data-[size=lg]:size-8">
-                  <AvatarImage
-                    src="https://images.shadcnspace.com/assets/profiles/user-11.jpg"
-                    alt="David McMichael"
-                  />
-                  <AvatarFallback>DM</AvatarFallback>
+                  <AvatarImage src={avatarUrl} alt={displayName} className="object-cover" />
+                  <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <span className="ring-card absolute right-0 bottom-0 size-2 rounded-full bg-green-600 ring-2" />
               </div>
 
-              <div className="flex flex-col">
-                <span className="text-popover-foreground text-sm font-medium">
-                  David McMichael
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-sm font-medium text-popover-foreground">
+                  {displayName || "—"}
                 </span>
-                <span className="text-muted-foreground text-sm">
-                  david@shadcnspace.com
+                <span className="truncate text-sm text-muted-foreground">
+                  {user?.email ?? ""}
                 </span>
               </div>
             </DropdownMenuLabel>
@@ -87,34 +104,34 @@ const UserDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
 
           <DropdownMenuSeparator />
 
-          {/* Main Links */}
+          {/* Account Settings */}
           <DropdownMenuGroup>
-            {PROFILE_ITEMS.map(({ label, icon: Icon }) => (
-              <DropdownMenuItem key={label} className={itemClass}>
-                <Icon size={20} />
-                <span>{label}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuGroup>
-
-          <DropdownMenuSeparator />
-
-          {/* Settings */}
-          <DropdownMenuGroup>
-            {SETTINGS_ITEMS.map(({ label, icon: Icon }) => (
-              <DropdownMenuItem key={label} className={itemClass}>
-                <Icon size={20} />
-                <span>{label}</span>
-              </DropdownMenuItem>
-            ))}
+            <DropdownMenuItem
+              className={itemClass}
+              render={
+                <Link href={`/${locale}/dashboard/profile`} />
+              }
+            >
+              <Settings size={20} />
+              <span>{t("accountSettings")}</span>
+            </DropdownMenuItem>
           </DropdownMenuGroup>
 
           <DropdownMenuSeparator />
 
           {/* Logout */}
-          <DropdownMenuItem variant="destructive" className={itemClass}>
-            <LOGOUT_ITEM.icon size={20} />
-            <span>{LOGOUT_ITEM.label}</span>
+          <DropdownMenuItem
+            variant="destructive"
+            className={itemClass}
+            onClick={handleLogout}
+            disabled={isPending}
+          >
+            {isPending ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <LogOut size={20} />
+            )}
+            <span>{t("signOut")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -12,7 +12,12 @@ export interface PaginationProps {
   className?: string
 }
 
-export function Pagination({ page, totalPages, onPageChange, className }: PaginationProps) {
+export function Pagination({
+  page,
+  totalPages,
+  onPageChange,
+  className,
+}: PaginationProps) {
   if (totalPages <= 1) return null
 
   const pages = getPageRange(page, totalPages)
@@ -21,7 +26,10 @@ export function Pagination({ page, totalPages, onPageChange, className }: Pagina
     <nav
       role="navigation"
       aria-label="pagination"
-      className={cn("mx-auto flex w-full items-center justify-center gap-1", className)}
+      className={cn(
+        "mx-auto flex items-center justify-center gap-1",
+        className
+      )}
     >
       <Button
         variant="outline"
@@ -36,7 +44,10 @@ export function Pagination({ page, totalPages, onPageChange, className }: Pagina
 
       {pages.map((p, i) =>
         p === "..." ? (
-          <span key={`ellipsis-${i}`} className="flex h-8 w-8 items-center justify-center text-xs text-muted-foreground">
+          <span
+            key={`ellipsis-${i}`}
+            className="flex h-8 w-8 items-center justify-center text-xs text-muted-foreground"
+          >
             ...
           </span>
         ) : (

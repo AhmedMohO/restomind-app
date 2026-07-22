@@ -13,7 +13,12 @@
     "restaurantNameMin": "Restaurant name must be at least 3 characters",
     "restaurantNameMax": "Restaurant name must be at most 60 characters",
     "restaurantDescMax": "Description cannot exceed 500 characters",
-    "invalidLogoUrl": "Logo URL must be a valid web address"
+    "invalidLogoUrl": "Logo URL must be a valid web address",
+    "firstNameMin": "First name must be at least 3 characters",
+    "firstNameMax": "First name cannot exceed 20 characters",
+    "lastNameMin": "Last name must be at least 3 characters",
+    "lastNameMax": "Last name cannot exceed 20 characters",
+    "passwordMin": "Password must be at least 6 characters"
   },
   "Navbar": {
     "home": "Home",

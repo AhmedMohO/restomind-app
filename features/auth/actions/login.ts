@@ -91,6 +91,7 @@ export async function loginAction(
       email: apiUser.email,
       role: apiUser.role,
       isEmailVerified: apiUser.isEmailVerified,
+      restaurantId: apiUser.restaurantId,
     }
 
     // 4. Store session in encrypted Iron Session cookie (server-only)

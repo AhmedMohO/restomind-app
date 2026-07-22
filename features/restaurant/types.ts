@@ -12,10 +12,18 @@ export interface RestaurantAddress {
   country?: string
 }
 
+export interface OwnerUserSummary {
+  _id: string
+  firstName?: string
+  lastName?: string
+  email?: string
+  role?: string
+}
+
 export interface Restaurant {
   _id: string
   name: string
-  ownerUserId: string
+  ownerUserId: OwnerUserSummary
   description?: string
   /** Public URL string per the API schema. */
   logoUrl?: string

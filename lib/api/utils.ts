@@ -50,8 +50,8 @@ export async function parseOrThrow<T>(
  * Builds a query string from key-value parameters.
  * Omits undefined, null, or empty string values.
  */
-export function buildQueryString(
-  params: Record<string, any>
+export function buildQueryString<T extends object>(
+  params: T
 ): string {
   const qs = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {

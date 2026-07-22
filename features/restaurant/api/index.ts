@@ -1,69 +1,120 @@
+/**
+ * Server-side API wrappers for the Restaurant feature.
+ *
+ * These are thin typed wrappers around the existing `apiClient()` from
+ * `@/lib/api/client`. All functions run server-side only — they attach
+ * the user's access token (via apiClient) and return parsed JSON.
+ *
+ * Endpoints (per docs/API_DOCUMENTATION.md §10):
+ *   GET   /restaurants/me        — manager's own restaurant
+ *   GET   /restaurants/:id       — any restaurant by ID (admin)
+ *   PATCH /restaurants/:id       — update restaurant fields
+ */
+
 import "server-only"
 
-import { apiClient, publicApiClient } from "@/lib/api/client"
+import { apiClient } from "@/lib/api/client"
 import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
-import type {
-  CreateRestaurantPayload,
-  GetRestaurantsParams,
-  PaginatedRestaurants,
-  Restaurant,
-  UpdateRestaurantPayload,
-} from "../types"
+import type { PaginatedRestaurants, Restaurant, UpdateRestaurantPayload } from "../types"
 
-export * from "../types"
+export type { PaginatedRestaurants, Restaurant, UpdateRestaurantPayload }
 
-/** GET /restaurants — fetch paginated list of restaurants (public) */
+export interface GetRestaurantsParams {
+  page?: number
+  limit?: number
+  search?: string
+}
+
+interface ApiEnvelope<T> {
+  data?: T
+  message?: string | string[]
+  [key: string]: unknown
+}
+
+async function parseJson<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as ApiEnvelope<T>
+    const msg = Array.isArray(body.message) ? body.message.join(", ") : body.message
+    throw new Error(msg || `API ${response.status}`)
+  }
+  const body = (await response.json().catch(() => ({}))) as ApiEnvelope<T>
+  if (!body.data) {
+    throw new Error("Unexpected API response — missing `data` field")
+  }
+  return body.data as T
+}
+
+/**
+ * GET /restaurants — returns list/paginated active restaurants.
+ */
 export async function getRestaurants(
   params: GetRestaurantsParams = {}
 ): Promise<PaginatedRestaurants> {
   const qs = buildQueryString(params)
-  const response = await publicApiClient(`/restaurants${qs}`)
+  const response = await apiClient(`/restaurants${qs}`)
   return parseOrThrow<PaginatedRestaurants>(response, "getRestaurants")
 }
 
-/** GET /restaurants/me — get current manager's assigned restaurant (authenticated) */
-export async function getMyRestaurant(): Promise<{ data: Restaurant }> {
-  const response = await apiClient("/restaurants/me")
-  return parseOrThrow<{ data: Restaurant }>(response, "getMyRestaurant")
+/**
+ * GET /restaurants/me — returns the restaurant linked to the authenticated
+ * manager's `restaurantId`.
+ */
+export async function getMyRestaurantApi(): Promise<Restaurant> {
+  const res = await apiClient("/restaurants/me")
+  return parseJson<Restaurant>(res)
 }
 
-/** GET /restaurants/:id — get restaurant by ID (authenticated) */
-export async function getRestaurantById(
-  id: string
-): Promise<{ data: Restaurant }> {
-  const response = await apiClient(`/restaurants/${id}`)
-  return parseOrThrow<{ data: Restaurant }>(response, "getRestaurantById")
+/**
+ * GET /restaurants/:id — returns any restaurant by ObjectId.
+ * Requires admin role upstream.
+ */
+export async function getRestaurantByIdApi(id: string): Promise<Restaurant> {
+  const res = await apiClient(`/restaurants/${encodeURIComponent(id)}`)
+  return parseJson<Restaurant>(res)
 }
 
-/** POST /restaurants — create a new restaurant (admin only) */
-export async function createRestaurant(
-  body: CreateRestaurantPayload
-): Promise<{ data: Restaurant }> {
-  const response = await apiClient("/restaurants", {
-    method: "POST",
-    body: JSON.stringify(body),
-  })
-  return parseOrThrow<{ data: Restaurant }>(response, "createRestaurant")
-}
-
-/** PATCH /restaurants/:id — update restaurant details (admin/manager) */
-export async function updateRestaurant(
+/**
+ * PATCH /restaurants/:id — updates restaurant fields.
+ * Managers can only update their own assigned restaurant (enforced by backend).
+ */
+export async function updateRestaurantApi(
   id: string,
-  body: UpdateRestaurantPayload
-): Promise<{ data: Restaurant }> {
-  const response = await apiClient(`/restaurants/${id}`, {
+  payload: UpdateRestaurantPayload
+): Promise<Restaurant> {
+  const res = await apiClient(`/restaurants/${encodeURIComponent(id)}`, {
     method: "PATCH",
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
   })
-  return parseOrThrow<{ data: Restaurant }>(response, "updateRestaurant")
+  return parseJson<Restaurant>(res)
 }
 
-/** DELETE /restaurants/:id — soft delete restaurant (admin only) */
-export async function deleteRestaurant(
-  id: string
-): Promise<{ data: Restaurant }> {
-  const response = await apiClient(`/restaurants/${id}`, {
+/**
+ * POST /restaurants — creates a new restaurant (admin only).
+ */
+export async function createRestaurantApi(
+  payload: Record<string, unknown>
+): Promise<Restaurant> {
+  const res = await apiClient("/restaurants", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+  return parseJson<Restaurant>(res)
+}
+
+/**
+ * DELETE /restaurants/:id — soft deletes a restaurant (admin only).
+ */
+export async function deleteRestaurantApi(id: string): Promise<{ message: string }> {
+  const res = await apiClient(`/restaurants/${encodeURIComponent(id)}`, {
     method: "DELETE",
   })
-  return parseOrThrow<{ data: Restaurant }>(response, "deleteRestaurant")
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as ApiEnvelope<unknown>
+    const msg = Array.isArray(body.message) ? body.message.join(", ") : body.message
+    throw new Error(msg || `API ${res.status}`)
+  }
+  return { message: "Restaurant deleted successfully" }
 }
+
+
+

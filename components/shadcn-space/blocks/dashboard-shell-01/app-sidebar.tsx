@@ -1,5 +1,6 @@
-"use client";
-import React from "react";
+"use client"
+
+import React from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -7,134 +8,127 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarProvider,
-} from "@/components/ui/sidebar";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { Link } from "@/i18n/routing";
-import { NavMain } from "@/components/shadcn-space/blocks/dashboard-shell-01/nav-main";
-import {
-  AlignStartVertical,
-  CreditCard,
-  LayoutPanelTop,
-  ChartPie,
-  BarChart3,
-  CircleUserRound,
-  ClipboardList,
-  Languages,
-  LucideIcon,
-  Notebook,
-  NotepadText,
-  Table,
-  Ticket,
-} from "lucide-react";
-import { SiteHeader } from "@/components/shadcn-space/blocks/dashboard-shell-01/site-header";
-import SimpleBar from "simplebar-react";
-import "simplebar-react/dist/simplebar.min.css";
+} from "@/components/ui/sidebar"
+import Image from "next/image"
+import { useLocale, useTranslations } from "next-intl"
+import { Link } from "@/i18n/routing"
+import { NavMain } from "@/components/shadcn-space/blocks/dashboard-shell-01/nav-main"
+import { BarChart3, Store, Settings, type LucideIcon } from "lucide-react"
+import { SiteHeader } from "@/components/shadcn-space/blocks/dashboard-shell-01/site-header"
+import SimpleBar from "simplebar-react"
+import "simplebar-react/dist/simplebar.min.css"
+
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import type { UserRole } from "@/features/auth/auth"
 
 export type NavItem = {
-  label?: string;
-  isSection?: boolean;
-  title?: string;
-  icon?: LucideIcon;
-  href?: string;
-  children?: NavItem[];
-  isActive?: boolean;
-};
+  label?: string
+  isSection?: boolean
+  title?: string
+  icon?: LucideIcon
+  href?: string
+  roles?: UserRole[]
+  children?: NavItem[]
+  isActive?: boolean
+}
 
-export const navData: NavItem[] = [
-  // Dashboards Section
-  { label: "Dashboards", isSection: true },
-  { title: "Analytics", icon: BarChart3, href: "#", isActive: true },
-  { title: "CRM Dashboard", icon: ClipboardList, href: "#" },
+/**
+ * Filter nav items and section headers according to the user's role.
+ * Empty sections (sections with zero allowed items) are automatically omitted.
+ */
+function filterNavByRole(
+  items: NavItem[],
+  userRole: UserRole | null,
+  isHydrated: boolean
+): NavItem[] {
+  const result: NavItem[] = []
+  let currentSection: NavItem | null = null
 
-  // Pages Section
-  { label: "Pages", isSection: true },
-  { title: "Tables", icon: Table, href: "#" },
-  { title: "Forms", icon: ClipboardList, href: "#" },
-  { title: "User Profile", icon: CircleUserRound, href: "#" },
+  for (const item of items) {
+    if (item.isSection) {
+      currentSection = item
+    } else {
+      const isAllowed =
+        !item.roles ||
+        !isHydrated ||
+        (userRole !== null && item.roles.includes(userRole))
 
-  // Apps Section
-  { label: "Apps", isSection: true },
-  { title: "Notes", icon: Notebook, href: "#" },
-  { title: "Tickets", icon: Ticket, href: "#" },
-  {
-    title: "Blogs",
-    icon: Languages,
-    children: [
-      { title: "Blog Post", href: "#" },
-      { title: "Blog Detail", href: "#" },
-      { title: "Blog Edit", href: "#" },
-      { title: "Blog Create", href: "#" },
-      { title: "Manage Blogs", href: "#" },
-    ],
-  },
+      if (isAllowed) {
+        if (currentSection) {
+          result.push(currentSection)
+          currentSection = null
+        }
+        const filteredChildren = item.children
+          ? filterNavByRole(item.children, userRole, isHydrated)
+          : undefined
 
-  // Form Elements Section
-  { label: "Form Elements", isSection: true },
-  {
-    title: "Shadcn Forms",
-    icon: NotepadText,
-    children: [
-      { title: "Button", href: "#" },
-      { title: "Input", href: "#" },
-      { title: "Select", href: "#" },
-      { title: "Checkbox", href: "#" },
-      { title: "Radio", href: "#" },
-    ],
-  },
-  {
-    title: "Form layouts",
-    icon: AlignStartVertical,
-    children: [
-      { title: "Forms Horizontal", href: "#" },
-      { title: "Forms Vertical", href: "#" },
-      { title: "Forms Validation", href: "#" },
-      { title: "Forms Examples", href: "#" },
-      { title: "Forms Wizard", href: "#" },
-    ],
-  },
-  { label: "WIDGETS", isSection: true },
-  {
-    title: "Cards",
-    icon: CreditCard,
-    children: [
-      { title: "Ecommerce Actions", href: "#" },
-      { title: "Course ", href: "#" },
-      { title: "Campaign Performance ", href: "#" },
-      { title: "Selling Products ", href: "#" },
-      { title: "Activity Timeline ", href: "#" },
-    ],
-  },
-  {
-    title: "Banners",
-    icon: LayoutPanelTop,
-    children: [{ title: "Analytic Banner ", href: "#" }],
-  },
-  {
-    title: "Charts",
-    icon: ChartPie,
-    children: [
-      { title: "Sales Report", href: "#" },
-      { title: "Weekly Sales", href: "#" },
-    ],
-  },
-];
+        result.push({
+          ...item,
+          children: filteredChildren,
+        })
+      }
+    }
+  }
 
-/* -------------------------------------------------------------------------- */
-/*                                   Page                                     */
-/* -------------------------------------------------------------------------- */
+  return result
+}
+
+function useDashboardNav(): NavItem[] {
+  const t = useTranslations("Dashboard.nav")
+  const { role, isHydrated } = useAuth()
+
+  const rawNav: NavItem[] = [
+    // Section 1: Overview
+    { label: t("overview"), isSection: true },
+    {
+      title: t("analytics"),
+      icon: BarChart3,
+      href: "/dashboard",
+      roles: ["admin", "manager"],
+    },
+
+    // Section 2: Management
+    { label: t("management"), isSection: true },
+    {
+      title: role === "admin" ? t("restaurants") : t("restaurantProfile"),
+      icon: Store,
+      href: "/dashboard/restaurants",
+      roles: ["admin", "manager"],
+    },
+
+    // Section 3: Settings
+    { label: t("settings"), isSection: true },
+    {
+      title: t("accountSettings"),
+      icon: Settings,
+      href: "/dashboard/profile",
+      roles: ["admin", "manager", "customer"],
+    },
+  ]
+
+  return filterNavByRole(rawNav, role, isHydrated)
+}
 
 const AppSidebar = ({ children }: { children: React.ReactNode }) => {
+  const navData = useDashboardNav()
+  const locale = useLocale()
+  const isEN = locale === "en"
+
   return (
     <SidebarProvider>
-      <Sidebar className="py-4 px-0 bg-background">
-        <div className="flex flex-col gap-6 bg-background">
+      <Sidebar
+        side={isEN ? "left" : "right"}
+        className="bg-background px-0"
+      >
+        <div className="flex h-full flex-col gap-4 bg-background py-4">
           {/* ---------------- Header ---------------- */}
-          <SidebarHeader className="py-0 px-4">
+          <SidebarHeader className="px-4 py-1">
             <SidebarMenu>
               <SidebarMenuItem>
-                <Link href="/" className="w-full h-full flex items-center justify-start">
+                <Link
+                  href="/"
+                  className="flex h-full w-full items-center justify-start"
+                >
                   <Image
                     src="/images/logo.webp"
                     alt="RestoMind Logo"
@@ -149,55 +143,28 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
           </SidebarHeader>
 
           {/* ---------------- Content ---------------- */}
-          <SidebarContent className="overflow-hidden gap-0 px-0">
+          <SidebarContent className="flex-1 gap-0 overflow-hidden px-3">
             <SimpleBar
               autoHide={true}
-              className="h-[calc(100vh-348px)] border-b border-border"
+              className="h-full"
             >
-              <div className="px-4">
+              <div className="space-y-1.5 py-2">
                 <NavMain items={navData} />
               </div>
             </SimpleBar>
-            {/* card */}
-            <div className="pt-4 px-4">
-              <Card className="shadow-none ring-0 bg-blue-500/10 px-4 py-6">
-                <CardContent className="p-0 flex flex-col gap-3 items-center">
-                  <img
-                    src="https://images.shadcnspace.com/assets/backgrounds/download-img.png"
-                    alt="sidebar-img"
-                    width={74}
-                    height={74}
-                    className="h-20 w-20"
-                  />
-                  <div className="flex flex-col gap-4 items-center">
-                    <div>
-                      <p className="text-base font-semibold text-card-foreground text-center">
-                        Grab Pro Now
-                      </p>
-                      <p className="text-sm font-regular text-muted-foreground text-center">
-                        Customize your admin
-                      </p>
-                    </div>
-                    <Button className="w-fit px-4 py-2 shadow-none cursor-pointer rounded-xl bg-blue-500 font-medium hover:bg-blue-500/80 h-9">
-                      Get Premium
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </SidebarContent>
         </div>
       </Sidebar>
 
       {/* ---------------- Main ---------------- */}
-      <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-50 flex items-center border-b px-6 py-3 bg-background">
+      <div className="flex w-full min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-50 flex items-center border-b bg-background px-4 py-3 sm:px-6">
           <SiteHeader />
         </header>
-        <main className="flex-1">{children}</main>
+        <main className="w-full min-w-0 flex-1">{children}</main>
       </div>
     </SidebarProvider>
-  );
-};
+  )
+}
 
-export default AppSidebar;
+export default AppSidebar

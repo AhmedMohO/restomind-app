@@ -186,8 +186,8 @@ function FieldError({
 
   const content = useMemo(() => {
     const translateMsg = (msg?: string) => {
-      if (!msg) return ""
-      return tValidation.has(msg as any) ? tValidation(msg as any) : msg
+      type TranslationKey = Parameters<typeof tValidation>[0]
+      return tValidation.has(msg as TranslationKey) ? tValidation(msg as TranslationKey) : msg
     }
 
     if (children) {

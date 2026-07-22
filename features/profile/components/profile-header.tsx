@@ -38,6 +38,7 @@ export function ProfileHeader({
           <div className="group relative shrink-0">
             <Avatar className="size-24 rounded-full shadow-md ring-2 ring-background sm:size-28">
               <AvatarImage
+                key={user.image?.secure_url || "avatar"}
                 src={user.image?.secure_url}
                 alt={`${user.firstName} ${user.lastName}`}
                 className="object-cover"

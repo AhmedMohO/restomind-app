@@ -25,7 +25,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useProfile } from "@/features/profile/hooks/use-profile"
 
 export default function Navbar() {
   const t = useTranslations("Navbar")
@@ -35,6 +36,8 @@ export default function Navbar() {
 
   const user = useAuthStore((s) => s.user)
   const setUser = useAuthStore((s) => s.setUser)
+  const { data: profileUser } = useProfile()
+  const avatarUrl = profileUser?.image?.secure_url
 
   const isLandingPage =
     pathname === "/" || pathname === "/en" || pathname === "/ar"
@@ -110,6 +113,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 rounded-full border-border/60 bg-background/80 px-3 py-1.5 shadow-xs backdrop-blur-sm transition-all hover:bg-accent"
                     >
                       <Avatar size="sm">
+                        <AvatarImage src={avatarUrl} alt={user?.firstName} className="object-cover" />
                         <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                           {userInitials || <User className="size-3.5" />}
                         </AvatarFallback>

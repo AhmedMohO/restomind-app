@@ -17,6 +17,8 @@ export interface SessionUser {
   email: string
   role: UserRole
   isEmailVerified: boolean
+  /** ObjectId of the restaurant this user manages (managers/admins only). */
+  restaurantId?: string
 }
 
 /**
@@ -78,6 +80,8 @@ export interface MeApiUser {
   email: string
   role: UserRole
   isEmailVerified: boolean
+  /** ObjectId of the restaurant this user manages (managers only, set by backend). */
+  restaurantId?: string
 }
 
 /**

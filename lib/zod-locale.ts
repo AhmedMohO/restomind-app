@@ -18,7 +18,7 @@ export function getZodErrorMap(locale: string) {
       return dict[issue.message]
     }
 
-    const customKey = (issue as any).params?.key
+    const customKey = (issue as { params?: { key?: string } }).params?.key
     if (customKey && dict?.[customKey]) {
       return dict[customKey]
     }
@@ -64,7 +64,10 @@ export function setZodLocale(locale: string) {
  * React Hook for forms — returns a request-isolated, locale-aware Zod resolver.
  * Preferred pattern for client forms to prevent global state mutation.
  */
-export function useZodResolver<T extends object>(schema: T) {
+export function useZodResolver<T extends z.ZodTypeAny>(schema: T) {
   const locale = useLocale()
-  return zodResolver(schema as any, { error: getZodErrorMap(locale) })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return zodResolver(schema as any, {
+    error: getZodErrorMap(locale),
+  })
 }

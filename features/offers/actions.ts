@@ -22,8 +22,9 @@ export async function fetchRecommendedOffersAction(
 ): Promise<PaginatedOffers> {
   try {
     return await getRecommendedOffers(params)
-  } catch (error: any) {
-    if (error?.digest === "HANGING_PROMISE_REJECTION" || error?.message?.includes("prerender")) {
+  } catch (error: unknown) {
+    const errObj = error as { digest?: string; message?: string } | null
+    if (errObj?.digest === "HANGING_PROMISE_REJECTION" || errObj?.message?.includes("prerender")) {
       throw error
     }
     console.error("[fetchRecommendedOffersAction] Error fetching recommended offers:", error)
