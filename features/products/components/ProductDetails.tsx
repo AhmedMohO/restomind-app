@@ -3,7 +3,6 @@
 import React, { useState } from "react"
 import { Link } from "@/i18n/routing"
 import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star } from "lucide-react"
-import type { ApiProduct } from "@/features/products/api/type"
 import type { ApiOffer } from "@/features/offers/api/type"
 import { useActiveOffers } from "@/features/offers/hooks"
 import { useCart } from "@/hooks/use-cart"
@@ -16,10 +15,12 @@ interface ProductDetailsProps {
   product: ApiOffer
 }
 
-export default function ProductDetails({ product: rawProduct }: ProductDetailsProps) {
+export default function ProductDetails({
+  product: rawProduct,
+}: ProductDetailsProps) {
   const t = useTranslations("Offers")
   const product = rawProduct.productId
-  const { addToCart, toggleWishlist, wishlist } = Object(useCart())
+  const { addToCart, toggleWishlist, wishlist } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const { data: similarRes } = useActiveOffers({
@@ -30,14 +31,14 @@ export default function ProductDetails({ product: rawProduct }: ProductDetailsPr
   })
 
   const similarOffers = (similarRes?.items ?? []).filter(
-    (o) => o._id !== rawProduct._id && o.productId._id !== product._id
+    (o: ApiOffer) => o._id !== rawProduct._id && o.productId._id !== product._id
   )
 
   if (!product) return null
 
-  const isFavorite = wishlist.includes(product._id)
-  const activePrice = product.discountedPrice ;
-  const discountPercentage = rawProduct.discountPercentage || 0;
+  const isFavorite = wishlist.includes(rawProduct._id)
+  const activePrice = rawProduct.offerPrice ?? product.discountedPrice
+  const discountPercentage = rawProduct.discountPercentage || 0
 
   const getCategoryLabel = (cat: string) => {
     switch (cat) {
@@ -65,7 +66,7 @@ export default function ProductDetails({ product: rawProduct }: ProductDetailsPr
   }
 
   const handleAddToCart = () => {
-    addToCart(product, quantity)
+    addToCart(rawProduct, quantity)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -112,7 +113,7 @@ export default function ProductDetails({ product: rawProduct }: ProductDetailsPr
                 </span>
               </div>
               <button
-                onClick={() => toggleWishlist(product._id)}
+                onClick={() => toggleWishlist(rawProduct._id)}
                 className={cn(
                   "rounded-full border border-[#ECE6DB] p-2.5 transition-colors hover:bg-[#FAF7F2] dark:border-neutral-800 dark:hover:bg-neutral-800",
                   isFavorite
@@ -236,4 +237,3 @@ export default function ProductDetails({ product: rawProduct }: ProductDetailsPr
     </div>
   )
 }
-

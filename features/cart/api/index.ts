@@ -21,18 +21,18 @@ export async function addToCart(payload: AddToCartPayload): Promise<{ data: ApiC
   return parseOrThrow<{ data: ApiCart }>(response, "addToCart")
 }
 
-/** DELETE /cart/:productId — remove product from cart (customer only) */
-export async function removeFromCart(productId: string): Promise<{ data: ApiCart }> {
-  const response = await apiClient(`/cart/${productId}`, { method: "DELETE" })
+/** DELETE /cart/:offerId — remove offer from cart (customer only) */
+export async function removeFromCart(offerId: string): Promise<{ data: ApiCart }> {
+  const response = await apiClient(`/cart/${offerId}`, { method: "DELETE" })
   return parseOrThrow<{ data: ApiCart }>(response, "removeFromCart")
 }
 
-/** PATCH /cart/:productId — update product quantity in cart (customer only) */
+/** PATCH /cart/:offerId — update offer quantity in cart (customer only) */
 export async function updateCartItemQuantity(
-  productId: string,
+  offerId: string,
   quantity: number
 ): Promise<{ data: ApiCart }> {
-  const response = await apiClient(`/cart/${productId}`, {
+  const response = await apiClient(`/cart/${offerId}`, {
     method: "PATCH",
     body: JSON.stringify({ quantity }),
   })

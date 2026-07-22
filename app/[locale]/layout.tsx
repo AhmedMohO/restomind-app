@@ -138,6 +138,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={dir}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       className={cn(
         "antialiased",

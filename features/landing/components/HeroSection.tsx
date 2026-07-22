@@ -1,16 +1,22 @@
 import { Play } from "lucide-react"
-import { getTranslations } from "next-intl/server"
+import { getTranslations, getLocale } from "next-intl/server"
 import { Link } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 export default async function HeroSection() {
   const t = await getTranslations("Hero")
+  const locale = await getLocale()
 
   return (
     <main className="relative flex min-h-screen w-full items-center overflow-hidden bg-cover bg-center bg-no-repeat">
       <div
         className={cn("absolute inset-0 bg-cover bg-center bg-no-repeat")}
-        style={{ backgroundImage: "url('/images/Landing/hero.webp')" }}
+        style={{
+          backgroundImage:
+            locale === "ar"
+              ? "url('/images/Landing/hero-ar.webp')"
+              : "url('/images/Landing/hero.webp')",
+        }}
       />
       {/* Main Container */}
       <div className="relative z-10 container mx-auto w-full px-4 pt-28 pb-16 sm:px-6 md:px-8 md:pt-20">

@@ -6,26 +6,26 @@ import type { ApiFavorite, FavoritesListResponse, FavoriteStatusResponse } from 
 
 export * from "./type"
 
-/** POST /favorites/:productId — add product to favorites (customer only) */
-export async function addFavorite(productId: string): Promise<{ data: ApiFavorite }> {
-  const response = await apiClient(`/favorites/${productId}`, { method: "POST" })
+/** POST /favorites/:offerId — add offer to favorites (customer only) */
+export async function addFavorite(offerId: string): Promise<{ data: ApiFavorite }> {
+  const response = await apiClient(`/favorites/${offerId}`, { method: "POST" })
   return parseOrThrow<{ data: ApiFavorite }>(response, "addFavorite")
 }
 
-/** DELETE /favorites/:productId — remove product from favorites (customer only) */
-export async function removeFavorite(productId: string): Promise<{ message: string }> {
-  const response = await apiClient(`/favorites/${productId}`, { method: "DELETE" })
+/** DELETE /favorites/:offerId — remove offer from favorites (customer only) */
+export async function removeFavorite(offerId: string): Promise<{ message: string }> {
+  const response = await apiClient(`/favorites/${offerId}`, { method: "DELETE" })
   return parseOrThrow<{ message: string }>(response, "removeFavorite")
 }
 
-/** GET /favorites — get all favorite products (customer only) */
+/** GET /favorites — get all favorite offers (customer only) */
 export async function getFavorites(): Promise<FavoritesListResponse> {
   const response = await apiClient("/favorites")
   return parseOrThrow<FavoritesListResponse>(response, "getFavorites")
 }
 
-/** GET /favorites/:productId/status — check if product is in favorites (customer only) */
-export async function checkIsFavorite(productId: string): Promise<FavoriteStatusResponse> {
-  const response = await apiClient(`/favorites/${productId}/status`)
+/** GET /favorites/:offerId/status — check if offer is in favorites (customer only) */
+export async function checkIsFavorite(offerId: string): Promise<FavoriteStatusResponse> {
+  const response = await apiClient(`/favorites/${offerId}/status`)
   return parseOrThrow<FavoriteStatusResponse>(response, "checkIsFavorite")
 }

@@ -1,9 +1,10 @@
-import { ApiProduct } from "@/features/products/api/type"
+import type { ApiOffer } from "@/features/offers/api/type"
+
 export interface ApiCartItem {
-  product: ApiProduct
+  offer: ApiOffer
   quantity: number
-  unitPrice: number
-  discountedPrice: number
+  unitOriginalPrice: number
+  unitOfferPrice: number
   totalItemPrice: number
 }
 
@@ -18,10 +19,11 @@ export interface ApiCart {
 }
 
 export interface AddToCartPayload {
-  productId: string
+  offerId: string
   quantity: number
 }
 
 export interface UpdateCartQuantityPayload {
   quantity: number
 }
+

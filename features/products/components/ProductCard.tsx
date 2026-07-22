@@ -2,34 +2,31 @@
 
 import React, { useState } from "react"
 import { Link, useRouter } from "@/i18n/routing"
-import { Star, Plus, Heart } from "lucide-react"
+import { Plus, Heart } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { useTranslations } from "next-intl"
-import type { ApiProduct } from "../api"
 import type { ApiOffer } from "@/features/offers/api/type"
 
 interface ProductCardProps {
-  product?: ApiProduct | ApiOffer
-  offer?: ApiOffer
+  product: ApiOffer
 }
 
-export default function ProductCard({ product: rawProduct, offer: rawOffer }: ProductCardProps) {
+export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const { addToCart, toggleWishlist, wishlist } = useCart()
   const { isAuthenticated } = useAuth()
   const router = useRouter()
   const [added, setAdded] = useState(false)
   const t = useTranslations("Offers")
 
-  if (!rawProduct && !rawOffer) return null
+  if (!rawProduct) return null
 
-  const offer = rawOffer || (rawProduct && "productId" in rawProduct ? (rawProduct as ApiOffer) : undefined)
-  const product: ApiProduct = offer ? offer.productId : (rawProduct as ApiProduct)
-  const isFavorite = wishlist.includes(product._id)
-  const discountedPrice = product.discountedPrice
-  const discountPercentage = offer ? offer.discountPercentage : 0
+  const product = rawProduct.productId
+  const isFavorite = wishlist.includes(rawProduct._id)
+  const discountedPrice = rawProduct.offerPrice ?? product.discountedPrice
+  const discountPercentage = rawProduct.discountPercentage || 0
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -41,7 +38,7 @@ export default function ProductCard({ product: rawProduct, offer: rawOffer }: Pr
       return
     }
 
-    addToCart(product, 1)
+    addToCart(rawProduct, 1)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -49,7 +46,7 @@ export default function ProductCard({ product: rawProduct, offer: rawOffer }: Pr
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    toggleWishlist(product._id)
+    toggleWishlist(rawProduct._id)
   }
 
   const detailSlug = product.slug
@@ -106,7 +103,6 @@ export default function ProductCard({ product: rawProduct, offer: rawOffer }: Pr
               {product.title}
             </h3>
             <div className="flex shrink-0 items-center gap-1 text-[#D7A977]">
-              <Star size={16} className="fill-current" />
               <span className="text-xs font-bold text-[#2B1B15] dark:text-neutral-300">
                 {product.rating}
               </span>

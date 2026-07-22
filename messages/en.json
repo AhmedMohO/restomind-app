@@ -9,7 +9,11 @@
     "otpDigitsOnly": "OTP must contain only digits",
     "errorValidPhone": "Must be a valid phone number (min 8 digits)",
     "errorMinStreet": "Street must be at least {min} characters",
-    "errorMinCity": "City must be at least {min} characters"
+    "errorMinCity": "City must be at least {min} characters",
+    "restaurantNameMin": "Restaurant name must be at least 3 characters",
+    "restaurantNameMax": "Restaurant name must be at most 60 characters",
+    "restaurantDescMax": "Description cannot exceed 500 characters",
+    "invalidLogoUrl": "Logo URL must be a valid web address"
   },
   "Navbar": {
     "home": "Home",
@@ -41,6 +45,7 @@
     "male": "Male",
     "female": "Female",
     "dobLabel": "Date of Birth",
+    "pickDate": "Pick a date",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "updateSuccess": "Profile updated successfully!",
@@ -89,7 +94,7 @@
     "errorValidPhone": "Please enter a valid phone number"
   },
   "Hero": {
-    "titleLine1": "Rescue Delicious Meals,",
+    "titleLine1": "Buy your favorite meals AND",
     "titleLine2": "Enjoy Unbeatable Deals",
     "description": "Discover fresh daily surplus from top local bakeries and restaurants at up to 70% off. Powered by AI waste prediction, RestoMind connects you with amazing meals while helping save delicious food from going to waste.",
     "ctaOrder": "Explore Daily Offers",
@@ -204,6 +209,7 @@
     "statusPending": "Pending",
     "statusConfirmed": "Confirmed",
     "statusPreparing": "Preparing",
+    "statusReady": "Ready",
     "statusOutForDelivery": "Out for Delivery",
     "statusDelivered": "Delivered",
     "statusCancelled": "Cancelled",
@@ -214,8 +220,13 @@
     "viewDetails": "View Details",
     "orderDetails": "Order Details",
     "orderDetailsDesc": "Full details for this order including items, delivery, and payment info.",
+    "sharedInfo": "Shared Info",
+    "readyCounter": "{ready} of {total} done",
+    "previousOrder": "Previous order",
+    "nextOrder": "Next order",
     "backToOrders": "Back to My Orders",
     "restaurant": "Restaurant Details",
+    "customer": "Customer",
     "deliveryMethod": "Delivery Method",
     "homeDelivery": "Home Delivery",
     "storePickup": "Store Pickup",
@@ -311,7 +322,16 @@
     "richDessert": "Rich Dessert",
     "dairyFree": "Dairy Free",
     "glutenFree": "Gluten Free",
-    "nutFree": "Nut Free"
+    "nutFree": "Nut Free",
+    "applyPriceFilter": "Apply Price Filter",
+    "offerHighlights": "Offer Highlights",
+    "bestsellersOnly": "Bestsellers Only",
+    "featuredOffers": "Featured Offers",
+    "minimumDiscount": "Minimum Discount",
+    "active": "Active:",
+    "off": "{percent}%+ Off",
+    "tags": "Tags",
+    "restaurants": "Restaurants"
   },
   "Auth": {
     "loginTitle": "Login to your account",

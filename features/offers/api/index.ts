@@ -5,6 +5,7 @@ import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
 import type {
   ApiOffer,
   GetActiveOffersParams,
+  GetRecommendedOffersParams,
   PaginatedOffers,
 } from "./type"
 
@@ -17,6 +18,15 @@ export async function getActiveOffers(
   const qs = buildQueryString(params)
   const response = await publicApiClient(`/offers/active${qs}`)
   return parseOrThrow<PaginatedOffers>(response, "getActiveOffers")
+}
+
+/** GET /offers/recommendations — recommended offers (public) */
+export async function getRecommendedOffers(
+  params: GetRecommendedOffersParams = {}
+): Promise<PaginatedOffers> {
+  const qs = buildQueryString(params)
+  const response = await publicApiClient(`/offers/recommendations${qs}`)
+  return parseOrThrow<PaginatedOffers>(response, "getRecommendedOffers")
 }
 
 /** GET /offers/active/:id — fetch details of a single active offer by ID (public) */

@@ -39,7 +39,12 @@ export default async function Page({ params }: Props) {
   setRequestLocale(locale)
   const t = await getTranslations({ locale, namespace: "metadata" })
   const siteSchema = websiteJsonLd(locale)
-  const pageSchema = homepageJsonLd(t("title"), t("description"), `/${locale}`, locale)
+  const pageSchema = homepageJsonLd(
+    t("title"),
+    t("description"),
+    `/${locale}`,
+    locale
+  )
 
   return (
     <>

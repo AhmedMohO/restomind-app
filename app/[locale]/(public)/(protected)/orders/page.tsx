@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server"
 import { getMyOrders } from "@/features/orders/api"
 import OrdersClient from "@/features/orders/OrdersClient"
 import { AlertCircle } from "lucide-react"
-import type { OrderStatus, ApiOrder } from "@/features/orders/api/type"
+import type { ApiOrderGroup, OrderStatus } from "@/features/orders/api/type"
 
 export type FilterStatus = "all" | OrderStatus
 export type SortOption = "newest" | "oldest" | "highestTotal"
@@ -28,12 +28,12 @@ export default async function OrdersPage({
   setRequestLocale(locale)
   const t = await getTranslations("Orders")
 
-  let allOrders: ApiOrder[] = []
+  let orderGroups: ApiOrderGroup[] = []
   let fetchError: string | null = null
 
   try {
     const result = await getMyOrders()
-    allOrders = result.data ?? []
+    orderGroups = result.data
   } catch (err) {
     console.error("[OrdersPage] Failed to fetch orders:", err)
     fetchError = err instanceof Error ? err.message : t("errorLoadingOrders")
@@ -47,7 +47,7 @@ export default async function OrdersPage({
             <AlertCircle className="size-10 text-rose-500" />
           </div>
           <div className="space-y-1.5">
-            <h2 className="font-serif text-xl font-bold text-[#2B1B15] dark:text-neutral-100">
+            <h2 className="font-serif text-xl font-bold text-foreground">
               {t("errorLoadingOrders")}
             </h2>
             <p className="text-sm text-muted-foreground max-w-sm">{fetchError}</p>
@@ -57,15 +57,22 @@ export default async function OrdersPage({
     )
   }
 
-  // 1. Calculate tab counts across all user orders
-  const tabCounts: Record<string, number> = { all: allOrders.length }
-  for (const order of allOrders) {
-    tabCounts[order.status] = (tabCounts[order.status] || 0) + 1
+  const tabCounts: Record<string, number> = { all: orderGroups.length }
+  for (const group of orderGroups) {
+    tabCounts[group.overallStatus] = (tabCounts[group.overallStatus] || 0) + 1
   }
 
-  // Active filter states from URL search params
   const activeStatus: FilterStatus =
-    status && (status === "all" || ["Pending", "Confirmed", "Preparing", "Out For Delivery", "Delivered", "Cancelled"].includes(status))
+    status &&
+    (status === "all" ||
+      [
+        "Pending",
+        "Confirmed",
+        "Preparing",
+        "Out For Delivery",
+        "Delivered",
+        "Cancelled",
+      ].includes(status))
       ? (status as FilterStatus)
       : "all"
 
@@ -77,23 +84,31 @@ export default async function OrdersPage({
 
   const currentPage = page && !isNaN(Number(page)) && Number(page) > 0 ? Number(page) : 1
 
-  // 2. Server-side Filtering
-  let filtered = [...allOrders]
+  let filtered = [...orderGroups]
 
   if (activeStatus !== "all") {
-    filtered = filtered.filter((o) => o.status === activeStatus)
+    filtered = filtered.filter((group) => group.overallStatus === activeStatus)
   }
 
   if (searchQuery) {
     const queryLower = searchQuery.toLowerCase()
     filtered = filtered.filter(
-      (o) =>
-        o._id.toLowerCase().includes(queryLower) ||
-        o.restaurantId.name.toLowerCase().includes(queryLower)
+      (group) =>
+        group.orderGroupId.toLowerCase().includes(queryLower) ||
+        group.fullName.toLowerCase().includes(queryLower) ||
+        group.phoneNumber.toLowerCase().includes(queryLower) ||
+        group.emailAddress.toLowerCase().includes(queryLower) ||
+        group.orders.some(
+          (order) =>
+          order.orderId.toLowerCase().includes(queryLower) ||
+            order.restaurant.name.toLowerCase().includes(queryLower) ||
+            order.items.some((item) =>
+              item.productTitle.toLowerCase().includes(queryLower)
+            )
+        )
     )
   }
 
-  // Server-side Sorting
   filtered.sort((a, b) => {
     if (sortBy === "newest") {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -107,24 +122,22 @@ export default async function OrdersPage({
     return 0
   })
 
-  // 3. Server-side Pagination
   const totalItems = filtered.length
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE))
   const safePage = Math.min(currentPage, totalPages)
   const startIndex = (safePage - 1) * PAGE_SIZE
-  const paginatedOrders = filtered.slice(startIndex, startIndex + PAGE_SIZE)
+  const paginatedOrderGroups = filtered.slice(startIndex, startIndex + PAGE_SIZE)
 
   return (
     <div className="container mx-auto min-h-[70vh] px-4 py-8">
       <OrdersClient
-        orders={paginatedOrders}
+        orderGroups={paginatedOrderGroups}
         tabCounts={tabCounts}
         activeStatus={activeStatus}
         searchQuery={searchQuery}
         sortBy={sortBy}
         currentPage={safePage}
         totalPages={totalPages}
-        totalItems={totalItems}
       />
     </div>
   )

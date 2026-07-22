@@ -9,7 +9,11 @@
     "otpDigitsOnly": "يجب أن يحتوي رمز التحقق على أرقام فقط",
     "errorValidPhone": "يجب أن يكون رقم الهاتف صحيحاً (8 أرقام على الأقل)",
     "errorMinStreet": "يجب أن يتكون الشارع من {min} أحرف على الأقل",
-    "errorMinCity": "يجب أن تتكون المدينة من {min} أحرف على الأقل"
+    "errorMinCity": "يجب أن تتكون المدينة من {min} أحرف على الأقل",
+    "restaurantNameMin": "يجب أن يكون اسم المطعم 3 أحرف على الأقل",
+    "restaurantNameMax": "يجب ألا يتجاوز اسم المطعم 60 حرفاً",
+    "restaurantDescMax": "لا يمكن أن يتجاوز الوصف 500 حرف",
+    "invalidLogoUrl": "يجب أن يكون رابط الشعار عنوان ويب صالحاً"
   },
   "Navbar": {
     "home": "الرئيسية",
@@ -205,6 +209,7 @@
     "statusPending": "قيد الانتظار",
     "statusConfirmed": "مؤكد",
     "statusPreparing": "جاري التحضير",
+    "statusReady": "جاهز",
     "statusOutForDelivery": "خرج للتوصيل",
     "statusDelivered": "تم التوصيل",
     "statusCancelled": "ملغي",
@@ -215,8 +220,13 @@
     "viewDetails": "عرض التفاصيل",
     "orderDetails": "تفاصيل الطلب",
     "orderDetailsDesc": "التفاصيل الكاملة لهذا الطلب بما في ذلك الأصناف والتوصيل والدفع.",
+    "sharedInfo": "المعلومات المشتركة",
+    "readyCounter": "{ready} من {total} جاهز",
+    "previousOrder": "الطلب السابق",
+    "nextOrder": "الطلب التالي",
     "backToOrders": "العودة لطلباتي",
     "restaurant": "تفاصيل المطعم",
+    "customer": "العميل",
     "deliveryMethod": "طريقة التوصيل",
     "homeDelivery": "توصيل للمنزل",
     "storePickup": "استلام من الفرع",
@@ -312,7 +322,16 @@
     "richDessert": "حلوى غنية",
     "dairyFree": "خالٍ من الألبان",
     "glutenFree": "خالٍ من الجلوتين",
-    "nutFree": "خالٍ من المكسرات"
+    "nutFree": "خالٍ من المكسرات",
+    "applyPriceFilter": "تطبيق الفلتر",
+    "offerHighlights": "أبرز العروض",
+    "bestsellersOnly": "الأكثر مبيعاً فقط",
+    "featuredOffers": "العروض المميزة",
+    "minimumDiscount": "الحد الأدنى للخصم",
+    "active": "نشط:",
+    "off": "خصم {percent}%+",
+    "tags": "الوسوم",
+    "restaurants": "المطاعم"
   },
   "Auth": {
     "loginTitle": "تسجيل الدخول إلى حسابك",

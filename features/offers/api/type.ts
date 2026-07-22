@@ -7,10 +7,15 @@ export interface ApiOffer {
   slug: string 
   productId: ApiProduct
   restaurantId: string | ApiRestaurant
+  originalPrice: number
+  offerPrice: number
   discountPercentage: number
+  availableQuantity: number
+  remainingQuantity: number
+  maxPerCustomer?: number
   startDate: string
   endDate: string
-  status: "draft" | "scheduled" | "active" | "expired" | "cancelled"
+  status: "draft" | "scheduled" | "active" | "expired" | "cancelled" | "sold_out"
   source: "manual" | "ai_recommendation"
   recommendationId?: string
   featured?: boolean
@@ -33,9 +38,16 @@ export interface PaginatedOffers {
 }
 
 export interface GetOffersParams {
-  status?: "draft" | "scheduled" | "active" | "expired" | "cancelled"
+  status?: "draft" | "scheduled" | "active" | "expired" | "cancelled" | "sold_out"
   productId?: string
+  categoryId?: string
   source?: "manual" | "ai_recommendation"
+  featured?: boolean
+  minPrice?: number
+  maxPrice?: number
+  search?: string
+  sortBy?: "createdAt" | "offerPrice" | "discountPercentage" | "startDate" | "endDate"
+  sortOrder?: "asc" | "desc"
   page?: number | string
   limit?: number | string
 }
@@ -43,10 +55,28 @@ export interface GetOffersParams {
 export interface GetActiveOffersParams {
   page?: number | string
   limit?: number | string
+  restaurantId?: string
+  categoryId?: string
   productId?: string
   source?: "manual" | "ai_recommendation"
   search?: string
+  featured?: boolean
+  minPrice?: number
+  maxPrice?: number
+  sortBy?: "createdAt" | "offerPrice" | "discountPercentage" | "startDate" | "endDate"
+  sortOrder?: "asc" | "desc"
   sort?: string
   order?: "asc" | "desc"
   category?: string
 }
+
+export interface GetRecommendedOffersParams {
+  restaurantId?: string
+  categoryId?: string
+  search?: string
+  minPrice?: number
+  maxPrice?: number
+  page?: number | string
+  limit?: number | string
+}
+
