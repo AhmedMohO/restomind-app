@@ -1,9 +1,7 @@
-import { Suspense } from "react"
 import { getTranslations } from "next-intl/server"
 import { Heart } from "lucide-react"
 import { getFavoritesAction } from "@/features/favorites/actions"
 import FavouritesList from "./favourites-list"
-import FavouritesLoading from "./loading"
 import type { Metadata } from "next"
 import { getAlternates } from "@/lib/seo/metadata"
 
@@ -37,10 +35,7 @@ export default async function FavouritesPage() {
         <Heart className="size-8 shrink-0 fill-rose-500 text-rose-500" />
         <span>{t("title")}</span>
       </h1>
-
-      <Suspense fallback={<FavouritesLoading />}>
-        <FavouritesFetcher />
-      </Suspense>
+      <FavouritesFetcher />
     </div>
   )
 }

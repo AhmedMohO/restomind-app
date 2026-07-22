@@ -32,11 +32,11 @@ interface CartContextType {
   cart: ApiCartItem[]
   wishlist: string[]
   isWishlistLoaded: boolean
-  addToCart: (offer: ApiOffer, quantity?: number) => void
-  removeFromCart: (offerId: string) => void
-  updateQuantity: (offerId: string, quantity: number) => void
-  toggleWishlist: (offerId: string) => void
-  clearCart: () => void
+  addToCart: (offer: ApiOffer, quantity?: number) => Promise<boolean>
+  removeFromCart: (offerId: string) => Promise<boolean>
+  updateQuantity: (offerId: string, quantity: number) => Promise<boolean>
+  toggleWishlist: (offerId: string) => Promise<boolean>
+  clearCart: () => Promise<boolean>
   refreshCart: () => Promise<void>
   resetCart: () => void
   cartCount: number
@@ -104,9 +104,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [isHydrated, isAuthenticated])
 
   // Guarded Add to Cart action
-  const addToCart = async (offer: ApiOffer, quantity = 1) => {
+  const addToCart = async (offer: ApiOffer, quantity = 1): Promise<boolean> => {
     // STRICT AUTH GUARD: Immediately redirect to login if unauthenticated and ABORT
-    if (!checkAuthOrRedirect()) return
+    if (!checkAuthOrRedirect()) return false
+
+    const previousCart = cart
 
     // Optimistic UI update
     setCart((prevCart) => {
@@ -130,42 +132,58 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       ]
     })
 
-    toast.success(t("addedToCart"))
-
     // Server API call
     const res = await addToCartAction({ offerId: offer._id, quantity })
     if (res.success) {
       setCart(res.data.items)
-    } else if (res.error === "UNAUTHENTICATED") {
-      router.push("/login")
+      toast.success(t("addedToCart"))
+      return true
+    } else {
+      // Revert optimistic update on failure
+      setCart(previousCart)
+      if (res.error === "UNAUTHENTICATED") {
+        router.push("/login")
+      } else {
+        toast.error(res.error || "Failed to add to cart")
+      }
+      return false
     }
   }
 
   // Guarded Remove from Cart action
-  const removeFromCart = async (offerId: string) => {
+  const removeFromCart = async (offerId: string): Promise<boolean> => {
     // STRICT AUTH GUARD
-    if (!checkAuthOrRedirect()) return
+    if (!checkAuthOrRedirect()) return false
 
+    const previousCart = cart
     setCart((prevCart) => prevCart.filter((item) => item.offer._id !== offerId))
-    toast.success(t("removedFromCart"))
 
     const res = await removeFromCartAction(offerId)
     if (res.success) {
       setCart(res.data.items)
-    } else if (res.error === "UNAUTHENTICATED") {
-      router.push("/login")
+      toast.success(t("removedFromCart"))
+      return true
+    } else {
+      setCart(previousCart)
+      if (res.error === "UNAUTHENTICATED") {
+        router.push("/login")
+      } else {
+        toast.error(res.error || "Failed to remove from cart")
+      }
+      return false
     }
   }
 
   // Guarded Update Quantity action
-  const updateQuantity = async (offerId: string, quantity: number) => {
+  const updateQuantity = async (offerId: string, quantity: number): Promise<boolean> => {
     // STRICT AUTH GUARD
-    if (!checkAuthOrRedirect()) return
+    if (!checkAuthOrRedirect()) return false
 
     if (quantity <= 0) {
       return removeFromCart(offerId)
     }
 
+    const previousCart = cart
     setCart((prevCart) =>
       prevCart.map((item) =>
         item.offer._id === offerId ? { ...item, quantity } : item
@@ -175,15 +193,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const res = await updateCartQuantityAction(offerId, quantity)
     if (res.success) {
       setCart(res.data.items)
-    } else if (res.error === "UNAUTHENTICATED") {
-      router.push("/login")
+      return true
+    } else {
+      setCart(previousCart)
+      if (res.error === "UNAUTHENTICATED") {
+        router.push("/login")
+      } else {
+        toast.error(res.error || "Failed to update cart quantity")
+      }
+      return false
     }
   }
 
   // Guarded Toggle Wishlist/Favorite action
-  const toggleWishlist = async (offerId: string) => {
+  const toggleWishlist = async (offerId: string): Promise<boolean> => {
     // STRICT AUTH GUARD: Immediately redirect to login if unauthenticated and ABORT
-    if (!checkAuthOrRedirect()) return
+    if (!checkAuthOrRedirect()) return false
 
     const wasFavorite = wishlist.includes(offerId)
 
@@ -203,30 +228,43 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       toast.success(
         t(wasFavorite ? "removedFromFavorites" : "addedToFavorites")
       )
+      return true
     } else {
+      // Revert optimistic update on error
+      setWishlist((prevWishlist) =>
+        wasFavorite
+          ? [...prevWishlist, offerId]
+          : prevWishlist.filter((id) => id !== offerId)
+      )
       if (res.error === "UNAUTHENTICATED") {
         router.push("/login")
       } else {
-        // Revert optimistic update on error
-        setWishlist((prevWishlist) =>
-          wasFavorite
-            ? [...prevWishlist, offerId]
-            : prevWishlist.filter((id) => id !== offerId)
-        )
+        toast.error(res.error || "Failed to update wishlist")
       }
+      return false
     }
   }
 
   // Guarded Clear Cart action
-  const clearCart = async () => {
+  const clearCart = async (): Promise<boolean> => {
     // STRICT AUTH GUARD
-    if (!checkAuthOrRedirect()) return
+    if (!checkAuthOrRedirect()) return false
 
+    const previousCart = cart
     setCart([])
-    toast.success(t("cartCleared"))
+
     const res = await clearCartAction()
-    if (res && !res.success && res.error === "UNAUTHENTICATED") {
-      router.push("/login")
+    if (res && res.success) {
+      toast.success(t("cartCleared"))
+      return true
+    } else {
+      setCart(previousCart)
+      if (res?.error === "UNAUTHENTICATED") {
+        router.push("/login")
+      } else {
+        toast.error(res?.error || "Failed to clear cart")
+      }
+      return false
     }
   }
 

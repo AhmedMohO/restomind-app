@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Link, useRouter } from "@/i18n/routing"
-import { Plus, Heart } from "lucide-react"
+import { Plus, Heart, Star } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn } from "@/lib/utils"
@@ -28,7 +28,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const discountedPrice = rawProduct.offerPrice ?? product.discountedPrice
   const discountPercentage = rawProduct.discountPercentage || 0
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -38,9 +38,11 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
       return
     }
 
-    addToCart(rawProduct, 1)
-    setAdded(true)
-    setTimeout(() => setAdded(false), 1500)
+    const success = await addToCart(rawProduct, 1)
+    if (success) {
+      setAdded(true)
+      setTimeout(() => setAdded(false), 1500)
+    }
   }
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
@@ -52,7 +54,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const detailSlug = product.slug
 
   return (
-    <div className="group flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white shadow-sm transition-all duration-350 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="group flex h-full flex-col justify-between overflow-hidden rounded-md border border-[#ECE6DB] bg-white shadow-sm transition-all duration-350 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
       <Link href={`/offers/${detailSlug}`} className="block">
         {/* Product Image Container (extends to edges of the card) */}
         <div className="dark:bg-neutral-850 relative aspect-[4/3] w-full overflow-hidden bg-[#FAF7F2]">
@@ -60,8 +62,8 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
             src={product.image?.secure_url || "/placeholder.svg"}
             alt={product.title}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
           />
           {/* Badges Container: Offer Discount percentage & Bestseller */}
           <div className="absolute start-3 top-3 z-10 flex flex-wrap items-center gap-1.5">
@@ -103,6 +105,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
               {product.title}
             </h3>
             <div className="flex shrink-0 items-center gap-1 text-[#D7A977]">
+              <Star size={12} className="fill-current text-[#D7A977]" />
               <span className="text-xs font-bold text-[#2B1B15] dark:text-neutral-300">
                 {product.rating}
               </span>

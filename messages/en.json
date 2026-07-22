@@ -100,7 +100,7 @@
   },
   "Hero": {
     "titleLine1": "Buy your favorite meals AND",
-    "titleLine2": "Enjoy Unbeatable Deals",
+    "titleLine2": "With Unbeatable Deals",
     "description": "Discover fresh daily surplus from top local bakeries and restaurants at up to 70% off. Powered by AI waste prediction, RestoMind connects you with amazing meals while helping save delicious food from going to waste.",
     "ctaOrder": "Explore Daily Offers",
     "ctaVideo": "How It Works"
@@ -302,7 +302,7 @@
     "noProductsDesc": "We couldn't find any products matching your current filters. Try resetting the price slider or category selections.",
     "bestseller": "Bestseller",
     "discountBadge": "-{percent}%",
-    "dailyFresh": "Daily Fresh",
+    "dailyFresh": "Fresh",
     "available": "Available",
     "addToCart": "Add to cart",
     "added": "Added!",
@@ -491,5 +491,40 @@
     "description": "The page you're looking for seems to have wandered off. It may have been moved, removed, or never existed.",
     "backHome": "Back to Home",
     "exploreOffers": "Explore Offers"
+  },
+  "Faq": {
+    "badge": "Customer FAQ Guide",
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about ordering surplus food, saving money, and reducing food waste with RestoMind.",
+    "q1": "What is RestoMind and how does it work for users?",
+    "a1": "RestoMind is a sustainable food platform connecting users with local restaurants, bakeries, and cafes. Partner stores list their unsold daily surplus and fresh baked goods as discounted offers or surprise bags (up to 70% off), letting you enjoy delicious meals while helping eliminate food waste.",
+    "q2": "What kind of food can I expect in a Bakery or Restaurant Surplus Bag?",
+    "a2": "You can expect fresh daily items such as artisan breads, croissants, pastries, sandwiches, cooked meals, or specialty desserts. Everything is prepared fresh on the same day by top local bakeries and restaurants, offered at a fraction of regular prices before store closing.",
+    "q3": "How do restaurants and bakeries predict their waste?",
+    "a3": "Partner restaurants and bakeries use RestoMind's AI waste prediction dashboard. The AI analyzes historical sales trends and daily demand patterns to predict surplus inventory early, allowing businesses to turn excess food into limited-time daily offers for users.",
+    "q4": "Is the surplus food fresh and safe to eat?",
+    "a4": "Yes, 100%! All participating stores are certified, licensed local food businesses adhering to strict health and safety standards. The items offered are fresh, high-quality food items made fresh on the same day that simply did not sell out during normal peak hours.",
+    "q5": "How do I order and pick up my surplus food offer?",
+    "a5": "Simply browse active offers near you on RestoMind, add your favorite surplus bag or item to your cart, and complete checkout. You'll receive an order confirmation code, which you show at the store during their pickup window to collect your fresh food.",
+    "q6": "How much can I save on food orders?",
+    "a6": "Users typically save 50% to 70% off standard menu prices. Beyond significant cost savings, every order rescues food from being wasted, reducing carbon emissions and supporting local sustainable businesses."
+  },
+  "PartnerSubscribe": {
+    "badge": "Partner Program • Restaurants & Bakeries",
+    "title": "Own a Restaurant or Bakery? Turn Food Surplus into Profit!",
+    "subtitle": "Join RestoMind to access AI-driven waste predictions, list daily unsold surplus offers effortlessly, and connect with local customers looking to rescue fresh food.",
+    "feature1Title": "AI Waste Analytics",
+    "feature1Desc": "Predict daily surplus early using smart sales forecasting to reduce inventory loss.",
+    "feature2Title": "Recover Lost Revenue",
+    "feature2Desc": "Convert unsold meals & fresh baked goods into active daily offers for extra income.",
+    "feature3Title": "Zero-Waste Impact",
+    "feature3Desc": "Enhance your eco-friendly brand image and connect with thousands of local food lovers.",
+    "formLabel": "Subscribe for Partner Access & Demo Details:",
+    "emailPlaceholder": "Enter restaurant or bakery email...",
+    "button": "Subscribe as Partner",
+    "subscribing": "Subscribing...",
+    "successTitle": "Thank you for subscribing!",
+    "successDesc": "Our restaurant partnership team will reach out to {email} within 24 hours to set up your store profile.",
+    "footerNote": "Free onboarding • No setup fees • Instant access to waste prediction tools"
   }
 }

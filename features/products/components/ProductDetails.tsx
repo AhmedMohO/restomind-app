@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import ProductCarousel from "@/components/common/ProductCarousel"
 import { useTranslations } from "next-intl"
 import Image from "next/image"
+import { Badge } from "@/components/ui/badge"
 
 interface ProductDetailsProps {
   product: ApiOffer
@@ -63,10 +64,12 @@ export default function ProductDetails({
     setQuantity(quantity + 1)
   }
 
-  const handleAddToCart = () => {
-    addToCart(rawProduct, quantity)
-    setAdded(true)
-    setTimeout(() => setAdded(false), 1500)
+  const handleAddToCart = async () => {
+    const success = await addToCart(rawProduct, quantity)
+    if (success) {
+      setAdded(true)
+      setTimeout(() => setAdded(false), 1500)
+    }
   }
 
   return (
@@ -83,19 +86,15 @@ export default function ProductDetails({
       </div>
 
       {/* Main product view split layout */}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <div className="flex gap-8 max-md:flex-wrap">
         {/* Left Side: Product Image */}
-        <div className="relative overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white p-2 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="dark:bg-neutral-850 aspect-[4/3] w-full overflow-hidden rounded-[18px] bg-[#FAF7F2] md:aspect-square">
-            <Image
-              src={product.image?.secure_url || "/placeholder.svg"}
-              alt={product.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        </div>
+        <Image
+          src={product.image?.secure_url || "/placeholder.svg"}
+          alt={product.title}
+          width={600}
+          height={600}
+          className="aspect-[4/3] h-96 w-96 rounded-md object-cover"
+        />
 
         {/* Right Side: Product Details */}
         <div className="flex flex-col gap-4 space-y-6 py-2 text-start">
@@ -103,12 +102,10 @@ export default function ProductDetails({
             {/* Top row: Tags and wishlist button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-[#E2F7EB] px-3 py-1 text-xs font-semibold text-[#2F6D44] dark:bg-emerald-950/30 dark:text-emerald-400">
-                  {t("dailyFresh")}
-                </span>
-                <span className="rounded-full bg-[#7C4A27] px-3 py-1 text-xs font-bold text-white uppercase dark:bg-[#C2733C]">
+                <Badge className="bg-emerald-400">{t("dailyFresh")}</Badge>
+                <Badge>
                   {t("discountBadge", { percent: discountPercentage })}
-                </span>
+                </Badge>
               </div>
               <button
                 onClick={() => toggleWishlist(rawProduct._id)}
