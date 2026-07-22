@@ -10,14 +10,7 @@ import { Link, useRouter } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
-import { Pagination } from "@/components/ui/pagination"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { TablePagination } from "@/components/ui/table-pagination"
 import {
   Table,
   TableBody,
@@ -26,7 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { usePagination } from "@/hooks/use-pagination"
 import {
   useDeleteRestaurant,
   useRestaurantsList,
@@ -65,22 +57,6 @@ export function AdminRestaurantTable() {
 
   const total = data?.total ?? 0
   const totalPages = data?.totalPages ?? 1
-
-  const pagination = usePagination(
-    {
-      page,
-      limit,
-      total,
-      totalPages,
-    },
-    (update) => {
-      if (update.page !== undefined) setPage(update.page)
-      if (update.limit !== undefined) {
-        setLimit(update.limit)
-        setPage(1)
-      }
-    }
-  )
 
   const deleteMutation = useDeleteRestaurant()
 
@@ -274,44 +250,18 @@ export function AdminRestaurantTable() {
         )}
       </div>
 
-      {/* Pagination controls with Rows per page select */}
-      {total > 0 && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-center text-xs text-muted-foreground sm:text-start">
-            {t("pageOf", {
-              page: pagination.page,
-              totalPages: pagination.totalPages,
-            })}
-          </span>
-
-          <Pagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            onPageChange={pagination.setPage}
-          />
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span>{t("rowsPerPage")}</span>
-              <Select
-                value={String(limit)}
-                onValueChange={(val) => {
-                  if (val) pagination.setLimit(Number(val))
-                }}
-              >
-                <SelectTrigger className="h-8 w-[70px] rounded-lg text-xs">
-                  <SelectValue placeholder={String(limit)} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Pagination controls */}
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        limit={limit}
+        onPageChange={(p) => setPage(p)}
+        onLimitChange={(l) => {
+          setLimit(l)
+          setPage(1)
+        }}
+      />
 
       {/* Reusable Delete Confirmation Dialog */}
       <ConfirmDialog

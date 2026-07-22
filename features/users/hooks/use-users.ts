@@ -84,3 +84,54 @@ export function useCreateUser() {
     },
   })
 }
+
+export function useUserById(id: string) {
+  return useQuery<ApiUser | null>({
+    queryKey: ["user", id],
+    queryFn: async () => {
+      if (!id) return null
+      const res = await clientFetch<unknown>(`/users/${id}`)
+      if (!res) return null
+      if (typeof res === "object" && "data" in res && res.data) {
+        return res.data as ApiUser
+      }
+      return res as ApiUser
+    },
+    enabled: Boolean(id),
+  })
+}
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: Record<string, unknown> }) => {
+      const data = await clientFetch<ApiUser>(`/users/${id}`, {
+        method: "PATCH",
+        body: payload,
+      })
+      return data as ApiUser
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: ["user", variables.id] })
+    },
+  })
+}
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await clientFetch<{ message: string }>(`/users/${id}`, {
+        method: "DELETE",
+      })
+      return id
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY })
+    },
+  })
+}
+

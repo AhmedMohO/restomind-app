@@ -63,3 +63,22 @@ export function buildQueryString<T extends object>(
   return str ? `?${str}` : ""
 }
 
+export function getErrorMessage(err: unknown, fallback: string = "An error occurred"): string {
+  if (!err) return fallback
+  if (typeof err === "string" && err.trim().length > 0) return err
+  if (typeof err === "object" && err !== null) {
+    const record = err as Record<string, unknown>
+    if (typeof record.message === "string" && record.message.trim().length > 0) {
+      return record.message
+    }
+    if (Array.isArray(record.message) && record.message.length > 0) {
+      return record.message.join(", ")
+    }
+  }
+  if (err instanceof Error && err.message) {
+    return err.message
+  }
+  return fallback
+}
+
+

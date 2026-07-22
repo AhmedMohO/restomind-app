@@ -5,7 +5,6 @@ import { useForm, useWatch } from "react-hook-form"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
 import { Loader2, UserPlus } from "lucide-react"
-import { z } from "zod"
 import { useZodResolver } from "@/lib/zod-locale"
 
 import { Button } from "@/components/ui/button"
@@ -19,6 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { DatePicker } from "@/components/ui/date-picker"
 import {
   Select,
   SelectContent,
@@ -26,20 +26,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { egyptianPhoneSchema } from "@/lib/phone"
 import { useCreateUser } from "../hooks/use-users"
 import type { ApiUser } from "../api"
-
-const createUserSchema = z.object({
-  firstName: z.string().min(3, { message: "firstNameMin" }).max(20),
-  lastName: z.string().min(3, { message: "lastNameMin" }).max(20),
-  email: z.string().email({ message: "invalidEmail" }),
-  password: z.string().min(6, { message: "passwordMin" }),
-  phone: egyptianPhoneSchema,
-  role: z.enum(["admin", "manager", "customer"]),
-})
-
-type CreateUserInput = z.infer<typeof createUserSchema>
+import { createUserSchema, type CreateUserInput } from "@/schemas/user"
+import { getErrorMessage } from "@/lib/api/utils"
 
 interface CreateUserDialogProps {
   open: boolean
@@ -70,11 +60,14 @@ export function CreateUserDialog({
       email: "",
       password: "",
       phone: "",
-      role: "manager",
+      gender: undefined,
+      DOB: undefined,
     },
   })
 
   const currentRole = useWatch({ control, name: "role" }) ?? "manager"
+  const currentGender = useWatch({ control, name: "gender" }) ?? undefined
+  const currentDOB = useWatch({ control, name: "DOB" }) ?? undefined
   const isPending = createUserMutation.isPending
 
   React.useEffect(() => {
@@ -92,6 +85,8 @@ export function CreateUserDialog({
         password: values.password,
         phone: values.phone,
         role: values.role,
+        gender: values.gender || undefined,
+        DOB: values.DOB || undefined,
       })
       toast.success(t("userCreatedSuccess"))
       if (onUserCreated && newUser) {
@@ -100,7 +95,7 @@ export function CreateUserDialog({
       onOpenChange(false)
     } catch (err) {
       console.error("[CreateUserDialog] create failed", err)
-      toast.error(t("userCreatedError"))
+      toast.error(getErrorMessage(err, t("userCreatedError")))
     }
   })
 
@@ -175,12 +170,52 @@ export function CreateUserDialog({
             <FieldError errors={[errors.phone]} />
           </Field>
 
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field data-invalid={!!errors.gender}>
+              <FieldLabel>Gender</FieldLabel>
+              <Select
+                value={currentGender ?? ""}
+                onValueChange={(val) =>
+                  setValue("gender", val ? (val as "male" | "female") : null)
+                }
+                disabled={isPending}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldError errors={[errors.gender]} />
+            </Field>
+
+            <Field data-invalid={!!errors.DOB}>
+              <FieldLabel>{t("dob")}</FieldLabel>
+              <DatePicker
+                value={currentDOB}
+                onChange={(val) =>
+                  setValue("DOB", val, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+                disabled={isPending}
+              />
+              <FieldError errors={[errors.DOB]} />
+            </Field>
+          </div>
+
           <Field>
             <FieldLabel>{t("userRoleLabel")}</FieldLabel>
             <Select
               value={currentRole}
               onValueChange={(val) =>
-                setValue("role", (val as "admin" | "manager" | "customer") ?? "manager")
+                setValue(
+                  "role",
+                  (val as "admin" | "manager" | "customer") ?? "manager"
+                )
               }
               disabled={isPending}
             >
@@ -205,7 +240,11 @@ export function CreateUserDialog({
             >
               {t("userCancel")}
             </Button>
-            <Button type="submit" disabled={isPending} className="gap-2 rounded-xl">
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="gap-2 rounded-xl"
+            >
               {isPending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />

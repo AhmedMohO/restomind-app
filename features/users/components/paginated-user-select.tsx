@@ -26,7 +26,7 @@ export function PaginatedUserSelect({
   onValueChange,
   disabled = false,
   placeholder,
-  role,
+  role = "manager",
   className,
 }: PaginatedUserSelectProps) {
   const t = useTranslations("Dashboard.restaurant")
@@ -40,7 +40,7 @@ export function PaginatedUserSelect({
     if (page) searchParams.set("page", String(page))
     if (limit) searchParams.set("limit", String(limit))
     if (search) searchParams.set("search", search)
-    if (role) searchParams.set("role", role)
+    if (role && role !== "all") searchParams.set("role", role)
 
     const qs = searchParams.toString() ? `?${searchParams.toString()}` : ""
     const res = await clientFetch<unknown>(`/users${qs}`)
@@ -68,6 +68,11 @@ export function PaginatedUserSelect({
           }
         }
       }
+    }
+
+    // Exclude customer role when selecting owners
+    if (role && role !== "all") {
+      items = items.filter((user) => user.role !== "customer")
     }
 
     const options: PaginatedSelectOption<ApiUser>[] = items.map((user) => ({

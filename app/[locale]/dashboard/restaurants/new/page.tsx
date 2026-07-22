@@ -118,6 +118,7 @@ export default function NewRestaurantPage() {
                     <PaginatedUserSelect
                       value={selectedOwnerId}
                       onValueChange={(val) => setSelectedOwnerId(val)}
+                      role="manager"
                       disabled={isPending}
                     />
 

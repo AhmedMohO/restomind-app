@@ -481,10 +481,6 @@ export function DashboardProfileContainer({
 
           {/* ---------------- Action Footer Bar ---------------- */}
           <div className="flex flex-col items-center justify-between gap-4 pt-1 sm:flex-row sm:pt-2">
-            <p className="text-center text-xs font-normal text-muted-foreground/90 sm:text-left sm:text-sm">
-              {t("footerNotice")}
-            </p>
-
             <div className="flex w-full items-center gap-3 sm:w-auto">
               <Button
                 type="button"

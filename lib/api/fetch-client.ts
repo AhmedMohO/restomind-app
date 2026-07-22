@@ -163,7 +163,13 @@ export async function clientFetch<T = unknown>(
 
   if (!response.ok || body.success === false) {
     const errorBody = body as ApiErrorShape
-    const message = errorBody.message ?? `Request failed (${response.status})`
+    const rawMsg = (errorBody as unknown as Record<string, unknown>).message
+    const message =
+      typeof rawMsg === "string" && rawMsg.length > 0
+        ? rawMsg
+        : Array.isArray(rawMsg) && rawMsg.length > 0
+          ? rawMsg.join(", ")
+          : `Request failed (${response.status})`
     const code = errorBody.error
     throw new ClientFetchError(message, response.status, code)
   }

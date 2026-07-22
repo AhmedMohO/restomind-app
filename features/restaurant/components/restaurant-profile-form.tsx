@@ -22,9 +22,7 @@ import {
 } from "@/components/ui/card"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { RestaurantStatusBadge } from "./restaurant-status-badge"
 import Image from "next/image"
 
 interface RestaurantProfileFormProps {
@@ -55,8 +53,6 @@ export function RestaurantProfileForm({
   const {
     register,
     handleSubmit,
-    setValue,
-    getValues,
     reset,
     control,
     formState: { errors, isDirty },
@@ -73,7 +69,6 @@ export function RestaurantProfileForm({
   // Live-watched values for char counter, logo preview, and the status badge.
   const description = useWatch({ control, name: "description" }) ?? ""
   const logoUrl = useWatch({ control, name: "logoUrl" }) ?? ""
-  const isActive = useWatch({ control, name: "isActive" }) ?? false
 
   const isPending = updateMutation.isPending
   const descLength = description.length
@@ -83,13 +78,13 @@ export function RestaurantProfileForm({
       name: values.name,
       description: values.description || null,
       phone: values.phone || null,
-      logoUrl: values.logoUrl || null,
+      // logoUrl: values.logoUrl || null,
       address: {
         street: values.address?.street || undefined,
         city: values.address?.city || undefined,
         country: values.address?.country || undefined,
       },
-      isActive: values.isActive,
+      // isActive: values.isActive,
     }
 
     try {
@@ -230,41 +225,6 @@ export function RestaurantProfileForm({
                 />
                 <FieldError errors={[errors.address?.country]} />
               </Field>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ----------------- Status ----------------- */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-heading text-xl">
-              {t("sectionStatus")}
-            </CardTitle>
-            <CardDescription>{t("sectionStatusDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-3 rounded-xl bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium">
-                  {getValues("name") || t("nameLabel")}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {t("isActiveDesc")}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <RestaurantStatusBadge isActive={isActive} />
-                <Switch
-                  checked={isActive}
-                  onCheckedChange={(checked) =>
-                    setValue("isActive", checked === true, {
-                      shouldDirty: true,
-                    })
-                  }
-                  disabled={isPending}
-                  aria-label={t("isActiveLabel")}
-                />
-              </div>
             </div>
           </CardContent>
         </Card>
