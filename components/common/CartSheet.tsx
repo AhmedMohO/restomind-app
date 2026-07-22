@@ -33,6 +33,7 @@ export default function CartSheet() {
     updateQuantity,
     removeFromCart,
     clearCart,
+    refreshCart,
   } = useCart()
   const isMounted = useSyncExternalStore(
     emptySubscribe,
@@ -41,7 +42,7 @@ export default function CartSheet() {
   )
 
   return (
-    <Sheet>
+    <Sheet onOpenChange={(open) => { if (open) refreshCart() }}>
       <SheetTrigger
         render={
           <Button

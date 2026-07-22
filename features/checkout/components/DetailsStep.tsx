@@ -2,17 +2,26 @@
 
 import { useState } from "react"
 import { useLocale, useTranslations } from "next-intl"
-import { ChevronRight, MapPin, Plus, Check, Home, Building2 } from "lucide-react"
+import {
+  ChevronRight,
+  MapPin,
+  Plus,
+  Check,
+  Home,
+  Building2,
+} from "lucide-react"
 import { toast } from "sonner"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { getZodErrorMap } from "@/lib/zod-locale"
 import { AddressDialog } from "@/features/profile/components/address-dialog"
 import { addAddressAction } from "@/features/profile/actions/profile-actions"
-import type { UserAddress, AddressPayload } from "@/features/profile/api/profile"
+import type {
+  UserAddress,
+  AddressPayload,
+} from "@/features/profile/api/profile"
 
 export interface DetailsFormData {
   fullName: string
@@ -39,14 +48,10 @@ const detailsSchema = z.object({
   specialNotes: z.string().optional(),
 })
 
-const inputClass =
-  "h-12 rounded-full  border-transparent px-5 text-sm  focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-transparent"
-
-const inputErrorClass = "ring-1 ring-destructive focus-visible:ring-destructive"
-
 function AddressIcon({ label }: { label?: string }) {
   const lower = (label || "").toLowerCase()
-  const Icon = lower.includes("work") || lower.includes("office") ? Building2 : Home
+  const Icon =
+    lower.includes("work") || lower.includes("office") ? Building2 : Home
   return <Icon className="size-5" />
 }
 
@@ -63,7 +68,9 @@ export default function DetailsStep({
   const t = useTranslations("Checkout")
   const locale = useLocale()
   const [form, setForm] = useState<DetailsFormData>(initialData)
-  const [errors, setErrors] = useState<Partial<Record<keyof DetailsFormData, string>>>({})
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof DetailsFormData, string>>
+  >({})
   const [addressError, setAddressError] = useState<string | null>(null)
 
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -94,9 +101,12 @@ export default function DetailsStep({
   }
 
   function handleSubmit() {
-    const result = detailsSchema.safeParse(form, { error: getZodErrorMap(locale) })
+    const result = detailsSchema.safeParse(form, {
+      error: getZodErrorMap(locale),
+    })
     if (!result.success) {
-      const translatedErrors: Partial<Record<keyof DetailsFormData, string>> = {}
+      const translatedErrors: Partial<Record<keyof DetailsFormData, string>> =
+        {}
       result.error.issues.forEach((issue) => {
         const key = issue.path[0] as keyof DetailsFormData
         if (!translatedErrors[key]) {
@@ -117,56 +127,10 @@ export default function DetailsStep({
   }
 
   return (
-    <div className="rounded-2xl bg-card border border-border/40 p-6 lg:p-8 space-y-6">
+    <div className="space-y-6 rounded-2xl border border-border/40 bg-card p-6 lg:p-8">
       <h2 className="text-xl font-bold text-foreground">{t("yourDetails")}</h2>
 
       <div className="space-y-4">
-        {/* Full Name */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">{t("fullName")}</label>
-          <Input
-            className={cn(inputClass, errors.fullName && inputErrorClass)}
-            placeholder={t("fullName")}
-            value={form.fullName}
-            onChange={(e) => handleChange("fullName", e.target.value)}
-          />
-          {errors.fullName && (
-            <p className="text-xs text-destructive px-5">{errors.fullName}</p>
-          )}
-        </div>
-
-        {/* Phone Number */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">{t("phoneNumber")}</label>
-          <Input
-            className={cn(inputClass, errors.phoneNumber && inputErrorClass)}
-            placeholder={t("phoneNumber")}
-            type="tel"
-            dir="ltr"
-            value={form.phoneNumber}
-            onChange={(e) => handleChange("phoneNumber", e.target.value)}
-          />
-          {errors.phoneNumber && (
-            <p className="text-xs text-destructive px-5">{errors.phoneNumber}</p>
-          )}
-        </div>
-
-        {/* Email */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">{t("email")}</label>
-          <Input
-            className={cn(inputClass, errors.email && inputErrorClass)}
-            placeholder={t("email")}
-            type="email"
-            dir="ltr"
-            value={form.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-          />
-          {errors.email && (
-            <p className="text-xs text-destructive px-5">{errors.email}</p>
-          )}
-        </div>
-
         {/* Delivery Address — select from saved addresses */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -187,7 +151,7 @@ export default function DetailsStep({
             <button
               type="button"
               onClick={() => setDialogOpen(true)}
-              className="w-full flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border py-8 text-center hover:border-primary/40 transition-colors"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border py-8 text-center transition-colors hover:border-primary/40"
             >
               <div className="flex size-11 items-center justify-center rounded-xl bg-muted text-muted-foreground">
                 <MapPin className="size-5" />
@@ -212,15 +176,15 @@ export default function DetailsStep({
                       setAddressError(null)
                     }}
                     className={cn(
-                      "w-full flex items-center gap-4 rounded-xl p-4 text-start transition-colors duration-200",
+                      "flex w-full items-center gap-4 rounded-xl p-4 text-start transition-colors duration-200",
                       selected
                         ? "border-2 border-primary bg-secondary/60"
-                        : "border border-border hover:border-primary/40 bg-card"
+                        : "border border-border bg-card hover:border-primary/40"
                     )}
                   >
                     <div
                       className={cn(
-                        "size-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                        "flex size-11 shrink-0 items-center justify-center rounded-xl transition-colors",
                         selected
                           ? "bg-primary/10 text-primary"
                           : "bg-muted text-muted-foreground"
@@ -229,11 +193,11 @@ export default function DetailsStep({
                       <AddressIcon label={address.label} />
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">
                         {address.label || address.street}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         {address.street}
                         {address.city ? `, ${address.city}` : ""}
                         {address.country ? `, ${address.country}` : ""}
@@ -241,7 +205,10 @@ export default function DetailsStep({
                     </div>
 
                     {selected && (
-                      <Check className="size-4 text-primary shrink-0" strokeWidth={2.5} />
+                      <Check
+                        className="size-4 shrink-0 text-primary"
+                        strokeWidth={2.5}
+                      />
                     )}
                   </button>
                 )
@@ -250,15 +217,17 @@ export default function DetailsStep({
           )}
 
           {addressError && (
-            <p className="text-xs text-destructive px-1">{addressError}</p>
+            <p className="px-1 text-xs text-destructive">{addressError}</p>
           )}
         </div>
 
         {/* Special Notes */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">{t("specialNotes")}</label>
+          <label className="text-sm font-medium text-foreground">
+            {t("specialNotes")}
+          </label>
           <Textarea
-            className=" border-transparent  focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-transparent"
+            className="border-transparent focus-visible:border-transparent focus-visible:ring-1 focus-visible:ring-primary/40"
             placeholder={t("specialNotesPlaceholder")}
             value={form.specialNotes}
             onChange={(e) => handleChange("specialNotes", e.target.value)}
@@ -269,7 +238,7 @@ export default function DetailsStep({
       {/* Continue button */}
       <Button
         onClick={handleSubmit}
-        className="w-full h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold gap-2"
+        className="h-12 w-full gap-2 rounded-full bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
       >
         {t("continue")}
         <ChevronRight className="size-4 rtl:-scale-x-100" />

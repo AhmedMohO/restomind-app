@@ -1,7 +1,6 @@
 import React, { Suspense } from "react"
 import ProtectedRoute from "@/features/auth/components/ProtectedRoute"
 import { setRequestLocale } from "next-intl/server"
-import { CartProvider } from "@/hooks/use-cart"
 
 /**
  * Protected route group layout.
@@ -24,9 +23,7 @@ export default async function ProtectedLayout({
 
   return (
     <Suspense>
-      <CartProvider>
-        <ProtectedRoute locale={locale}>{children}</ProtectedRoute>
-      </CartProvider>
+      <ProtectedRoute locale={locale}>{children}</ProtectedRoute>
     </Suspense>
   )
 }

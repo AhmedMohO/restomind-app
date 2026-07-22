@@ -77,7 +77,13 @@ export default function OrdersClient({
   const updateUrlParams = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString())
     for (const [key, value] of Object.entries(updates)) {
-      if (value === null || value === "" || (key === "status" && value === "all") || (key === "sort" && value === "newest") || (key === "page" && value === "1")) {
+      if (
+        value === null ||
+        value === "" ||
+        (key === "status" && value === "all") ||
+        (key === "sort" && value === "newest") ||
+        (key === "page" && value === "1")
+      ) {
         params.delete(key)
       } else {
         params.set(key, value)
@@ -134,8 +140,12 @@ export default function OrdersClient({
 
       {/* Static (Non-Sticky) Tabs Bar */}
       <div className="w-full py-2">
-        <Tabs value={activeStatus} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="flex h-auto w-max min-w-full gap-1 overflow-x-auto rounded-full border border-border bg-muted/70 p-1 scrollbar-none sm:min-w-0">
+        <Tabs
+          value={activeStatus}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
+          <TabsList className="flex h-auto w-max min-w-full scrollbar-none gap-1 overflow-x-auto rounded-full border border-border bg-muted/70 p-1 sm:min-w-0">
             {TABS.map((tab) => {
               const count = tabCounts[tab.key] || 0
               return (
@@ -147,7 +157,7 @@ export default function OrdersClient({
                   <span>{t(tab.labelKey)}</span>
                   <Badge
                     variant="secondary"
-                    className="h-4 rounded-full bg-muted-foreground/15 px-1.5 text-[10px] font-bold text-muted-foreground group-data-active/tabs-trigger:bg-primary-foreground/20 group-data-active/tabs-trigger:text-primary-foreground"
+                    className="h-4 rounded-full bg-muted-foreground/45 px-1.5 text-[10px] font-bold text-muted group-data-active/tabs-trigger:bg-primary-foreground/20 group-data-active/tabs-trigger:text-primary-foreground"
                   >
                     {count}
                   </Badge>
@@ -161,7 +171,10 @@ export default function OrdersClient({
       {/* Toolbar: Search Input + Sort Select */}
       <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
         {/* Search Box */}
-        <form onSubmit={handleSearchSubmit} className="relative max-w-md flex-1">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="relative max-w-md flex-1"
+        >
           <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"

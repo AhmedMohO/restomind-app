@@ -38,6 +38,7 @@ interface CartContextType {
   toggleWishlist: (offerId: string) => void
   clearCart: () => void
   refreshCart: () => Promise<void>
+  resetCart: () => void
   cartCount: number
   cartTotal: number
 }
@@ -233,8 +234,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const refreshCart = useCallback(async () => {
     const res = await fetchCartAction()
     if (res.success) {
-      setCart(mapApiCartToClientCart(res.data))
+      setCart(res.data.items)
     }
+  }, [])
+
+  const resetCart = useCallback(() => {
+    setCart([])
   }, [])
 
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0)
@@ -257,6 +262,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         toggleWishlist,
         clearCart,
         refreshCart,
+        resetCart,
         cartCount,
         cartTotal,
       }}

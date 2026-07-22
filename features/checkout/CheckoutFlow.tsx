@@ -45,7 +45,7 @@ interface CheckoutFlowProps {
 export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlowProps) {
   const t = useTranslations("Checkout")
   const router = useRouter()
-  const { refreshCart } = useCart()
+  const { resetCart } = useCart()
 
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [direction, setDirection] = useState(1)
@@ -113,7 +113,7 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
     })
 
     if (res.success) {
-      await refreshCart()
+      resetCart()
       router.push("/checkout/confirmed")
       return
     }

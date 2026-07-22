@@ -27,7 +27,7 @@ export default function FavouritesList({
     return (
       <div className="flex animate-in flex-col items-center justify-center space-y-5 rounded-[24px] border border-dashed border-[#ECE6DB] bg-white p-8 py-20 text-center duration-300 fade-in dark:border-neutral-800 dark:bg-neutral-900">
         <div className="rounded-full bg-rose-50 p-5 text-rose-500 transition-colors dark:bg-rose-950/20">
-          <Heart size={44} className="fill-rose-500/10 stroke-[1.5]" />
+          <Heart size={44} className="fill-rose-500 stroke-[1.5]" />
         </div>
         <div className="space-y-1.5">
           <h3 className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">

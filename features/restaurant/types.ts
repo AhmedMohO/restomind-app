@@ -36,3 +36,27 @@ export interface UpdateRestaurantPayload {
   address?: RestaurantAddress
   isActive?: boolean
 }
+
+export interface PaginatedRestaurants {
+  items: Restaurant[]
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
+export interface GetRestaurantsParams {
+  page?: number | string
+  limit?: number | string
+  search?: string
+}
+
+export interface CreateRestaurantPayload {
+  name: string
+  ownerUserId: string
+  description?: string
+  phone?: string
+  logoUrl?: string
+  address?: RestaurantAddress
+}
+

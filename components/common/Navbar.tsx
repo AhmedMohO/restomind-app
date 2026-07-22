@@ -65,7 +65,7 @@ export default function Navbar() {
         isLandingPage && "absolute"
       )}
     >
-      <div className="max-w-9xl mx-auto flex items-center justify-between px-4 py-6 lg:grid lg:grid-cols-3 lg:px-8">
+      <div className="mx-auto flex max-w-[1560px] items-center justify-between px-4 py-6 lg:grid lg:grid-cols-3 lg:px-8">
         {/* Left: Navigation links (hidden on mobile, visible on desktop) */}
         <div className="hidden lg:flex lg:justify-start">
           <nav className="flex items-center gap-1 rounded-full border border-border/40 bg-background/50 p-1.5 backdrop-blur-md">

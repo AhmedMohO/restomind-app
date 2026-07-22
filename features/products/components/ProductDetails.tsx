@@ -26,8 +26,6 @@ export default function ProductDetails({
   const { data: similarRes } = useActiveOffers({
     limit: 10,
     category: product.category?._id,
-    sort: "price",
-    order: "asc",
   })
 
   const similarOffers = (similarRes?.items ?? []).filter(

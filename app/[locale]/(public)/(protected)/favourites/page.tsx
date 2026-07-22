@@ -34,7 +34,7 @@ export default async function FavouritesPage() {
   return (
     <div className="container mx-auto min-h-[60vh] space-y-8 px-4">
       <h1 className="flex items-center gap-3 font-serif text-3xl font-bold tracking-tight text-[#2B1B15] sm:text-4xl dark:text-neutral-100">
-        <Heart className="size-8 shrink-0 fill-rose-500/10 text-rose-500" />
+        <Heart className="size-8 shrink-0 fill-rose-500 text-rose-500" />
         <span>{t("title")}</span>
       </h1>
 
