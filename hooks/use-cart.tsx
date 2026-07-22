@@ -37,6 +37,7 @@ interface CartContextType {
   updateQuantity: (offerId: string, quantity: number) => void
   toggleWishlist: (offerId: string) => void
   clearCart: () => void
+  refreshCart: () => Promise<void>
   cartCount: number
   cartTotal: number
 }
@@ -228,6 +229,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Re-sync local cart from the server (e.g. after placing an order empties it)
+  const refreshCart = useCallback(async () => {
+    const res = await fetchCartAction()
+    if (res.success) {
+      setCart(mapApiCartToClientCart(res.data))
+    }
+  }, [])
+
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0)
   const cartTotal = cart.reduce(
     (total, item) =>
@@ -247,6 +256,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         toggleWishlist,
         clearCart,
+        refreshCart,
         cartCount,
         cartTotal,
       }}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { CreditCard, Banknote, Check, ChevronLeft } from "lucide-react"
+import { CreditCard, Banknote, Check, ChevronLeft, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/use-cart"
 import { cn } from "@/lib/utils"
@@ -11,6 +11,7 @@ export type PaymentMethod = "card" | "cash"
 interface PaymentStepProps {
   paymentMethod: PaymentMethod
   deliveryFee: number
+  isPlacingOrder?: boolean
   onPaymentMethodChange: (method: PaymentMethod) => void
   onPlaceOrder: () => void
   onBack: () => void
@@ -19,6 +20,7 @@ interface PaymentStepProps {
 export default function PaymentStep({
   paymentMethod,
   deliveryFee,
+  isPlacingOrder = false,
   onPaymentMethodChange,
   onPlaceOrder,
   onBack,
@@ -93,6 +95,7 @@ export default function PaymentStep({
         <Button
           onClick={onBack}
           variant="outline"
+          disabled={isPlacingOrder}
           className="h-12 rounded-full px-6 gap-1.5 text-sm font-semibold border-border"
         >
           <ChevronLeft className="size-4 rtl:-scale-x-100" />
@@ -100,9 +103,19 @@ export default function PaymentStep({
         </Button>
         <Button
           onClick={onPlaceOrder}
-          className="flex-1 h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold"
+          disabled={isPlacingOrder}
+          className="flex-1 h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold gap-2"
         >
-          {t("placeOrder")} · {grandTotal.toLocaleString()} EGP
+          {isPlacingOrder ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              {t("placingOrder")}
+            </>
+          ) : (
+            <>
+              {t("placeOrder")} · {grandTotal.toLocaleString()} EGP
+            </>
+          )}
         </Button>
       </div>
     </div>

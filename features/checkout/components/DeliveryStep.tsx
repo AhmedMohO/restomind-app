@@ -1,19 +1,15 @@
 "use client"
 
-import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Truck, MapPin, Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
 export type DeliveryMethod = "home" | "pickup"
 
 interface DeliveryStepProps {
   deliveryMethod: DeliveryMethod
-  promoCode: string
   onDeliveryMethodChange: (method: DeliveryMethod) => void
-  onPromoCodeChange: (code: string) => void
   onContinue: () => void
   onBack: () => void
 }
@@ -22,14 +18,11 @@ const DELIVERY_FEE = 15
 
 export default function DeliveryStep({
   deliveryMethod,
-  promoCode,
   onDeliveryMethodChange,
-  onPromoCodeChange,
   onContinue,
   onBack,
 }: DeliveryStepProps) {
   const t = useTranslations("Checkout")
-  const [promoInput, setPromoInput] = useState(promoCode)
 
   const options = [
     {
@@ -90,26 +83,6 @@ export default function DeliveryStep({
             </button>
           )
         })}
-      </div>
-
-      {/* Promo Code */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">{t("promoCode")}</label>
-        <div className="flex gap-3">
-          <Input
-            className="h-12 rounded-full border-transparent px-5 text-sm flex-1  focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-transparent"
-            placeholder={t("promoPlaceholder")}
-            value={promoInput}
-            onChange={(e) => setPromoInput(e.target.value)}
-            dir="ltr"
-          />
-          <Button
-            onClick={() => onPromoCodeChange(promoInput)}
-            className="h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 px-6 shrink-0 text-sm font-semibold"
-          >
-            {t("apply")}
-          </Button>
-        </div>
       </div>
 
       {/* Navigation */}
