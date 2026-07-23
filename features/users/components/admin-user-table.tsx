@@ -31,13 +31,17 @@ import type { ApiUser } from "../api"
 import { UserRoleBadge } from "./user-role-badge"
 import { UserStatusBadge } from "./user-status-badge"
 import { getErrorMessage } from "@/lib/api/utils"
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
 
 export function AdminUserTable() {
   const t = useTranslations("Dashboard.users")
   const router = useRouter()
+  const currentUserRole = useAuthStore((s) => s.user?.role)
+  const isManager = currentUserRole === "manager"
+
   const [search, setSearch] = React.useState("")
   const [debouncedSearch, setDebouncedSearch] = React.useState("")
-  const [roleFilter, setRoleFilter] = React.useState<string>("all")
+  const [roleFilter, setRoleFilter] = React.useState<string>(isManager ? "staff" : "all")
   const [page, setPage] = React.useState(1)
   const [limit, setLimit] = React.useState(10)
 
@@ -48,6 +52,12 @@ export function AdminUserTable() {
   } | null>(null)
 
   React.useEffect(() => {
+    if (isManager) {
+      setRoleFilter("staff")
+    }
+  }, [isManager])
+
+  React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search)
       setPage(1)
@@ -55,11 +65,13 @@ export function AdminUserTable() {
     return () => clearTimeout(timer)
   }, [search])
 
+  const activeRole = isManager ? "staff" : (roleFilter !== "all" ? roleFilter : undefined)
+
   const { data, isLoading, isError, refetch } = useUsersList({
     page,
     limit,
     search: debouncedSearch || undefined,
-    role: roleFilter !== "all" ? roleFilter : undefined,
+    role: activeRole,
   })
 
   const items = data?.items ?? []
@@ -89,8 +101,12 @@ export function AdminUserTable() {
       {/* Header bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-2xl font-bold">{t("adminTitle")}</h1>
-          <p className="text-sm text-muted-foreground">{t("adminSubtitle")}</p>
+          <h1 className="font-heading text-2xl font-bold">
+            {isManager ? t("managerTitle") : t("adminTitle")}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isManager ? t("managerSubtitle") : t("adminSubtitle")}
+          </p>
         </div>
 
         <Button
@@ -99,7 +115,7 @@ export function AdminUserTable() {
           className="w-full gap-2 rounded-xl sm:w-auto"
         >
           <Plus className="size-4" />
-          <span>{t("addUser")}</span>
+          <span>{isManager ? t("addStaff") : t("addUser")}</span>
         </Button>
       </div>
 
@@ -115,26 +131,28 @@ export function AdminUserTable() {
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <Select
-            value={roleFilter}
-            onValueChange={(val) => {
-              if (val) setRoleFilter(val)
-              setPage(1)
-            }}
-          >
-            <SelectTrigger className="w-[150px] rounded-xl">
-              <SelectValue placeholder={t("roleAll")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("roleAll")}</SelectItem>
-              <SelectItem value="admin">{t("roleAdmin")}</SelectItem>
-              <SelectItem value="manager">{t("roleManager")}</SelectItem>
-              <SelectItem value="staff">{t("roleStaff")}</SelectItem>
-              <SelectItem value="customer">{t("roleCustomer")}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {!isManager && (
+          <div className="flex items-center gap-3">
+            <Select
+              value={roleFilter}
+              onValueChange={(val) => {
+                if (val) setRoleFilter(val)
+                setPage(1)
+              }}
+            >
+              <SelectTrigger className="w-[150px] rounded-xl">
+                <SelectValue placeholder={t("roleAll")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("roleAll")}</SelectItem>
+                <SelectItem value="admin">{t("roleAdmin")}</SelectItem>
+                <SelectItem value="manager">{t("roleManager")}</SelectItem>
+                <SelectItem value="staff">{t("roleStaff")}</SelectItem>
+                <SelectItem value="customer">{t("roleCustomer")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* Table container */}

@@ -183,7 +183,7 @@ export function DashboardProfileContainer({
 
   return (
     <TooltipProvider>
-      <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xl transition-all sm:p-6 md:p-8">
+      <div className="rounded-2xl border border-border/70 bg-card p-4 transition-all sm:p-6 md:p-8">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-6 sm:space-y-8"
@@ -191,7 +191,7 @@ export function DashboardProfileContainer({
           {/* ---------------- Section 1: Profile Picture ---------------- */}
           <div className="space-y-4">
             <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
-              <Avatar className="size-16 shrink-0 rounded-full border-2 border-border/80 shadow-xs sm:size-20">
+              <Avatar className="size-16 shrink-0 rounded-full border-2 border-border/80 sm:size-20">
                 <AvatarImage
                   key={user.image?.secure_url || "avatar"}
                   src={user.image?.secure_url}
@@ -376,10 +376,7 @@ export function DashboardProfileContainer({
                 >
                   {t("phone")}
                 </Label>
-                <PhoneInput
-                  id="phone"
-                  {...register("phone")}
-                />
+                <PhoneInput id="phone" {...register("phone")} />
                 {errors.phone?.message && (
                   <p className="mt-1 text-xs font-medium text-destructive">
                     {tVal(errors.phone.message)}

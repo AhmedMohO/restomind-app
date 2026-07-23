@@ -1,7 +1,7 @@
 import { NextResponse, connection } from "next/server"
 import { getSession } from "@/lib/auth/session"
 import type { ApiResponse } from "@/features/auth/auth"
-import { createUser, getUsers, type ApiUser, type PaginatedUsers } from "@/features/users/api"
+import { createUser, getUsers, type ApiUser, type PaginatedUsers, CreateUserPayload } from "@/features/users/api"
 
 export async function GET(request: Request) {
   await connection()
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
       ...(page ? { page: Number(page) } : {}),
       ...(limit ? { limit: Number(limit) } : {}),
       ...(search ? { search } : {}),
-      ...(role ? { role: role as "admin" | "manager" | "customer" } : {}),
+      ...(role ? { role: role as "admin" | "manager" | "customer" | "staff" } : {}),
     })
     return NextResponse.json<ApiResponse<PaginatedUsers>>(
       { success: true, data },
@@ -55,9 +55,11 @@ export async function POST(request: Request) {
     )
   }
 
-  let body: Record<string, unknown>
+  let body
   try {
-    body = (await request.json()) as Record<string, unknown>
+    body = (await request.json()) as CreateUserPayload
+    console.log(body);
+
   } catch {
     return NextResponse.json<ApiResponse>(
       { success: false, error: "Bad Request", message: "Invalid JSON body" },
@@ -66,14 +68,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const res = await createUser({
-      firstName: String(body.firstName ?? ""),
-      lastName: String(body.lastName ?? ""),
-      email: String(body.email ?? ""),
-      password: String(body.password ?? ""),
-      phone: String(body.phone ?? ""),
-      role: (body.role as "admin" | "manager" | "customer") ?? "manager",
-    })
+    const res = await createUser(body)
     return NextResponse.json<ApiResponse<ApiUser>>(
       { success: true, data: res.data },
       { status: 201 }

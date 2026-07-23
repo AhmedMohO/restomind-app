@@ -10,11 +10,14 @@ import { BackButton } from "@/components/ui/back-button"
 import { UserForm, type UserFormValues } from "@/features/users/components/user-form"
 import { useCreateUser } from "@/features/users/hooks/use-users"
 import { getErrorMessage } from "@/lib/api/utils"
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
 
 export default function NewUserPage() {
   const t = useTranslations("Dashboard.users")
   const router = useRouter()
   const createMutation = useCreateUser()
+  const currentUserRole = useAuthStore((s) => s.user?.role)
+  const isManager = currentUserRole === "manager"
 
   const handleSubmit = async (values: UserFormValues) => {
     try {
@@ -24,9 +27,9 @@ export default function NewUserPage() {
         email: values.email!,
         password: values.password!,
         phone: values.phone,
-        role: values.role,
-        gender: values.gender || undefined,
-        DOB: values.DOB || undefined,
+        role: isManager ? "staff" : values.role,
+        gender: values.gender!,
+        DOB: values.DOB!,
       })
       toast.success(t("createSuccess"))
       router.push("/dashboard/users")
@@ -46,10 +49,10 @@ export default function NewUserPage() {
               <BackButton href="/dashboard/users" />
               <div className="min-w-0">
                 <h1 className="truncate font-heading text-2xl font-bold">
-                  {t("createUser")}
+                  {isManager ? t("addStaff") : t("createUser")}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {t("createUserSubtitle")}
+                  {isManager ? t("addStaffSubtitle") : t("createUserSubtitle")}
                 </p>
               </div>
             </div>

@@ -15,6 +15,7 @@ import { UserForm, type UserFormValues } from "@/features/users/components/user-
 import { useUserById, useUpdateUser } from "@/features/users/hooks/use-users"
 import { Link } from "@/i18n/routing"
 import { getErrorMessage } from "@/lib/api/utils"
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
 
 export default function EditUserPage({
   params,
@@ -24,8 +25,17 @@ export default function EditUserPage({
   const { id } = use(params)
   const t = useTranslations("Dashboard.users")
   const router = useRouter()
+  const currentUserRole = useAuthStore((s) => s.user?.role)
+  const isManager = currentUserRole === "manager"
   const { data: user, isLoading, isError } = useUserById(id)
   const updateMutation = useUpdateUser()
+
+  React.useEffect(() => {
+    if (isManager && user && user.role !== "staff") {
+      toast.error(t("managerStaffOnlyError"))
+      router.replace("/dashboard/users")
+    }
+  }, [isManager, user, router, t])
 
   const handleSubmit = async (values: UserFormValues) => {
     try {
@@ -35,7 +45,7 @@ export default function EditUserPage({
           firstName: values.firstName,
           lastName: values.lastName,
           phone: values.phone || undefined,
-          role: values.role,
+          role: isManager ? "staff" : values.role,
           gender: values.gender || undefined,
           DOB: values.DOB || undefined,
         },
@@ -70,10 +80,10 @@ export default function EditUserPage({
               <BackButton href="/dashboard/users" />
               <div className="min-w-0">
                 <h1 className="truncate font-heading text-2xl font-bold">
-                  {t("editUser")}
+                  {isManager ? t("editStaff") : t("editUser")}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {t("editUserSubtitle")}
+                  {isManager ? t("editStaffSubtitle") : t("editUserSubtitle")}
                 </p>
               </div>
             </div>

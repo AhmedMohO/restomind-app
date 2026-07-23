@@ -1,7 +1,7 @@
 /**
  * Types for Analytics / Overview Dashboard.
- * Defines the contract for dashboard statistics, KPIs, alerts, revenue trends,
- * and order summaries for both Admin and Manager roles.
+ * Defines the contract for dashboard statistics, KPIs, top-performing metrics,
+ * and overview responses for both Admin and Manager roles.
  */
 
 export type AnalyticsPeriod = "7d" | "30d"
@@ -12,72 +12,92 @@ export interface KpiMetric {
   changePercent: number
 }
 
+export interface RankedItem {
+  id: string
+  rank: number
+  name: string
+  count: number
+  maxCount?: number
+}
+
+export interface RestaurantPerformance {
+  id: string
+  rank: number
+  name: string
+  count: number
+  maxCount?: number
+}
+
+export interface FulfillmentMethodItem {
+  id: string
+  type: "delivery" | "pickup"
+  name: string
+  count: number
+  percentage: number
+}
+
+/** Admin KPI Summary Cards */
 export interface AdminKpiSummary {
   revenue: KpiMetric
   orders: KpiMetric
   activeOffers: number
   pendingOrders: number
   activeRestaurants: number
+  netProfit?: number
+  taxDeduction?: number
+  avgOrderValue?: number
+  totalUsers?: number
+  totalRestaurants?: number
 }
 
+/** Manager KPI Summary Cards (no activeRestaurants) */
 export interface ManagerKpiSummary {
   revenue: KpiMetric
   orders: KpiMetric
   activeOffers: number
   pendingOrders: number
+  netProfit?: number
+  taxDeduction?: number
+  avgOrderValue?: number
+  totalUsers?: number
+  totalRestaurants?: number
 }
 
-export interface RevenueTrendPoint {
-  date: string // e.g. "2026-07-01" or formatted date label
-  revenue: number
-  orders: number
-}
-
-export interface OrdersByStatusSummary {
-  Pending: number
-  Confirmed: number
-  Preparing: number
-  Ready: number
-  "Out For Delivery": number
-  Delivered: number
-  Cancelled: number
-}
-
-export interface DashboardRecentOrder {
-  orderGroupId: string
-  customerName: string
-  restaurantNames: string[]
-  finalTotalPrice: number
-  overallStatus: string
-  createdAt: string
-}
-
-export type AlertSeverity = "critical" | "warning" | "info"
-
-export interface DashboardAlert {
-  id: string
-  type: "stuck_pending" | "high_cancellation" | "no_active_offers" | "inactive_restaurants"
-  severity: AlertSeverity
-  messageKey: string
-  count?: number
-  actionUrl?: string
-}
-
+/** Admin Dashboard Response Schema */
 export interface DashboardStatsResponse {
-  period: AnalyticsPeriod
+  /** KPI summary cards */
   kpis: AdminKpiSummary
-  revenueTrend: RevenueTrendPoint[]
-  ordersByStatus: OrdersByStatusSummary
-  recentOrders: DashboardRecentOrder[]
-  alerts: DashboardAlert[]
+
+  /** Top selling products ranked list */
+  topProducts?: RankedItem[]
+
+  /** Top selling categories ranked list */
+  topCategories?: RankedItem[]
+
+  /** Top performing restaurants list */
+  topRestaurants?: RestaurantPerformance[]
+
+  /** Order fulfillment method breakdown (Home Delivery vs Store Pickup) */
+  fulfillmentMethods?: FulfillmentMethodItem[]
 }
 
+/** Manager Dashboard Response Schema */
 export interface ManagerDashboardStatsResponse {
-  period: AnalyticsPeriod
+  /** Restaurant name assigned to manager */
   restaurantName: string
+
+  /** KPI summary cards (without activeRestaurants) */
   kpis: ManagerKpiSummary
-  revenueTrend: RevenueTrendPoint[]
-  ordersByStatus: OrdersByStatusSummary
-  recentOrders: DashboardRecentOrder[]
-  alerts: DashboardAlert[]
+
+  /** Top selling products for this restaurant */
+  topProducts?: RankedItem[]
+
+  /** Top selling categories for this restaurant */
+  topCategories?: RankedItem[]
+
+  /** Top performing restaurants list */
+  topRestaurants?: RestaurantPerformance[]
+
+  /** Order fulfillment method breakdown (Home Delivery vs Store Pickup) */
+  fulfillmentMethods?: FulfillmentMethodItem[]
 }

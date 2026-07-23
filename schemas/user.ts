@@ -13,13 +13,13 @@ export const createUserSchema = z.object({
     .string()
     .min(3, { message: "lastNameMin" })
     .max(20, { message: "lastNameMax" }),
-  email: z.string().email({ message: "invalidEmail" }),
+  email: z.email({ message: "invalidEmail" }),
   password: z.string().min(6, { message: "passwordMin" }),
   phone: egyptianPhoneSchema,
   role: userRoleEnum,
   restaurantId: z.string().optional().nullable(),
-  gender: userGenderEnum.optional().nullable(),
-  DOB: z.string().optional().nullable(),
+  gender: userGenderEnum,
+  DOB: z.string().min(1, { message: "required" }),
 })
 
 export const updateUserSchema = z.object({

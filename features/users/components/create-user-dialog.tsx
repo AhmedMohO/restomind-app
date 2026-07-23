@@ -61,8 +61,8 @@ export function CreateUserDialog({
       email: "",
       password: "",
       phone: "",
-      gender: undefined,
-      DOB: undefined,
+      gender: "" as "male" | "female",
+      DOB: "",
     },
   })
 
@@ -86,8 +86,8 @@ export function CreateUserDialog({
         password: values.password,
         phone: values.phone,
         role: values.role,
-        gender: values.gender || undefined,
-        DOB: values.DOB || undefined,
+        gender: values.gender,
+        DOB: values.DOB,
       })
       toast.success(t("userCreatedSuccess"))
       if (onUserCreated && newUser) {
@@ -176,7 +176,10 @@ export function CreateUserDialog({
               <Select
                 value={currentGender ?? ""}
                 onValueChange={(val) =>
-                  setValue("gender", val ? (val as "male" | "female") : null)
+                  setValue("gender", val as "male" | "female", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 disabled={isPending}
               >
@@ -196,7 +199,7 @@ export function CreateUserDialog({
               <DatePicker
                 value={currentDOB}
                 onChange={(val) =>
-                  setValue("DOB", val, {
+                  setValue("DOB", val ?? "", {
                     shouldDirty: true,
                     shouldValidate: true,
                   })

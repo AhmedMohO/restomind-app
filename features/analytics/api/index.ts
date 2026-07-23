@@ -1,33 +1,43 @@
+import "server-only"
+
+import { apiClient } from "@/lib/api/client"
+import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
 import type {
-  AnalyticsPeriod,
   DashboardStatsResponse,
   ManagerDashboardStatsResponse,
 } from "../types"
-import { getAdminMockStats, getManagerMockStats } from "../mock-data"
 
-/**
- * Fetches dashboard stats for Admin.
- * Currently returns structured mock data adhering to the proposed API contract (GET /admin/dashboard-stats).
- */
-export async function getAdminDashboardStats(
-  period: AnalyticsPeriod = "30d"
-): Promise<DashboardStatsResponse> {
-  // TODO: Replace with real API call when backend endpoint GET /admin/dashboard-stats is live:
-  // const response = await apiClient(`/admin/dashboard-stats?period=${period}`)
-  // return parseOrThrow<DashboardStatsResponse>(response, "getAdminDashboardStats")
-  return getAdminMockStats(period)
+export * from "../types"
+
+export interface GetDashboardStatsParams {
+  startDate?: string
+  endDate?: string
 }
 
 /**
- * Fetches dashboard stats for Manager.
- * Currently returns structured mock data adhering to the proposed API contract (GET /manager/dashboard-stats).
+ * GET /dashboard/admin — fetch admin analytics & KPIs (admin only).
+ */
+export async function getAdminDashboardStats(
+  params: GetDashboardStatsParams = {}
+): Promise<DashboardStatsResponse> {
+  const qs = buildQueryString(params)
+  const response = await apiClient(`/dashboard/admin${qs}`)
+  return parseOrThrow<DashboardStatsResponse>(
+    response,
+    "getAdminDashboardStats"
+  )
+}
+
+/**
+ * GET /dashboard/manager — fetch restaurant manager analytics & KPIs (manager only).
  */
 export async function getManagerDashboardStats(
-  period: AnalyticsPeriod = "30d",
-  restaurantName?: string
+  params: GetDashboardStatsParams = {}
 ): Promise<ManagerDashboardStatsResponse> {
-  // TODO: Replace with real API call when backend endpoint GET /manager/dashboard-stats is live:
-  // const response = await apiClient(`/manager/dashboard-stats?period=${period}`)
-  // return parseOrThrow<ManagerDashboardStatsResponse>(response, "getManagerDashboardStats")
-  return getManagerMockStats(period, restaurantName)
+  const qs = buildQueryString(params)
+  const response = await apiClient(`/dashboard/manager${qs}`)
+  return parseOrThrow<ManagerDashboardStatsResponse>(
+    response,
+    "getManagerDashboardStats"
+  )
 }

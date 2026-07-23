@@ -24,10 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  createUserSchema,
-  updateUserSchema,
-} from "@/schemas/user"
+import { createUserSchema, updateUserSchema } from "@/schemas/user"
 import { useZodResolver } from "@/lib/zod-locale"
 import { Link } from "@/i18n/routing"
 
@@ -36,12 +33,12 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore"
 export interface UserFormValues {
   firstName: string
   lastName: string
-  email?: string
-  password?: string
+  email: string
+  password: string
   phone: string
   role: "admin" | "manager" | "customer" | "staff"
-  gender?: "male" | "female" | null
-  DOB?: string | null
+  gender: "male" | "female"
+  DOB: string
 }
 
 export interface UserFormProps {
@@ -59,6 +56,7 @@ export function UserForm({
 }: UserFormProps) {
   const t = useTranslations("Dashboard.users")
   const currentUserRole = useAuthStore((s) => s.user?.role)
+  const isManager = currentUserRole === "manager"
 
   const formResolver = useZodResolver(
     mode === "create" ? createUserSchema : updateUserSchema
@@ -70,9 +68,9 @@ export function UserForm({
     email: defaultValues?.email ?? "",
     password: defaultValues?.password ?? "",
     phone: defaultValues?.phone ?? "",
-    role: defaultValues?.role ?? "customer",
-    gender: defaultValues?.gender ?? null,
-    DOB: defaultValues?.DOB ?? null,
+    role: isManager ? "staff" : (defaultValues?.role ?? "customer"),
+    gender: defaultValues?.gender ?? "male",
+    DOB: defaultValues?.DOB ?? "",
   }
 
   const {
@@ -95,14 +93,16 @@ export function UserForm({
         email: defaultValues.email ?? "",
         password: defaultValues.password ?? "",
         phone: defaultValues.phone ?? "",
-        role: defaultValues.role ?? "customer",
-        gender: defaultValues.gender ?? null,
-        DOB: defaultValues.DOB ?? null,
+        role: isManager ? "staff" : (defaultValues.role ?? "customer"),
+        gender: defaultValues.gender,
+        DOB: defaultValues.DOB,
       })
+    } else if (isManager) {
+      setValue("role", "staff")
     }
-  }, [defaultValues, reset])
+  }, [defaultValues, isManager, reset, setValue])
 
-  const selectedRole = useWatch({ control, name: "role" }) ?? "customer"
+  const selectedRole = useWatch({ control, name: "role" }) ?? (isManager ? "staff" : "customer")
   const selectedGender = useWatch({ control, name: "gender" }) ?? ""
   const selectedDOB = useWatch({ control, name: "DOB" }) ?? undefined
 
@@ -167,7 +167,7 @@ export function UserForm({
                   value={defaultValues?.email ?? ""}
                   disabled
                   readOnly
-                  className="bg-muted text-muted-foreground cursor-not-allowed"
+                  className="cursor-not-allowed bg-muted text-muted-foreground"
                 />
               </Field>
             )}
@@ -201,10 +201,8 @@ export function UserForm({
             <Field data-invalid={!!errors.gender}>
               <FieldLabel>{t("gender")}</FieldLabel>
               <Select
-                value={selectedGender ?? ""}
-                onValueChange={(val) =>
-                  setValue("gender", val ? (val as "male" | "female") : null)
-                }
+                value={selectedGender}
+                onValueChange={(val) => setValue("gender", val!)}
                 disabled={isPending}
               >
                 <SelectTrigger className="w-full rounded-xl">
@@ -221,9 +219,9 @@ export function UserForm({
             <Field data-invalid={!!errors.DOB}>
               <FieldLabel>{t("dob")}</FieldLabel>
               <DatePicker
-                value={selectedDOB ?? undefined}
+                value={selectedDOB}
                 onChange={(val) =>
-                  setValue("DOB", val, {
+                  setValue("DOB", val ?? "", {
                     shouldDirty: true,
                     shouldValidate: true,
                   })
@@ -250,21 +248,23 @@ export function UserForm({
             <Select
               value={selectedRole}
               onValueChange={(val) => {
-                if (val)
+                if (val && !isManager)
                   setValue("role", val as UserFormValues["role"], {
                     shouldValidate: true,
                   })
               }}
-              disabled={isPending}
+              disabled={isPending || isManager}
             >
               <SelectTrigger className="w-full rounded-xl">
                 <SelectValue placeholder={t("roleSelectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="customer">{t("roleCustomer")}</SelectItem>
-                <SelectItem value="staff">Staff</SelectItem>
-                {currentUserRole !== "manager" && (
+                {isManager ? (
+                  <SelectItem value="staff">{t("roleStaff")}</SelectItem>
+                ) : (
                   <>
+                    <SelectItem value="customer">{t("roleCustomer")}</SelectItem>
+                    <SelectItem value="staff">{t("roleStaff")}</SelectItem>
                     <SelectItem value="manager">{t("roleManager")}</SelectItem>
                     <SelectItem value="admin">{t("roleAdmin")}</SelectItem>
                   </>
@@ -301,7 +301,9 @@ export function UserForm({
           ) : (
             <>
               <Save className="size-4" />
-              <span>{mode === "create" ? t("createUser") : t("saveChanges")}</span>
+              <span>
+                {mode === "create" ? t("createUser") : t("saveChanges")}
+              </span>
             </>
           )}
         </Button>

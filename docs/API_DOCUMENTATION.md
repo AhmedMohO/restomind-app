@@ -4,6 +4,26 @@ This documentation provides comprehensive details for integrating with the **Res
 
 ---
 
+## Table of Contents
+
+1. [General Setup & Configurations](#1-general-setup--configurations)
+2. [Core Model Schemas (Response Entities)](#2-core-model-schemas-response-entities)
+3. [Authentication Module (`/auth`)](#3-authentication-module-auth)
+4. [User Management Module (`/users`)](#4-user-management-module-users)
+5. [Categories Module (`/categories`)](#5-categories-module-categories)
+6. [Products Module (`/products`)](#6-products-module-products)
+7. [Favorites Module (`/favorites`)](#7-favorites-module-favorites)
+8. [Cart Module (`/cart`)](#8-cart-module-cart)
+9. [Orders Module (`/orders` & `/order-groups`)](#9-orders-module-orders--order-groups)
+10. [Restaurant Module (`/restaurants`)](#10-restaurant-module-restaurants)
+11. [Offers Module (`/offers`)](#11-offers-module-offers)
+12. [Ingredients Module (`/ingredients`)](#12-ingredients-module-ingredients)
+13. [Dashboard Module (`/dashboard`)](#13-dashboard-module-dashboard)
+14. [Sales Module (`/sales`)](#14-sales-module-sales)
+15. [End-to-End Shopping, Order, Sales & Analytics Workflow](#15-end-to-end-shopping-order-sales--analytics-workflow)
+
+---
+
 ## 1. General Setup & Configurations
 
 ### Base URL
@@ -166,17 +186,19 @@ interface Product {
 ### Ingredient Schema
 
 ```typescript
-type IngredientUnit = 'kg' | 'liter' | 'piece';
+type IngredientUnit = 'kg' | 'liter' | 'piece' | 'grams';
 
 interface Ingredient {
   _id: string;
   restaurantId: string;         // Restaurant ObjectId
-  ingredientCode: string;       // Unique per restaurant e.g. "ING-FLOUR-01"
+  ingredientCode?: string;      // Unique per restaurant e.g. "ING-FLOUR-01"
   name: string;
+  quantity?: number;
   unit: IngredientUnit;
-  shelfLifeDays: number;
-  minimumStock: number;
-  safetyStock: number;
+  shelfLifeDays?: number;
+  minimumStock?: number;
+  safetyStock?: number;
+  minStockAlert?: number;
   isDeleted: boolean;
   deletedAt?: string;
   createdAt: string;
@@ -333,7 +355,7 @@ interface Order {
   deliveryAddress?: DeliveryAddress;
   specialNotes?: string;
   paymentMethod: 'Cash on Delivery';
-  status: 'Pending' | 'Confirmed' | 'Preparing' | 'Out For Delivery' | 'Delivered' | 'Cancelled';
+  status: 'Pending' | 'Confirmed' | 'Preparing' | 'Ready' | 'Out For Delivery' | 'Delivered' | 'Cancelled';
   createdAt: string;
   updatedAt: string;
 }
@@ -353,9 +375,95 @@ interface GroupOrder {
   totalDiscount: number;
   finalTotalPrice: number;
   totalQuantity: number;
-  overallStatus: 'Pending' | 'Confirmed' | 'Preparing' | 'Out For Delivery' | 'Delivered' | 'Cancelled' | 'Partially Delivered' | 'Partially Cancelled' | 'Processing';
+  overallStatus: 'Pending' | 'Confirmed' | 'Preparing' | 'Ready' | 'Out For Delivery' | 'Delivered' | 'Cancelled' | 'Partially Delivered' | 'Partially Cancelled' | 'Processing';
   createdAt: string;
   updatedAt: string;
+}
+```
+
+### SalesTransaction Schema
+
+```typescript
+interface SalesTransaction {
+  _id: string;
+  restaurantId: string | Restaurant;
+  productId: string | Product;
+  date: string;                       // ISO Date String
+  quantitySold: number;
+  basePrice: number;
+  sellingPrice: number;
+  promotionActive: boolean;
+  featured: boolean;
+  salesChannel: string;               // e.g. "marketplace"
+  source: 'csv_import' | 'marketplace_order' | 'pos_sync';
+  orderId?: string;
+  createdAt: string;                  // ISO Date String
+  updatedAt: string;                  // ISO Date String
+}
+```
+
+### Dashboard Analytics Schemas
+
+```typescript
+export interface KpiMetric {
+  current: number;
+  previous: number;
+  changePercent: number;        // Percentage change, guarded against division by zero (returns 0)
+}
+
+export interface AdminKpis {
+  revenue: KpiMetric;
+  orders: KpiMetric;
+  activeOffers: number;
+  pendingOrders: number;
+  activeRestaurants: number;
+  netProfit: number;
+  taxDeduction: number;
+  avgOrderValue: number;
+  totalUsers: number;
+  totalRestaurants: number;
+}
+
+export interface ManagerKpis {
+  revenue: KpiMetric;
+  orders: KpiMetric;
+  activeOffers: number;
+  pendingOrders: number;
+  netProfit: number;
+  taxDeduction: number;
+  avgOrderValue: number;
+}
+
+export interface RankedItem {
+  id: string;
+  rank: number;
+  name: string;
+  count: number;
+  maxCount: number;
+}
+
+export interface FulfillmentMethodItem {
+  id: string;
+  type: string;
+  name: string;
+  count: number;
+  percentage: number;
+}
+
+export interface DashboardStatsResponse {
+  kpis: AdminKpis;
+  topProducts: RankedItem[];
+  topCategories: RankedItem[];
+  topRestaurants: RankedItem[];
+  fulfillmentMethods: FulfillmentMethodItem[];
+}
+
+export interface ManagerDashboardStatsResponse {
+  restaurantName: string;
+  kpis: ManagerKpis;
+  topProducts: RankedItem[];
+  topCategories: RankedItem[];
+  fulfillmentMethods: FulfillmentMethodItem[];
 }
 ```
 
@@ -474,7 +582,7 @@ Resends verification OTP or reset password OTP.
   | Field   | Type   | Required | Rules                                  | Description      |
   | :------ | :----- | :------- | :------------------------------------- | :--------------- |
   | `email` | String | Yes      | Valid email                            | Target email     |
-  | `type`  | String | Yes      | `'confirmation'` or `'reset-password'` | Type of OTP flow |
+  | `type`  | String | Yes      | `'confirmEmail'` or `'resetPassword'` | Type of OTP flow |
 
 - **Response (200 OK)**: `{ "message": "OTP sent successfully" }`
 
@@ -487,7 +595,7 @@ Generates password reset OTP code and emails it to the user.
 - **Method / URL**: `POST /auth/forgot-password`
 - **Auth Level**: Public
 - **Request Body (`application/json`)**: `{ "email": "johndoe@example.com" }`
-- **Response (200 OK)**: `{ "message": "OTP sent successfully" }`
+- **Response (200 OK)**: `{ "message": "Password reset OTP sent to email" }`
 
 ---
 
@@ -498,8 +606,7 @@ Uses a valid refresh token to get a new short-lived access token.
 - **Method / URL**: `POST /auth/generate-access-token`
 - **Auth Level**: Refresh Token (`admin`, `customer`, `manager`)
 - **Headers**: `Authorization: Bearer <refreshToken>`
-- **Request Body (`application/json`)**: `{ "token": "<refreshToken>" }`
-- **Response (200 OK)**: `{ "accessToken": "newAccessToken..." }`
+- **Response (200 OK)**: `{ "accessToken": "newAccessToken...", "refreshToken": "newRefreshToken..." }`
 
 ---
 
@@ -510,7 +617,7 @@ Verifies the password reset OTP and returns a temporary `resetToken`.
 - **Method / URL**: `PATCH /auth/confirm-reset-otp`
 - **Auth Level**: Public
 - **Request Body (`application/json`)**: `{ "email": "johndoe@example.com", "otp": "459012" }`
-- **Response (200 OK)**: `{ "message": "OTP verified successfully", "resetToken": "ey..." }`
+- **Response (200 OK)**: `{ "resetToken": "ey..." }`
 
 ---
 
@@ -522,7 +629,7 @@ Updates the password for the user using the `resetToken` received from OTP verif
 - **Auth Level**: Reset Token
 - **Headers**: `Authorization: Bearer <resetToken>`
 - **Request Body (`application/json`)**: `{ "password": "newPassword123", "confirmPassword": "newPassword123" }`
-- **Response (200 OK)**: `{ "message": "Password reset successfully, Now login again" }`
+- **Response (200 OK)**: `{ "message": "Password reset successfully" }`
 
 ---
 
@@ -564,10 +671,12 @@ Updates active user's details and/or uploads profile photo.
     "password": "Password123",
     "phone": "+1122334455",
     "role": "staff",
+    "gender": "male",
+    "DOB": "1995-05-15",
     "restaurantId": "669fc8888888888abcdef222"
   }
   ```
-- **Validation Rules**: `firstName`, `lastName`, `email`, `password`, `phone` are required. `role` enum (`customer`, `manager`, `admin`, `staff`). Managers can only create users with the `staff` role assigned to their own restaurant.
+- **Validation Rules**: `firstName`, `lastName`, `email`, `password`, `phone`, `role`, `gender` (`'male'` | `'female'`), and `DOB` (ISO Date) are required. `role` enum (`customer`, `manager`, `admin`, `staff`). `restaurantId` is optional. Managers can only create users with the `staff` role assigned to their own restaurant.
 
 ---
 
@@ -763,15 +872,16 @@ Updates active user's details and/or uploads profile photo.
 ### 6.5 Get All Products (Filtered & Paginated)
 
 - **Method / URL**: `GET /products`
-- **Auth Level**: Access Token (`admin`, `manager`)
-- **Query Parameters**: `page`, `limit`, `category`, `restaurantId`, `search`, `tag`, `sort`, `order`.
+- **Auth Level**: Public
+- **Query Parameters**: `page`, `limit`, `categoryId`, `restaurantId`, `search`, `isAvailable`, `isDeleted`, `minPrice`, `maxPrice`, `sortBy`, `sortOrder`.
 
 ---
 
 ### 6.6 Get Product Details
 
 - **Method / URL**: `GET /products/:id`
-- **Auth Level**: Access Token (`admin`, `manager`)
+- **Auth Level**: Public
+- **Description**: Accepts Mongo ObjectId or product slug string.
 
 ---
 
@@ -924,6 +1034,9 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 
   ```json
   {
+    "fullName": "John Doe",
+    "phoneNumber": "+1234567890",
+    "emailAddress": "johndoe@example.com",
     "deliveryMethod": "Home Delivery",
     "deliveryAddress": {
       "street": "12 Nile St",
@@ -931,8 +1044,7 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
       "country": "Egypt"
     },
     "specialNotes": "Ring the bell twice",
-    "paymentMethod": "Cash on Delivery",
-    "saveAddress": true
+    "paymentMethod": "Cash on Delivery"
   }
   ```
 
@@ -943,7 +1055,7 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 ### 9.2 Get My Orders (Order History)
 
 - **Method / URL**: `GET /orders/me`
-- **Auth Level**: Access Token (`customer`, `admin`, `manager`)
+- **Auth Level**: Access Token (`customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**: `restaurantId` (optional)
 - **Response (200 OK)**: Array of `GroupOrder` objects.
@@ -953,17 +1065,36 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 ### 9.3 Get Checkout / Group Order Details
 
 - **Method / URL**: `GET /orders/me/:id`, `GET /orders/group/:id`, or `GET /order-groups/:id`
-- **Auth Level**: Access Token (`customer`, `admin`, `manager`)
+- **Auth Level**: Access Token (`customer`, `admin`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Description**: Accepts either `groupOrderId` or sub-order `orderId` and returns the unified `GroupOrder` object.
 
 ---
 
-### 9.4 Get All Orders (Admin Only)
+### 9.4 Get All Orders (Admin Listing)
 
 - **Method / URL**: `GET /orders`
 - **Auth Level**: Access Token (`admin`)
-- **Query Parameters**: `restaurantId` (optional)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter | Type | Required | Default | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `page` | Number | No | `1` | Page index |
+  | `limit` | Number | No | `10` | Items per page |
+  | `search` | String | No | *None* | Search in `fullName`, `emailAddress`, `phoneNumber`, `groupOrderId`, or `_id` |
+  | `status` | String | No | *None* | Filter by `OrderStatusEnum` (`Pending`, `Confirmed`, `Preparing`, `Ready`, `Out For Delivery`, `Delivered`, `Cancelled`) |
+  | `paymentMethod` | String | No | *None* | Filter by payment method (`Cash on Delivery`) |
+  | `deliveryMethod` | String | No | *None* | Filter by delivery method (`Home Delivery`, `Store Pickup`) |
+  | `startDate` | ISO Date | No | *None* | Start creation date filter (`createdAt >= startDate 00:00:00.000Z`) |
+  | `endDate` | ISO Date | No | *None* | End creation date filter (`createdAt <= endDate 23:59:59.999Z`) |
+  | `minTotalPrice` | Number | No | *None* | Filter minimum final total price |
+  | `maxTotalPrice` | Number | No | *None* | Filter maximum final total price |
+  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId |
+  | `sortBy` / `sort` | String | No | `createdAt` | Field to sort by (`createdAt`, `updatedAt`, `finalTotalPrice`, `totalQuantity`, `status`) |
+  | `sortOrder` / `order` | String | No | `desc` | Sort direction (`asc`, `desc`) |
+
+- **Response (200 OK)**: Paginated array of `Order` items with meta pagination counters (`totalItems`, `totalPages`, `currentPage`, `pageSize`, `hasNextPage`, `hasPreviousPage`).
 
 ---
 
@@ -971,22 +1102,29 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 
 - **Method / URL**: `GET /orders/restaurant/:restaurantId`
 - **Auth Level**: Access Token (`admin`, `manager`)
-- **Description**: Returns sub-orders for a specific restaurant. Managers can only query their assigned `restaurantId`.
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Description**: Returns sub-orders for a specific restaurant. Managers can ONLY view orders for their own assigned restaurant (`restaurantId` must match `user.restaurantId`).
+- **Query Parameters**: Same filtering and pagination parameters as `QueryOrderListingDto` above.
 
 ---
 
-### 9.6 Update Order Status (Admin / Manager)
+### 9.6 Update Sub-Order Status (Admin / Manager)
 
 - **Method / URL**: `PATCH /orders/:id/status`
 - **Auth Level**: Access Token (`admin`, `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
+- **Security Check**: Managers can only update status of orders belonging to their own restaurant.
 - **Request Body (`application/json`)**:
   ```json
   {
     "status": "Preparing"
   }
   ```
-  _Allowed Statuses: `"Pending"`, `"Preparing"`, `"Ready"`, `"Out For Delivery"`, `"Delivered"`, `"Cancelled"`_
+  _Allowed Statuses: `"Pending"`, `"Confirmed"`, `"Preparing"`, `"Ready"`, `"Out For Delivery"`, `"Delivered"`, `"Cancelled"`_
+
+- **Automated Side Effects**:
+  - `Delivered`: Idempotently creates `SalesTransaction` records for each order line item (`source: marketplace_order`).
+  - `Cancelled`: Restores offer remaining quantity and reactivates offer if previously `sold_out`.
 
 ---
 
@@ -1129,10 +1267,13 @@ Returns currently active promotional offers (`status = active` and `endDate >= n
   - `restaurantId` (string)
   - `categoryId` (string)
   - `productId` (string)
+  - `source` (enum: `manual`, `recommendation`)
   - `search` (string, searches product title/description)
   - `featured` (boolean)
   - `minPrice` (number)
   - `maxPrice` (number)
+  - `startDate` (date string)
+  - `endDate` (date string)
   - `sortBy` (`createdAt`, `offerPrice`, `discountPercentage`, `startDate`, `endDate`)
   - `sortOrder` (`asc`, `desc`, Default: `desc`)
   - `page` (number, Default: `1`)
@@ -1285,24 +1426,21 @@ The Ingredients module allows restaurant managers to manage raw material invento
 
   ```json
   {
-    "ingredientCode": "ING-FLOUR-01",
-    "name": "Wheat Flour",
-    "unit": "kg",
-    "shelfLifeDays": 30,
-    "minimumStock": 10,
-    "safetyStock": 5
+    "name": "Mozzarella Cheese",
+    "quantity": 5000,
+    "unit": "grams",
+    "minStockAlert": 1000
   }
   ```
-  _Note: `unit` must be one of `"kg"`, `"liter"`, or `"piece"`._
 
 ---
 
-### 12.2 Get All Ingredients
+### 12.2 Get All Ingredients (Paginated & Filtered)
 
 - **Method / URL**: `GET /ingredients`
 - **Auth Level**: Access Token (`manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Query Parameters**: `page` (Default: `1`), `limit` (Default: `10`), `search` (searches `name` and `ingredientCode`).
+- **Query Parameters**: `page` (Default: `1`), `limit` (Default: `10`), `search` (matches ingredient `name`), `minQuantity`, `maxQuantity`, `unit`, `sortBy`, `sortOrder`, `isDeleted`.
 
 ---
 
@@ -1317,7 +1455,7 @@ The Ingredients module allows restaurant managers to manage raw material invento
 
 - **Method / URL**: `PATCH /ingredients/:id`
 - **Auth Level**: Access Token (`manager`)
-- **Request Body (`application/json`)**: Accepts optional `name`, `unit`, `shelfLifeDays`, `minimumStock`, `safetyStock`.
+- **Request Body (`application/json`)**: Accepts optional `name`, `quantity`, `unit`, `minStockAlert`.
 
 ---
 
@@ -1329,11 +1467,286 @@ The Ingredients module allows restaurant managers to manage raw material invento
 
 ---
 
-## 13. End-to-End Shopping & Order Workflow
+## 13. Dashboard Module (`/dashboard`)
+
+The Dashboard module provides analytics, KPI aggregations, revenue trends, order status distributions, ranked top products/categories/restaurants, fulfillment method distributions, and operational alerts for both System Administrators and Restaurant Managers.
+
+### 13.1 Get Admin Dashboard Analytics
+
+Retrieves high-level platform-wide analytics, metrics, rankings, and operational alerts for system administrators.
+
+- **Method / URL**: `GET /dashboard/admin`
+- **Auth Level**: Access Token (`admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter | Type | Required | Default | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `startDate` | ISO Date String | No | *7 days ago* | Start of date range (e.g. `2026-07-17` or `2026-07-17T00:00:00.000Z`) |
+  | `endDate` | ISO Date String | No | *Now / Today* | End of date range (e.g. `2026-07-23` or `2026-07-23T23:59:59.999Z`) |
+
+- **Behavior & Metrics**:
+  - **Default Range**: If omitted, defaults to the last 7 days.
+  - **KPI Comparison**: Calculates `previous` period metrics using an equal-length duration preceding `startDate`.
+  - **KPI Breakdown**:
+    - `revenue`: Total revenue from orders with `status = 'Delivered'` (`current`, `previous`, `changePercent`).
+    - `orders`: Total count of orders placed within the date range (`current`, `previous`, `changePercent`).
+    - `activeOffers`: Total non-deleted active promotional offers across active restaurants.
+    - `pendingOrders`: Current count of orders with `status = 'Pending'`.
+    - `activeRestaurants`: Total count of active, non-deleted restaurants on the platform.
+    - `netProfit`: Total net revenue after tax and operational fee deductions.
+    - `taxDeduction`: Calculated tax amount deducted across delivered orders.
+    - `avgOrderValue`: Average transaction value per completed order (`total revenue / delivered orders count`).
+    - `totalUsers`: Platform-wide count of non-deleted user accounts.
+    - `totalRestaurants`: Total count of non-deleted restaurants registered.
+  - **Ranked Items & Distributions**:
+    - `topProducts`: Top performing products ranked by quantity sold (`[{ id, rank, name, count, maxCount }]`).
+    - `topCategories`: Top performing categories ranked by volume sold (`[{ id, rank, name, count, maxCount }]`).
+    - `topRestaurants`: Top performing restaurants ranked by order volume (`[{ id, rank, name, count, maxCount }]`).
+    - `fulfillmentMethods`: Distribution of orders by delivery method (`Home Delivery`, `Store Pickup`).
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "kpis": {
+      "revenue": {
+        "current": 436.38,
+        "previous": 350.00,
+        "changePercent": 24.68
+      },
+      "orders": {
+        "current": 15,
+        "previous": 12,
+        "changePercent": 25.00
+      },
+      "activeOffers": 8,
+      "pendingOrders": 2,
+      "activeRestaurants": 5,
+      "netProfit": 375.29,
+      "taxDeduction": 61.09,
+      "avgOrderValue": 29.09,
+      "totalUsers": 120,
+      "totalRestaurants": 6
+    },
+    "topProducts": [
+      {
+        "id": "669fc3333333333abcdef444",
+        "rank": 1,
+        "name": "Margherita Pizza",
+        "count": 42,
+        "maxCount": 42
+      }
+    ],
+    "topCategories": [
+      {
+        "id": "669fc4444444444abcdef333",
+        "rank": 1,
+        "name": "Pizza",
+        "count": 65,
+        "maxCount": 65
+      }
+    ],
+    "topRestaurants": [
+      {
+        "id": "669fc8888888888abcdef222",
+        "rank": 1,
+        "name": "Pizza Gourmet Express",
+        "count": 28,
+        "maxCount": 28
+      }
+    ],
+    "fulfillmentMethods": [
+      {
+        "id": "home_delivery",
+        "type": "Home Delivery",
+        "name": "Home Delivery",
+        "count": 12,
+        "percentage": 80
+      },
+      {
+        "id": "store_pickup",
+        "type": "Store Pickup",
+        "name": "Store Pickup",
+        "count": 3,
+        "percentage": 20
+      }
+    ]
+  }
+  ```
+
+---
+
+### 13.2 Get Restaurant Manager Dashboard Analytics
+
+Retrieves analytics, metrics, ranked top products/categories, fulfillment distribution, and operational alerts specifically scoped to the authenticated manager's assigned restaurant.
+
+- **Method / URL**: `GET /dashboard/manager`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter | Type | Required | Default | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `startDate` | ISO Date String | No | *7 days ago* | Start of date range (e.g. `2026-07-17` or `2026-07-17T00:00:00.000Z`) |
+  | `endDate` | ISO Date String | No | *Now / Today* | End of date range (e.g. `2026-07-23` or `2026-07-23T23:59:59.999Z`) |
+
+- **Behavior & Constraints**:
+  - **Manager Scoping**: Scoped strictly to `user.restaurantId`. Throws `400 Bad Request` if no restaurant is assigned to the manager.
+  - **Exclusions**: System-wide metrics (`activeRestaurants`, `totalUsers`, `totalRestaurants`, `topRestaurants`) are completely excluded.
+  - **Restaurant Info**: Includes `restaurantName` in top-level response payload.
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "restaurantName": "Pizza Gourmet Express",
+    "kpis": {
+      "revenue": {
+        "current": 250.00,
+        "previous": 200.00,
+        "changePercent": 25.00
+      },
+      "orders": {
+        "current": 8,
+        "previous": 6,
+        "changePercent": 33.33
+      },
+      "activeOffers": 3,
+      "pendingOrders": 1,
+      "netProfit": 215.00,
+      "taxDeduction": 35.00,
+      "avgOrderValue": 31.25
+    },
+    "topProducts": [
+      {
+        "id": "669fc3333333333abcdef444",
+        "rank": 1,
+        "name": "Margherita Pizza",
+        "count": 20,
+        "maxCount": 20
+      }
+    ],
+    "topCategories": [
+      {
+        "id": "669fc4444444444abcdef333",
+        "rank": 1,
+        "name": "Pizza",
+        "count": 30,
+        "maxCount": 30
+      }
+    ],
+    "fulfillmentMethods": [
+      {
+        "id": "home_delivery",
+        "type": "Home Delivery",
+        "name": "Home Delivery",
+        "count": 6,
+        "percentage": 75
+      },
+      {
+        "id": "store_pickup",
+        "type": "Store Pickup",
+        "name": "Store Pickup",
+        "count": 2,
+        "percentage": 25
+      }
+    ]
+  }
+  ```
+
+---
+
+## 14. Sales Module (`/sales`)
+
+The Sales Module provides granular sales transaction tracking, historical sales listing, source-based revenue audit trails, and aggregate financial sales statistics for System Administrators and Restaurant Managers.
+
+### 14.1 Get Sales Transactions (Paginated & Filtered)
+
+- **Method / URL**: `GET /sales`
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Security Check**: Managers are automatically scoped to their own assigned `restaurantId`. Admin can query across all restaurants or filter by a specific `restaurantId`.
+- **Query Parameters**:
+
+  | Parameter | Type | Required | Default | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId (Admin only; Managers locked to assigned restaurant) |
+  | `productId` | String | No | *None* | Filter by Product ObjectId |
+  | `startDate` | ISO Date String | No | *None* | Start date filter (`date >= startDate 00:00:00.000Z`) |
+  | `endDate` | ISO Date String | No | *None* | End date filter (`date <= endDate 23:59:59.999Z`) |
+  | `source` | Enum String | No | *None* | Filter transaction source (`csv_import`, `marketplace_order`, `pos_sync`) |
+  | `page` | Number | No | `1` | Page number |
+  | `limit` | Number | No | `10` | Items per page |
+  | `sort` | String | No | `date` | Field to sort by (`date`, `quantitySold`, `sellingPrice`) |
+  | `order` | String | No | `desc` | Sort direction (`asc`, `desc`) |
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "data": {
+      "items": [
+        {
+          "_id": "669fd1111111111abcdef000",
+          "restaurantId": {
+            "_id": "669fc8888888888abcdef222",
+            "name": "Pizza Gourmet Express"
+          },
+          "productId": {
+            "_id": "669fc3333333333abcdef444",
+            "title": "Margherita Pizza",
+            "price": 12.99,
+            "discountedPrice": 10.39
+          },
+          "date": "2026-07-23T20:00:00.000Z",
+          "quantitySold": 2,
+          "basePrice": 12.99,
+          "sellingPrice": 10.39,
+          "promotionActive": true,
+          "featured": true,
+          "salesChannel": "marketplace",
+          "source": "marketplace_order",
+          "orderId": "669fc999888777abcdef999"
+        }
+      ],
+      "page": 1,
+      "limit": 10,
+      "total": 1,
+      "totalPages": 1
+    }
+  }
+  ```
+
+---
+
+### 14.2 Get Sales Summary Statistics
+
+- **Method / URL**: `GET /sales/summary`
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Security Check**: Managers are automatically scoped to their own assigned `restaurantId`.
+- **Query Parameters**: Same filtering parameters (`restaurantId`, `productId`, `startDate`, `endDate`, `source`).
+- **Response (200 OK)**:
+  ```json
+  {
+    "data": {
+      "totalTransactions": 15,
+      "totalQuantitySold": 42,
+      "totalGrossRevenue": 545.58,
+      "totalNetRevenue": 436.38,
+      "totalDiscountsGiven": 109.20,
+      "promotionalSalesCount": 42,
+      "featuredSalesCount": 42,
+      "averageSellingPrice": 10.39
+    }
+  }
+  ```
+
+---
+
+## 15. End-to-End Shopping, Order, Sales & Analytics Workflow
 
 1. **Create Restaurant** (Admin): `POST /restaurants`
 2. **Create Ingredients & Recipe** (Manager):
-   - Add ingredients via `POST /ingredients`.
+   - Add raw material ingredients via `POST /ingredients`.
    - Map ingredients to product recipes via `PUT /products/:productId/recipe`.
 3. **Create Category & Product** (Admin / Manager):
    - `POST /categories`, `POST /products`.
@@ -1347,8 +1760,14 @@ The Ingredients module allows restaurant managers to manage raw material invento
 7. **Checkout & Order Execution**:
    - `POST /orders` with delivery details and payment method.
    - Response returns unified `GroupOrder`.
-8. **Order Tracking**:
-   - Customer checks `GET /orders/me`.
-   - Manager checks `GET /orders/restaurant/:restaurantId`.
-   - Admin checks `GET /orders` and updates status via `PATCH /orders/:id/status`.
-
+8. **Order Processing & Fulfillment**:
+   - Customer checks order status via `GET /orders/me`.
+   - Manager processes restaurant orders via `GET /orders/restaurant/:restaurantId` and updates status via `PATCH /orders/:id/status`.
+   - Admin manages all platform orders via `GET /orders`.
+   - **Sales Transaction Generation**: Updating sub-order status to `Delivered` automatically and idempotently generates `SalesTransaction` entries (`source: marketplace_order`).
+9. **Sales Audit & Financial Summary**:
+   - Query detailed sales records via `GET /sales`.
+   - Audit overall revenue, total discounts given, and net profit via `GET /sales/summary`.
+10. **Dashboard Analytics & System Monitoring**:
+    - Admin tracks overall platform revenue, net profit, user counts, top performing products/categories/restaurants, and system alerts via `GET /dashboard/admin`.
+    - Manager tracks restaurant-specific revenue, top selling items, fulfillment method breakdown, and operational alerts via `GET /dashboard/manager`.

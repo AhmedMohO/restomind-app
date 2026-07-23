@@ -44,8 +44,8 @@ export interface CreateUserPayload {
   phone: string
   role?: "admin" | "customer" | "manager" | "staff"
   restaurantId?: string
-  gender?: "male" | "female"
-  DOB?: string
+  gender: "male" | "female"
+  DOB: string
 }
 
 export interface UpdateUserPayload {
