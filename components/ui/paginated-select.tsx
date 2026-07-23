@@ -189,18 +189,18 @@ export function PaginatedSelect<T = unknown>({
       >
         {/* Search header */}
         <div className="relative flex items-center border-b border-border p-2">
-          <Search className="absolute left-4 size-4 text-muted-foreground" />
+          <Search className="absolute start-4 size-4 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={searchPlaceholder}
-            className="h-9 rounded-lg border-none pr-8 pl-9 text-xs focus-visible:ring-0"
+            className="h-9 rounded-lg border-none pe-8 ps-9 text-xs focus-visible:ring-0"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="absolute right-4 rounded-full p-1 text-muted-foreground hover:bg-accent"
+              className="absolute end-4 rounded-full p-1 text-muted-foreground hover:bg-accent"
             >
               <X className="size-3" />
             </button>

@@ -24,7 +24,7 @@ export function BackButton({
       render={<Link href={href} aria-label={ariaLabel} />}
       className={cn("shrink-0 rounded-xl", className)}
     >
-      <ArrowLeft className="size-4" />
+      <ArrowLeft className="size-4 rtl:rotate-180" />
     </Button>
   )
 }

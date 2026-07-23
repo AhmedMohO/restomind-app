@@ -1,3 +1,5 @@
+import type { ApiRestaurantOrder } from "./dashboard-types"
+
 export type OrderStatus =
   | "Pending"
   | "Confirmed"
@@ -34,18 +36,6 @@ export interface ApiOrderItem {
   lineTotal: number
 }
 
-export interface ApiRestaurantOrder {
-  orderId: string
-  restaurant: ApiRestaurant
-  items: ApiOrderItem[]
-  totalOriginalPrice: number
-  totalDiscount: number
-  finalTotalPrice: number
-  totalQuantity: number
-  status: OrderStatus
-  createdAt: string
-}
-
 export interface ApiOrderGroup {
   orderGroupId: string
   userId: string
@@ -55,7 +45,7 @@ export interface ApiOrderGroup {
   deliveryMethod: "Home Delivery" | "Store Pickup"
   deliveryAddress: ApiDeliveryAddress | null
   specialNotes: string
-  paymentMethod: "Cash on Delivery"
+  paymentMethod: "Cash on Delivery" | "Credit / Debit Card"
   totalOriginalPrice: number
   totalDiscount: number
   finalTotalPrice: number
@@ -63,10 +53,6 @@ export interface ApiOrderGroup {
   overallStatus: OrderStatus
   orders: ApiRestaurantOrder[]
   createdAt: string
-}
-
-export interface UpdateOrderStatusPayload {
-  status: OrderStatus
 }
 
 /**
@@ -80,5 +66,8 @@ export interface CreateOrderPayload {
     addressId: string
   }
   specialNotes?: string
-  paymentMethod: "Cash on Delivery"
+  paymentMethod: "Cash on Delivery" | "Credit / Debit Card"
 }
+
+// Re-export admin & dashboard order types
+export * from "./dashboard-types"

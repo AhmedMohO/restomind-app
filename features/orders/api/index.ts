@@ -1,8 +1,15 @@
 import "server-only"
 
 import { apiClient } from "@/lib/api/client"
-import { parseOrThrow } from "@/lib/api/utils"
-import type { CreateOrderPayload, ApiOrderGroup, ApiRestaurantOrder, OrderStatus } from "./type"
+import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
+import type {
+  CreateOrderPayload,
+  ApiOrderGroup,
+  ApiRestaurantOrder,
+  OrderStatus,
+  PaginatedAdminOrders,
+  QueryOrderListingParams,
+} from "./type"
 
 export * from "./type"
 
@@ -36,9 +43,20 @@ export async function getMyOrderById(
 }
 
 /** GET /orders — get all orders (admin only) */
-export async function getAllOrders(): Promise<{ data: ApiOrderGroup[] }> {
-  const response = await apiClient("/orders")
-  return parseOrThrow<{ data: ApiOrderGroup[] }>(response, "getAllOrders")
+export async function getAllOrders(
+  params: QueryOrderListingParams = {}
+): Promise<PaginatedAdminOrders> {
+  const query = buildQueryString(params)
+  const response = await apiClient(`/orders${query}`)
+  return parseOrThrow<PaginatedAdminOrders>(response, "getAllOrders")
+}
+
+/** GET /orders/group/:id — get order group details (admin/customer) */
+export async function getOrderGroupById(
+  orderGroupId: string
+): Promise<{ data: ApiOrderGroup }> {
+  const response = await apiClient(`/orders/group/${encodeURIComponent(orderGroupId)}`)
+  return parseOrThrow<{ data: ApiOrderGroup }>(response, "getOrderGroupById")
 }
 
 /** PATCH /orders/:id/status — update order status (admin only) */

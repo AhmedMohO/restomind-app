@@ -2,10 +2,11 @@
 
 import * as React from "react"
 import { useTranslations } from "next-intl"
-import { ArrowLeft, Edit2, FolderTree, Loader2 } from "lucide-react"
+import { Edit2, FolderTree, Loader2 } from "lucide-react"
 import Image from "next/image"
 import { Link } from "@/i18n/routing"
 
+import { BackButton } from "@/components/ui/back-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCategoryById } from "../hooks/use-categories"
@@ -54,16 +55,7 @@ export function CategoryDetailsContainer({ id }: CategoryDetailsContainerProps) 
       {/* Header bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            nativeButton={false}
-            render={<Link href="/dashboard/categories" />}
-            className="size-9 rounded-xl border border-border"
-            title={t("backToList")}
-          >
-            <ArrowLeft className="size-4" />
-          </Button>
+          <BackButton href="/dashboard/categories" aria-label={t("backToList")} />
           <div>
             <h1 className="font-heading text-2xl font-bold">{category.name}</h1>
             <p className="text-sm text-muted-foreground">
