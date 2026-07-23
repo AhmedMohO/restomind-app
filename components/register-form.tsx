@@ -23,6 +23,7 @@ import { Link } from "@/i18n/routing"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import {
   InputOTP,
   InputOTPGroup,
@@ -376,12 +377,8 @@ function RegisterFormContent({
           {/* Phone */}
           <Field data-invalid={!!errors.phone}>
             <FieldLabel htmlFor="reg-phone">{t("phoneLabel")} </FieldLabel>
-            <Input
+            <PhoneInput
               id="reg-phone"
-              type="tel"
-              autoComplete="tel"
-              placeholder={t("phonePlaceholder")}
-              className="h-10 px-3 text-sm"
               {...registerForm.register("phone")}
             />
             <FieldError errors={[errors.phone]} />

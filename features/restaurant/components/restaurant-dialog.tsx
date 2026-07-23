@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { CreateUserDialog } from "@/features/users/components/create-user-dialog"
@@ -224,9 +225,8 @@ export function RestaurantDialog({
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field data-invalid={!!errors.phone}>
                 <FieldLabel>{t("phoneLabel")}</FieldLabel>
-                <Input
+                <PhoneInput
                   {...register("phone")}
-                  placeholder={t("phonePlaceholder")}
                   disabled={isPending}
                   aria-invalid={!!errors.phone}
                 />

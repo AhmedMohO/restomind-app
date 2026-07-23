@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { Textarea } from "@/components/ui/textarea"
 import Image from "next/image"
 
@@ -152,9 +153,8 @@ export function RestaurantProfileForm({
 
             <Field data-invalid={!!errors.phone}>
               <FieldLabel>{t("phoneLabel")}</FieldLabel>
-              <Input
+              <PhoneInput
                 {...register("phone")}
-                placeholder={t("phonePlaceholder")}
                 disabled={isPending}
                 aria-invalid={!!errors.phone}
               />

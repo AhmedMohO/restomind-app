@@ -84,13 +84,13 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'admin' | 'customer' | 'manager';
+  role: 'admin' | 'customer' | 'manager' | 'staff';
   gender?: 'male' | 'female';
   phone: string;                // Encrypted on DB, plain string on API boundaries
   isEmailVerified: boolean;
   DOB?: string;                 // ISO Date String
   image?: Image;                // Profile picture object
-  restaurantId?: string;        // Associated Restaurant ObjectId (for manager role)
+  restaurantId?: string;        // Associated Restaurant ObjectId (for manager or staff role)
   addresses?: UserAddress[];    // Saved delivery addresses
   isDeleted: boolean;
   createdAt: string;            // ISO Date String
@@ -550,21 +550,176 @@ Updates active user's details and/or uploads profile photo.
 
 ## 4. User Management Module (`/users`)
 
-- `POST /users` — Create User (Admin / Manager)
-- `GET /users` — Find All Users (Paginated, filtered by `search`, `role`)
-- `GET /users/:id` — Find User by ID
-- `PATCH /users/:id` — Update User by ID
-- `DELETE /users/:id` — Soft Delete User (Admin only)
+### 4.1 Create User
+
+- **Method / URL**: `POST /users`
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+  ```json
+  {
+    "firstName": "Staff",
+    "lastName": "Member",
+    "email": "staff@restaurant.com",
+    "password": "Password123",
+    "phone": "+1122334455",
+    "role": "staff",
+    "restaurantId": "669fc8888888888abcdef222"
+  }
+  ```
+- **Validation Rules**: `firstName`, `lastName`, `email`, `password`, `phone` are required. `role` enum (`customer`, `manager`, `admin`, `staff`). Managers can only create users with the `staff` role assigned to their own restaurant.
+
+---
+
+### 4.2 Find All Users (Paginated & Filtered)
+
+- **Method / URL**: `GET /users`
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter | Type | Default | Description |
+  | :--- | :--- | :--- | :--- |
+  | `page` | Number / String | `1` | Page number |
+  | `limit` | Number / String | `10` | Items per page |
+  | `search` | String | *None* | Search in `firstName`, `lastName`, `email`, `phone` |
+  | `role` | String | *None* | Filter by role (`customer`, `manager`, `admin`, `staff`) |
+  | `restaurantId` | String | *None* | Filter by Restaurant ObjectId |
+  | `isDeleted` | Boolean String | *None* | Filter soft-deleted status (`true`, `false`) |
+  | `sort` / `sortBy` | String | `createdAt` | Field to sort by |
+  | `order` / `sortOrder` | String | `desc` | Sort direction (`asc`, `desc`) |
+  | `createdAt` | ISO Date | *None* | Creation date filter |
+  | `updatedAt` | ISO Date | *None* | Update date filter |
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "data": [
+      {
+        "_id": "669fc7777777777abcdef333",
+        "firstName": "Staff",
+        "lastName": "Member",
+        "email": "staff@restaurant.com",
+        "role": "staff"
+      }
+    ],
+    "totalItems": 1,
+    "totalPages": 1,
+    "currentPage": 1,
+    "pageSize": 10,
+    "hasNextPage": false,
+    "hasPreviousPage": false
+  }
+  ```
+
+---
+
+### 4.3 Find User by ID
+
+- **Method / URL**: `GET /users/:id`
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+
+---
+
+### 4.4 Update User by ID
+
+- **Method / URL**: `PATCH /users/:id`
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**: Accepts optional `firstName`, `lastName`, `phone`, `role`, `gender`, `DOB`.
+
+---
+
+### 4.5 Soft Delete User
+
+- **Method / URL**: `DELETE /users/:id`
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Business Behavior & Constraints**: Soft-deletes user account (`isDeleted: true`).
+  - *Conflict Check*: If the user is a manager currently assigned as owner of an active restaurant, returns **HTTP 409 Conflict** with error code `MANAGER_HAS_ACTIVE_RESTAURANT`.
+- **Response (200 OK)**: `{ "message": "User deleted successfully" }`
+- **Error Response (409 Conflict)**:
+  ```json
+  {
+    "statusCode": 409,
+    "message": "Unable to delete this manager because they are currently assigned as the owner of an active restaurant...",
+    "code": "MANAGER_HAS_ACTIVE_RESTAURANT"
+  }
+  ```
 
 ---
 
 ## 5. Categories Module (`/categories`)
 
-- `POST /categories` — Create Category (`multipart/form-data`: `name`, `description`, `image` file) (Admin only)
-- `PATCH /categories/:id` — Update Category (Admin only)
-- `DELETE /categories/:id` — Soft Delete Category (Admin only)
-- `GET /categories` — View All Categories (Public)
-- `GET /categories/:id` — Get Category by ID (Admin only)
+### 5.1 Create Category
+
+- **Method / URL**: `POST /categories`
+- **Auth Level**: Access Token (`admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`multipart/form-data`)**: `name` (required), `description`, `image` (file, required).
+
+---
+
+### 5.2 Update Category
+
+- **Method / URL**: `PATCH /categories/:id`
+- **Auth Level**: Access Token (`admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`multipart/form-data` or `application/json`)**: `name`, `description`, optional replacement `image` file.
+
+---
+
+### 5.3 Soft Delete Category
+
+- **Method / URL**: `DELETE /categories/:id`
+- **Auth Level**: Access Token (`admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Business Behavior**: Products associated with this category are automatically reassigned to the default system category before soft-deleting the category.
+
+---
+
+### 5.4 View All Categories (Paginated & Searchable)
+
+- **Method / URL**: `GET /categories`
+- **Auth Level**: Public
+- **Query Parameters**:
+
+  | Parameter | Type | Default | Description |
+  | :--- | :--- | :--- | :--- |
+  | `page` | Number / String | *Optional* | Page index |
+  | `limit` | Number / String | *Optional* | Items count per page |
+  | `search` | String | *None* | Search in category name |
+  | `isDeleted` | Boolean String | `false` | Soft-deleted filter (`true`, `false`) |
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "data": [
+      {
+        "_id": "669fc4444444444abcdef333",
+        "name": "Pizzas",
+        "description": "Stone baked pizzas",
+        "image": {
+          "public_id": "categories/pizzas",
+          "secure_url": "https://res.cloudinary.com/..."
+        }
+      }
+    ],
+    "items": [ ... ],
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+  ```
+
+---
+
+### 5.5 Get Category by ID
+
+- **Method / URL**: `GET /categories/:id`
+- **Auth Level**: Public
 
 ---
 
@@ -820,28 +975,123 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 
 ---
 
-### 9.6 Update Order Status (Admin Only)
+### 9.6 Update Order Status (Admin / Manager)
 
 - **Method / URL**: `PATCH /orders/:id/status`
-- **Auth Level**: Access Token (`admin`)
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**:
   ```json
   {
-    "status": "Confirmed"
+    "status": "Preparing"
   }
   ```
-  _Statuses: `"Pending"`, `"Confirmed"`, `"Preparing"`, `"Out For Delivery"`, `"Delivered"`, `"Cancelled"`_
+  _Allowed Statuses: `"Pending"`, `"Preparing"`, `"Ready"`, `"Out For Delivery"`, `"Delivered"`, `"Cancelled"`_
 
 ---
 
 ## 10. Restaurant Module (`/restaurants`)
 
-- `POST /restaurants` — Create Restaurant (Admin)
-- `GET /restaurants` — Get All Restaurants (Paginated) (Admin)
-- `GET /restaurants/me` — Get My Restaurant (Manager)
-- `GET /restaurants/:id` — Get Restaurant by ID (Admin)
-- `PATCH /restaurants/:id` — Update Restaurant (Admin, Manager - own only)
-- `DELETE /restaurants/:id` — Soft Delete Restaurant (Admin)
+### 10.1 Create Restaurant
+
+- **Method / URL**: `POST /restaurants`
+- **Auth Level**: Access Token (`admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+  ```json
+  {
+    "name": "Pizza Gourmet",
+    "ownerUserId": "669fc5555555555abcdef111",
+    "description": "Authentic Italian Pizza",
+    "phone": "+1555444333",
+    "address": {
+      "street": "100 Broadway",
+      "city": "New York",
+      "country": "USA"
+    }
+  }
+  ```
+
+---
+
+### 10.2 Get All Restaurants (Paginated & Filtered)
+
+- **Method / URL**: `GET /restaurants`
+- **Auth Level**: Access Token (`admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter | Type | Default | Description |
+  | :--- | :--- | :--- | :--- |
+  | `page` | Number / String | `1` | Page index |
+  | `limit` | Number / String | `10` | Items per page |
+  | `search` | String | *None* | Search in restaurant name |
+  | `status` | String | *None* | Status string filter |
+  | `ownerUserId` | String | *None* | Filter by Manager User ObjectId |
+  | `isActive` | Boolean String | *None* | Filter active status (`true`, `false`) |
+  | `isDeleted` | Boolean String | `false` | Filter soft-deleted status (`true`, `false`) |
+  | `sort` | String | `createdAt` | Sort field |
+  | `order` | String | `desc` | Sort order (`asc`, `desc`) |
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "items": [
+      {
+        "_id": "669fc8888888888abcdef222",
+        "name": "Pizza Gourmet",
+        "ownerUserId": {
+          "_id": "669fc5555555555abcdef111",
+          "firstName": "Manager",
+          "lastName": "Owner"
+        },
+        "isActive": true
+      }
+    ],
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "totalPages": 1
+  }
+  ```
+
+---
+
+### 10.3 Get Manager's Own Restaurant (`me`)
+
+- **Method / URL**: `GET /restaurants/me`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+
+---
+
+### 10.4 Get Restaurant by ID
+
+- **Method / URL**: `GET /restaurants/:id`
+- **Auth Level**: Access Token (`admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+
+---
+
+### 10.5 Update Restaurant
+
+- **Method / URL**: `PATCH /restaurants/:id`
+- **Auth Level**: Access Token (`admin`, `manager` - own restaurant only)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**: `name`, `description`, `phone`, `address`, `isActive`.
+
+---
+
+### 10.6 Soft Delete Restaurant
+
+- **Method / URL**: `DELETE /restaurants/:id`
+- **Auth Level**: Access Token (`admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Business Behavior**:
+  - Soft-deletes restaurant (`isDeleted: true`, `deletedAt: Date`).
+  - Clears `ownerUserId` on restaurant.
+  - Clears `restaurantId` on assigned manager user.
+  - Soft-deletes all promotional offers belonging to this restaurant.
 
 ---
 
@@ -861,10 +1111,11 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
     "maxPerCustomer": 3,
     "startDate": "2026-07-20",
     "endDate": "2026-07-30",
-    "featured": true
+    "featured": true,
+    "status": "active"
   }
   ```
-  _Note: `availableQuantity` is required ($\ge 1$). `remainingQuantity` is managed automatically by the backend._
+  _Note: `availableQuantity` is required ($\ge 1$). `remainingQuantity` is managed automatically by the backend. Optional `status` enum (`draft`, `scheduled`, `active`, `expired`, `sold_out`, `cancelled`)._
 
 ---
 
@@ -974,7 +1225,26 @@ Returns active promotional offers sorted by backend recommendation scoring algor
 
 - **Method / URL**: `GET /offers`
 - **Auth Level**: Access Token (`manager`)
-- **Query Parameters**: `status` (`active`, `scheduled`, `draft`, `expired`, `cancelled`, `sold_out`), `productId`, `categoryId`, `source`, `featured`, `minPrice`, `maxPrice`, `search`, `sortBy`, `sortOrder`, `page`, `limit`.
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter | Type | Default | Description |
+  | :--- | :--- | :--- | :--- |
+  | `status` | String | *None* | Offer status (`draft`, `scheduled`, `active`, `expired`, `cancelled`, `sold_out`) |
+  | `productId` | String | *None* | Filter by Product ObjectId |
+  | `categoryId` | String | *None* | Filter by Category ObjectId |
+  | `restaurantId` | String | *None* | Filter by Restaurant ObjectId |
+  | `source` | String | *None* | Offer origin (`manual`, `ai_recommendation`) |
+  | `featured` | Boolean String | *None* | Filter featured status (`true`, `false`) |
+  | `search` | String | *None* | Search in product title/description |
+  | `minPrice` | Number | *None* | Minimum offer price |
+  | `maxPrice` | Number | *None* | Maximum offer price |
+  | `startDate` | Date String | *None* | Filter by start date |
+  | `endDate` | Date String | *None* | Filter by end date |
+  | `sortBy` | String | `createdAt` | Field to sort by |
+  | `sortOrder` | String | `desc` | Sort direction (`asc`, `desc`) |
+  | `page` | String | `1` | Page number |
+  | `limit` | String | `10` | Items per page |
 
 ---
 

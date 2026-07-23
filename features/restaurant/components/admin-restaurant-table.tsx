@@ -179,7 +179,7 @@ export function AdminRestaurantTable() {
                         {restaurant.phone && (
                           <span
                             dir="ltr"
-                            className="text-xs text-muted-foreground"
+                            className="text-end text-xs text-muted-foreground"
                           >
                             {restaurant.phone}
                           </span>

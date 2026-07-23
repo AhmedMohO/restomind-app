@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Calendar } from "@/components/ui/calendar"
@@ -375,11 +376,9 @@ export function DashboardProfileContainer({
                 >
                   {t("phone")}
                 </Label>
-                <Input
+                <PhoneInput
                   id="phone"
                   {...register("phone")}
-                  placeholder="+20 10 0000 0000"
-                  className="h-10 rounded-xl border-input/80 bg-background/50 text-xs transition-all focus-visible:ring-1 focus-visible:ring-primary/40 sm:text-sm"
                 />
                 {errors.phone?.message && (
                   <p className="mt-1 text-xs font-medium text-destructive">

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { DatePicker } from "@/components/ui/date-picker"
 import {
   Select,
@@ -161,9 +162,8 @@ export function CreateUserDialog({
 
           <Field data-invalid={!!errors.phone}>
             <FieldLabel>{t("userPhoneLabel")}</FieldLabel>
-            <Input
+            <PhoneInput
               {...register("phone")}
-              placeholder="+20 10 0000 0000"
               disabled={isPending}
               aria-invalid={!!errors.phone}
             />

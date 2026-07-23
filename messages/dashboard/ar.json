@@ -159,7 +159,7 @@
     "roleAll": "جميع الأدوار",
     "roleAdmin": "مسؤول",
     "roleManager": "مدير",
-    "roleCustomer": "عميل (مستخدم عادي)",
+    "roleCustomer": "عميل",
     "roleSelectPlaceholder": "اختر دور المستخدم",
     "searchPlaceholder": "ابحث عن المستخدمين بالاسم أو البريد الإلكتروني...",
     "statusActive": "نشط",

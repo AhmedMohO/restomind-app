@@ -7,7 +7,7 @@
     "exactLength": "Must be exactly {length} characters",
     "passwordsMismatch": "Passwords do not match",
     "otpDigitsOnly": "OTP must contain only digits",
-    "errorValidPhone": "Must be a valid phone number (min 8 digits)",
+    "errorValidPhone": "Must be a valid phone number",
     "errorMinStreet": "Street must be at least {min} characters",
     "errorMinCity": "City must be at least {min} characters",
     "restaurantNameMin": "Restaurant name must be at least 3 characters",

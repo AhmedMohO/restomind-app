@@ -12,6 +12,7 @@ import { useZodResolver } from "@/lib/zod-locale"
 import { updateProfileSchema, type UpdateProfileInput } from "@/schemas/profile"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
@@ -153,13 +154,10 @@ export function ProfileForm({
             {/* Phone */}
             <Field>
               <FieldLabel>{authT("phoneLabel")}</FieldLabel>
-              <div className="relative">
-                <Input
-                  {...register("phone")}
-                  placeholder={authT("phonePlaceholder")}
-                  disabled={isSubmitting}
-                />
-              </div>
+              <PhoneInput
+                {...register("phone")}
+                disabled={isSubmitting}
+              />
               {errors.phone && <FieldError>{errors.phone.message}</FieldError>}
             </Field>
 

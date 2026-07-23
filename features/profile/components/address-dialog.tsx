@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Field,
@@ -127,9 +128,8 @@ export function AddressDialog({
             {/* Phone Number */}
             <Field className="sm:col-span-2">
               <FieldLabel>{t("phoneNumber")}</FieldLabel>
-              <Input
+              <PhoneInput
                 {...register("phoneNumber")}
-                placeholder={t("phoneNumberPlaceholder")}
                 disabled={isSubmitting}
               />
               <FieldError errors={[errors.phoneNumber]} />
