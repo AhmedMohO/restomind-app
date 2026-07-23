@@ -14,6 +14,7 @@
 
 import "server-only"
 
+import { redirect } from "next/navigation"
 import { getSession } from "./session"
 import { AuthenticationError, AuthorizationError } from "./errors"
 import type { SessionUser, UserRole } from "@/features/auth/auth"
@@ -111,4 +112,43 @@ export async function requireRole(roles: UserRole[]): Promise<SessionUser> {
   }
 
   return user
+}
+
+export async function requireAuthOrRedirect(locale: string, returnUrl?: string): Promise<SessionUser> {
+  try {
+    return await requireAuth()
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      const loginUrl = new URL(
+        `/${locale}/login`,
+        process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+      )
+      if (returnUrl) loginUrl.searchParams.set("callbackUrl", returnUrl)
+      redirect(loginUrl.toString())
+    }
+    throw error
+  }
+}
+
+export async function requireRoleOrRedirect(
+  roles: UserRole[],
+  locale: string,
+  returnUrl?: string
+): Promise<SessionUser> {
+  try {
+    return await requireRole(roles)
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      const loginUrl = new URL(
+        `/${locale}/login`,
+        process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+      )
+      if (returnUrl) loginUrl.searchParams.set("callbackUrl", returnUrl)
+      redirect(loginUrl.toString())
+    }
+    if (error instanceof AuthorizationError) {
+      redirect(`/${locale}`)
+    }
+    throw error
+  }
 }

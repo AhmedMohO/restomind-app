@@ -4,6 +4,7 @@ import { setRequestLocale } from "next-intl/server"
 import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { getProfileApi } from "@/features/profile/api/profile"
 import { DashboardProfileContainer } from "@/features/profile/components/dashboard-profile-container"
+import { requireAuthOrRedirect } from "@/lib/auth/auth"
 
 export const metadata: Metadata = {
   title: "Account Profile",
@@ -18,6 +19,7 @@ export default async function DashboardProfilePage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
+  await requireAuthOrRedirect(locale)
 
   const user = await getProfileApi().catch(() => null)
 

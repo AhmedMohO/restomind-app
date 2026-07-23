@@ -1,7 +1,6 @@
 import { getRequestConfig } from 'next-intl/server';
 import { routing } from './routing';
 import { setZodLocale } from '@/lib/zod-locale';
-import { headers } from 'next/headers';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale;
@@ -13,22 +12,13 @@ export default getRequestConfig(async ({ requestLocale }) => {
   setZodLocale(locale);
 
   const baseMessages = await import(`../messages/${locale}.json`);
-
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') ?? headersList.get('next-url') ?? '';
-  const isDashboard =
-    pathname === `/${locale}/dashboard` ||
-    pathname.startsWith(`/${locale}/dashboard/`);
-
-  const dashboardMessages = isDashboard
-    ? (await import(`../messages/dashboard/${locale}.json`)).default
-    : {};
+  const dashboardMessages = await import(`../messages/dashboard/${locale}.json`);
 
   return {
     locale,
     messages: {
       ...baseMessages.default,
-      ...(isDashboard ? { Dashboard: dashboardMessages } : {}),
+      Dashboard: { ...dashboardMessages.default },
     },
   };
 });

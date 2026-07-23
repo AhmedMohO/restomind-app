@@ -81,6 +81,7 @@ export const DASHBOARD_ALLOWED_ROLES = ["admin", "manager"] as const
  * Routes not listed here are public.
  */
 export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
+  "/dashboard/categories": ["admin"],
   "/dashboard/restaurants/new": ["admin"],
   "/dashboard/users": ["admin", "manager"],
   "/dashboard": DASHBOARD_ALLOWED_ROLES,

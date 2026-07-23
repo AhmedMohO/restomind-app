@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server"
 
 import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { CategoryContainer } from "@/features/categories/components/category-container"
+import { requireRoleOrRedirect } from "@/lib/auth/auth"
 
 export const metadata: Metadata = {
   title: "Categories Management",
@@ -17,6 +18,7 @@ export default async function CategoriesPage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
+  await requireRoleOrRedirect(["admin"], locale)
 
   return (
     <AppSidebar>

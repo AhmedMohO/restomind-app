@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server"
 
 import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { UserContainer } from "@/features/users/components/user-container"
+import { requireRoleOrRedirect } from "@/lib/auth/auth"
 
 export const metadata: Metadata = {
   title: "Users Management",
@@ -17,6 +18,7 @@ export default async function UsersPage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
+  await requireRoleOrRedirect(["admin", "manager"], locale)
 
   return (
     <AppSidebar>
