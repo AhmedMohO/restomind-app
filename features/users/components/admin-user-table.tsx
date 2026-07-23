@@ -130,6 +130,7 @@ export function AdminUserTable() {
               <SelectItem value="all">{t("roleAll")}</SelectItem>
               <SelectItem value="admin">{t("roleAdmin")}</SelectItem>
               <SelectItem value="manager">{t("roleManager")}</SelectItem>
+              <SelectItem value="staff">{t("roleStaff")}</SelectItem>
               <SelectItem value="customer">{t("roleCustomer")}</SelectItem>
             </SelectContent>
           </Select>

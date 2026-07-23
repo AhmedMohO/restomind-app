@@ -99,7 +99,7 @@ function useDashboardNav(): NavItem[] {
       title: t("users"),
       icon: Users,
       href: "/dashboard/users",
-      roles: ["admin"],
+      roles: ["admin", "manager"],
     },
 
     // Section 3: Settings

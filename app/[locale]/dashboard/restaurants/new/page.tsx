@@ -11,11 +11,24 @@ import { RestaurantForm } from "@/features/restaurant/components/restaurant-form
 import { useCreateRestaurant } from "@/features/restaurant/hooks/use-restaurant"
 import type { RestaurantInput } from "@/schemas/restaurant"
 
+import { useAuth } from "@/features/auth/hooks/useAuth"
+
 export default function NewRestaurantPage() {
   const t = useTranslations("Dashboard.restaurant")
   const router = useRouter()
+  const { role, isHydrated } = useAuth()
+
+  React.useEffect(() => {
+    if (isHydrated && role !== "admin") {
+      router.replace("/dashboard/restaurants")
+    }
+  }, [isHydrated, role, router])
 
   const createMutation = useCreateRestaurant()
+
+  if (!isHydrated || role !== "admin") {
+    return null
+  }
 
   const handleSubmit = async (
     values: RestaurantInput,

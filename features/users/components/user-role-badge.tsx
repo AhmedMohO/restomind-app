@@ -30,6 +30,11 @@ export function UserRoleBadge({ role, className }: UserRoleBadgeProps) {
       className: "border-slate-500/40 bg-slate-500/10 text-slate-700 dark:text-slate-300",
       dot: "bg-slate-500",
     },
+    staff: {
+      label: "Staff",
+      className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+      dot: "bg-emerald-500",
+    },
   }
 
   const current = config[normalizedRole as keyof typeof config] || {

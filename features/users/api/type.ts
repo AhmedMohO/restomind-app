@@ -8,12 +8,13 @@ export interface ApiUser {
   firstName: string
   lastName: string
   email: string
-  role: "admin" | "customer" | "manager"
+  role: "admin" | "customer" | "manager" | "staff"
   gender?: "male" | "female"
   phone: string
   isEmailVerified: boolean
   DOB?: string
   image?: ApiImage
+  restaurantId?: string
   isDeleted: boolean
   createdAt: string
   updatedAt: string
@@ -41,7 +42,8 @@ export interface CreateUserPayload {
   email: string
   password: string
   phone: string
-  role?: "admin" | "customer" | "manager"
+  role?: "admin" | "customer" | "manager" | "staff"
+  restaurantId?: string
   gender?: "male" | "female"
   DOB?: string
 }
@@ -52,5 +54,6 @@ export interface UpdateUserPayload {
   phone?: string
   gender?: "male" | "female"
   DOB?: string
-  role?: "admin" | "customer" | "manager"
+  role?: "admin" | "customer" | "manager" | "staff"
+  restaurantId?: string
 }

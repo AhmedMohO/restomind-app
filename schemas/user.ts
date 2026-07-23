@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { egyptianPhoneSchema, optionalEgyptianPhoneSchema } from "@/lib/phone"
 
-export const userRoleEnum = z.enum(["admin", "manager", "customer"])
+export const userRoleEnum = z.enum(["admin", "manager", "customer", "staff"])
 export const userGenderEnum = z.enum(["male", "female"])
 
 export const createUserSchema = z.object({
@@ -17,6 +17,7 @@ export const createUserSchema = z.object({
   password: z.string().min(6, { message: "passwordMin" }),
   phone: egyptianPhoneSchema,
   role: userRoleEnum,
+  restaurantId: z.string().optional().nullable(),
   gender: userGenderEnum.optional().nullable(),
   DOB: z.string().optional().nullable(),
 })
@@ -32,6 +33,7 @@ export const updateUserSchema = z.object({
     .max(20, { message: "lastNameMax" }),
   phone: optionalEgyptianPhoneSchema,
   role: userRoleEnum,
+  restaurantId: z.string().optional().nullable(),
   gender: userGenderEnum.optional().nullable(),
   DOB: z.string().optional().nullable(),
 })

@@ -31,13 +31,15 @@ import {
 import { useZodResolver } from "@/lib/zod-locale"
 import { Link } from "@/i18n/routing"
 
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
+
 export interface UserFormValues {
   firstName: string
   lastName: string
   email?: string
   password?: string
   phone: string
-  role: "admin" | "manager" | "customer"
+  role: "admin" | "manager" | "customer" | "staff"
   gender?: "male" | "female" | null
   DOB?: string | null
 }
@@ -56,6 +58,7 @@ export function UserForm({
   isPending = false,
 }: UserFormProps) {
   const t = useTranslations("Dashboard.users")
+  const currentUserRole = useAuthStore((s) => s.user?.role)
 
   const formResolver = useZodResolver(
     mode === "create" ? createUserSchema : updateUserSchema
@@ -248,7 +251,7 @@ export function UserForm({
               value={selectedRole}
               onValueChange={(val) => {
                 if (val)
-                  setValue("role", val as "admin" | "manager" | "customer", {
+                  setValue("role", val as UserFormValues["role"], {
                     shouldValidate: true,
                   })
               }}
@@ -259,8 +262,13 @@ export function UserForm({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="customer">{t("roleCustomer")}</SelectItem>
-                <SelectItem value="manager">{t("roleManager")}</SelectItem>
-                <SelectItem value="admin">{t("roleAdmin")}</SelectItem>
+                <SelectItem value="staff">Staff</SelectItem>
+                {currentUserRole !== "manager" && (
+                  <>
+                    <SelectItem value="manager">{t("roleManager")}</SelectItem>
+                    <SelectItem value="admin">{t("roleAdmin")}</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
             <FieldError errors={[errors.role]} />

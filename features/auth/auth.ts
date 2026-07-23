@@ -4,7 +4,7 @@
  */
 
 /** Roles supported by the RestoMind system */
-export type UserRole = "admin" | "manager" | "customer"
+export type UserRole = "admin" | "manager" | "customer" | "staff"
 
 /**
  * The user object stored inside the encrypted Iron Session.

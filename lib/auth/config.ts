@@ -81,6 +81,8 @@ export const DASHBOARD_ALLOWED_ROLES = ["admin", "manager"] as const
  * Routes not listed here are public.
  */
 export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
+  "/dashboard/restaurants/new": ["admin"],
+  "/dashboard/users": ["admin", "manager"],
   "/dashboard": DASHBOARD_ALLOWED_ROLES,
   "/orders": [],
   "/favourites": [],
@@ -104,6 +106,7 @@ export function getRouteRoles(path: string): UserRole[] | null {
 export const POST_LOGIN_REDIRECT: Record<string, string> = {
   admin: "/dashboard",
   manager: "/dashboard",
+  staff: "/dashboard",
   customer: "/",
 }
 

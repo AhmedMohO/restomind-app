@@ -21,6 +21,9 @@ import type {
 } from "@/features/restaurant/types"
 import { Link } from "@/i18n/routing"
 
+import { useEffect } from "react"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+
 export default function EditRestaurantPage({
   params,
 }: {
@@ -29,6 +32,13 @@ export default function EditRestaurantPage({
   const { id } = use(params)
   const t = useTranslations("Dashboard.restaurant")
   const router = useRouter()
+  const { role, isHydrated } = useAuth()
+
+  useEffect(() => {
+    if (isHydrated && role !== "admin") {
+      router.replace("/dashboard/restaurants")
+    }
+  }, [isHydrated, role, router])
 
   const {
     data: restaurant,
@@ -43,6 +53,10 @@ export default function EditRestaurantPage({
   })
 
   const updateMutation = useAdminUpdateRestaurant()
+
+  if (!isHydrated || role !== "admin") {
+    return null
+  }
 
   const handleSubmit = async (values: RestaurantInput) => {
     try {
