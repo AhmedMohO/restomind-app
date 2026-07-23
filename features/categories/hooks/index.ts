@@ -1,1 +1,1 @@
-export * from "./useCategories"
+export * from "./use-categories"

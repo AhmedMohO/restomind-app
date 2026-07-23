@@ -1,15 +1,18 @@
 import "server-only"
 
 import { apiClient, publicApiClient } from "@/lib/api/client"
-import { parseOrThrow } from "@/lib/api/utils"
-import type { ApiCategory } from "./type"
+import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
+import type { ApiCategory, GetCategoriesParams, PaginatedCategories } from "./type"
 
 export * from "./type"
 
-/** GET /categories — view all categories (public) */
-export async function getCategories(): Promise<{ data: ApiCategory[] }> {
-  const response = await publicApiClient("/categories")
-  return parseOrThrow<{ data: ApiCategory[] }>(response, "getCategories")
+/** GET /categories — view categories with server-side pagination & search */
+export async function getCategories(
+  params: GetCategoriesParams = {}
+): Promise<PaginatedCategories> {
+  const qs = buildQueryString(params)
+  const response = await publicApiClient(`/categories${qs}`)
+  return parseOrThrow<PaginatedCategories>(response, "getCategories")
 }
 
 /** GET /categories/:id — get category by ID (admin only) */

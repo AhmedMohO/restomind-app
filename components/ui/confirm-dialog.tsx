@@ -67,18 +67,18 @@ export function ConfirmDialog({
   return (
     <Dialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
       <DialogContent
-        dir={isAr ? "ltr" : "rtl"}
+        dir={isAr ? "rtl" : "ltr"}
         className="rounded-2xl p-5 sm:p-6"
       >
         <div className="flex gap-4">
           {icon ?? defaultIcon}
           <div className="flex flex-1 flex-col gap-1">
             <DialogHeader>
-              <DialogTitle className="text-end font-heading text-base font-bold sm:text-lg">
+              <DialogTitle className="text-start font-heading text-base font-bold sm:text-lg">
                 {title}
               </DialogTitle>
               {description && (
-                <DialogDescription className="text-end text-xs leading-relaxed text-muted-foreground">
+                <DialogDescription className="text-start text-xs leading-relaxed text-muted-foreground">
                   {description}
                 </DialogDescription>
               )}

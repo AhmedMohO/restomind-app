@@ -18,7 +18,9 @@
     "firstNameMax": "First name cannot exceed 20 characters",
     "lastNameMin": "Last name must be at least 3 characters",
     "lastNameMax": "Last name cannot exceed 20 characters",
-    "passwordMin": "Password must be at least 6 characters"
+    "passwordMin": "Password must be at least 6 characters",
+    "categoryNameMax": "Category name must not exceed 100 characters",
+    "categoryDescMax": "Description must not exceed 500 characters"
   },
   "Navbar": {
     "home": "Home",

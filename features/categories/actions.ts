@@ -7,7 +7,7 @@ import type { ApiCategory } from "./api/type"
 export async function fetchCategoriesAction(): Promise<ApiCategory[]> {
   try {
     const response = await getCategories()
-    return response.data ?? []
+    return response.data;
   } catch (error) {
     console.error("[fetchCategoriesAction] Error fetching categories:", error)
     return []
