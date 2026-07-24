@@ -1,17 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  parsePhoneNumberFromString,
-  getCountryCallingCode,
-  type CountryCode,
-  AsYouType,
-} from "libphonenumber-js"
-
-import {
-  COUNTRIES,
-  EGYPT_COUNTRY,
-  type Country,
-  parseAndFormatPhone,
-} from "./phone-input"
+import { parseAndFormatPhone } from "./phone-input"
 
 describe("PhoneInput Parsing and Formatting Engine", () => {
   test("National Egyptian Mobile: '01020697551' -> detects EG, displays national '010 20697551', emits '+201020697551'", () => {

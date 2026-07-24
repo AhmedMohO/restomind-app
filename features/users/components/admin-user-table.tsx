@@ -51,11 +51,13 @@ export function AdminUserTable() {
     name: string
   } | null>(null)
 
-  React.useEffect(() => {
+  const [prevIsManager, setPrevIsManager] = React.useState(isManager)
+  if (prevIsManager !== isManager) {
+    setPrevIsManager(isManager)
     if (isManager) {
       setRoleFilter("staff")
     }
-  }, [isManager])
+  }
 
   React.useEffect(() => {
     const timer = setTimeout(() => {

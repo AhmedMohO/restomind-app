@@ -71,8 +71,13 @@ export function CategoryDialog({
     setImageFile(null)
   }, [])
 
+  const [prevOpen, setPrevOpen] = React.useState(open)
+  const [prevCategory, setPrevCategory] = React.useState(category)
+
   // Reset form when dialog opens/closes or category changes
-  React.useEffect(() => {
+  if (open !== prevOpen || category !== prevCategory) {
+    setPrevOpen(open)
+    setPrevCategory(category)
     if (open) {
       if (category) {
         reset({
@@ -88,7 +93,7 @@ export function CategoryDialog({
       resetImage(null)
       reset({ name: "", description: "" })
     }
-  }, [open, category, reset, resetImage])
+  }
 
   const onDrop = React.useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]

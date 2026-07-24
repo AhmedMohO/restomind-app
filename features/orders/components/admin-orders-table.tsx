@@ -17,7 +17,6 @@ import {
   Tag,
   Truck,
   Wallet,
-  X,
 } from "lucide-react"
 import { useRouter } from "@/i18n/routing"
 
@@ -54,7 +53,10 @@ import {
 } from "@/components/ui/table"
 import { getErrorMessage } from "@/lib/api/utils"
 import type { OrderStatus } from "@/features/orders/api/type"
-import type { ApiRestaurantOrder, QueryOrderListingParams } from "@/features/orders/api/dashboard-types"
+import type {
+  ApiRestaurantOrder,
+  QueryOrderListingParams,
+} from "@/features/orders/api/dashboard-types"
 import { PaginatedRestaurantSelect } from "@/features/restaurant/components/paginated-restaurant-select"
 import {
   useAdminOrdersList,
@@ -65,14 +67,15 @@ import {
   OrderStatusSelect,
 } from "@/features/orders/components/order-status-select"
 import { getStatusMeta } from "@/features/orders/status"
-import { formatCurrency , formatDate} from "@/lib/utils"
+import { formatCurrency, formatDate } from "@/lib/utils"
 const ALL = "all"
 const TOTAL_PRICE_MIN = 0
 const TOTAL_PRICE_MAX = 5000
 const DELIVERY_METHOD_OPTIONS = ["Home Delivery", "Store Pickup"] as const
-const PAYMENT_METHOD_OPTIONS = ["Cash on Delivery", "Credit / Debit Card"] as const
-
-
+const PAYMENT_METHOD_OPTIONS = [
+  "Cash on Delivery",
+  "Credit / Debit Card",
+] as const
 
 function getOrderId(order: ApiRestaurantOrder) {
   return order._id ?? order.orderId
@@ -93,10 +96,9 @@ export function AdminOrdersTable() {
   const [deliveryMethod, setDeliveryMethod] = React.useState("")
   const [startDate, setStartDate] = React.useState("")
   const [endDate, setEndDate] = React.useState("")
-  const [totalPriceRange, setTotalPriceRange] = React.useState<[number, number]>([
-    TOTAL_PRICE_MIN,
-    TOTAL_PRICE_MAX,
-  ])
+  const [totalPriceRange, setTotalPriceRange] = React.useState<
+    [number, number]
+  >([TOTAL_PRICE_MIN, TOTAL_PRICE_MAX])
   const [restaurantId, setRestaurantId] = React.useState("")
   const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("desc")
   const [updatingId, setUpdatingId] = React.useState<string | null>(null)
@@ -158,8 +160,7 @@ export function AdminOrdersTable() {
     endDate,
     restaurantId,
     sortOrder !== "desc" ? sortOrder : "",
-    totalPriceRange[0] > TOTAL_PRICE_MIN ||
-    totalPriceRange[1] < TOTAL_PRICE_MAX
+    totalPriceRange[0] > TOTAL_PRICE_MIN || totalPriceRange[1] < TOTAL_PRICE_MAX
       ? "price"
       : "",
   ].filter(Boolean).length
@@ -171,7 +172,10 @@ export function AdminOrdersTable() {
     setPage(1)
   }
 
-  const handleStatusChange = async (order: ApiRestaurantOrder, next: OrderStatus) => {
+  const handleStatusChange = async (
+    order: ApiRestaurantOrder,
+    next: OrderStatus
+  ) => {
     const id = getOrderId(order)
     if (!id || next === order.status) return
 
@@ -191,14 +195,19 @@ export function AdminOrdersTable() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">{t("adminTitle")}</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">
+            {t("adminTitle")}
+          </h1>
           <p className="text-sm text-muted-foreground">{t("adminSubtitle")}</p>
         </div>
 
         <Sheet>
           <SheetTrigger
             render={
-              <Button variant="outline" className="w-full gap-2 rounded-xl sm:w-auto">
+              <Button
+                variant="outline"
+                className="w-full gap-2 rounded-xl sm:w-auto"
+              >
                 <SlidersHorizontal className="size-4" />
                 <span>{t("filters")}</span>
                 {activeFilterCount > 0 && (
@@ -232,9 +241,9 @@ export function AdminOrdersTable() {
             </SheetHeader>
 
             {/* Sheet Body */}
-            <div className="flex-1 overflow-y-auto space-y-4 p-5">
+            <div className="flex-1 space-y-4 overflow-y-auto p-5">
               {/* Status & Sort Order Section */}
-              <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3 shadow-2xs">
+              <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {/* Status Filter */}
                   <div className="space-y-1.5">
@@ -263,23 +272,29 @@ export function AdminOrdersTable() {
                         setPage(1)
                       }}
                     >
-                      <SelectTrigger className="w-full h-9 rounded-xl border-input bg-background text-xs">
+                      <SelectTrigger className="h-9 w-full rounded-xl border-input bg-background text-xs">
                         <SelectValue>
                           {status ? (
                             <span className="inline-flex items-center gap-2 font-medium">
                               {React.createElement(getStatusMeta(status).Icon, {
                                 className: "size-3.5 text-primary",
                               })}
-                              <span>{tOrders(getStatusMeta(status).labelKey)}</span>
+                              <span>
+                                {tOrders(getStatusMeta(status).labelKey)}
+                              </span>
                             </span>
                           ) : (
-                            <span className="text-muted-foreground">{t("allStatuses")}</span>
+                            <span className="text-muted-foreground">
+                              {t("allStatuses")}
+                            </span>
                           )}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={ALL}>
-                          <span className="font-medium text-foreground">{t("allStatuses")}</span>
+                          <span className="font-medium text-foreground">
+                            {t("allStatuses")}
+                          </span>
                         </SelectItem>
                         {ORDER_STATUS_OPTIONS.map((option) => {
                           const meta = getStatusMeta(option)
@@ -310,11 +325,15 @@ export function AdminOrdersTable() {
                         setPage(1)
                       }}
                     >
-                      <SelectTrigger className="w-full h-9 rounded-xl border-input bg-background text-xs">
+                      <SelectTrigger className="h-9 w-full rounded-xl border-input bg-background text-xs">
                         <SelectValue>
                           <span className="inline-flex items-center gap-2 font-medium">
                             <ArrowUpDown className="size-3.5 text-primary" />
-                            <span>{sortOrder === "desc" ? t("newestFirst") : t("oldestFirst")}</span>
+                            <span>
+                              {sortOrder === "desc"
+                                ? t("newestFirst")
+                                : t("oldestFirst")}
+                            </span>
                           </span>
                         </SelectValue>
                       </SelectTrigger>
@@ -336,7 +355,7 @@ export function AdminOrdersTable() {
               </div>
 
               {/* Restaurant Section */}
-              <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-2.5 shadow-2xs">
+              <div className="space-y-2.5 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-2 text-xs font-semibold text-foreground">
                     <Store className="size-3.5 text-primary" />
@@ -365,7 +384,7 @@ export function AdminOrdersTable() {
               </div>
 
               {/* Fulfillment & Payment Section */}
-              <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3.5 shadow-2xs">
+              <div className="space-y-3.5 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
                 <Label className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Truck className="size-3.5 text-primary" />
                   <span>{t("fulfillment")}</span>
@@ -382,7 +401,7 @@ export function AdminOrdersTable() {
                         setPage(1)
                       }}
                     >
-                      <SelectTrigger className="w-full h-9 rounded-xl border-input bg-background text-xs">
+                      <SelectTrigger className="h-9 w-full rounded-xl border-input bg-background text-xs">
                         <SelectValue>
                           {deliveryMethod === "Home Delivery" ? (
                             <span className="inline-flex items-center gap-1.5 font-medium">
@@ -395,13 +414,17 @@ export function AdminOrdersTable() {
                               <span>{t("storePickup")}</span>
                             </span>
                           ) : (
-                            <span className="text-muted-foreground">{t("allDeliveryMethods")}</span>
+                            <span className="text-muted-foreground">
+                              {t("allDeliveryMethods")}
+                            </span>
                           )}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={ALL}>
-                          <span className="font-medium text-foreground">{t("allDeliveryMethods")}</span>
+                          <span className="font-medium text-foreground">
+                            {t("allDeliveryMethods")}
+                          </span>
                         </SelectItem>
                         {DELIVERY_METHOD_OPTIONS.map((option) => (
                           <SelectItem key={option} value={option}>
@@ -412,7 +435,9 @@ export function AdminOrdersTable() {
                                 <Store className="size-3.5 text-muted-foreground" />
                               )}
                               <span>
-                                {option === "Home Delivery" ? t("homeDelivery") : t("storePickup")}
+                                {option === "Home Delivery"
+                                  ? t("homeDelivery")
+                                  : t("storePickup")}
                               </span>
                             </span>
                           </SelectItem>
@@ -432,7 +457,7 @@ export function AdminOrdersTable() {
                         setPage(1)
                       }}
                     >
-                      <SelectTrigger className="w-full h-9 rounded-xl border-input bg-background text-xs">
+                      <SelectTrigger className="h-9 w-full rounded-xl border-input bg-background text-xs">
                         <SelectValue>
                           {paymentMethod === "Cash on Delivery" ? (
                             <span className="inline-flex items-center gap-1.5 font-medium">
@@ -445,13 +470,17 @@ export function AdminOrdersTable() {
                               <span>{t("creditDebitCard")}</span>
                             </span>
                           ) : (
-                            <span className="text-muted-foreground">{t("allPaymentMethods")}</span>
+                            <span className="text-muted-foreground">
+                              {t("allPaymentMethods")}
+                            </span>
                           )}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={ALL}>
-                          <span className="font-medium text-foreground">{t("allPaymentMethods")}</span>
+                          <span className="font-medium text-foreground">
+                            {t("allPaymentMethods")}
+                          </span>
                         </SelectItem>
                         {PAYMENT_METHOD_OPTIONS.map((option) => (
                           <SelectItem key={option} value={option}>
@@ -476,10 +505,12 @@ export function AdminOrdersTable() {
               </div>
 
               {/* Date Range Section */}
-              <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3 shadow-2xs">
+              <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
                 <Label className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Calendar className="size-3.5 text-primary" />
-                  <span>{t("startDate")} / {t("endDate")}</span>
+                  <span>
+                    {t("startDate")} / {t("endDate")}
+                  </span>
                 </Label>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
@@ -512,25 +543,42 @@ export function AdminOrdersTable() {
               </div>
 
               {/* Price Range Section */}
-              <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3.5 shadow-2xs">
+              <div className="space-y-3.5 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
                 <div className="flex items-center justify-between gap-3">
                   <Label className="flex items-center gap-2 text-xs font-semibold text-foreground">
                     <Wallet className="size-3.5 text-primary" />
                     <span>{t("totalPriceRange")}</span>
                   </Label>
-                  <Badge variant="secondary" className="px-2.5 py-1 text-[11px] font-semibold text-primary">
+                  <Badge
+                    variant="secondary"
+                    className="px-2.5 py-1 text-[11px] font-semibold text-primary"
+                  >
                     {locale === "ar" ? (
-                      <span className="inline-flex items-center gap-1 font-sans" dir="rtl">
+                      <span
+                        className="inline-flex items-center gap-1 font-sans"
+                        dir="rtl"
+                      >
                         <span>من</span>
-                        <span>{formatCurrency(totalPriceRange[0], locale)}</span>
+                        <span>
+                          {formatCurrency(totalPriceRange[0], locale)}
+                        </span>
                         <span>إلى</span>
-                        <span>{formatCurrency(totalPriceRange[1], locale)}</span>
+                        <span>
+                          {formatCurrency(totalPriceRange[1], locale)}
+                        </span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 font-mono" dir="ltr">
-                        <span>{formatCurrency(totalPriceRange[0], locale)}</span>
+                      <span
+                        className="inline-flex items-center gap-1 font-mono"
+                        dir="ltr"
+                      >
+                        <span>
+                          {formatCurrency(totalPriceRange[0], locale)}
+                        </span>
                         <span>–</span>
-                        <span>{formatCurrency(totalPriceRange[1], locale)}</span>
+                        <span>
+                          {formatCurrency(totalPriceRange[1], locale)}
+                        </span>
                       </span>
                     )}
                   </Badge>
@@ -549,7 +597,9 @@ export function AdminOrdersTable() {
                   />
                   <div className="grid grid-cols-2 gap-3" dir="ltr">
                     <div className="space-y-1 text-center">
-                      <Label className="text-[11px] font-medium text-muted-foreground">{t("minTotal")}</Label>
+                      <Label className="text-[11px] font-medium text-muted-foreground">
+                        {t("minTotal")}
+                      </Label>
                       <Input
                         type="number"
                         min={TOTAL_PRICE_MIN}
@@ -565,7 +615,9 @@ export function AdminOrdersTable() {
                       />
                     </div>
                     <div className="space-y-1 text-center">
-                      <Label className="text-[11px] font-medium text-muted-foreground">{t("maxTotal")}</Label>
+                      <Label className="text-[11px] font-medium text-muted-foreground">
+                        {t("maxTotal")}
+                      </Label>
                       <Input
                         type="number"
                         min={totalPriceRange[0]}
@@ -603,12 +655,12 @@ export function AdminOrdersTable() {
       {/* Search toolbar */}
       <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         <div className="relative w-full max-w-full flex-1 sm:max-w-sm">
-          <Search className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="ps-9 rounded-xl"
+            className="rounded-xl ps-9"
           />
         </div>
       </div>
@@ -622,7 +674,11 @@ export function AdminOrdersTable() {
         ) : isError ? (
           <div className="flex h-64 flex-col items-center justify-center gap-3 p-6 text-center">
             <p className="text-sm text-muted-foreground">{t("fetchError")}</p>
-            <Button variant="outline" onClick={() => refetch()} className="rounded-xl">
+            <Button
+              variant="outline"
+              onClick={() => refetch()}
+              className="rounded-xl"
+            >
               {t("retry")}
             </Button>
           </div>
@@ -636,16 +692,20 @@ export function AdminOrdersTable() {
               <TableRow>
                 <TableHead className="text-start">{t("colOrder")}</TableHead>
                 <TableHead className="text-start">{t("colCustomer")}</TableHead>
-                <TableHead className="text-start">{t("colRestaurant")}</TableHead>
+                <TableHead className="text-start">
+                  {t("colRestaurant")}
+                </TableHead>
                 <TableHead className="text-start">{t("colTotal")}</TableHead>
                 <TableHead className="text-start">{t("colDelivery")}</TableHead>
                 <TableHead className="text-start">{t("colStatus")}</TableHead>
-                <TableHead className="text-start">{t("colCreatedAt")}</TableHead>
+                <TableHead className="text-start">
+                  {t("colCreatedAt")}
+                </TableHead>
                 <TableHead className="text-start">{t("colActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => {
+              {orders.map((order: ApiRestaurantOrder) => {
                 const id = getOrderId(order)
                 const groupId = order.groupOrderId
 
@@ -653,7 +713,9 @@ export function AdminOrdersTable() {
                   <TableRow
                     key={id}
                     className="cursor-pointer hover:bg-accent/40"
-                    onClick={() => groupId && router.push(`/dashboard/orders/${groupId}`)}
+                    onClick={() =>
+                      groupId && router.push(`/dashboard/orders/${groupId}`)
+                    }
                   >
                     <TableCell>
                       <div className="flex min-w-0 flex-col">
@@ -676,7 +738,9 @@ export function AdminOrdersTable() {
                       </div>
                     </TableCell>
                     <TableCell className="max-w-[160px] truncate">
-                      {order.restaurant?.name ?? order.items?.[0]?.restaurantName ?? "-"}
+                      {order.restaurant?.name ??
+                        order.items?.[0]?.restaurantName ??
+                        "-"}
                     </TableCell>
                     <TableCell className="font-semibold">
                       {formatCurrency(order.finalTotalPrice, locale)}
@@ -702,7 +766,9 @@ export function AdminOrdersTable() {
                         variant="ghost"
                         size="icon"
                         disabled={!groupId}
-                        onClick={() => groupId && router.push(`/dashboard/orders/${groupId}`)}
+                        onClick={() =>
+                          groupId && router.push(`/dashboard/orders/${groupId}`)
+                        }
                         className="size-8 rounded-lg"
                         title={t("viewDetails")}
                       >

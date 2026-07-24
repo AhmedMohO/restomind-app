@@ -1,8 +1,5 @@
 "use client"
 
-import * as React from "react"
-import { useTranslations } from "next-intl"
-
 import { Pagination } from "@/components/ui/pagination"
 import {
   Select,
@@ -32,8 +29,6 @@ export function TablePagination({
   onLimitChange,
   className,
 }: TablePaginationProps) {
-  const t = useTranslations("Dashboard.restaurant")
-
   if (total <= 0) return null
 
   return (
