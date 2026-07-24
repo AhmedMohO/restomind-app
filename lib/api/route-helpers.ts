@@ -28,6 +28,35 @@ export async function requireAuth(requiredRole?: UserRole): Promise<NextResponse
 }
 
 /**
+ * Checks if the current user has one of the allowed roles.
+ */
+export async function requireAnyRole(
+  roles: UserRole[]
+): Promise<NextResponse<ApiResponse> | null> {
+  const session = await getSession()
+
+  if (!session.isLoggedIn || !session.user) {
+    return NextResponse.json<ApiResponse>(
+      { success: false, error: "Unauthorized", message: "Not authenticated" },
+      { status: 401 }
+    )
+  }
+
+  if (!roles.includes(session.user.role)) {
+    return NextResponse.json<ApiResponse>(
+      {
+        success: false,
+        error: "Forbidden",
+        message: `${roles.join(" or ")} role required`,
+      },
+      { status: 403 }
+    )
+  }
+
+  return null
+}
+
+/**
  * Shortcut helper for admin-only routes.
  */
 export async function requireAdmin(): Promise<NextResponse<ApiResponse> | null> {

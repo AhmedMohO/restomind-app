@@ -1,6 +1,6 @@
 import "server-only"
 
-import { apiClient, publicApiClient } from "@/lib/api/client"
+import { apiClient } from "@/lib/api/client"
 import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
 import type {
   ApiProduct,
@@ -10,16 +10,16 @@ import type {
 
 export * from "./type"
 
-/** GET /products — paginated & filtered list (public) */
+/** GET /products — paginated & filtered list (admin/manager) */
 export async function getProducts(params: GetProductsParams = {}): Promise<PaginatedProducts> {
   const qs = buildQueryString(params)
-  const response = await publicApiClient(`/products${qs}`)
+  const response = await apiClient(`/products${qs}`)
   return parseOrThrow<PaginatedProducts>(response, "getProducts")
 }
 
-/** GET /products/:id — product details (public) */
+/** GET /products/:id — product details (admin/manager) */
 export async function getProductById(id: string): Promise<{ data: ApiProduct }> {
-  const response = await publicApiClient(`/products/${id}`)
+  const response = await apiClient(`/products/${id}`)
   return parseOrThrow<{ data: ApiProduct }>(response, "getProductById")
 }
 

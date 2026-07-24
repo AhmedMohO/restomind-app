@@ -15,12 +15,7 @@ import { Input } from "@/components/ui/input"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { DatePicker } from "@/components/ui/date-picker"
 import {
   Select,
   SelectContent,
@@ -68,7 +63,6 @@ export function DashboardProfileContainer({
   const isPending = updateProfileMutation.isPending
 
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   // React Hook Form initialized with request-isolated locale-aware Zod resolver
   const {
@@ -425,45 +419,16 @@ export function DashboardProfileContainer({
                 >
                   {t("dob")}
                 </Label>
-                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                  <PopoverTrigger
-                    className={cn(
-                      "flex h-10 w-full items-center justify-between rounded-xl border border-input/80 bg-background/50 px-3 py-2 text-xs font-medium shadow-2xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm",
-                      !selectedDate && "text-muted-foreground"
-                    )}
-                    disabled={isPending}
-                  >
-                    <span>
-                      {selectedDate
-                        ? format(selectedDate, "PPP", { locale: dateLocale })
-                        : t("dob")}
-                    </span>
-                    <CalendarIcon className="size-4 opacity-60" />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => {
-                        if (date) {
-                          setValue("DOB", format(date, "yyyy-MM-dd"), {
-                            shouldDirty: true,
-                          })
-                        } else {
-                          setValue("DOB", null, { shouldDirty: true })
-                        }
-                        setIsCalendarOpen(false)
-                      }}
-                      captionLayout="dropdown"
-                      startMonth={new Date(1930, 0)}
-                      endMonth={new Date()}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date(1900, 0)
-                      }
-                      locale={dateLocale}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  value={selectedDOB}
+                  placeholder={t("dob")}
+                  maxDate={new Date()}
+                  allowFuture={false}
+                  onChange={(val) =>
+                    setValue("DOB", val ?? null, { shouldDirty: true })
+                  }
+                  disabled={isPending}
+                />
                 {errors.DOB?.message && (
                   <p className="mt-1 text-xs font-medium text-destructive">
                     {tVal(errors.DOB.message)}

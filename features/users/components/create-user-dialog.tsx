@@ -198,6 +198,8 @@ export function CreateUserDialog({
               <FieldLabel>{t("dob")}</FieldLabel>
               <DatePicker
                 value={currentDOB}
+                maxDate={new Date()}
+                allowFuture={false}
                 onChange={(val) =>
                   setValue("DOB", val ?? "", {
                     shouldDirty: true,

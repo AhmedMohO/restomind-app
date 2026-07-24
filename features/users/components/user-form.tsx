@@ -220,6 +220,8 @@ export function UserForm({
               <FieldLabel>{t("dob")}</FieldLabel>
               <DatePicker
                 value={selectedDOB}
+                maxDate={new Date()}
+                allowFuture={false}
                 onChange={(val) =>
                   setValue("DOB", val ?? "", {
                     shouldDirty: true,

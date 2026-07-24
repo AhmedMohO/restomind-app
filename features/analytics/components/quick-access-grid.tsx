@@ -42,14 +42,14 @@ export function QuickAccessGrid() {
       title: t("quickAccessOffers"),
       subtitle: t("quickAccessOffersSub"),
       icon: Tag,
-      href: "/offers",
+      href: "/dashboard/offers",
     },
     {
       id: "orders",
       title: t("quickAccessOrders"),
       subtitle: t("quickAccessOrdersSub"),
       icon: ShoppingBag,
-      href: "/orders",
+      href: "/dashboard/orders",
     },
     {
       id: "settings",

@@ -1,25 +1,27 @@
 import type { ApiCategory } from "@/features/categories/api/type"
+import type { Restaurant } from "@/features/restaurant/types"
 import type { ApiImage } from "@/features/users/api/type"
 
 export interface ApiProduct {
   _id: string
   title: string
+  slug: string
   description: string
   longDescription: string
   price: number
-  discountedPrice: number
+  discountedPrice?: number
   rating: number
   reviewsCount: number
   isBestseller: boolean
   isAvailable: boolean
   image: ApiImage
   category: ApiCategory
+  restaurantId: Pick<Restaurant, "_id" | "name"> | string
   freshnessWindow: number
   tags: string[]
   isDeleted: boolean
   createdAt: string
   updatedAt: string
-  slug: string
 }
 
 export interface PaginatedProducts {
@@ -38,4 +40,19 @@ export interface GetProductsParams {
   tag?: string
   sort?: string
   order?: "asc" | "desc"
+  restaurantId?: string
+}
+
+export interface ProductFormPayload {
+  title?: string
+  description?: string
+  longDescription?: string
+  price?: number
+  category?: string
+  freshnessWindow?: number
+  tags?: string[]
+  isBestseller?: boolean
+  isAvailable?: boolean
+  restaurantId?: string
+  image?: File | null
 }
