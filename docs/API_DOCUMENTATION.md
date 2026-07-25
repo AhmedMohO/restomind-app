@@ -1057,8 +1057,69 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Method / URL**: `GET /orders/me`
 - **Auth Level**: Access Token (`customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Query Parameters**: `restaurantId` (optional)
-- **Response (200 OK)**: Array of `GroupOrder` objects.
+- **Query Parameters**:
+
+  | Parameter | Type | Required | Default | Description |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `page` | Number / String | No | `1` | Page index |
+  | `limit` | Number / String | No | `10` | Items per page |
+  | `status` | String | No | *None* | Filter by `OrderStatusEnum` (`Pending`, `Confirmed`, `Preparing`, `Ready`, `Out For Delivery`, `Delivered`, `Cancelled`) |
+  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId |
+
+- **Response (200 OK)**:
+  Paginated wrapper object containing an array of formatted `GroupOrder` objects:
+  ```json
+  {
+    "data": [
+      {
+        "_id": "669fc999888777abcdef999",
+        "groupOrderId": "669fc999888777abcdef999",
+        "orderGroupId": "669fc999888777abcdef999",
+        "userId": "669fc1234567890abcdef123",
+        "fullName": "John Doe",
+        "phoneNumber": "+1234567890",
+        "emailAddress": "johndoe@example.com",
+        "deliveryMethod": "Home Delivery",
+        "deliveryAddress": {
+          "street": "12 Nile St",
+          "city": "Cairo",
+          "country": "Egypt"
+        },
+        "paymentMethod": "Cash on Delivery",
+        "specialNotes": "Ring the bell twice",
+        "overallStatus": "Pending",
+        "items": [
+          {
+            "offerId": "669fc0000000000abcdef777",
+            "productId": "669fc3333333333abcdef444",
+            "productTitle": "Margherita Pizza",
+            "productImage": "https://res.cloudinary.com/...",
+            "restaurantId": "669fc8888888888abcdef222",
+            "restaurantName": "Pizza Gourmet Express",
+            "originalPrice": 12.99,
+            "offerPrice": 10.39,
+            "discountPercentage": 20,
+            "quantity": 2,
+            "purchasedAt": "2026-07-23T20:00:00.000Z",
+            "lineTotal": 20.78
+          }
+        ],
+        "totalOriginalPrice": 25.98,
+        "totalDiscount": 5.20,
+        "finalTotalPrice": 20.78,
+        "totalQuantity": 2,
+        "createdAt": "2026-07-23T20:00:00.000Z",
+        "updatedAt": "2026-07-23T20:00:00.000Z"
+      }
+    ],
+    "totalItems": 1,
+    "totalPages": 1,
+    "currentPage": 1,
+    "pageSize": 10,
+    "hasNextPage": false,
+    "hasPreviousPage": false
+  }
+  ```
 
 ---
 
@@ -1091,10 +1152,70 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
   | `minTotalPrice` | Number | No | *None* | Filter minimum final total price |
   | `maxTotalPrice` | Number | No | *None* | Filter maximum final total price |
   | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId |
-  | `sortBy` / `sort` | String | No | `createdAt` | Field to sort by (`createdAt`, `updatedAt`, `finalTotalPrice`, `totalQuantity`, `status`) |
+  | `sortBy` / `sort` | String | No | `createdAt` | Field to sort by (`createdAt`, `updatedAt`, `finalTotalPrice`, `totalQuantity`, `overallStatus`) |
   | `sortOrder` / `order` | String | No | `desc` | Sort direction (`asc`, `desc`) |
 
-- **Response (200 OK)**: Paginated array of `Order` items with meta pagination counters (`totalItems`, `totalPages`, `currentPage`, `pageSize`, `hasNextPage`, `hasPreviousPage`).
+- **Response (200 OK)**:
+  Paginated wrapper object containing an array of formatted `GroupOrder` items with populated `userId` (excluding password):
+  ```json
+  {
+    "data": [
+      {
+        "_id": "669fc999888777abcdef999",
+        "groupOrderId": "669fc999888777abcdef999",
+        "orderGroupId": "669fc999888777abcdef999",
+        "userId": {
+          "_id": "669fc1234567890abcdef123",
+          "firstName": "John",
+          "lastName": "Doe",
+          "email": "johndoe@example.com",
+          "phone": "+1234567890",
+          "role": "customer"
+        },
+        "fullName": "John Doe",
+        "phoneNumber": "+1234567890",
+        "emailAddress": "johndoe@example.com",
+        "deliveryMethod": "Home Delivery",
+        "deliveryAddress": {
+          "street": "12 Nile St",
+          "city": "Cairo",
+          "country": "Egypt"
+        },
+        "paymentMethod": "Cash on Delivery",
+        "specialNotes": "Ring the bell twice",
+        "overallStatus": "Pending",
+        "items": [
+          {
+            "offerId": "669fc0000000000abcdef777",
+            "productId": "669fc3333333333abcdef444",
+            "productTitle": "Margherita Pizza",
+            "productImage": "https://res.cloudinary.com/...",
+            "restaurantId": "669fc8888888888abcdef222",
+            "restaurantName": "Pizza Gourmet Express",
+            "originalPrice": 12.99,
+            "offerPrice": 10.39,
+            "discountPercentage": 20,
+            "quantity": 2,
+            "purchasedAt": "2026-07-23T20:00:00.000Z",
+            "lineTotal": 20.78
+          }
+        ],
+        "totalOriginalPrice": 25.98,
+        "totalDiscount": 5.20,
+        "finalTotalPrice": 20.78,
+        "totalQuantity": 2,
+        "createdAt": "2026-07-23T20:00:00.000Z",
+        "updatedAt": "2026-07-23T20:00:00.000Z"
+      }
+    ],
+    "totalItems": 1,
+    "totalPages": 1,
+    "currentPage": 1,
+    "pageSize": 10,
+    "hasNextPage": false,
+    "hasPreviousPage": false
+  }
+  ```
 
 ---
 
@@ -1125,6 +1246,15 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Automated Side Effects**:
   - `Delivered`: Idempotently creates `SalesTransaction` records for each order line item (`source: marketplace_order`).
   - `Cancelled`: Restores offer remaining quantity and reactivates offer if previously `sold_out`.
+
+---
+
+### 9.7 Get Order Group by ID (`/order-groups`)
+
+- **Method / URL**: `GET /order-groups/:id`
+- **Auth Level**: Access Token (`admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Description**: Fetches aggregated order group entity by ID for admin inspection.
 
 ---
 

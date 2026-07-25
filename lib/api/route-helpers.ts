@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import type { ZodType } from "zod"
 import { getSession } from "@/lib/auth/session"
 import type { ApiResponse, UserRole } from "@/features/auth/auth"
 import { getErrorMessage } from "./utils"
@@ -89,4 +90,85 @@ export function handleServerError(
     },
     { status }
   )
+}
+
+/**
+ * Parses and validates a JSON request body against a Zod schema.
+ *
+ * Returns a discriminated result so the caller stays flat:
+ *
+ *   const parsed = await readJsonBody(request, schema)
+ *   if (!parsed.ok) return parsed.response
+ *   // parsed.data is fully typed here
+ *
+ * Validating at the BFF boundary keeps malformed payloads from reaching the
+ * upstream API and gives the client a 400 with field-level detail instead of
+ * an opaque upstream error.
+ */
+export async function readJsonBody<T>(
+  request: Request,
+  schema: ZodType<T>
+): Promise<
+  { ok: true; data: T } | { ok: false; response: NextResponse<ApiResponse> }
+> {
+  let raw: unknown
+  try {
+    raw = await request.json()
+  } catch {
+    return {
+      ok: false,
+      response: NextResponse.json<ApiResponse>(
+        { success: false, error: "BAD_REQUEST", message: "Invalid JSON body" },
+        { status: 400 }
+      ),
+    }
+  }
+
+  const result = schema.safeParse(raw)
+  if (!result.success) {
+    const message = result.error.issues
+      .map((issue) =>
+        issue.path.length ? `${issue.path.join(".")}: ${issue.message}` : issue.message
+      )
+      .join(", ")
+
+    return {
+      ok: false,
+      response: NextResponse.json<ApiResponse>(
+        { success: false, error: "VALIDATION_ERROR", message },
+        { status: 400 }
+      ),
+    }
+  }
+
+  return { ok: true, data: result.data }
+}
+
+/**
+ * Reads the HTTP status carried by an upstream error (`ApiError`,
+ * `AuthenticationError`, …). Falls back to `fallbackStatus` for plain errors
+ * (network failures, JSON parse errors) which carry no status of their own.
+ */
+export function getErrorStatus(err: unknown, fallbackStatus = 500): number {
+  const status = (err as { statusCode?: unknown })?.statusCode
+  return typeof status === "number" && status >= 400 && status <= 599
+    ? status
+    : fallbackStatus
+}
+
+/**
+ * Error response that preserves the upstream status code.
+ *
+ * Prefer this over `handleServerError` with a hardcoded status whenever the
+ * backend distinguishes meaningful failures the UI must react to — e.g. 409
+ * (duplicate ingredient code), 400 (ingredient still used by a recipe),
+ * 404 (product has no recipe yet). Collapsing those into 500 would hide the
+ * distinction from the client.
+ */
+export function handleUpstreamError(
+  err: unknown,
+  fallbackMessage: string,
+  fallbackStatus = 500
+): NextResponse<ApiResponse> {
+  return handleServerError(err, fallbackMessage, getErrorStatus(err, fallbackStatus))
 }

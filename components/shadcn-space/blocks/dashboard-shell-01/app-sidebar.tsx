@@ -13,7 +13,7 @@ import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
 import { Link } from "@/i18n/routing"
 import { NavMain } from "@/components/shadcn-space/blocks/dashboard-shell-01/nav-main"
-import { BarChart3, FolderTree, Package, ShoppingBag, Store, Settings, Users, type LucideIcon } from "lucide-react"
+import { BarChart3, Carrot, ChefHat, FolderTree, Package, Receipt, ShoppingBag, Store, Settings, Users, type LucideIcon } from "lucide-react"
 import { SiteHeader } from "@/components/shadcn-space/blocks/dashboard-shell-01/site-header"
 import SimpleBar from "simplebar-react"
 import "simplebar-react/dist/simplebar.min.css"
@@ -86,6 +86,12 @@ function useDashboardNav(): NavItem[] {
       href: "/dashboard",
       roles: ["admin", "manager"],
     },
+    {
+      title: t("sales"),
+      icon: Receipt,
+      href: "/dashboard/sales",
+      roles: ["admin", "manager"],
+    },
 
     // Section 2: Management
     { label: t("management"), isSection: true },
@@ -118,6 +124,18 @@ function useDashboardNav(): NavItem[] {
       icon: Package,
       href: "/dashboard/products",
       roles: ["admin", "manager"],
+    },
+    {
+      title: t("ingredients"),
+      icon: Carrot,
+      href: "/dashboard/ingredients",
+      roles: ["manager"],
+    },
+    {
+      title: t("recipes"),
+      icon: ChefHat,
+      href: "/dashboard/recipes",
+      roles: ["manager"],
     },
 
     // Section 3: Settings

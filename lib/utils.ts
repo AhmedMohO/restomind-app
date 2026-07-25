@@ -16,15 +16,38 @@ export function translateErr(
     return message
   }
 }
-export function formatCurrency(value: number, locale: string = "ar") {
+
+export function formatCurrency(
+  value: number,
+  locale: string = "ar",
+  fractionDigits: number = 0
+) {
+  const safeValue = Number.isFinite(value) ? value : 0
   try {
     return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", {
       style: "currency",
       currency: "EGP",
-      maximumFractionDigits: 0,
-    }).format(value)
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    }).format(safeValue)
   } catch {
-    return `${value} EGP`
+    return `${safeValue} EGP`
+  }
+}
+
+export function formatNumber(
+  value: number,
+  locale: string = "ar",
+  fractionDigits: number = 0
+) {
+  const safeValue = Number.isFinite(value) ? value : 0
+  try {
+    return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: fractionDigits,
+    }).format(safeValue)
+  } catch {
+    return String(safeValue)
   }
 }
 

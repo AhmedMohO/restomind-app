@@ -20,7 +20,12 @@
     "lastNameMax": "Last name cannot exceed 20 characters",
     "passwordMin": "Password must be at least 6 characters",
     "categoryNameMax": "Category name must not exceed 100 characters",
-    "categoryDescMax": "Description must not exceed 500 characters"
+    "categoryDescMax": "Description must not exceed 500 characters",
+    "invalidMongoId": "Invalid identifier",
+    "invalidIngredientCode": "Use letters, numbers, dots, dashes or underscores only",
+    "positiveValue": "Must be greater than zero",
+    "recipeNeedsIngredient": "Add at least one ingredient",
+    "duplicateIngredient": "This ingredient is already in the recipe"
   },
   "Navbar": {
     "home": "Home",
