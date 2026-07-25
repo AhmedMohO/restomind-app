@@ -9,6 +9,7 @@ export interface StatusMeta {
   labelKey: string
 }
 
+/** Lifecycle order of a healthy (non-cancelled) order. */
 export const STATUS_ORDER: OrderStatus[] = [
   "Pending",
   "Confirmed",
@@ -17,6 +18,9 @@ export const STATUS_ORDER: OrderStatus[] = [
   "Out For Delivery",
   "Delivered",
 ]
+
+/** Every selectable/filterable status — single source of truth for the UI. */
+export const ORDER_STATUSES: OrderStatus[] = [...STATUS_ORDER, "Cancelled"]
 
 export function getStatusMeta(status?: OrderStatus | string | null): StatusMeta {
   if (!status) {

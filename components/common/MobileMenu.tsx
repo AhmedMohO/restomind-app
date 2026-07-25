@@ -1,8 +1,7 @@
 "use client"
 
-import * as React from "react"
 import { Menu, LogOut, LayoutDashboard, User } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { Link, useRouter } from "@/i18n/routing"
 import ActLink from "@/components/common/ActLink"
 import LangToggle from "@/components/common/LangToggle"
@@ -22,6 +21,7 @@ import {
 
 export default function MobileMenu() {
   const t = useTranslations("Navbar")
+  const locale = useLocale()
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -59,7 +59,10 @@ export default function MobileMenu() {
           </Button>
         }
       />
-      <SheetContent side="right" className="w-[300px] p-6">
+      <SheetContent
+        side={locale === "ar" ? "left" : "right"}
+        className="w-[300px] p-6"
+      >
         <SheetHeader className="mt-4 mb-6 flex flex-row items-center justify-between">
           <SheetTitle className="text-left font-heading text-xl rtl:text-right">
             Menu

@@ -151,7 +151,6 @@
     "colRestaurant": "المطعم",
     "colTotal": "الإجمالي",
     "colDelivery": "التوصيل",
-    "colStatus": "الحالة",
     "colCreatedAt": "تاريخ الإنشاء",
     "colActions": "الإجراءات",
     "viewDetails": "عرض التفاصيل",
@@ -166,7 +165,11 @@
     "subtotal": "المجموع الفرعي",
     "discount": "الخصم",
     "grandTotal": "الإجمالي النهائي",
-    "unknownRestaurant": "مطعم غير معروف"
+    "unknownRestaurant": "مطعم غير معروف",
+    "restaurantTitle": "طلبات المطعم",
+    "restaurantSubtitle": "عرض وتحديث طلبات مطعمك",
+    "completionTitle": "اكتمال الطلبات",
+    "completionSubtitle": "الطلبات التي تم تسليمها من إجمالي الطلبات المطابقة للفلاتر"
   },
   "account": {
     "pageTitle": "إعدادات الحساب",
@@ -392,6 +395,7 @@
     "adminTitle": "إدارة المنتجات",
     "adminSubtitle": "إدارة عناصر القائمة والأسعار والتوافر والخصائص.",
     "addProduct": "إضافة منتج",
+    "descriptionLabel": "الوصف",
     "editProduct": "تعديل المنتج",
     "createProduct": "إنشاء منتج",
     "productDetails": "تفاصيل المنتج",

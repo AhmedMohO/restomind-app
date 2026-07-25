@@ -105,7 +105,7 @@ function useDashboardNav(): NavItem[] {
       title: t("orders"),
       icon: ShoppingBag,
       href: "/dashboard/orders",
-      roles: ["admin"],
+      roles: ["admin", "manager", "staff"],
     },
     {
       title: t("users"),
@@ -144,7 +144,7 @@ function useDashboardNav(): NavItem[] {
       title: t("accountSettings"),
       icon: Settings,
       href: "/dashboard/profile",
-      roles: ["admin", "manager", "customer"],
+      roles: ["admin", "manager", "staff", "customer"],
     },
   ]
 

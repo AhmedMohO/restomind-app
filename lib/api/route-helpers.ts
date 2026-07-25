@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { ZodType } from "zod"
 import { getSession } from "@/lib/auth/session"
-import type { ApiResponse, UserRole } from "@/features/auth/auth"
+import type { ApiResponse, SessionUser, UserRole } from "@/features/auth/auth"
 import { getErrorMessage } from "./utils"
 
 /**
@@ -55,6 +55,48 @@ export async function requireAnyRole(
   }
 
   return null
+}
+
+/**
+ * Authenticates the caller and checks their role, returning the session user
+ * itself so the handler can scope data to them (e.g. a manager's restaurant).
+ *
+ *   const auth = await requireSessionUser(["admin", "manager"])
+ *   if (!auth.ok) return auth.response
+ *   // auth.user is a fully typed SessionUser here
+ */
+export async function requireSessionUser(
+  roles: readonly UserRole[]
+): Promise<
+  { ok: true; user: SessionUser } | { ok: false; response: NextResponse<ApiResponse> }
+> {
+  const session = await getSession()
+
+  if (!session.isLoggedIn || !session.user) {
+    return {
+      ok: false,
+      response: NextResponse.json<ApiResponse>(
+        { success: false, error: "Unauthorized", message: "Not authenticated" },
+        { status: 401 }
+      ),
+    }
+  }
+
+  if (roles.length > 0 && !roles.includes(session.user.role)) {
+    return {
+      ok: false,
+      response: NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: "Forbidden",
+          message: `${roles.join(" or ")} role required`,
+        },
+        { status: 403 }
+      ),
+    }
+  }
+
+  return { ok: true, user: session.user }
 }
 
 /**

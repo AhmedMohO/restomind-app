@@ -2,18 +2,17 @@ import { NextResponse, connection } from "next/server"
 import type { ApiResponse } from "@/features/auth/auth"
 import {
   ORDER_DASHBOARD_ROLES,
-  listDashboardOrders,
+  getDashboardOrdersSummary,
   parseOrderListingParams,
 } from "@/features/orders/api/dashboard"
 import { handleUpstreamError, requireSessionUser } from "@/lib/api/route-helpers"
-import type { DashboardOrderRow } from "@/features/orders/api/dashboard-types"
-import type { PaginatedResponse } from "@/features/orders/api/type"
+import type { DashboardOrdersSummary } from "@/features/orders/api/dashboard-types"
 
 /**
- * GET /api/orders — dashboard order listing.
+ * GET /api/orders/summary — completion counters for the dashboard header.
  *
- * Admins receive every group order; managers and staff receive their own
- * restaurant's sub-orders. Both are normalised into `DashboardOrderRow`s.
+ * Accepts the same filters as `GET /api/orders` so the ratio always describes
+ * the orders currently listed.
  */
 export async function GET(request: Request) {
   await connection()
@@ -24,16 +23,16 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
 
   try {
-    const data = await listDashboardOrders(
+    const data = await getDashboardOrdersSummary(
       auth.user,
       parseOrderListingParams(searchParams)
     )
-    return NextResponse.json<ApiResponse<PaginatedResponse<DashboardOrderRow>>>(
+    return NextResponse.json<ApiResponse<DashboardOrdersSummary>>(
       { success: true, data },
       { status: 200 }
     )
   } catch (err) {
-    console.error("[api/orders] GET failed", err)
-    return handleUpstreamError(err, "Failed to fetch orders")
+    console.error("[api/orders/summary] GET failed", err)
+    return handleUpstreamError(err, "Failed to fetch order totals")
   }
 }

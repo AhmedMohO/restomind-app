@@ -232,9 +232,9 @@ export function ProductsContainer() {
   return (
     <div className="space-y-6">
       {/* Header with Title & Dynamic Active Item Counter */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-row items-center justify-between gap-2">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight flex items-center gap-2">
+          <h1 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-bold tracking-tight">
             <span>{t("adminTitle")}</span>
             <span className="text-lg font-normal text-muted-foreground">
               {isFiltered
@@ -242,33 +242,29 @@ export function ProductsContainer() {
                 : t("itemsCount", { count: total })}
             </span>
           </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("adminSubtitle")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("adminSubtitle")}</p>
         </div>
+
+        <Button
+          nativeButton={false}
+          render={<Link href="/dashboard/products/new" />}
+          className="gap-2 rounded-xl"
+        >
+          <Plus className="size-4" />
+          <span>{t("addProduct")}</span>
+        </Button>
       </div>
 
       {/* Unified Control Bar with adequate margin */}
-      <div className="flex w-full flex-wrap items-center justify-between gap-3 mb-2">
-        <div className="flex flex-1 flex-wrap items-center gap-3">
-          <div className="relative min-w-[200px] max-w-full flex-1 sm:max-w-xs">
+      <div className="mb-2 flex w-full flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-1 flex-wrap items-center justify-between gap-3">
+          <div className="relative max-w-full min-w-[200px] flex-1 sm:max-w-xs">
             <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder={t("searchPlaceholder")}
               className="rounded-xl ps-9"
-            />
-          </div>
-
-          <div className="hidden sm:block sm:w-44">
-            <PaginatedCategorySelect
-              value={category}
-              onValueChange={(value) => {
-                setCategory(value)
-                setPage(1)
-              }}
-              placeholder={t("allCategories")}
             />
           </div>
 
@@ -287,10 +283,7 @@ export function ProductsContainer() {
           <Sheet>
             <SheetTrigger
               render={
-                <Button
-                  variant="outline"
-                  className="gap-2 rounded-xl"
-                >
+                <Button variant="outline" className="gap-2 rounded-xl">
                   <Filter className="size-4" />
                   <span>{t("filters")}</span>
                   {activeFilterCount > 0 && (
@@ -437,27 +430,17 @@ export function ProductsContainer() {
             </SheetContent>
           </Sheet>
         </div>
-
-        <Button
-          render={<Link href="/dashboard/products/new" />}
-          className="gap-2 rounded-xl shrink-0"
-        >
-          <Plus className="size-4" />
-          <span>{t("addProduct")}</span>
-        </Button>
       </div>
 
       {/* Table Section with Sticky Header */}
-      <div className="w-full min-w-0 overflow-x-auto max-h-[70vh] rounded-xl border border-border bg-card shadow-2xs">
+      <div className="max-h-[70vh] w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-card shadow-2xs">
         {isLoading ? (
           <div className="flex h-64 w-full items-center justify-center">
             <Loader2 className="size-8 animate-spin text-primary" />
           </div>
         ) : isError ? (
           <div className="flex h-64 flex-col items-center justify-center gap-3 p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              {t("fetchError")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("fetchError")}</p>
             <Button
               variant="outline"
               onClick={() => refetch()}
@@ -495,51 +478,61 @@ export function ProductsContainer() {
           <Table className="min-w-[980px] sm:min-w-full">
             <TableHeader className="sticky top-0 z-10 bg-card shadow-xs">
               <TableRow>
-                <TableHead className="w-[64px] text-start">{t("colImage")}</TableHead>
+                <TableHead className="w-[64px] text-start">
+                  {t("colImage")}
+                </TableHead>
                 {/* Sortable Title Column */}
                 <TableHead className="w-[28%] min-w-[180px] text-start">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleHeaderSort("title")}
-                    className="h-8 -ms-3 gap-1.5 font-semibold hover:bg-transparent text-start"
+                    className="-ms-3 h-8 gap-1.5 text-start font-semibold hover:bg-transparent"
                   >
                     <span>{t("colTitleTags")}</span>
                     {renderSortIcon("title")}
                   </Button>
                 </TableHead>
-                <TableHead className="w-[18%] min-w-[120px] text-start">{t("colCategory")}</TableHead>
-                <TableHead className="w-[18%] min-w-[140px] text-start">{t("colRestaurant")}</TableHead>
+                <TableHead className="w-[18%] min-w-[120px] text-start">
+                  {t("colCategory")}
+                </TableHead>
+                <TableHead className="w-[18%] min-w-[140px] text-start">
+                  {t("colRestaurant")}
+                </TableHead>
                 {/* Sortable & End-Aligned Price Column */}
-                <TableHead className="w-[12%] min-w-[90px] text-end px-4">
+                <TableHead className="w-[12%] min-w-[90px] px-4 text-end">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleHeaderSort("price")}
-                    className="h-8 ms-auto gap-1.5 font-semibold hover:bg-transparent text-end"
+                    className="ms-auto h-8 gap-1.5 text-end font-semibold hover:bg-transparent"
                   >
                     <span>{t("colPrice")}</span>
                     {renderSortIcon("price")}
                   </Button>
                 </TableHead>
                 {/* Sortable & End-Aligned Freshness Column */}
-                <TableHead className="w-[12%] min-w-[90px] text-end px-4">
+                <TableHead className="w-[12%] min-w-[90px] px-4 text-end">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleHeaderSort("freshnessWindow")}
-                    className="h-8 ms-auto gap-1.5 font-semibold hover:bg-transparent text-end"
+                    className="ms-auto h-8 gap-1.5 text-end font-semibold hover:bg-transparent"
                   >
                     <span>{t("colFreshness")}</span>
                     {renderSortIcon("freshnessWindow")}
                   </Button>
                 </TableHead>
-                <TableHead className="w-[8%] min-w-[80px] text-center px-4">{t("colAvailability")}</TableHead>
-                <TableHead className="w-[60px] text-center">{t("colActions")}</TableHead>
+                <TableHead className="w-[8%] min-w-[80px] px-4 text-center">
+                  {t("colAvailability")}
+                </TableHead>
+                <TableHead className="w-[60px] text-center">
+                  {t("colActions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => {
+              {products.map((product: ApiProduct) => {
                 const visibleTags = product.tags?.slice(0, 2) ?? []
                 const extraTags = product.tags?.slice(2) ?? []
 
@@ -574,7 +567,9 @@ export function ProductsContainer() {
                             {product.title}
                           </span>
                           {product.isBestseller && (
-                            <Badge className="text-[10px]">{t("bestseller")}</Badge>
+                            <Badge className="text-[10px]">
+                              {t("bestseller")}
+                            </Badge>
                           )}
                         </div>
                         <div className="flex max-w-[260px] flex-wrap items-center gap-1">
@@ -597,7 +592,7 @@ export function ProductsContainer() {
                                       render={
                                         <Badge
                                           variant="secondary"
-                                          className="cursor-pointer px-1.5 py-0 text-[10px] transition-colors hover:bg-secondary/80 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                                          className="cursor-pointer px-1.5 py-0 text-[10px] transition-colors hover:bg-secondary/80 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden"
                                         >
                                           {t("moreTags", {
                                             count: extraTags.length,
@@ -635,10 +630,10 @@ export function ProductsContainer() {
                     <TableCell className="w-[18%] min-w-[140px] text-sm">
                       {getRefName(product.restaurantId)}
                     </TableCell>
-                    <TableCell className="w-[12%] min-w-[90px] text-end font-medium px-4">
+                    <TableCell className="w-[12%] min-w-[90px] px-4 text-end font-medium">
                       {formatCurrency(product.price, locale)}
                     </TableCell>
-                    <TableCell className="w-[12%] min-w-[90px] text-end text-sm px-4">
+                    <TableCell className="w-[12%] min-w-[90px] px-4 text-end text-sm">
                       <span className="inline-flex items-center justify-end gap-1">
                         <Clock className="size-3.5 text-muted-foreground" />
                         {t("hoursSuffix", { count: product.freshnessWindow })}

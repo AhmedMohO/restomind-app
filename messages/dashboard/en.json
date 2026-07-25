@@ -151,7 +151,6 @@
     "colRestaurant": "Restaurant",
     "colTotal": "Total",
     "colDelivery": "Delivery",
-    "colStatus": "Status",
     "colCreatedAt": "Created At",
     "colActions": "Actions",
     "viewDetails": "View Details",
@@ -166,7 +165,11 @@
     "subtotal": "Subtotal",
     "discount": "Discount",
     "grandTotal": "Grand Total",
-    "unknownRestaurant": "Unknown restaurant"
+    "unknownRestaurant": "Unknown restaurant",
+    "restaurantTitle": "Restaurant Orders",
+    "restaurantSubtitle": "View and update your restaurant's orders",
+    "completionTitle": "Order completion",
+    "completionSubtitle": "Delivered orders out of the total matching your filters"
   },
   "account": {
     "pageTitle": "Account Settings",
@@ -392,6 +395,7 @@
     "adminTitle": "Products Management",
     "adminSubtitle": "Manage menu items, pricing, availability, and attributes.",
     "addProduct": "Add Product",
+    "descriptionLabel": "Description",
     "editProduct": "Edit Product",
     "createProduct": "Create Product",
     "productDetails": "Product Details",

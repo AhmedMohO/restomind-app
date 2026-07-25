@@ -198,7 +198,8 @@
     "errorFullName": "Name must be at least 2 characters",
     "errorPhone": "Enter a valid phone number (min 8 digits)",
     "errorEmail": "Enter a valid email address",
-    "errorAddress": "Address must be at least 5 characters"
+    "errorAddress": "Address must be at least 5 characters",
+    "comingSoon": "Coming soon"
   },
   "OrderSummary": {
     "title": "Order Summary",

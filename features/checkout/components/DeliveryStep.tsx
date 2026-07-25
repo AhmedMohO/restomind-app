@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl"
 import { Truck, MapPin, Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { DELIVERY_FEE } from "@/features/checkout/constants"
 import { cn } from "@/lib/utils"
 
 export type DeliveryMethod = "home" | "pickup"
@@ -13,8 +14,6 @@ interface DeliveryStepProps {
   onContinue: () => void
   onBack: () => void
 }
-
-const DELIVERY_FEE = 15
 
 export default function DeliveryStep({
   deliveryMethod,

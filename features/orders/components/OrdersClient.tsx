@@ -6,6 +6,7 @@ import { Search, ClipboardList, ShoppingBag, ArrowUpDown } from "lucide-react"
 import { Link, useRouter, usePathname } from "@/i18n/routing"
 import { useSearchParams } from "next/navigation"
 import PurchaseCard from "@/features/orders/components/PurchaseCard"
+import { ORDER_STATUSES, getStatusMeta } from "@/features/orders/status"
 import type { ApiOrderGroup, OrderStatus } from "@/features/orders/api/type"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -29,14 +30,13 @@ interface TabItem {
   labelKey: string
 }
 
+/** One tab per status, kept in sync with the shared status list. */
 const TABS: TabItem[] = [
   { key: "all", labelKey: "statusAll" },
-  { key: "Pending", labelKey: "statusPending" },
-  { key: "Confirmed", labelKey: "statusConfirmed" },
-  { key: "Preparing", labelKey: "statusPreparing" },
-  { key: "Out For Delivery", labelKey: "statusOutForDelivery" },
-  { key: "Delivered", labelKey: "statusDelivered" },
-  { key: "Cancelled", labelKey: "statusCancelled" },
+  ...ORDER_STATUSES.map((status) => ({
+    key: status as FilterStatus,
+    labelKey: getStatusMeta(status).labelKey,
+  })),
 ]
 
 interface OrdersClientProps {

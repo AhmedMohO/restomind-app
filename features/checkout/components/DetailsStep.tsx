@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useLocale, useTranslations } from "next-intl"
+import { useTranslations } from "next-intl"
 import {
   ChevronRight,
   MapPin,
@@ -11,11 +11,9 @@ import {
   Building2,
 } from "lucide-react"
 import { toast } from "sonner"
-import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { getZodErrorMap } from "@/lib/zod-locale"
 import { AddressDialog } from "@/features/profile/components/address-dialog"
 import { addAddressAction } from "@/features/profile/actions/profile-actions"
 import type {
@@ -23,30 +21,16 @@ import type {
   AddressPayload,
 } from "@/features/profile/api/profile"
 
-export interface DetailsFormData {
-  fullName: string
-  phoneNumber: string
-  email: string
-  specialNotes: string
-}
-
 interface DetailsStepProps {
-  initialData: DetailsFormData
+  specialNotes: string
   addresses: UserAddress[]
   selectedAddressId: string | null
   defaultName?: string
   defaultPhone?: string
   onSelectAddress: (addressId: string) => void
   onAddressesChange: (updated: UserAddress[], newAddressId?: string) => void
-  onContinue: (data: DetailsFormData) => void
+  onContinue: (specialNotes: string) => void
 }
-
-const detailsSchema = z.object({
-  fullName: z.string().min(2),
-  phoneNumber: z.string().min(8),
-  email: z.string().email(),
-  specialNotes: z.string().optional(),
-})
 
 function AddressIcon({ label }: { label?: string }) {
   const lower = (label || "").toLowerCase()
@@ -55,8 +39,14 @@ function AddressIcon({ label }: { label?: string }) {
   return <Icon className="size-5" />
 }
 
+/**
+ * Step 1 — delivery address and notes.
+ *
+ * Contact details are no longer collected here: the API injects the
+ * authenticated customer's name, phone and email into the order (docs §9.1).
+ */
 export default function DetailsStep({
-  initialData,
+  specialNotes,
   addresses,
   selectedAddressId,
   defaultName = "",
@@ -66,20 +56,11 @@ export default function DetailsStep({
   onContinue,
 }: DetailsStepProps) {
   const t = useTranslations("Checkout")
-  const locale = useLocale()
-  const [form, setForm] = useState<DetailsFormData>(initialData)
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof DetailsFormData, string>>
-  >({})
+  const [notes, setNotes] = useState(specialNotes)
   const [addressError, setAddressError] = useState<string | null>(null)
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [isAddingAddress, setIsAddingAddress] = useState(false)
-
-  function handleChange(field: keyof DetailsFormData, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }))
-  }
 
   async function handleAddAddress(payload: AddressPayload) {
     setIsAddingAddress(true)
@@ -101,29 +82,13 @@ export default function DetailsStep({
   }
 
   function handleSubmit() {
-    const result = detailsSchema.safeParse(form, {
-      error: getZodErrorMap(locale),
-    })
-    if (!result.success) {
-      const translatedErrors: Partial<Record<keyof DetailsFormData, string>> =
-        {}
-      result.error.issues.forEach((issue) => {
-        const key = issue.path[0] as keyof DetailsFormData
-        if (!translatedErrors[key]) {
-          translatedErrors[key] = issue.message
-        }
-      })
-      setErrors(translatedErrors)
-      return
-    }
-
     // If the user has saved addresses, require one to be selected before continuing.
     if (addresses.length > 0 && !selectedAddressId) {
       setAddressError(t("selectAddressError"))
       return
     }
 
-    onContinue(form)
+    onContinue(notes)
   }
 
   return (
@@ -229,8 +194,8 @@ export default function DetailsStep({
           <Textarea
             className="border-transparent focus-visible:border-transparent focus-visible:ring-1 focus-visible:ring-primary/40"
             placeholder={t("specialNotesPlaceholder")}
-            value={form.specialNotes}
-            onChange={(e) => handleChange("specialNotes", e.target.value)}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
           />
         </div>
       </div>

@@ -43,7 +43,7 @@ interface ProductDetailsContainerProps {
 }
 
 function getName(value: ApiProduct["category"] | ApiProduct["restaurantId"]) {
-  return typeof value === "string" ? value : value?.name ?? "-"
+  return typeof value === "string" ? value : (value?.name ?? "-")
 }
 
 function getRelativeTimeString(dateStr?: string) {
@@ -173,10 +173,17 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => refetch()} className="rounded-xl">
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            className="rounded-xl"
+          >
             {t("retry")}
           </Button>
-          <Button render={<Link href="/dashboard/products" />} className="rounded-xl">
+          <Button
+            render={<Link href="/dashboard/products" />}
+            className="rounded-xl"
+          >
             {t("backToList")}
           </Button>
         </div>
@@ -184,7 +191,8 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
     )
   }
 
-  const hasRatings = (product.rating ?? 0) > 0 || (product.reviewsCount ?? 0) > 0
+  const hasRatings =
+    (product.rating ?? 0) > 0 || (product.reviewsCount ?? 0) > 0
 
   return (
     <div className="space-y-6">
@@ -198,7 +206,10 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
                 {product.title}
               </h1>
               {product.isDeleted && (
-                <Badge variant="destructive" className="rounded-full px-2.5 py-0.5 text-xs">
+                <Badge
+                  variant="destructive"
+                  className="rounded-full px-2.5 py-0.5 text-xs"
+                >
                   {t("deleted")}
                 </Badge>
               )}
@@ -263,7 +274,7 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
               )}
 
               {/* Status + bestseller overlay on the image itself */}
-              <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+              <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-xs backdrop-blur-sm ${
                     product.isAvailable
@@ -321,7 +332,8 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
                     render={
                       <span className="inline-flex cursor-help items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
                         <Calendar className="size-3" />
-                        {t("createdLabel")}: {formatDate(product.createdAt, locale)}
+                        {t("createdLabel")}:{" "}
+                        {formatDate(product.createdAt, locale)}
                       </span>
                     }
                   />
@@ -334,7 +346,8 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
                     render={
                       <span className="inline-flex cursor-help items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
                         <Calendar className="size-3" />
-                        {t("updatedLabel")}: {formatDate(product.updatedAt, locale)}
+                        {t("updatedLabel")}:{" "}
+                        {formatDate(product.updatedAt, locale)}
                       </span>
                     }
                   />
@@ -352,7 +365,11 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
           {/* Stat strip: price, freshness, rating in one quiet row */}
           <Card className="rounded-3xl border-border/80 p-2 shadow-2xs">
             <div className="flex divide-x divide-border/60">
-              <Stat label={t("colPrice")} value={formatCurrency(product.price, locale)} emphasize />
+              <Stat
+                label={t("colPrice")}
+                value={formatCurrency(product.price, locale)}
+                emphasize
+              />
               <Stat
                 label={t("sortFreshnessWindow")}
                 value={
@@ -392,7 +409,9 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
                 </h2>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                   {product.description || (
-                    <span className="italic">No short description available.</span>
+                    <span className="italic">
+                      No short description available.
+                    </span>
                   )}
                 </p>
               </div>
@@ -401,16 +420,18 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
                 <h2 className="text-sm font-semibold text-foreground">
                   {t("longDescLabel")}
                 </h2>
-                <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                <p className="mt-1.5 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
                   {product.longDescription || (
-                    <span className="italic">No detailed description provided.</span>
+                    <span className="italic">
+                      No detailed description provided.
+                    </span>
                   )}
                 </p>
               </div>
 
               {product.tags?.length ? (
                 <div className="flex flex-wrap items-center gap-1.5 border-t border-border/60 pt-5">
-                  {product.tags.map((tag) => (
+                  {product.tags.map((tag: string) => (
                     <Badge
                       key={tag}
                       variant="outline"

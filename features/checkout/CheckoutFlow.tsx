@@ -8,15 +8,14 @@ import { toast } from "sonner"
 
 import { useCart } from "@/hooks/use-cart"
 import { createOrderAction } from "@/features/orders/actions"
+import { DELIVERY_FEE } from "@/features/checkout/constants"
 import type { UserAddress } from "@/features/profile/api/profile"
 
 import CheckoutStepper from "./components/CheckoutStepper"
 import OrderSummary from "./components/OrderSummary"
-import DetailsStep, { type DetailsFormData } from "./components/DetailsStep"
+import DetailsStep from "./components/DetailsStep"
 import DeliveryStep, { type DeliveryMethod } from "./components/DeliveryStep"
 import PaymentStep, { type PaymentMethod } from "./components/PaymentStep"
-
-const DELIVERY_FEE = 15
 
 const variants = {
   enter: (direction: number) => ({
@@ -50,12 +49,9 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [direction, setDirection] = useState(1)
 
-  const [formData, setFormData] = useState<DetailsFormData>({
-    fullName: customer.fullName,
-    phoneNumber: customer.phone,
-    email: customer.email,
-    specialNotes: "",
-  })
+  // Contact details are injected server-side from the profile (docs §9.1), so
+  // the flow only carries the customer's optional notes.
+  const [specialNotes, setSpecialNotes] = useState("")
 
   // Saved delivery addresses (mutable so an inline-added address appears instantly)
   const [addresses, setAddresses] = useState<UserAddress[]>(initialAddresses)
@@ -101,14 +97,13 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
     }
 
     setIsPlacingOrder(true)
-    // NOTE: The API only supports "Cash on Delivery"; the card option in the UI
-    // is currently mapped to COD until online payment is implemented server-side.
+    // "Store Pickup" must omit the address entirely (docs §9.1).
     const res = await createOrderAction({
       deliveryMethod: isHomeDelivery ? "Home Delivery" : "Store Pickup",
       ...(isHomeDelivery && selectedAddressId
         ? { deliveryAddress: { addressId: selectedAddressId } }
         : {}),
-      ...(formData.specialNotes ? { specialNotes: formData.specialNotes } : {}),
+      ...(specialNotes ? { specialNotes } : {}),
       paymentMethod: "Cash on Delivery",
     })
 
@@ -149,15 +144,15 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
             >
               {step === 1 && (
                 <DetailsStep
-                  initialData={formData}
+                  specialNotes={specialNotes}
                   addresses={addresses}
                   selectedAddressId={selectedAddressId}
                   defaultPhone={customer.phone}
                   defaultName={customer.fullName}
                   onSelectAddress={setSelectedAddressId}
                   onAddressesChange={handleAddressesChange}
-                  onContinue={(data) => {
-                    setFormData(data)
+                  onContinue={(notes) => {
+                    setSpecialNotes(notes)
                     goForward(2)
                   }}
                 />

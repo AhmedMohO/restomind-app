@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react"
 import { useCart } from "@/hooks/use-cart"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { Link } from "@/i18n/routing"
 import Image from "next/image"
 import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag } from "lucide-react"
@@ -26,6 +26,7 @@ const getServerSnapshot = () => false
 export default function CartSheet() {
   const t = useTranslations("Cart")
   const tOffers = useTranslations("Offers")
+  const locale = useLocale()
   const {
     cart,
     cartCount,
@@ -42,7 +43,11 @@ export default function CartSheet() {
   )
 
   return (
-    <Sheet onOpenChange={(open) => { if (open) refreshCart() }}>
+    <Sheet
+      onOpenChange={(open) => {
+        if (open) refreshCart()
+      }}
+    >
       <SheetTrigger
         render={
           <Button
@@ -62,7 +67,7 @@ export default function CartSheet() {
         }
       />
       <SheetContent
-        side="right"
+        side={locale === "ar" ? "left" : "right"}
         className="flex h-full w-[380px] flex-col border-s border-border/40 bg-white p-0 sm:w-[450px] dark:border-neutral-800 dark:bg-neutral-900"
       >
         {/* Header */}

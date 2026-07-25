@@ -29,18 +29,22 @@ export default function PaymentStep({
   const { cartTotal } = useCart()
   const grandTotal = cartTotal + deliveryFee
 
+  // The orders API only accepts "Cash on Delivery" today (docs §9.1), so the
+  // card option is shown but not selectable instead of silently becoming COD.
   const options = [
-    {
-      id: "card" as PaymentMethod,
-      label: t("creditCard"),
-      desc: t("creditCardDesc"),
-      Icon: CreditCard,
-    },
     {
       id: "cash" as PaymentMethod,
       label: t("cashOnDelivery"),
       desc: t("cashOnDeliveryDesc"),
       Icon: Banknote,
+      disabled: false,
+    },
+    {
+      id: "card" as PaymentMethod,
+      label: t("creditCard"),
+      desc: t("creditCardDesc"),
+      Icon: CreditCard,
+      disabled: true,
     },
   ]
 
@@ -50,17 +54,22 @@ export default function PaymentStep({
 
       {/* Payment options */}
       <div className="space-y-3">
-        {options.map(({ id, label, desc, Icon }) => {
-          const selected = paymentMethod === id
+        {options.map(({ id, label, desc, Icon, disabled }) => {
+          const selected = paymentMethod === id && !disabled
           return (
             <button
               key={id}
+              type="button"
+              disabled={disabled}
               onClick={() => onPaymentMethodChange(id)}
               className={cn(
                 "w-full flex items-center gap-4 rounded-xl p-4 text-start transition-colors duration-200",
                 selected
                   ? "border-2 border-primary bg-secondary/60"
-                  : "border border-border hover:border-primary/40 bg-card"
+                  : "border border-border bg-card",
+                disabled
+                  ? "cursor-not-allowed opacity-60"
+                  : "hover:border-primary/40"
               )}
             >
               {/* Icon */}
@@ -77,7 +86,14 @@ export default function PaymentStep({
 
               {/* Text */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{label}</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {label}
+                  {disabled && (
+                    <span className="ms-2 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                      {t("comingSoon")}
+                    </span>
+                  )}
+                </p>
                 <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
               </div>
 

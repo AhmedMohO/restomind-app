@@ -191,14 +191,12 @@ type IngredientUnit = 'kg' | 'liter' | 'piece' | 'grams';
 interface Ingredient {
   _id: string;
   restaurantId: string;         // Restaurant ObjectId
-  ingredientCode?: string;      // Unique per restaurant e.g. "ING-FLOUR-01"
+  ingredientCode: string;       // Unique per restaurant e.g. "ING-FLOUR-01"
   name: string;
-  quantity?: number;
   unit: IngredientUnit;
-  shelfLifeDays?: number;
-  minimumStock?: number;
-  safetyStock?: number;
-  minStockAlert?: number;
+  shelfLifeDays: number;        // Freshness window in days
+  minimumStock: number;         // Minimum stock threshold (default 0)
+  safetyStock: number;          // Safety stock buffer (default 0)
   isDeleted: boolean;
   deletedAt?: string;
   createdAt: string;
@@ -647,11 +645,50 @@ Updates active user's details and/or uploads profile photo.
 
 ### 3.12 Saved Delivery Addresses (`/auth/addresses`)
 
-- `POST /auth/addresses` — Add Delivery Address
-- `GET /auth/addresses` — Get My Saved Addresses
-- `PATCH /auth/addresses/:addressId` — Update Saved Address
-- `DELETE /auth/addresses/:addressId` — Delete Saved Address
-- `PATCH /auth/addresses/:addressId/default` — Set Address as Default
+#### Add Delivery Address
+
+- **Method / URL**: `POST /auth/addresses`
+- **Auth Level**: Access Token (`admin`, `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field | Type | Required | Rules / Description |
+  | :--- | :--- | :--- | :--- |
+  | `label` | String | No | Custom address title (e.g., `"Home"`, `"Work"`) |
+  | `fullName` | String | Yes | Recipient full name |
+  | `phoneNumber` | String | Yes | Contact phone number |
+  | `street` | String | Yes | Street address |
+  | `city` | String | Yes | City name |
+  | `country` | String | No | Country name |
+  | `isDefault` | Boolean | No | Mark as default address (Default: `false`) |
+
+- **Response (201 Created)**: Updated array of saved address objects.
+
+#### Get Saved Addresses
+
+- **Method / URL**: `GET /auth/addresses`
+- **Auth Level**: Access Token (`admin`, `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**: Array of `UserAddress` objects.
+
+#### Update Saved Address
+
+- **Method / URL**: `PATCH /auth/addresses/:addressId`
+- **Auth Level**: Access Token (`admin`, `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**: Optional fields from `Add Delivery Address`.
+
+#### Delete Saved Address
+
+- **Method / URL**: `DELETE /auth/addresses/:addressId`
+- **Auth Level**: Access Token (`admin`, `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+
+#### Set Default Address
+
+- **Method / URL**: `PATCH /auth/addresses/:addressId/default`
+- **Auth Level**: Access Token (`admin`, `customer`)
+- **Headers**: `Authorization: Bearer <accessToken>`
 
 ---
 
@@ -872,15 +909,18 @@ Updates active user's details and/or uploads profile photo.
 ### 6.5 Get All Products (Filtered & Paginated)
 
 - **Method / URL**: `GET /products`
-- **Auth Level**: Public
-- **Query Parameters**: `page`, `limit`, `categoryId`, `restaurantId`, `search`, `isAvailable`, `isDeleted`, `minPrice`, `maxPrice`, `sortBy`, `sortOrder`.
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**: `page`, `limit`, `category`, `restaurantId`, `search`, `tag`, `sort`, `order`.
+- **Note**: Public customer store product browsing and offer listings are conducted via the `/offers/active` and `/offers/recommendations` endpoints.
 
 ---
 
 ### 6.6 Get Product Details
 
 - **Method / URL**: `GET /products/:id`
-- **Auth Level**: Public
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
 - **Description**: Accepts Mongo ObjectId or product slug string.
 
 ---
@@ -1030,20 +1070,56 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Method / URL**: `POST /orders`
 - **Auth Level**: Access Token (`customer`)
 - **Headers**: `Authorization: Bearer <accessToken>`
+- **Behavior & Automatic Population**:
+  - Customer contact details (`fullName`, `phoneNumber`, `emailAddress`) are **automatically injected** by the backend from the authenticated user's profile.
 - **Request Body (`application/json`)**:
+
+  | Field | Type | Required | Rules / Description |
+  | :--- | :--- | :--- | :--- |
+  | `deliveryMethod` | String | Yes | Enum: `'Home Delivery'` or `'Store Pickup'` |
+  | `deliveryAddress` | Object | Conditional | **Required when `deliveryMethod = 'Home Delivery'`. Must be omitted/null when `deliveryMethod = 'Store Pickup'`.** |
+  | `deliveryAddress.addressId` | String | Optional | MongoId of a saved address in user's collection. If provided, `street`, `city`, and `country` are resolved automatically. |
+  | `deliveryAddress.street` | String | Conditional | Required if `addressId` is not provided. |
+  | `deliveryAddress.city` | String | Conditional | Required if `addressId` is not provided. |
+  | `deliveryAddress.country` | String | Conditional | Required if `addressId` is not provided. |
+  | `specialNotes` | String | No | Optional instructions (e.g. `"Ring the bell twice"`) |
+  | `paymentMethod` | String | Yes | Enum: `'Cash on Delivery'` |
+  | `saveAddress` | Boolean | No | Optional. If `true` and raw address details are submitted, automatically saves the address to the user's saved addresses list. |
+
+  _Request Example A (Using Saved Address ID)_:
 
   ```json
   {
-    "fullName": "John Doe",
-    "phoneNumber": "+1234567890",
-    "emailAddress": "johndoe@example.com",
+    "deliveryMethod": "Home Delivery",
+    "deliveryAddress": {
+      "addressId": "669fc7777777777abcdef123"
+    },
+    "specialNotes": "Ring the bell twice",
+    "paymentMethod": "Cash on Delivery"
+  }
+  ```
+
+  _Request Example B (Using New Raw Address & Save Address Flag)_:
+
+  ```json
+  {
     "deliveryMethod": "Home Delivery",
     "deliveryAddress": {
       "street": "12 Nile St",
       "city": "Cairo",
       "country": "Egypt"
     },
-    "specialNotes": "Ring the bell twice",
+    "saveAddress": true,
+    "specialNotes": "Leave at front desk",
+    "paymentMethod": "Cash on Delivery"
+  }
+  ```
+
+  _Request Example C (Store Pickup)_:
+
+  ```json
+  {
+    "deliveryMethod": "Store Pickup",
     "paymentMethod": "Cash on Delivery"
   }
   ```
@@ -1229,9 +1305,11 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 
 ---
 
-### 9.6 Update Sub-Order Status (Admin / Manager)
+### 9.6 Update Order Status (Admin / Manager)
 
-- **Method / URL**: `PATCH /orders/:id/status`
+- **Method / URL**:
+  - `PATCH /orders/:id/status` (Update by order/group ID parameter, with optional `?groupOrderId=...` query)
+  - `PATCH /orders/status?groupOrderId=...` (Update by `groupOrderId` query parameter)
 - **Auth Level**: Access Token (`admin`, `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Security Check**: Managers can only update status of orders belonging to their own restaurant.
@@ -1554,12 +1632,25 @@ The Ingredients module allows restaurant managers to manage raw material invento
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**:
 
+  | Field | Type | Required | Description |
+  | :--- | :--- | :--- | :--- |
+  | `ingredientCode` | String | Yes | Unique ingredient code per restaurant (e.g. `"ING-MOZZ-01"`) |
+  | `name` | String | Yes | Ingredient display name (e.g. `"Mozzarella Cheese"`) |
+  | `unit` | String | Yes | Enum: `'kg'`, `'liter'`, `'piece'`, `'grams'` |
+  | `shelfLifeDays` | Number | Yes | Shelf life in days ($\ge 0$) |
+  | `minimumStock` | Number | No | Minimum stock threshold ($\ge 0$, Default: `0`) |
+  | `safetyStock` | Number | No | Safety stock buffer ($\ge 0$, Default: `0`) |
+
+  _Request Example_:
+
   ```json
   {
+    "ingredientCode": "ING-MOZZ-01",
     "name": "Mozzarella Cheese",
-    "quantity": 5000,
     "unit": "grams",
-    "minStockAlert": 1000
+    "shelfLifeDays": 14,
+    "minimumStock": 1000,
+    "safetyStock": 500
   }
   ```
 
@@ -1570,7 +1661,10 @@ The Ingredients module allows restaurant managers to manage raw material invento
 - **Method / URL**: `GET /ingredients`
 - **Auth Level**: Access Token (`manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Query Parameters**: `page` (Default: `1`), `limit` (Default: `10`), `search` (matches ingredient `name`), `minQuantity`, `maxQuantity`, `unit`, `sortBy`, `sortOrder`, `isDeleted`.
+- **Query Parameters**:
+  - `page` (Optional string/number)
+  - `limit` (Optional string/number)
+  - `search` (Optional string, searches ingredient `name`)
 
 ---
 
@@ -1585,7 +1679,7 @@ The Ingredients module allows restaurant managers to manage raw material invento
 
 - **Method / URL**: `PATCH /ingredients/:id`
 - **Auth Level**: Access Token (`manager`)
-- **Request Body (`application/json`)**: Accepts optional `name`, `quantity`, `unit`, `minStockAlert`.
+- **Request Body (`application/json`)**: Accepts optional fields from `Create Ingredient` (`ingredientCode`, `name`, `unit`, `shelfLifeDays`, `minimumStock`, `safetyStock`).
 
 ---
 

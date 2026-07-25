@@ -1,75 +1,60 @@
 import { NextResponse, connection } from "next/server"
-import { getSession } from "@/lib/auth/session"
-import type { ApiResponse, UserRole } from "@/features/auth/auth"
+import { z } from "zod"
+import type { ApiResponse } from "@/features/auth/auth"
 import { updateOrderStatus } from "@/features/orders/api"
-import type { ApiRestaurantOrder, OrderStatus } from "@/features/orders/api/type"
+import { ORDER_DASHBOARD_ROLES } from "@/features/orders/api/dashboard"
+import {
+  handleUpstreamError,
+  readJsonBody,
+  requireSessionUser,
+} from "@/lib/api/route-helpers"
+import type { ApiRestaurantOrder } from "@/features/orders/api/type"
 
-const ORDER_STATUSES: OrderStatus[] = [
-  "Pending",
-  "Confirmed",
-  "Preparing",
-  "Ready",
-  "Out For Delivery",
-  "Delivered",
-  "Cancelled",
-]
+const statusSchema = z.object({
+  status: z.enum([
+    "Pending",
+    "Confirmed",
+    "Preparing",
+    "Ready",
+    "Out For Delivery",
+    "Delivered",
+    "Cancelled",
+  ]),
+})
 
+/**
+ * PATCH /api/orders/:id/status — updates a sub-order status.
+ *
+ * Managers and staff may only update orders of their own restaurant; that check
+ * lives upstream, which rejects out-of-scope ids with a 403.
+ */
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   await connection()
 
-  const session = await getSession()
-  if (!session.isLoggedIn || !session.user) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 }
-    )
-  }
+  const auth = await requireSessionUser(ORDER_DASHBOARD_ROLES)
+  if (!auth.ok) return auth.response
 
-  const role = session.user.role as UserRole
-  if (role !== "admin" && role !== "manager") {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Forbidden", message: "Admin or manager role required" },
-      { status: 403 }
-    )
-  }
-
-  let body: { status?: OrderStatus }
-  try {
-    body = (await request.json()) as { status?: OrderStatus }
-  } catch {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Invalid JSON body" },
-      { status: 400 }
-    )
-  }
-
-  if (!body.status || !ORDER_STATUSES.includes(body.status)) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Invalid order status" },
-      { status: 400 }
-    )
-  }
+  const parsed = await readJsonBody(request, statusSchema)
+  if (!parsed.ok) return parsed.response
 
   const { id } = await params
+  const groupOrderId = new URL(request.url).searchParams.get("groupOrderId")
 
   try {
-    const result = await updateOrderStatus(id, body.status)
+    const result = await updateOrderStatus(
+      id,
+      parsed.data.status,
+      groupOrderId ?? undefined
+    )
     return NextResponse.json<ApiResponse<ApiRestaurantOrder>>(
       { success: true, data: result.data },
       { status: 200 }
     )
   } catch (err) {
     console.error("[api/orders/[id]/status] PATCH failed", err)
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "INTERNAL_ERROR",
-        message: err instanceof Error ? err.message : "Failed to update order status",
-      },
-      { status: 500 }
-    )
+    return handleUpstreamError(err, "Failed to update order status")
   }
 }

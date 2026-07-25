@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { Store } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -13,6 +14,11 @@ interface RestaurantOrderCardProps {
   order: ApiRestaurantOrder
   t: (key: string) => string
   className?: string
+  /**
+   * Replaces the read-only status badge — the dashboard passes a status select
+   * so admins, managers and staff can advance the order from the same card.
+   */
+  statusSlot?: ReactNode
 }
 
 interface OrderItemRowProps {
@@ -55,6 +61,7 @@ export default function RestaurantOrderCard({
   order,
   t,
   className,
+  statusSlot,
 }: RestaurantOrderCardProps) {
   const statusMeta = getStatusMeta(order.status)
   const restaurantName = order.restaurant.name
@@ -83,16 +90,18 @@ export default function RestaurantOrderCard({
           </div>
         </div>
 
-        <Badge
-          variant="outline"
-          className={cn(
-            "h-6 gap-1.5 rounded-full px-3 text-xs font-bold",
-            statusMeta.badgeClass
-          )}
-        >
-          <statusMeta.Icon className="size-3.5" />
-          <span>{t(statusMeta.labelKey)}</span>
-        </Badge>
+        {statusSlot ?? (
+          <Badge
+            variant="outline"
+            className={cn(
+              "h-6 gap-1.5 rounded-full px-3 text-xs font-bold",
+              statusMeta.badgeClass
+            )}
+          >
+            <statusMeta.Icon className="size-3.5" />
+            <span>{t(statusMeta.labelKey)}</span>
+          </Badge>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-5 p-4 sm:p-5 md:p-6">

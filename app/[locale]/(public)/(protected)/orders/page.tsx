@@ -1,8 +1,9 @@
 import { setRequestLocale } from "next-intl/server"
 import { getTranslations } from "next-intl/server"
-import { getMyOrders } from "@/features/orders/api"
+import { getAllMyOrders } from "@/features/orders/api"
 import OrdersClient from "@/features/orders/components/OrdersClient"
 import { AlertCircle } from "lucide-react"
+import { ORDER_STATUSES } from "@/features/orders/status"
 import type { ApiOrderGroup, OrderStatus } from "@/features/orders/api/type"
 
 export type FilterStatus = "all" | OrderStatus
@@ -32,8 +33,9 @@ export default async function OrdersPage({
   let fetchError: string | null = null
 
   try {
-    const result = await getMyOrders()
-    orderGroups = result.data
+    // The endpoint paginates but exposes no search/sort, so the full history is
+    // loaded once and filtered, sorted and paginated below.
+    orderGroups = await getAllMyOrders()
   } catch (err) {
     console.error("[OrdersPage] Failed to fetch orders:", err)
     fetchError = err instanceof Error ? err.message : t("errorLoadingOrders")
@@ -66,15 +68,7 @@ export default async function OrdersPage({
 
   const activeStatus: FilterStatus =
     status &&
-    (status === "all" ||
-      [
-        "Pending",
-        "Confirmed",
-        "Preparing",
-        "Out For Delivery",
-        "Delivered",
-        "Cancelled",
-      ].includes(status))
+    (status === "all" || ORDER_STATUSES.includes(status as OrderStatus))
       ? (status as FilterStatus)
       : "all"
 
@@ -101,7 +95,7 @@ export default async function OrdersPage({
         group.fullName.toLowerCase().includes(queryLower) ||
         group.phoneNumber.toLowerCase().includes(queryLower) ||
         group.emailAddress.toLowerCase().includes(queryLower) ||
-        group.orders.some(
+        (group.orders ?? []).some(
           (order) =>
             order.orderId.toLowerCase().includes(queryLower) ||
             order.restaurant.name.toLowerCase().includes(queryLower) ||

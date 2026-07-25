@@ -9,19 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { getStatusMeta } from "@/features/orders/status"
+import { ORDER_STATUSES, getStatusMeta } from "@/features/orders/status"
 import type { OrderStatus } from "@/features/orders/api/type"
 import { cn } from "@/lib/utils"
 
-export const ORDER_STATUS_OPTIONS: OrderStatus[] = [
-  "Pending",
-  "Confirmed",
-  "Preparing",
-  "Ready",
-  "Out For Delivery",
-  "Delivered",
-  "Cancelled",
-]
+export const ORDER_STATUS_OPTIONS = ORDER_STATUSES
 
 interface OrderStatusSelectProps {
   value: OrderStatus

@@ -51,7 +51,8 @@ export default function OrderHeader({
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground md:text-sm">
-              {formattedDate} · {orderGroup.totalQuantity} {t("items")}
+              {formattedDate ? `${formattedDate} · ` : ""}
+              {orderGroup.totalQuantity} {t("items")}
             </p>
           </div>
         </div>

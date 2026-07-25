@@ -1,16 +1,22 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, type ReactNode } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import RestaurantOrderCard from "@/features/orders/components/RestaurantOrderCard"
-import type { ApiOrderGroup, OrderStatus } from "@/features/orders/api/type"
+import type {
+  ApiOrderGroup,
+  ApiRestaurantOrder,
+  OrderStatus,
+} from "@/features/orders/api/type"
 import { cn } from "@/lib/utils"
 
 interface RestaurantOrderCarouselProps {
   orderGroup: ApiOrderGroup
   t: (key: string, values?: Record<string, string | number>) => string
+  /** Optional per-order status control (dashboard only — customers read only). */
+  renderStatusControl?: (order: ApiRestaurantOrder) => ReactNode
 }
 
 function getStatusDotClass(status: OrderStatus) {
@@ -46,6 +52,7 @@ function isReady(status: OrderStatus) {
 export default function RestaurantOrderCarousel({
   orderGroup,
   t,
+  renderStatusControl,
 }: RestaurantOrderCarouselProps) {
   const orders = orderGroup.orders || []
   const [activeIndex, setActiveIndex] = useState(0)
@@ -149,7 +156,11 @@ export default function RestaurantOrderCarousel({
             {t("orderDetails")}
           </h2>
         </div>
-        <RestaurantOrderCard order={orders[0]} t={t} />
+        <RestaurantOrderCard
+          order={orders[0]}
+          t={t}
+          statusSlot={renderStatusControl?.(orders[0])}
+        />
       </div>
     )
   }
@@ -278,7 +289,11 @@ export default function RestaurantOrderCarousel({
             }}
             className="w-full min-w-full shrink-0 snap-start"
           >
-            <RestaurantOrderCard order={order} t={t} />
+            <RestaurantOrderCard
+              order={order}
+              t={t}
+              statusSlot={renderStatusControl?.(order)}
+            />
           </div>
         ))}
       </div>
