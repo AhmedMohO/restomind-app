@@ -63,17 +63,17 @@ export function useDashboardOrdersSummary(params: QueryOrderListingParams = {}) 
 }
 
 /** Group details, already scoped to the caller's restaurant when applicable. */
-export function useDashboardOrderGroup(orderGroupId: string) {
+export function useDashboardOrderGroup(groupOrderId: string) {
   return useQuery<ApiOrderGroup>({
-    queryKey: [...GROUP_KEY, orderGroupId] as const,
+    queryKey: [...GROUP_KEY, groupOrderId] as const,
     queryFn: async () => {
       const data = await clientFetch<ApiOrderGroup>(
-        `/orders/group/${encodeURIComponent(orderGroupId)}`
+        `/orders/group/${encodeURIComponent(groupOrderId)}`
       )
       if (!data) throw new Error("Order group not found")
       return data
     },
-    enabled: Boolean(orderGroupId),
+    enabled: Boolean(groupOrderId),
     staleTime: 20 * 1000,
   })
 }
@@ -82,17 +82,9 @@ export function useUpdateOrderStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      status,
-      groupOrderId,
-    }: {
-      id: string
-      status: OrderStatus
-      groupOrderId?: string
-    }) => {
+    mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
       const data = await clientFetch<ApiRestaurantOrder>(
-        `/orders/${encodeURIComponent(id)}/status${buildQueryString({ groupOrderId })}`,
+        `/orders/${encodeURIComponent(id)}/status`,
         { method: "PATCH", body: { status } }
       )
       if (!data) throw new Error("Failed to update order status")

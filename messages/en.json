@@ -231,6 +231,7 @@
     "items": "items",
     "reorder": "Reorder",
     "viewDetails": "View Details",
+    "cancelOrder": "Cancel Order",
     "orderDetails": "Order Details",
     "orderDetailsDesc": "Full details for this order including items, delivery, and payment info.",
     "sharedInfo": "Shared Info",

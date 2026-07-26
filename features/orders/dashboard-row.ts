@@ -8,22 +8,22 @@
  * Pure functions — safe to import from route handlers and components alike.
  */
 
+import type { ApiOrderGroup } from "./api/type"
 import type {
-  ApiOrderGroup,
-  ApiOrderItem,
+  ApiOrderUser,
   ApiRestaurantOrder,
-} from "./api/type"
-import type { ApiOrderUser, DashboardOrderRow } from "./api/dashboard-types"
+  DashboardOrderRow,
+} from "./api/dashboard-types"
 
 const MAX_LISTED_RESTAURANTS = 2
 
-function userFullName(user?: ApiOrderUser | string): string {
-  if (!user || typeof user === "string") return ""
+function userFullName(user: ApiOrderUser | null): string {
+  if (!user) return ""
   return [user.firstName, user.lastName].filter(Boolean).join(" ")
 }
 
-function userContact(user?: ApiOrderUser | string): string {
-  if (!user || typeof user === "string") return ""
+function userContact(user: ApiOrderUser | null): string {
+  if (!user) return ""
   return user.email ?? user.phone ?? ""
 }
 
@@ -32,25 +32,22 @@ function joinRestaurantNames(names: string[]): string {
   const unique = [...new Set(names.filter(Boolean))]
   if (unique.length === 0) return ""
   if (unique.length <= MAX_LISTED_RESTAURANTS) return unique.join(", ")
-  return `${unique.slice(0, MAX_LISTED_RESTAURANTS).join(", ")} +${
-    unique.length - MAX_LISTED_RESTAURANTS
-  }`
+  return `${unique.slice(0, MAX_LISTED_RESTAURANTS).join(", ")} +${unique.length - MAX_LISTED_RESTAURANTS
+    }`
 }
 
 function restaurantNamesOf(group: ApiOrderGroup): string[] {
-  const fromSubOrders = (group.orders ?? []).map((order) => order.restaurant?.name ?? "")
-  if (fromSubOrders.some(Boolean)) return fromSubOrders
-  return (group.items ?? []).map((item: ApiOrderItem) => item.restaurantName)
+  return group.orders.map((order) => order.restaurant.name)
 }
 
 export function groupToDashboardRow(group: ApiOrderGroup): DashboardOrderRow {
-  const id = group.orderGroupId ?? group.groupOrderId ?? ""
+  const id = group.groupOrderId
   return {
     id,
     reference: id.slice(-8).toUpperCase(),
-    customerName: group.fullName || userFullName(group.userId) || "-",
+    customerName: group.fullName || userFullName(group.user) || "-",
     customerContact:
-      group.emailAddress || group.phoneNumber || userContact(group.userId) || "-",
+      group.emailAddress || group.phoneNumber || userContact(group.user) || "-",
     restaurantName: joinRestaurantNames(restaurantNamesOf(group)) || "-",
     finalTotalPrice: group.finalTotalPrice,
     totalQuantity: group.totalQuantity,
@@ -59,16 +56,17 @@ export function groupToDashboardRow(group: ApiOrderGroup): DashboardOrderRow {
   }
 }
 
-export function subOrderToDashboardRow(order: ApiRestaurantOrder): DashboardOrderRow {
-  const id = order.groupOrderId ?? order._id ?? order.orderId
+export function subOrderToDashboardRow(
+  order: ApiRestaurantOrder
+): DashboardOrderRow {
+  const id = order._id
   return {
     id,
-    reference: (order.orderId ?? id).slice(-8).toUpperCase(),
-    customerName: order.fullName || userFullName(order.userId) || "-",
+    reference: id.slice(-8).toUpperCase(),
+    customerName: order.fullName || userFullName(order.user) || "-",
     customerContact:
-      order.emailAddress || order.phoneNumber || userContact(order.userId) || "-",
-    restaurantName:
-      order.restaurant?.name || order.items?.[0]?.restaurantName || "-",
+      order.emailAddress || order.phoneNumber || userContact(order.user) || "-",
+    restaurantName: order.restaurant.name || "-",
     finalTotalPrice: order.finalTotalPrice,
     totalQuantity: order.totalQuantity,
     deliveryMethod: order.deliveryMethod,

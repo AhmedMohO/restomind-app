@@ -1,6 +1,5 @@
 import type {
   ApiDeliveryAddress,
-  ApiOrderItem,
   ApiRestaurant,
   DeliveryMethod,
   OrderStatus,
@@ -25,27 +24,48 @@ export interface ApiOrderUser {
   id?: string
 }
 
-/** A single restaurant sub-order (`GET /orders/restaurant/:restaurantId`). */
+/** Line item as returned inside a standalone restaurant order. */
+export interface ApiChildOrderItem {
+  productId: string
+  productTitle: string
+  productImage?: string
+  offerId?: string
+  restaurantId: string
+  restaurantName: string
+  originalPrice: number
+  offerPrice: number
+  discountPercentage: number
+  quantity: number
+  lineTotal: number
+  purchasedAt: string
+}
+
+/**
+ * A standalone restaurant order — `GET /orders/:id`, the response of
+ * `PATCH /orders/:id/status`, and the manager/staff listing branch of
+ * `GET /orders`. Distinct from `ApiGroupSubOrder`, which is the slimmer shape
+ * nested inside `ApiOrderGroup.orders[]`.
+ */
 export interface ApiRestaurantOrder {
-  _id?: string
-  orderId: string
+  _id: string
   groupOrderId?: string
-  userId?: ApiOrderUser | string
+  user: ApiOrderUser | null
   restaurant: ApiRestaurant
-  items: ApiOrderItem[]
+  items: ApiChildOrderItem[]
   totalOriginalPrice: number
   totalDiscount: number
   finalTotalPrice: number
   totalQuantity: number
-  fullName?: string
-  phoneNumber?: string
-  emailAddress?: string
-  deliveryMethod?: DeliveryMethod
-  deliveryAddress?: ApiDeliveryAddress | null
-  paymentMethod?: PaymentMethod
+  fullName: string
+  phoneNumber: string
+  emailAddress: string
+  deliveryMethod: DeliveryMethod
+  deliveryAddress: ApiDeliveryAddress | null
+  specialNotes?: string
+  paymentMethod: PaymentMethod
   status: OrderStatus
   createdAt: string
-  updatedAt?: string
+  updatedAt: string
 }
 
 export interface UpdateOrderStatusPayload {

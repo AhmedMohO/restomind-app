@@ -41,14 +41,9 @@ export async function PATCH(
   if (!parsed.ok) return parsed.response
 
   const { id } = await params
-  const groupOrderId = new URL(request.url).searchParams.get("groupOrderId")
 
   try {
-    const result = await updateOrderStatus(
-      id,
-      parsed.data.status,
-      groupOrderId ?? undefined
-    )
+    const result = await updateOrderStatus(id, parsed.data.status)
     return NextResponse.json<ApiResponse<ApiRestaurantOrder>>(
       { success: true, data: result.data },
       { status: 200 }

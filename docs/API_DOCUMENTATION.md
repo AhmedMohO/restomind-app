@@ -18,9 +18,14 @@ This documentation provides comprehensive details for integrating with the **Res
 10. [Restaurant Module (`/restaurants`)](#10-restaurant-module-restaurants)
 11. [Offers Module (`/offers`)](#11-offers-module-offers)
 12. [Ingredients Module (`/ingredients`)](#12-ingredients-module-ingredients)
-13. [Dashboard Module (`/dashboard`)](#13-dashboard-module-dashboard)
-14. [Sales Module (`/sales`)](#14-sales-module-sales)
-15. [End-to-End Shopping, Order, Sales & Analytics Workflow](#15-end-to-end-shopping-order-sales--analytics-workflow)
+13. [Suppliers Module (`/suppliers`)](#13-suppliers-module-suppliers)
+14. [Purchase Orders Module (`/purchase-orders`)](#14-purchase-orders-module-purchase-orders)
+15. [Inventory & Waste Management Module (`/inventory`)](#15-inventory--waste-management-module-inventory)
+16. [Daily Production Planning Module (`/predictions/production-plan`)](#16-daily-production-planning-module-predictionsproduction-plan)
+17. [Data Ingestion & CSV Import Jobs Module (`/imports`)](#17-data-ingestion--csv-import-jobs-module-imports)
+18. [Dashboard Module (`/dashboard`)](#18-dashboard-module-dashboard)
+19. [Sales Module (`/sales`)](#19-sales-module-sales)
+20. [End-to-End Shopping, Inventory, Production & Order Analytics Workflow](#20-end-to-end-shopping-inventory-production--order-analytics-workflow)
 
 ---
 
@@ -186,7 +191,7 @@ interface Product {
 ### Ingredient Schema
 
 ```typescript
-type IngredientUnit = 'kg' | 'liter' | 'piece' | 'grams';
+type IngredientUnit = 'kg' | 'liter' | 'piece';
 
 interface Ingredient {
   _id: string;
@@ -231,6 +236,7 @@ interface Recipe {
 ```typescript
 interface Offer {
   _id: string;                      // ObjectId
+  slug?: string;                    // Unique offer slug identifier
   productId: string | Product;      // Associated Product ID or populated Product
   restaurantId: string | Restaurant; // Associated Restaurant ID or populated Restaurant
   originalPrice: number;            // Product base price at offer creation
@@ -313,20 +319,39 @@ interface Favorite {
 
 ### Order & GroupOrder Schemas
 
+There are two distinct order shapes returned by the API — they are **not**
+interchangeable, and a listing/detail response is always exactly one of them:
+
+- `GroupSubOrder`, nested inside `GroupOrder.orders[]` — one slim entry per
+  restaurant in the group.
+- `Order`, a standalone restaurant order returned by `GET /orders/:id`,
+  `PATCH /orders/:id/status`, and the manager/staff branch of `GET /orders`.
+
 ```typescript
-interface OrderItem {
-  offerId: string;
+/** Line item inside a group's per-restaurant sub-order (GroupOrder.orders[].items). */
+interface GroupOrderItem {
   productId: string;
-  productTitle: string;
-  productImage?: string;
-  restaurantId: string;
-  restaurantName: string;
-  originalPrice: number;
-  offerPrice: number;
-  discountPercentage: number;
+  title: string;
+  price: number;
+  discountedPrice: number;
   quantity: number;
-  purchasedAt: string;          // ISO Date string
-  lineTotal: number;            // quantity * offerPrice
+  lineTotal: number;
+  offerId?: string;
+  discountPercentage?: number;
+  productImage?: string;
+}
+
+/** A group's sub-order for one restaurant — nested inside GroupOrder.orders[]. */
+interface GroupSubOrder {
+  orderId: string;
+  restaurant: { _id: string; name: string; logo?: string; image?: string };
+  status: 'Pending' | 'Confirmed' | 'Preparing' | 'Ready' | 'Out For Delivery' | 'Delivered' | 'Cancelled';
+  items: GroupOrderItem[];
+  totalOriginalPrice: number;
+  totalDiscount: number;
+  finalTotalPrice: number;
+  totalQuantity: number;
+  createdAt: string;
 }
 
 interface DeliveryAddress {
@@ -336,11 +361,53 @@ interface DeliveryAddress {
   country: string;
 }
 
+interface GroupOrder {
+  _id: string;
+  groupOrderId: string;         // same value as _id
+  user: User | null;
+  fullName: string;
+  phoneNumber: string;
+  emailAddress: string;
+  deliveryMethod: 'Home Delivery' | 'Store Pickup';
+  deliveryAddress: DeliveryAddress | null;
+  specialNotes?: string;
+  paymentMethod: 'Cash on Delivery';
+  overallStatus: 'Pending' | 'Confirmed' | 'Preparing' | 'Ready' | 'Out For Delivery' | 'Delivered' | 'Cancelled' | 'Partially Delivered' | 'Partially Cancelled' | 'Processing';
+  totalOriginalPrice: number;
+  totalDiscount: number;
+  finalTotalPrice: number;
+  totalQuantity: number;
+  orders: GroupSubOrder[];       // one entry per restaurant in this group
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Line item inside a standalone restaurant order (different field names from GroupOrderItem). */
+interface OrderItem {
+  productId: string;
+  productTitle: string;
+  productImage?: string;
+  offerId?: string;
+  restaurantId: string;
+  restaurantName: string;
+  originalPrice: number;
+  offerPrice: number;
+  discountPercentage: number;
+  quantity: number;
+  lineTotal: number;            // quantity * offerPrice
+  purchasedAt: string;           // ISO Date string
+}
+
+/**
+ * A standalone restaurant order — GET /orders/:id, the response of
+ * PATCH /orders/:id/status, and the manager/staff branch of GET /orders.
+ * Distinct from GroupSubOrder above (different item shape, uses `_id` not `orderId`).
+ */
 interface Order {
   _id: string;
   groupOrderId?: string;
-  userId: string;
-  restaurantId: string | Restaurant;
+  user: User | null;
+  restaurant: { _id: string; name: string; logo?: string; image?: string };
   items: OrderItem[];
   totalOriginalPrice: number;
   totalDiscount: number;
@@ -350,30 +417,10 @@ interface Order {
   phoneNumber: string;
   emailAddress: string;
   deliveryMethod: 'Home Delivery' | 'Store Pickup';
-  deliveryAddress?: DeliveryAddress;
+  deliveryAddress: DeliveryAddress | null;
   specialNotes?: string;
   paymentMethod: 'Cash on Delivery';
   status: 'Pending' | 'Confirmed' | 'Preparing' | 'Ready' | 'Out For Delivery' | 'Delivered' | 'Cancelled';
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface GroupOrder {
-  _id: string;
-  userId: string;
-  orders: Order[];              // Array of populated sub-orders per restaurant
-  fullName: string;
-  phoneNumber: string;
-  emailAddress: string;
-  deliveryMethod: 'Home Delivery' | 'Store Pickup';
-  deliveryAddress?: DeliveryAddress;
-  specialNotes?: string;
-  paymentMethod: 'Cash on Delivery';
-  totalOriginalPrice: number;
-  totalDiscount: number;
-  finalTotalPrice: number;
-  totalQuantity: number;
-  overallStatus: 'Pending' | 'Confirmed' | 'Preparing' | 'Ready' | 'Out For Delivery' | 'Delivered' | 'Cancelled' | 'Partially Delivered' | 'Partially Cancelled' | 'Processing';
   createdAt: string;
   updatedAt: string;
 }
@@ -402,7 +449,7 @@ interface SalesTransaction {
 
 ### Dashboard Analytics Schemas
 
-```typescript
+````typescript
 export interface KpiMetric {
   current: number;
   previous: number;
@@ -462,6 +509,197 @@ export interface ManagerDashboardStatsResponse {
   topProducts: RankedItem[];
   topCategories: RankedItem[];
   fulfillmentMethods: FulfillmentMethodItem[];
+}
+
+### Supplier Schema
+
+```typescript
+interface Supplier {
+  _id: string;                  // ObjectId
+  restaurantId: string;         // Associated Restaurant ObjectId
+  name: string;                 // Supplier business name
+  email?: string;               // Optional email
+  phone?: string;               // Optional phone
+  leadTimeDays: number;         // Delivery lead time in days (default: 1)
+  isDeleted: boolean;
+  deletedAt?: string;           // ISO Date String
+  createdAt: string;            // ISO Date String
+  updatedAt: string;            // ISO Date String
+}
+````
+
+### Purchase Order Schema
+
+```typescript
+type PurchaseOrderStatus = 'draft' | 'sent' | 'received' | 'cancelled';
+
+interface PurchaseOrderItem {
+  ingredientId: string | Ingredient;
+  quantity: number;
+  unit: IngredientUnit;
+  unitCost: number;
+}
+
+interface PurchaseOrder {
+  _id: string;                  // ObjectId
+  restaurantId: string;         // Restaurant ObjectId
+  supplierId: string | Supplier;// Supplier ObjectId or populated Supplier
+  items: PurchaseOrderItem[];
+  status: PurchaseOrderStatus;
+  expectedDeliveryDate?: string;// ISO Date String
+  createdBy: string;            // User ObjectId of creator
+  isDeleted: boolean;
+  deletedAt?: string;           // ISO Date String
+  createdAt: string;            // ISO Date String
+  updatedAt: string;            // ISO Date String
+}
+```
+
+### Inventory Batch Schema
+
+```typescript
+interface InventoryBatch {
+  _id: string;                  // ObjectId
+  restaurantId: string;         // Restaurant ObjectId
+  ingredientId: string | Ingredient; // Ingredient ObjectId or populated object
+  batchNumber: string;          // Lot / Batch tracking number
+  quantityRemaining: number;    // Remaining stock in batch
+  unitCost: number;             // Cost per unit
+  expiryDate: string;           // ISO Date String
+  receivedDate: string;         // ISO Date String
+  isDeleted: boolean;
+  createdAt: string;            // ISO Date String
+  updatedAt: string;            // ISO Date String
+}
+```
+
+### Stock Transaction Schema
+
+```typescript
+type StockTransactionType =
+  | 'purchase'
+  | 'consumption'
+  | 'waste'
+  | 'adjustment'
+  | 'transfer_in'
+  | 'transfer_out'
+  | 'return_to_supplier';
+
+interface StockTransaction {
+  _id: string;                  // ObjectId
+  restaurantId: string;         // Restaurant ObjectId
+  ingredientId: string | Ingredient;
+  batchId?: string | InventoryBatch;
+  transactionType: StockTransactionType;
+  quantity: number;
+  unit: IngredientUnit;
+  date: string;                 // ISO Date String
+  isDeleted: boolean;
+  createdAt: string;            // ISO Date String
+  updatedAt: string;            // ISO Date String
+}
+```
+
+### Waste Event Schema
+
+```typescript
+type WasteReason =
+  | 'expired'
+  | 'overproduction'
+  | 'preparation_loss'
+  | 'spoiled'
+  | 'customer_return'
+  | 'damaged'
+  | 'incorrect_order'
+  | 'unknown';
+
+interface WasteEvent {
+  _id: string;                  // ObjectId
+  restaurantId: string;         // Restaurant ObjectId
+  ingredientId: string | Ingredient;
+  batchId?: string | InventoryBatch;
+  quantity: number;
+  unit: IngredientUnit;
+  wasteReason: WasteReason;
+  estimatedCost: number;        // Financial loss value
+  date: string;                 // ISO Date String
+  isDeleted: boolean;
+  createdAt: string;            // ISO Date String
+  updatedAt: string;            // ISO Date String
+}
+```
+
+### Daily Production Plan Schema
+
+```typescript
+type ConfidenceLevel = 'high' | 'medium' | 'low';
+type ProductionPlanSource = 'ai_model' | 'fallback_yesterday';
+
+interface ProductionPlanItem {
+  productId: string | Product;  // Product ObjectId or populated Product
+  recommendedQty: number;       // Recommended batch quantity
+  lowerBound?: number;          // Lower prediction bound
+  upperBound?: number;          // Upper prediction bound
+  confidence: ConfidenceLevel;  // AI model confidence score
+  source: ProductionPlanSource;
+  factors?: any[];              // Exogenous features (e.g. weather, day-of-week)
+  actualProducedQty?: number | null; // Actual recorded kitchen production
+}
+
+interface DailyProductionPlan {
+  _id: string;                  // ObjectId
+  restaurantId: string;         // Restaurant ObjectId
+  date: string;                 // YYYY-MM-DD format
+  totalRecommendedQty: number;  // Aggregated units planned
+  items: ProductionPlanItem[];
+  isDeleted: boolean;
+  createdAt: string;            // ISO Date String
+  updatedAt: string;            // ISO Date String
+}
+```
+
+### Import Job Schema
+
+```typescript
+type ImportType =
+  | 'sales_history'
+  | 'inventory_transactions'
+  | 'recipes'
+  | 'menu_items'
+  | 'ingredients';
+
+type ImportJobStatus =
+  | 'processing'
+  | 'validated'
+  | 'ai_ingest_pending'
+  | 'ai_ingest_failed'
+  | 'completed'
+  | 'failed';
+
+interface ImportErrorDetail {
+  row: number;
+  column?: string;
+  message: string;
+}
+
+interface ImportJob {
+  _id: string;                  // ObjectId
+  restaurantId: string;         // Restaurant ObjectId
+  uploadedBy: string;           // User ObjectId
+  importType: ImportType;
+  fileName: string;
+  columnMapping?: Record<string, string>;
+  rawRows?: string[][];
+  status: ImportJobStatus;
+  totalRows?: number;
+  validRows?: number;
+  invalidRows?: number;
+  errors?: ImportErrorDetail[];
+  aiIngestAttempts: number;
+  aiIngestLastError?: string;
+  isDeleted: boolean;
+  createdAt: string;            // ISO Date String
+  updatedAt: string;            // ISO Date String
 }
 ```
 
@@ -577,9 +815,9 @@ Resends verification OTP or reset password OTP.
 - **Auth Level**: Public
 - **Request Body (`application/json`)**:
 
-  | Field   | Type   | Required | Rules                                  | Description      |
-  | :------ | :----- | :------- | :------------------------------------- | :--------------- |
-  | `email` | String | Yes      | Valid email                            | Target email     |
+  | Field   | Type   | Required | Rules                                 | Description      |
+  | :------ | :----- | :------- | :------------------------------------ | :--------------- |
+  | `email` | String | Yes      | Valid email                           | Target email     |
   | `type`  | String | Yes      | `'confirmEmail'` or `'resetPassword'` | Type of OTP flow |
 
 - **Response (200 OK)**: `{ "message": "OTP sent successfully" }`
@@ -652,15 +890,15 @@ Updates active user's details and/or uploads profile photo.
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**:
 
-  | Field | Type | Required | Rules / Description |
-  | :--- | :--- | :--- | :--- |
-  | `label` | String | No | Custom address title (e.g., `"Home"`, `"Work"`) |
-  | `fullName` | String | Yes | Recipient full name |
-  | `phoneNumber` | String | Yes | Contact phone number |
-  | `street` | String | Yes | Street address |
-  | `city` | String | Yes | City name |
-  | `country` | String | No | Country name |
-  | `isDefault` | Boolean | No | Mark as default address (Default: `false`) |
+  | Field         | Type    | Required | Rules / Description                             |
+  | :------------ | :------ | :------- | :---------------------------------------------- |
+  | `label`       | String  | No       | Custom address title (e.g., `"Home"`, `"Work"`) |
+  | `fullName`    | String  | Yes      | Recipient full name                             |
+  | `phoneNumber` | String  | Yes      | Contact phone number                            |
+  | `street`      | String  | Yes      | Street address                                  |
+  | `city`        | String  | Yes      | City name                                       |
+  | `country`     | String  | No       | Country name                                    |
+  | `isDefault`   | Boolean | No       | Mark as default address (Default: `false`)      |
 
 - **Response (201 Created)**: Updated array of saved address objects.
 
@@ -724,18 +962,18 @@ Updates active user's details and/or uploads profile photo.
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
 
-  | Parameter | Type | Default | Description |
-  | :--- | :--- | :--- | :--- |
-  | `page` | Number / String | `1` | Page number |
-  | `limit` | Number / String | `10` | Items per page |
-  | `search` | String | *None* | Search in `firstName`, `lastName`, `email`, `phone` |
-  | `role` | String | *None* | Filter by role (`customer`, `manager`, `admin`, `staff`) |
-  | `restaurantId` | String | *None* | Filter by Restaurant ObjectId |
-  | `isDeleted` | Boolean String | *None* | Filter soft-deleted status (`true`, `false`) |
-  | `sort` / `sortBy` | String | `createdAt` | Field to sort by |
-  | `order` / `sortOrder` | String | `desc` | Sort direction (`asc`, `desc`) |
-  | `createdAt` | ISO Date | *None* | Creation date filter |
-  | `updatedAt` | ISO Date | *None* | Update date filter |
+  | Parameter             | Type            | Default     | Description                                              |
+  | :-------------------- | :-------------- | :---------- | :------------------------------------------------------- |
+  | `page`                | Number / String | `1`         | Page number                                              |
+  | `limit`               | Number / String | `10`        | Items per page                                           |
+  | `search`              | String          | _None_      | Search in `firstName`, `lastName`, `email`, `phone`      |
+  | `role`                | String          | _None_      | Filter by role (`customer`, `manager`, `admin`, `staff`) |
+  | `restaurantId`        | String          | _None_      | Filter by Restaurant ObjectId                            |
+  | `isDeleted`           | Boolean String  | _None_      | Filter soft-deleted status (`true`, `false`)             |
+  | `sort` / `sortBy`     | String          | `createdAt` | Field to sort by                                         |
+  | `order` / `sortOrder` | String          | `desc`      | Sort direction (`asc`, `desc`)                           |
+  | `createdAt`           | ISO Date        | _None_      | Creation date filter                                     |
+  | `updatedAt`           | ISO Date        | _None_      | Update date filter                                       |
 
 - **Response (200 OK)**:
   ```json
@@ -783,7 +1021,7 @@ Updates active user's details and/or uploads profile photo.
 - **Auth Level**: Access Token (`admin`, `manager`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Business Behavior & Constraints**: Soft-deletes user account (`isDeleted: true`).
-  - *Conflict Check*: If the user is a manager currently assigned as owner of an active restaurant, returns **HTTP 409 Conflict** with error code `MANAGER_HAS_ACTIVE_RESTAURANT`.
+  - _Conflict Check_: If the user is a manager currently assigned as owner of an active restaurant, returns **HTTP 409 Conflict** with error code `MANAGER_HAS_ACTIVE_RESTAURANT`.
 - **Response (200 OK)**: `{ "message": "User deleted successfully" }`
 - **Error Response (409 Conflict)**:
   ```json
@@ -831,12 +1069,12 @@ Updates active user's details and/or uploads profile photo.
 - **Auth Level**: Public
 - **Query Parameters**:
 
-  | Parameter | Type | Default | Description |
-  | :--- | :--- | :--- | :--- |
-  | `page` | Number / String | *Optional* | Page index |
-  | `limit` | Number / String | *Optional* | Items count per page |
-  | `search` | String | *None* | Search in category name |
-  | `isDeleted` | Boolean String | `false` | Soft-deleted filter (`true`, `false`) |
+  | Parameter   | Type            | Default    | Description                           |
+  | :---------- | :-------------- | :--------- | :------------------------------------ |
+  | `page`      | Number / String | _Optional_ | Page index                            |
+  | `limit`     | Number / String | _Optional_ | Items count per page                  |
+  | `search`    | String          | _None_     | Search in category name               |
+  | `isDeleted` | Boolean String  | `false`    | Soft-deleted filter (`true`, `false`) |
 
 - **Response (200 OK)**:
   ```json
@@ -906,7 +1144,17 @@ Updates active user's details and/or uploads profile photo.
 
 ---
 
-### 6.5 Get All Products (Filtered & Paginated)
+### 6.5 Update Product Discount
+
+- **Method / URL**: `PATCH /products/:id/discount`
+- **Auth Level**: Access Token (`admin`, `manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**: `{ "discountedPrice": number }`
+- **Response (200 OK)**: Returns updated `Product` object.
+
+---
+
+### 6.6 Get All Products (Filtered & Paginated)
 
 - **Method / URL**: `GET /products`
 - **Auth Level**: Access Token (`admin`, `manager`)
@@ -916,7 +1164,7 @@ Updates active user's details and/or uploads profile photo.
 
 ---
 
-### 6.6 Get Product Details
+### 6.7 Get Product Details
 
 - **Method / URL**: `GET /products/:id`
 - **Auth Level**: Access Token (`admin`, `manager`)
@@ -925,7 +1173,7 @@ Updates active user's details and/or uploads profile photo.
 
 ---
 
-### 6.7 Upsert Product Recipe
+### 6.8 Upsert Product Recipe
 
 Creates or updates portion recipe for a product. Validates ingredient ownership, units, and yield percentage.
 
@@ -955,7 +1203,7 @@ Creates or updates portion recipe for a product. Validates ingredient ownership,
 
 ---
 
-### 6.8 Get Product Recipe
+### 6.9 Get Product Recipe
 
 - **Method / URL**: `GET /products/:productId/recipe`
 - **Auth Level**: Access Token (`manager`)
@@ -1074,17 +1322,17 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
   - Customer contact details (`fullName`, `phoneNumber`, `emailAddress`) are **automatically injected** by the backend from the authenticated user's profile.
 - **Request Body (`application/json`)**:
 
-  | Field | Type | Required | Rules / Description |
-  | :--- | :--- | :--- | :--- |
-  | `deliveryMethod` | String | Yes | Enum: `'Home Delivery'` or `'Store Pickup'` |
-  | `deliveryAddress` | Object | Conditional | **Required when `deliveryMethod = 'Home Delivery'`. Must be omitted/null when `deliveryMethod = 'Store Pickup'`.** |
-  | `deliveryAddress.addressId` | String | Optional | MongoId of a saved address in user's collection. If provided, `street`, `city`, and `country` are resolved automatically. |
-  | `deliveryAddress.street` | String | Conditional | Required if `addressId` is not provided. |
-  | `deliveryAddress.city` | String | Conditional | Required if `addressId` is not provided. |
-  | `deliveryAddress.country` | String | Conditional | Required if `addressId` is not provided. |
-  | `specialNotes` | String | No | Optional instructions (e.g. `"Ring the bell twice"`) |
-  | `paymentMethod` | String | Yes | Enum: `'Cash on Delivery'` |
-  | `saveAddress` | Boolean | No | Optional. If `true` and raw address details are submitted, automatically saves the address to the user's saved addresses list. |
+  | Field                       | Type    | Required    | Rules / Description                                                                                                            |
+  | :-------------------------- | :------ | :---------- | :----------------------------------------------------------------------------------------------------------------------------- |
+  | `deliveryMethod`            | String  | Yes         | Enum: `'Home Delivery'` or `'Store Pickup'`                                                                                    |
+  | `deliveryAddress`           | Object  | Conditional | **Required when `deliveryMethod = 'Home Delivery'`. Must be omitted/null when `deliveryMethod = 'Store Pickup'`.**             |
+  | `deliveryAddress.addressId` | String  | Optional    | MongoId of a saved address in user's collection. If provided, `street`, `city`, and `country` are resolved automatically.      |
+  | `deliveryAddress.street`    | String  | Conditional | Required if `addressId` is not provided.                                                                                       |
+  | `deliveryAddress.city`      | String  | Conditional | Required if `addressId` is not provided.                                                                                       |
+  | `deliveryAddress.country`   | String  | Conditional | Required if `addressId` is not provided.                                                                                       |
+  | `specialNotes`              | String  | No          | Optional instructions (e.g. `"Ring the bell twice"`)                                                                           |
+  | `paymentMethod`             | String  | Yes         | Enum: `'Cash on Delivery'`                                                                                                     |
+  | `saveAddress`               | Boolean | No          | Optional. If `true` and raw address details are submitted, automatically saves the address to the user's saved addresses list. |
 
   _Request Example A (Using Saved Address ID)_:
 
@@ -1135,12 +1383,12 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
 
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `page` | Number / String | No | `1` | Page index |
-  | `limit` | Number / String | No | `10` | Items per page |
-  | `status` | String | No | *None* | Filter by `OrderStatusEnum` (`Pending`, `Confirmed`, `Preparing`, `Ready`, `Out For Delivery`, `Delivered`, `Cancelled`) |
-  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId |
+  | Parameter      | Type            | Required | Default | Description                                                                                                              |
+  | :------------- | :-------------- | :------- | :------ | :----------------------------------------------------------------------------------------------------------------------- |
+  | `page`         | Number / String | No       | `1`     | Page index                                                                                                               |
+  | `limit`        | Number / String | No       | `10`    | Items per page                                                                                                           |
+  | `status`       | String          | No       | _None_  | Filter by `OrderStatusEnum` (`Pending`, `Confirmed`, `Preparing`, `Ready`, `Out For Delivery`, `Delivered`, `Cancelled`) |
+  | `restaurantId` | String          | No       | _None_  | Filter by Restaurant ObjectId                                                                                            |
 
 - **Response (200 OK)**:
   Paginated wrapper object containing an array of formatted `GroupOrder` objects:
@@ -1150,8 +1398,14 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
       {
         "_id": "669fc999888777abcdef999",
         "groupOrderId": "669fc999888777abcdef999",
-        "orderGroupId": "669fc999888777abcdef999",
-        "userId": "669fc1234567890abcdef123",
+        "user": {
+          "_id": "669fc1234567890abcdef123",
+          "firstName": "John",
+          "lastName": "Doe",
+          "email": "johndoe@example.com",
+          "phone": "+1234567890",
+          "role": "customer"
+        },
         "fullName": "John Doe",
         "phoneNumber": "+1234567890",
         "emailAddress": "johndoe@example.com",
@@ -1164,24 +1418,36 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
         "paymentMethod": "Cash on Delivery",
         "specialNotes": "Ring the bell twice",
         "overallStatus": "Pending",
-        "items": [
+        "orders": [
           {
-            "offerId": "669fc0000000000abcdef777",
-            "productId": "669fc3333333333abcdef444",
-            "productTitle": "Margherita Pizza",
-            "productImage": "https://res.cloudinary.com/...",
-            "restaurantId": "669fc8888888888abcdef222",
-            "restaurantName": "Pizza Gourmet Express",
-            "originalPrice": 12.99,
-            "offerPrice": 10.39,
-            "discountPercentage": 20,
-            "quantity": 2,
-            "purchasedAt": "2026-07-23T20:00:00.000Z",
-            "lineTotal": 20.78
+            "orderId": "669fc8888888888abcdef111",
+            "restaurant": {
+              "_id": "669fc8888888888abcdef222",
+              "name": "Pizza Gourmet Express"
+            },
+            "status": "Pending",
+            "items": [
+              {
+                "productId": "669fc3333333333abcdef444",
+                "title": "Margherita Pizza",
+                "price": 12.99,
+                "discountedPrice": 10.39,
+                "quantity": 2,
+                "lineTotal": 20.78,
+                "offerId": "669fc0000000000abcdef777",
+                "discountPercentage": 20,
+                "productImage": "https://res.cloudinary.com/..."
+              }
+            ],
+            "totalOriginalPrice": 25.98,
+            "totalDiscount": 5.2,
+            "finalTotalPrice": 20.78,
+            "totalQuantity": 2,
+            "createdAt": "2026-07-23T20:00:00.000Z"
           }
         ],
         "totalOriginalPrice": 25.98,
-        "totalDiscount": 5.20,
+        "totalDiscount": 5.2,
         "finalTotalPrice": 20.78,
         "totalQuantity": 2,
         "createdAt": "2026-07-23T20:00:00.000Z",
@@ -1215,32 +1481,31 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
 
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `page` | Number | No | `1` | Page index |
-  | `limit` | Number | No | `10` | Items per page |
-  | `search` | String | No | *None* | Search in `fullName`, `emailAddress`, `phoneNumber`, `groupOrderId`, or `_id` |
-  | `status` | String | No | *None* | Filter by `OrderStatusEnum` (`Pending`, `Confirmed`, `Preparing`, `Ready`, `Out For Delivery`, `Delivered`, `Cancelled`) |
-  | `paymentMethod` | String | No | *None* | Filter by payment method (`Cash on Delivery`) |
-  | `deliveryMethod` | String | No | *None* | Filter by delivery method (`Home Delivery`, `Store Pickup`) |
-  | `startDate` | ISO Date | No | *None* | Start creation date filter (`createdAt >= startDate 00:00:00.000Z`) |
-  | `endDate` | ISO Date | No | *None* | End creation date filter (`createdAt <= endDate 23:59:59.999Z`) |
-  | `minTotalPrice` | Number | No | *None* | Filter minimum final total price |
-  | `maxTotalPrice` | Number | No | *None* | Filter maximum final total price |
-  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId |
-  | `sortBy` / `sort` | String | No | `createdAt` | Field to sort by (`createdAt`, `updatedAt`, `finalTotalPrice`, `totalQuantity`, `overallStatus`) |
-  | `sortOrder` / `order` | String | No | `desc` | Sort direction (`asc`, `desc`) |
+  | Parameter             | Type     | Required | Default     | Description                                                                                                              |
+  | :-------------------- | :------- | :------- | :---------- | :----------------------------------------------------------------------------------------------------------------------- |
+  | `page`                | Number   | No       | `1`         | Page index                                                                                                               |
+  | `limit`               | Number   | No       | `10`        | Items per page                                                                                                           |
+  | `search`              | String   | No       | _None_      | Search in `fullName`, `emailAddress`, `phoneNumber`, `groupOrderId`, or `_id`                                            |
+  | `status`              | String   | No       | _None_      | Filter by `OrderStatusEnum` (`Pending`, `Confirmed`, `Preparing`, `Ready`, `Out For Delivery`, `Delivered`, `Cancelled`) |
+  | `paymentMethod`       | String   | No       | _None_      | Filter by payment method (`Cash on Delivery`)                                                                            |
+  | `deliveryMethod`      | String   | No       | _None_      | Filter by delivery method (`Home Delivery`, `Store Pickup`)                                                              |
+  | `startDate`           | ISO Date | No       | _None_      | Start creation date filter (`createdAt >= startDate 00:00:00.000Z`)                                                      |
+  | `endDate`             | ISO Date | No       | _None_      | End creation date filter (`createdAt <= endDate 23:59:59.999Z`)                                                          |
+  | `minTotalPrice`       | Number   | No       | _None_      | Filter minimum final total price                                                                                         |
+  | `maxTotalPrice`       | Number   | No       | _None_      | Filter maximum final total price                                                                                         |
+  | `restaurantId`        | String   | No       | _None_      | Filter by Restaurant ObjectId                                                                                            |
+  | `sortBy` / `sort`     | String   | No       | `createdAt` | Field to sort by (`createdAt`, `updatedAt`, `finalTotalPrice`, `totalQuantity`, `overallStatus`)                         |
+  | `sortOrder` / `order` | String   | No       | `desc`      | Sort direction (`asc`, `desc`)                                                                                           |
 
 - **Response (200 OK)**:
-  Paginated wrapper object containing an array of formatted `GroupOrder` items with populated `userId` (excluding password):
+  Paginated wrapper object containing an array of formatted `GroupOrder` items with populated `user` (excluding password):
   ```json
   {
     "data": [
       {
         "_id": "669fc999888777abcdef999",
         "groupOrderId": "669fc999888777abcdef999",
-        "orderGroupId": "669fc999888777abcdef999",
-        "userId": {
+        "user": {
           "_id": "669fc1234567890abcdef123",
           "firstName": "John",
           "lastName": "Doe",
@@ -1260,24 +1525,36 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
         "paymentMethod": "Cash on Delivery",
         "specialNotes": "Ring the bell twice",
         "overallStatus": "Pending",
-        "items": [
+        "orders": [
           {
-            "offerId": "669fc0000000000abcdef777",
-            "productId": "669fc3333333333abcdef444",
-            "productTitle": "Margherita Pizza",
-            "productImage": "https://res.cloudinary.com/...",
-            "restaurantId": "669fc8888888888abcdef222",
-            "restaurantName": "Pizza Gourmet Express",
-            "originalPrice": 12.99,
-            "offerPrice": 10.39,
-            "discountPercentage": 20,
-            "quantity": 2,
-            "purchasedAt": "2026-07-23T20:00:00.000Z",
-            "lineTotal": 20.78
+            "orderId": "669fc8888888888abcdef111",
+            "restaurant": {
+              "_id": "669fc8888888888abcdef222",
+              "name": "Pizza Gourmet Express"
+            },
+            "status": "Pending",
+            "items": [
+              {
+                "productId": "669fc3333333333abcdef444",
+                "title": "Margherita Pizza",
+                "price": 12.99,
+                "discountedPrice": 10.39,
+                "quantity": 2,
+                "lineTotal": 20.78,
+                "offerId": "669fc0000000000abcdef777",
+                "discountPercentage": 20,
+                "productImage": "https://res.cloudinary.com/..."
+              }
+            ],
+            "totalOriginalPrice": 25.98,
+            "totalDiscount": 5.2,
+            "finalTotalPrice": 20.78,
+            "totalQuantity": 2,
+            "createdAt": "2026-07-23T20:00:00.000Z"
           }
         ],
         "totalOriginalPrice": 25.98,
-        "totalDiscount": 5.20,
+        "totalDiscount": 5.2,
         "finalTotalPrice": 20.78,
         "totalQuantity": 2,
         "createdAt": "2026-07-23T20:00:00.000Z",
@@ -1314,11 +1591,13 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Security Check**: Managers can only update status of orders belonging to their own restaurant.
 - **Request Body (`application/json`)**:
+
   ```json
   {
     "status": "Preparing"
   }
   ```
+
   _Allowed Statuses: `"Pending"`, `"Confirmed"`, `"Preparing"`, `"Ready"`, `"Out For Delivery"`, `"Delivered"`, `"Cancelled"`_
 
 - **Automated Side Effects**:
@@ -1333,6 +1612,43 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Auth Level**: Access Token (`admin`)
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Description**: Fetches aggregated order group entity by ID for admin inspection.
+
+---
+
+### 9.8 Cancel Order Group
+
+- **Method / URL**: `PATCH /orders/group/:id/cancel`
+- **Auth Level**: Access Token (`customer`, `admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Description**: Cancels an entire group order. Updates overall status to `Cancelled` and automatically restores remaining offer quantities.
+- **Response (200 OK)**:
+  ```json
+  {
+    "data": {
+      "_id": "669fc999888777abcdef999",
+      "overallStatus": "Cancelled"
+    }
+  }
+  ```
+
+---
+
+### 9.9 Get Dashboard Orders Summary
+
+- **Method / URL**: `GET /orders/summary`
+- **Auth Level**: Access Token (`admin`, `manager`, `staff`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**: Accepts the same filter query parameters as `GET /orders` (`search`, `status`, `paymentMethod`, `deliveryMethod`, `startDate`, `endDate`, `restaurantId`, `sortBy`, `sortOrder`).
+- **Description**: Calculates completion counters (`total` matching active filters, `done` reaching terminal `Delivered` status) for dashboard header summary counters.
+- **Response (200 OK)**:
+  ```json
+  {
+    "data": {
+      "total": 15,
+      "done": 12
+    }
+  }
+  ```
 
 ---
 
@@ -1367,17 +1683,17 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
 
-  | Parameter | Type | Default | Description |
-  | :--- | :--- | :--- | :--- |
-  | `page` | Number / String | `1` | Page index |
-  | `limit` | Number / String | `10` | Items per page |
-  | `search` | String | *None* | Search in restaurant name |
-  | `status` | String | *None* | Status string filter |
-  | `ownerUserId` | String | *None* | Filter by Manager User ObjectId |
-  | `isActive` | Boolean String | *None* | Filter active status (`true`, `false`) |
-  | `isDeleted` | Boolean String | `false` | Filter soft-deleted status (`true`, `false`) |
-  | `sort` | String | `createdAt` | Sort field |
-  | `order` | String | `desc` | Sort order (`asc`, `desc`) |
+  | Parameter     | Type            | Default     | Description                                  |
+  | :------------ | :-------------- | :---------- | :------------------------------------------- |
+  | `page`        | Number / String | `1`         | Page index                                   |
+  | `limit`       | Number / String | `10`        | Items per page                               |
+  | `search`      | String          | _None_      | Search in restaurant name                    |
+  | `status`      | String          | _None_      | Status string filter                         |
+  | `ownerUserId` | String          | _None_      | Filter by Manager User ObjectId              |
+  | `isActive`    | Boolean String  | _None_      | Filter active status (`true`, `false`)       |
+  | `isDeleted`   | Boolean String  | `false`     | Filter soft-deleted status (`true`, `false`) |
+  | `sort`        | String          | `createdAt` | Sort field                                   |
+  | `order`       | String          | `desc`      | Sort order (`asc`, `desc`)                   |
 
 - **Response (200 OK)**:
   ```json
@@ -1505,15 +1821,15 @@ Returns active promotional offers sorted by backend recommendation scoring algor
 - **Auth Level**: Public
 - **Query Parameters**:
 
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId |
-  | `categoryId` | String | No | *None* | Filter by Category ObjectId |
-  | `search` | String | No | *None* | Search in product title/description |
-  | `minPrice` | Number | No | *None* | Minimum offer price |
-  | `maxPrice` | Number | No | *None* | Maximum offer price |
-  | `page` | String | No | `1` | Page index |
-  | `limit` | String | No | `10` | Items count per page |
+  | Parameter      | Type   | Required | Default | Description                         |
+  | :------------- | :----- | :------- | :------ | :---------------------------------- |
+  | `restaurantId` | String | No       | _None_  | Filter by Restaurant ObjectId       |
+  | `categoryId`   | String | No       | _None_  | Filter by Category ObjectId         |
+  | `search`       | String | No       | _None_  | Search in product title/description |
+  | `minPrice`     | Number | No       | _None_  | Minimum offer price                 |
+  | `maxPrice`     | Number | No       | _None_  | Maximum offer price                 |
+  | `page`         | String | No       | `1`     | Page index                          |
+  | `limit`        | String | No       | `10`    | Items count per page                |
 
 - **Response (200 OK)**:
   ```json
@@ -1577,23 +1893,23 @@ Returns active promotional offers sorted by backend recommendation scoring algor
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
 
-  | Parameter | Type | Default | Description |
-  | :--- | :--- | :--- | :--- |
-  | `status` | String | *None* | Offer status (`draft`, `scheduled`, `active`, `expired`, `cancelled`, `sold_out`) |
-  | `productId` | String | *None* | Filter by Product ObjectId |
-  | `categoryId` | String | *None* | Filter by Category ObjectId |
-  | `restaurantId` | String | *None* | Filter by Restaurant ObjectId |
-  | `source` | String | *None* | Offer origin (`manual`, `ai_recommendation`) |
-  | `featured` | Boolean String | *None* | Filter featured status (`true`, `false`) |
-  | `search` | String | *None* | Search in product title/description |
-  | `minPrice` | Number | *None* | Minimum offer price |
-  | `maxPrice` | Number | *None* | Maximum offer price |
-  | `startDate` | Date String | *None* | Filter by start date |
-  | `endDate` | Date String | *None* | Filter by end date |
-  | `sortBy` | String | `createdAt` | Field to sort by |
-  | `sortOrder` | String | `desc` | Sort direction (`asc`, `desc`) |
-  | `page` | String | `1` | Page number |
-  | `limit` | String | `10` | Items per page |
+  | Parameter      | Type           | Default     | Description                                                                       |
+  | :------------- | :------------- | :---------- | :-------------------------------------------------------------------------------- |
+  | `status`       | String         | _None_      | Offer status (`draft`, `scheduled`, `active`, `expired`, `cancelled`, `sold_out`) |
+  | `productId`    | String         | _None_      | Filter by Product ObjectId                                                        |
+  | `categoryId`   | String         | _None_      | Filter by Category ObjectId                                                       |
+  | `restaurantId` | String         | _None_      | Filter by Restaurant ObjectId                                                     |
+  | `source`       | String         | _None_      | Offer origin (`manual`, `ai_recommendation`)                                      |
+  | `featured`     | Boolean String | _None_      | Filter featured status (`true`, `false`)                                          |
+  | `search`       | String         | _None_      | Search in product title/description                                               |
+  | `minPrice`     | Number         | _None_      | Minimum offer price                                                               |
+  | `maxPrice`     | Number         | _None_      | Maximum offer price                                                               |
+  | `startDate`    | Date String    | _None_      | Filter by start date                                                              |
+  | `endDate`      | Date String    | _None_      | Filter by end date                                                                |
+  | `sortBy`       | String         | `createdAt` | Field to sort by                                                                  |
+  | `sortOrder`    | String         | `desc`      | Sort direction (`asc`, `desc`)                                                    |
+  | `page`         | String         | `1`         | Page number                                                                       |
+  | `limit`        | String         | `10`        | Items per page                                                                    |
 
 ---
 
@@ -1632,14 +1948,14 @@ The Ingredients module allows restaurant managers to manage raw material invento
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Request Body (`application/json`)**:
 
-  | Field | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `ingredientCode` | String | Yes | Unique ingredient code per restaurant (e.g. `"ING-MOZZ-01"`) |
-  | `name` | String | Yes | Ingredient display name (e.g. `"Mozzarella Cheese"`) |
-  | `unit` | String | Yes | Enum: `'kg'`, `'liter'`, `'piece'`, `'grams'` |
-  | `shelfLifeDays` | Number | Yes | Shelf life in days ($\ge 0$) |
-  | `minimumStock` | Number | No | Minimum stock threshold ($\ge 0$, Default: `0`) |
-  | `safetyStock` | Number | No | Safety stock buffer ($\ge 0$, Default: `0`) |
+  | Field            | Type   | Required | Description                                                  |
+  | :--------------- | :----- | :------- | :----------------------------------------------------------- |
+  | `ingredientCode` | String | Yes      | Unique ingredient code per restaurant (e.g. `"ING-MOZZ-01"`) |
+  | `name`           | String | Yes      | Ingredient display name (e.g. `"Mozzarella Cheese"`)         |
+  | `unit`           | String | Yes      | Enum: `'kg'`, `'liter'`, `'piece'`                           |
+  | `shelfLifeDays`  | Number | Yes      | Shelf life in days ($\ge 0$)                                 |
+  | `minimumStock`   | Number | No       | Minimum stock threshold ($\ge 0$, Default: `0`)              |
+  | `safetyStock`    | Number | No       | Safety stock buffer ($\ge 0$, Default: `0`)                  |
 
   _Request Example_:
 
@@ -1691,11 +2007,465 @@ The Ingredients module allows restaurant managers to manage raw material invento
 
 ---
 
-## 13. Dashboard Module (`/dashboard`)
+## 13. Suppliers Module (`/suppliers`)
+
+The Suppliers module enables restaurant managers to register vendor suppliers, track contact details, and record vendor lead times for automated inventory procurement.
+
+### 13.1 Create Supplier
+
+- **Method / URL**: `POST /suppliers`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field          | Type   | Required | Rules / Description                                |
+  | :------------- | :----- | :------- | :------------------------------------------------- |
+  | `name`         | String | Yes      | Supplier business name                             |
+  | `email`        | String | No       | Valid email address                                |
+  | `phone`        | String | No       | Contact phone number                               |
+  | `leadTimeDays` | Number | No       | Delivery lead time in days ($\ge 0$, Default: `1`) |
+
+  _Request Example_:
+
+  ```json
+  {
+    "name": "Fresh Farms Co.",
+    "email": "orders@freshfarms.com",
+    "phone": "+1234567890",
+    "leadTimeDays": 2
+  }
+  ```
+
+- **Response (201 Created)**: Created `Supplier` entity object.
+
+---
+
+### 13.2 Get Suppliers (Paginated & Searchable)
+
+- **Method / URL**: `GET /suppliers`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter | Type            | Default | Description                                 |
+  | :-------- | :-------------- | :------ | :------------------------------------------ |
+  | `page`    | Number / String | `1`     | Page number                                 |
+  | `limit`   | Number / String | `10`    | Items per page                              |
+  | `search`  | String          | _None_  | Search in supplier `name`, `email`, `phone` |
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "data": [
+      {
+        "_id": "669fc7777777777abcdef111",
+        "restaurantId": "669fc8888888888abcdef222",
+        "name": "Fresh Farms Co.",
+        "email": "orders@freshfarms.com",
+        "phone": "+1234567890",
+        "leadTimeDays": 2,
+        "isDeleted": false,
+        "createdAt": "2026-07-26T10:00:00.000Z",
+        "updatedAt": "2026-07-26T10:00:00.000Z"
+      }
+    ],
+    "totalItems": 1,
+    "totalPages": 1,
+    "currentPage": 1,
+    "pageSize": 10,
+    "hasNextPage": false,
+    "hasPreviousPage": false
+  }
+  ```
+
+---
+
+## 14. Purchase Orders Module (`/purchase-orders`)
+
+The Purchase Orders module manages stock procurement workflows, allowing restaurant managers to draft, issue, and receive inventory orders from registered suppliers.
+
+### 14.1 Create Purchase Order
+
+- **Method / URL**: `POST /purchase-orders`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field                  | Type   | Required | Rules / Description                                                         |
+  | :--------------------- | :----- | :------- | :-------------------------------------------------------------------------- |
+  | `supplierId`           | String | Yes      | Valid MongoId of registered supplier                                        |
+  | `items`                | Array  | Yes      | Non-empty array of items to order (min length: 1)                           |
+  | `items[].ingredientId` | String | Yes      | Valid MongoId of raw material ingredient                                    |
+  | `items[].quantity`     | Number | Yes      | Quantity to order (> 0)                                                     |
+  | `items[].unit`         | String | Yes      | Enum: `'kg'`, `'liter'`, `'piece'`                                          |
+  | `items[].unitCost`     | Number | Yes      | Cost per unit ($\ge 0$)                                                     |
+  | `status`               | String | No       | Enum: `'draft'`, `'sent'`, `'received'`, `'cancelled'` (Default: `'draft'`) |
+  | `expectedDeliveryDate` | String | No       | ISO Date string                                                             |
+
+  _Request Example_:
+
+  ```json
+  {
+    "supplierId": "669fc7777777777abcdef111",
+    "items": [
+      {
+        "ingredientId": "669fc3333333333abcdef123",
+        "quantity": 50,
+        "unit": "kg",
+        "unitCost": 4.5
+      }
+    ],
+    "status": "sent",
+    "expectedDeliveryDate": "2026-07-28T00:00:00.000Z"
+  }
+  ```
+
+- **Response (201 Created)**: Created `PurchaseOrder` object.
+
+---
+
+### 14.2 Get Purchase Orders (Paginated & Filtered)
+
+- **Method / URL**: `GET /purchase-orders`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter    | Type            | Default | Description                                                 |
+  | :----------- | :-------------- | :------ | :---------------------------------------------------------- |
+  | `page`       | Number / String | `1`     | Page index                                                  |
+  | `limit`      | Number / String | `10`    | Items per page                                              |
+  | `status`     | String          | _None_  | Filter by status (`draft`, `sent`, `received`, `cancelled`) |
+  | `supplierId` | String          | _None_  | Filter by Supplier ObjectId                                 |
+
+---
+
+### 14.3 Receive Purchase Order
+
+- **Method / URL**: `PATCH /purchase-orders/:id/receive`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Business Behavior**:
+  - Updates purchase order status to `received`.
+  - Automatically creates new `InventoryBatch` records for each item in the purchase order.
+  - Generates stock transaction logs (`transactionType: 'purchase'`).
+- **Response (200 OK)**: Updated `PurchaseOrder` entity.
+
+---
+
+## 15. Inventory & Waste Management Module (`/inventory`)
+
+The Inventory & Waste Management module allows tracking raw material batches, auditing stock movements, and logging food waste events to minimize shrink and maintain real-time inventory visibility.
+
+### 15.1 Create Inventory Batch
+
+- **Method / URL**: `POST /inventory/batches`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field               | Type   | Required | Rules / Description                          |
+  | :------------------ | :----- | :------- | :------------------------------------------- |
+  | `ingredientId`      | String | Yes      | MongoId of ingredient                        |
+  | `batchNumber`       | String | Yes      | Unique batch / lot reference code            |
+  | `quantityRemaining` | Number | Yes      | Remaining stock quantity ($\ge 0$)           |
+  | `unitCost`          | Number | Yes      | Purchase cost per unit ($\ge 0$)             |
+  | `expiryDate`        | String | Yes      | ISO Date string for ingredient expiration    |
+  | `receivedDate`      | String | No       | ISO Date string (Default: Current timestamp) |
+
+  _Request Example_:
+
+  ```json
+  {
+    "ingredientId": "669fc3333333333abcdef123",
+    "batchNumber": "LOT-20260726-01",
+    "quantityRemaining": 25.5,
+    "unitCost": 4.5,
+    "expiryDate": "2026-08-10T00:00:00.000Z"
+  }
+  ```
+
+- **Response (201 Created)**: Created `InventoryBatch` object.
+
+---
+
+### 15.2 Get Inventory Batches (Paginated & Filtered)
+
+- **Method / URL**: `GET /inventory/batches`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter        | Type            | Default | Description                               |
+  | :--------------- | :-------------- | :------ | :---------------------------------------- |
+  | `page`           | Number / String | `1`     | Page index                                |
+  | `limit`          | Number / String | `10`    | Items per page                            |
+  | `ingredientId`   | String          | _None_  | Filter by Ingredient ObjectId             |
+  | `expiringBefore` | ISO Date String | _None_  | Filter batches expiring on or before date |
+
+---
+
+### 15.3 Create Stock Transaction
+
+- **Method / URL**: `POST /inventory/transactions`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field             | Type   | Required | Rules / Description                                                                                                       |
+  | :---------------- | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+  | `ingredientId`    | String | Yes      | MongoId of ingredient                                                                                                     |
+  | `batchId`         | String | No       | Optional MongoId of inventory batch                                                                                       |
+  | `transactionType` | String | Yes      | Enum: `'purchase'`, `'consumption'`, `'waste'`, `'adjustment'`, `'transfer_in'`, `'transfer_out'`, `'return_to_supplier'` |
+  | `quantity`        | Number | Yes      | Transaction volume (> 0)                                                                                                  |
+  | `unit`            | String | Yes      | Enum: `'kg'`, `'liter'`, `'piece'`                                                                                        |
+  | `date`            | String | No       | ISO Date string (Default: Current timestamp)                                                                              |
+  | `wasteReason`     | String | No       | Enum (Required if `transactionType = 'waste'`)                                                                            |
+  | `estimatedCost`   | Number | No       | Financial value of transaction ($\ge 0$)                                                                                  |
+
+- **Response (201 Created)**: Created `StockTransaction` object.
+
+---
+
+### 15.4 Get Stock Transactions (Paginated & Filtered)
+
+- **Method / URL**: `GET /inventory/transactions`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter         | Type            | Default | Description                            |
+  | :---------------- | :-------------- | :------ | :------------------------------------- |
+  | `page`            | Number / String | `1`     | Page index                             |
+  | `limit`           | Number / String | `10`    | Items per page                         |
+  | `ingredientId`    | String          | _None_  | Filter by Ingredient ObjectId          |
+  | `transactionType` | String          | _None_  | Filter by transaction type             |
+  | `startDate`       | ISO Date        | _None_  | Filter transactions starting from date |
+  | `endDate`         | ISO Date        | _None_  | Filter transactions up to date         |
+
+---
+
+### 15.5 Create Waste Event
+
+- **Method / URL**: `POST /inventory/waste-events`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field           | Type   | Required | Rules / Description                                                                                                                          |
+  | :-------------- | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `ingredientId`  | String | Yes      | MongoId of ingredient                                                                                                                        |
+  | `batchId`       | String | No       | Optional MongoId of inventory batch                                                                                                          |
+  | `quantity`      | Number | Yes      | Quantity wasted (> 0)                                                                                                                        |
+  | `unit`          | String | Yes      | Enum: `'kg'`, `'liter'`, `'piece'`                                                                                                           |
+  | `wasteReason`   | String | Yes      | Enum: `'expired'`, `'overproduction'`, `'preparation_loss'`, `'spoiled'`, `'customer_return'`, `'damaged'`, `'incorrect_order'`, `'unknown'` |
+  | `estimatedCost` | Number | Yes      | Estimated loss value ($\ge 0$)                                                                                                               |
+  | `date`          | String | No       | ISO Date string (Default: Current timestamp)                                                                                                 |
+
+- **Automated Side Effects**:
+  - Automatically logs an associated `StockTransaction` of type `'waste'`.
+- **Response (201 Created)**: Created `WasteEvent` object.
+
+---
+
+### 15.6 Get Waste Events (Paginated & Filtered)
+
+- **Method / URL**: `GET /inventory/waste-events`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter      | Type            | Default | Description                            |
+  | :------------- | :-------------- | :------ | :------------------------------------- |
+  | `page`         | Number / String | `1`     | Page index                             |
+  | `limit`        | Number / String | `10`    | Items per page                         |
+  | `ingredientId` | String          | _None_  | Filter by Ingredient ObjectId          |
+  | `wasteReason`  | String          | _None_  | Filter by waste reason enum            |
+  | `startDate`    | ISO Date        | _None_  | Filter waste events starting from date |
+  | `endDate`      | ISO Date        | _None_  | Filter waste events up to date         |
+
+---
+
+## 16. Daily Production Planning Module (`/predictions/production-plan`)
+
+The Production Planning module provides AI-driven daily meal preparation recommendations based on historical sales data, seasonal demand trends, and waste history.
+
+### 16.1 Get Daily Production Plan
+
+- **Method / URL**: `GET /predictions/production-plan`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter | Type   | Required | Rules / Description                                        |
+  | :-------- | :----- | :------- | :--------------------------------------------------------- |
+  | `date`    | String | No       | Target date in `YYYY-MM-DD` format (Default: Today's date) |
+
+- **Response (200 OK)**:
+  Returns calculated or cached `DailyProductionPlan` entity:
+  ```json
+  {
+    "_id": "669fc9999999999abcdef111",
+    "restaurantId": "669fc8888888888abcdef222",
+    "date": "2026-07-26",
+    "totalRecommendedQty": 120,
+    "items": [
+      {
+        "productId": {
+          "_id": "669fc3333333333abcdef444",
+          "title": "Margherita Pizza",
+          "price": 12.99
+        },
+        "recommendedQty": 45,
+        "lowerBound": 40,
+        "upperBound": 50,
+        "confidence": "high",
+        "source": "ai_model",
+        "actualProducedQty": null
+      }
+    ],
+    "isDeleted": false,
+    "createdAt": "2026-07-26T00:00:00.000Z",
+    "updatedAt": "2026-07-26T00:00:00.000Z"
+  }
+  ```
+
+---
+
+### 16.2 Record Actual Kitchen Production
+
+- **Method / URL**: `POST /predictions/production-plan/actuals`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field                       | Type   | Required | Rules / Description                                        |
+  | :-------------------------- | :----- | :------- | :--------------------------------------------------------- |
+  | `date`                      | String | No       | Target date in `YYYY-MM-DD` format (Default: Today's date) |
+  | `items`                     | Array  | Yes      | Array of recorded item production numbers                  |
+  | `items[].productId`         | String | Yes      | Product ObjectId                                           |
+  | `items[].actualProducedQty` | Number | Yes      | Actual quantity prepared ($\ge 0$)                         |
+
+  _Request Example_:
+
+  ```json
+  {
+    "date": "2026-07-26",
+    "items": [
+      {
+        "productId": "669fc3333333333abcdef444",
+        "actualProducedQty": 42
+      }
+    ]
+  }
+  ```
+
+- **Response (200 OK)**: Updated `DailyProductionPlan` entity.
+
+---
+
+## 17. Data Ingestion & CSV Import Jobs Module (`/imports`)
+
+The Imports module provides asynchronous bulk ingestion for historical sales, inventory transactions, raw ingredients, menu items, and recipes, featuring AI-assisted header column matching and error reporting.
+
+### 17.1 Create Data Import Job
+
+- **Method / URL**: `POST /imports`
+- **Auth Level**: Access Token (`manager`, `admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`, `Content-Type: multipart/form-data`
+- **Request Body (`multipart/form-data`)**:
+
+  | Field        | Type   | Required | Description                                                                                       |
+  | :----------- | :----- | :------- | :------------------------------------------------------------------------------------------------ |
+  | `file`       | File   | Yes      | CSV data file upload                                                                              |
+  | `importType` | String | Yes      | Enum: `'sales_history'`, `'inventory_transactions'`, `'recipes'`, `'menu_items'`, `'ingredients'` |
+
+- **Response (201 Created)**: Created `ImportJob` instance with parsed column headers and initial validation stats.
+
+---
+
+### 17.2 Preview Import Mapping
+
+- **Method / URL**: `POST /imports/:id/preview`
+- **Auth Level**: Access Token (`manager`, `admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field           | Type   | Required | Description                                                     |
+  | :-------------- | :----- | :------- | :-------------------------------------------------------------- |
+  | `columnMapping` | Object | No       | Key-value mapping of CSV column titles to schema attribute keys |
+
+  _Request Example_:
+
+  ```json
+  {
+    "columnMapping": {
+      "Item Title": "title",
+      "Sales Count": "quantitySold",
+      "Unit Price": "sellingPrice"
+    }
+  }
+  ```
+
+- **Response (200 OK)**: Detailed preview payload displaying parsed rows, valid/invalid counts, and row-level validation errors.
+
+---
+
+### 17.3 Confirm & Ingest Data Import
+
+- **Method / URL**: `POST /imports/:id/confirm`
+- **Auth Level**: Access Token (`manager`, `admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field           | Type   | Required | Description                       |
+  | :-------------- | :----- | :------- | :-------------------------------- |
+  | `columnMapping` | Object | No       | Key-value column mapping override |
+
+- **Response (200 OK)**: Finalized `ImportJob` object (`status: 'completed'` or `'failed'`).
+
+---
+
+### 17.4 Get Import Jobs (Paginated & Filtered)
+
+- **Method / URL**: `GET /imports`
+- **Auth Level**: Access Token (`manager`, `admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter    | Type            | Default | Description                                                                                                  |
+  | :----------- | :-------------- | :------ | :----------------------------------------------------------------------------------------------------------- |
+  | `page`       | Number / String | `1`     | Page index                                                                                                   |
+  | `limit`      | Number / String | `10`    | Items per page                                                                                               |
+  | `importType` | String          | _None_  | Filter by import type enum                                                                                   |
+  | `status`     | String          | _None_  | Filter by status (`processing`, `validated`, `ai_ingest_pending`, `ai_ingest_failed`, `completed`, `failed`) |
+
+---
+
+### 17.5 Get Import Job Details by ID
+
+- **Method / URL**: `GET /imports/:id`
+- **Auth Level**: Access Token (`manager`, `admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**: Detailed `ImportJob` entity with row metrics and full array of row-level error objects.
+
+---
+
+### 17.6 Retry AI Ingest
+
+- **Method / URL**: `POST /imports/:id/retry-ai-ingest`
+- **Auth Level**: Access Token (`manager`, `admin`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Description**: Triggers retry attempt for AI-assisted column matching if initial AI ingest failed or was pending.
+- **Response (200 OK)**: Updated `ImportJob` entity.
+
+---
+
+## 18. Dashboard Module (`/dashboard`)
 
 The Dashboard module provides analytics, KPI aggregations, revenue trends, order status distributions, ranked top products/categories/restaurants, fulfillment method distributions, and operational alerts for both System Administrators and Restaurant Managers.
 
-### 13.1 Get Admin Dashboard Analytics
+### 18.1 Get Admin Dashboard Analytics
 
 Retrieves high-level platform-wide analytics, metrics, rankings, and operational alerts for system administrators.
 
@@ -1704,10 +2474,10 @@ Retrieves high-level platform-wide analytics, metrics, rankings, and operational
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
 
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `startDate` | ISO Date String | No | *7 days ago* | Start of date range (e.g. `2026-07-17` or `2026-07-17T00:00:00.000Z`) |
-  | `endDate` | ISO Date String | No | *Now / Today* | End of date range (e.g. `2026-07-23` or `2026-07-23T23:59:59.999Z`) |
+  | Parameter   | Type            | Required | Default       | Description                                                           |
+  | :---------- | :-------------- | :------- | :------------ | :-------------------------------------------------------------------- |
+  | `startDate` | ISO Date String | No       | _7 days ago_  | Start of date range (e.g. `2026-07-17` or `2026-07-17T00:00:00.000Z`) |
+  | `endDate`   | ISO Date String | No       | _Now / Today_ | End of date range (e.g. `2026-07-23` or `2026-07-23T23:59:59.999Z`)   |
 
 - **Behavior & Metrics**:
   - **Default Range**: If omitted, defaults to the last 7 days.
@@ -1735,13 +2505,13 @@ Retrieves high-level platform-wide analytics, metrics, rankings, and operational
     "kpis": {
       "revenue": {
         "current": 436.38,
-        "previous": 350.00,
+        "previous": 350.0,
         "changePercent": 24.68
       },
       "orders": {
         "current": 15,
         "previous": 12,
-        "changePercent": 25.00
+        "changePercent": 25.0
       },
       "activeOffers": 8,
       "pendingOrders": 2,
@@ -1800,7 +2570,7 @@ Retrieves high-level platform-wide analytics, metrics, rankings, and operational
 
 ---
 
-### 13.2 Get Restaurant Manager Dashboard Analytics
+### 18.2 Get Restaurant Manager Dashboard Analytics
 
 Retrieves analytics, metrics, ranked top products/categories, fulfillment distribution, and operational alerts specifically scoped to the authenticated manager's assigned restaurant.
 
@@ -1809,10 +2579,10 @@ Retrieves analytics, metrics, ranked top products/categories, fulfillment distri
 - **Headers**: `Authorization: Bearer <accessToken>`
 - **Query Parameters**:
 
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `startDate` | ISO Date String | No | *7 days ago* | Start of date range (e.g. `2026-07-17` or `2026-07-17T00:00:00.000Z`) |
-  | `endDate` | ISO Date String | No | *Now / Today* | End of date range (e.g. `2026-07-23` or `2026-07-23T23:59:59.999Z`) |
+  | Parameter   | Type            | Required | Default       | Description                                                           |
+  | :---------- | :-------------- | :------- | :------------ | :-------------------------------------------------------------------- |
+  | `startDate` | ISO Date String | No       | _7 days ago_  | Start of date range (e.g. `2026-07-17` or `2026-07-17T00:00:00.000Z`) |
+  | `endDate`   | ISO Date String | No       | _Now / Today_ | End of date range (e.g. `2026-07-23` or `2026-07-23T23:59:59.999Z`)   |
 
 - **Behavior & Constraints**:
   - **Manager Scoping**: Scoped strictly to `user.restaurantId`. Throws `400 Bad Request` if no restaurant is assigned to the manager.
@@ -1825,9 +2595,9 @@ Retrieves analytics, metrics, ranked top products/categories, fulfillment distri
     "restaurantName": "Pizza Gourmet Express",
     "kpis": {
       "revenue": {
-        "current": 250.00,
-        "previous": 200.00,
-        "changePercent": 25.00
+        "current": 250.0,
+        "previous": 200.0,
+        "changePercent": 25.0
       },
       "orders": {
         "current": 8,
@@ -1836,8 +2606,8 @@ Retrieves analytics, metrics, ranked top products/categories, fulfillment distri
       },
       "activeOffers": 3,
       "pendingOrders": 1,
-      "netProfit": 215.00,
-      "taxDeduction": 35.00,
+      "netProfit": 215.0,
+      "taxDeduction": 35.0,
       "avgOrderValue": 31.25
     },
     "topProducts": [
@@ -1879,11 +2649,11 @@ Retrieves analytics, metrics, ranked top products/categories, fulfillment distri
 
 ---
 
-## 14. Sales Module (`/sales`)
+## 19. Sales Module (`/sales`)
 
 The Sales Module provides granular sales transaction tracking, historical sales listing, source-based revenue audit trails, and aggregate financial sales statistics for System Administrators and Restaurant Managers.
 
-### 14.1 Get Sales Transactions (Paginated & Filtered)
+### 19.1 Get Sales Transactions (Paginated & Filtered)
 
 - **Method / URL**: `GET /sales`
 - **Auth Level**: Access Token (`admin`, `manager`)
@@ -1891,17 +2661,17 @@ The Sales Module provides granular sales transaction tracking, historical sales 
 - **Security Check**: Managers are automatically scoped to their own assigned `restaurantId`. Admin can query across all restaurants or filter by a specific `restaurantId`.
 - **Query Parameters**:
 
-  | Parameter | Type | Required | Default | Description |
-  | :--- | :--- | :--- | :--- | :--- |
-  | `restaurantId` | String | No | *None* | Filter by Restaurant ObjectId (Admin only; Managers locked to assigned restaurant) |
-  | `productId` | String | No | *None* | Filter by Product ObjectId |
-  | `startDate` | ISO Date String | No | *None* | Start date filter (`date >= startDate 00:00:00.000Z`) |
-  | `endDate` | ISO Date String | No | *None* | End date filter (`date <= endDate 23:59:59.999Z`) |
-  | `source` | Enum String | No | *None* | Filter transaction source (`csv_import`, `marketplace_order`, `pos_sync`) |
-  | `page` | Number | No | `1` | Page number |
-  | `limit` | Number | No | `10` | Items per page |
-  | `sort` | String | No | `date` | Field to sort by (`date`, `quantitySold`, `sellingPrice`) |
-  | `order` | String | No | `desc` | Sort direction (`asc`, `desc`) |
+  | Parameter      | Type            | Required | Default | Description                                                                        |
+  | :------------- | :-------------- | :------- | :------ | :--------------------------------------------------------------------------------- |
+  | `restaurantId` | String          | No       | _None_  | Filter by Restaurant ObjectId (Admin only; Managers locked to assigned restaurant) |
+  | `productId`    | String          | No       | _None_  | Filter by Product ObjectId                                                         |
+  | `startDate`    | ISO Date String | No       | _None_  | Start date filter (`date >= startDate 00:00:00.000Z`)                              |
+  | `endDate`      | ISO Date String | No       | _None_  | End date filter (`date <= endDate 23:59:59.999Z`)                                  |
+  | `source`       | Enum String     | No       | _None_  | Filter transaction source (`csv_import`, `marketplace_order`, `pos_sync`)          |
+  | `page`         | Number          | No       | `1`     | Page number                                                                        |
+  | `limit`        | Number          | No       | `10`    | Items per page                                                                     |
+  | `sort`         | String          | No       | `date`  | Field to sort by (`date`, `quantitySold`, `sellingPrice`)                          |
+  | `order`        | String          | No       | `desc`  | Sort direction (`asc`, `desc`)                                                     |
 
 - **Response (200 OK)**:
   ```json
@@ -1941,7 +2711,7 @@ The Sales Module provides granular sales transaction tracking, historical sales 
 
 ---
 
-### 14.2 Get Sales Summary Statistics
+### 19.2 Get Sales Summary Statistics
 
 - **Method / URL**: `GET /sales/summary`
 - **Auth Level**: Access Token (`admin`, `manager`)
@@ -1956,7 +2726,7 @@ The Sales Module provides granular sales transaction tracking, historical sales 
       "totalQuantitySold": 42,
       "totalGrossRevenue": 545.58,
       "totalNetRevenue": 436.38,
-      "totalDiscountsGiven": 109.20,
+      "totalDiscountsGiven": 109.2,
       "promotionalSalesCount": 42,
       "featuredSalesCount": 42,
       "averageSellingPrice": 10.39
@@ -1966,32 +2736,35 @@ The Sales Module provides granular sales transaction tracking, historical sales 
 
 ---
 
-## 15. End-to-End Shopping, Order, Sales & Analytics Workflow
+## 20. End-to-End Shopping, Inventory, Production & Order Analytics Workflow
 
-1. **Create Restaurant** (Admin): `POST /restaurants`
-2. **Create Ingredients & Recipe** (Manager):
-   - Add raw material ingredients via `POST /ingredients`.
-   - Map ingredients to product recipes via `PUT /products/:productId/recipe`.
-3. **Create Category & Product** (Admin / Manager):
-   - `POST /categories`, `POST /products`.
-4. **Create Promotional Offers** (Manager):
-   - `POST /offers` with `availableQuantity` and discount percentage.
-5. **Customer Browses Offers**:
-   - `GET /offers/active` or `GET /offers/recommendations` with search, filtering, and sorting parameters.
-6. **Add Offers to Cart / Favorites**:
-   - `POST /cart` with `{ "offerId": "<offerId>", "quantity": N }`.
-   - `POST /favorites/:offerId`.
-7. **Checkout & Order Execution**:
-   - `POST /orders` with delivery details and payment method.
-   - Response returns unified `GroupOrder`.
-8. **Order Processing & Fulfillment**:
-   - Customer checks order status via `GET /orders/me`.
-   - Manager processes restaurant orders via `GET /orders/restaurant/:restaurantId` and updates status via `PATCH /orders/:id/status`.
-   - Admin manages all platform orders via `GET /orders`.
-   - **Sales Transaction Generation**: Updating sub-order status to `Delivered` automatically and idempotently generates `SalesTransaction` entries (`source: marketplace_order`).
-9. **Sales Audit & Financial Summary**:
-   - Query detailed sales records via `GET /sales`.
-   - Audit overall revenue, total discounts given, and net profit via `GET /sales/summary`.
-10. **Dashboard Analytics & System Monitoring**:
-    - Admin tracks overall platform revenue, net profit, user counts, top performing products/categories/restaurants, and system alerts via `GET /dashboard/admin`.
-    - Manager tracks restaurant-specific revenue, top selling items, fulfillment method breakdown, and operational alerts via `GET /dashboard/manager`.
+1. **Create Restaurant & Assign Manager** (Admin): `POST /restaurants`, `POST /users` with `role: manager`.
+2. **Setup Vendor Suppliers** (Manager):
+   - Register suppliers via `POST /suppliers`.
+3. **Manage Raw Ingredients & Purchase Stock** (Manager):
+   - Create raw material ingredients via `POST /ingredients`.
+   - Issue purchase orders to suppliers via `POST /purchase-orders`.
+   - Receive vendor orders via `PATCH /purchase-orders/:id/receive`, creating inventory batches and stock transactions.
+4. **Define Recipes & Products** (Admin / Manager):
+   - Create categories (`POST /categories`) and menu products (`POST /products`).
+   - Map ingredient portion recipes via `PUT /products/:productId/recipe`.
+5. **Bulk Data Imports** (Admin / Manager):
+   - Upload CSV sales/inventory data via `POST /imports`.
+   - Preview and confirm AI-assisted column mapping via `POST /imports/:id/preview` and `POST /imports/:id/confirm`.
+6. **Kitchen Production Planning & Waste Logging** (Manager):
+   - Retrieve AI-recommended production plan via `GET /predictions/production-plan`.
+   - Log actual kitchen production via `POST /predictions/production-plan/actuals`.
+   - Log ingredient spoilage/waste via `POST /inventory/waste-events`.
+7. **Create Promotional Offers** (Manager):
+   - Launch offers via `POST /offers` with discount percentage and `availableQuantity`.
+8. **Customer Store Browsing & Ordering**:
+   - Browse offers via `GET /offers/active` or `GET /offers/recommendations`.
+   - Add to cart (`POST /cart`) or favorites (`POST /favorites/:offerId`).
+   - Checkout order via `POST /orders`, receiving aggregated `GroupOrder`.
+9. **Order Fulfillment & Sales Audit**:
+   - Update sub-order status via `PATCH /orders/:id/status`.
+   - Marking orders as `Delivered` idempotently logs `SalesTransaction` entries.
+   - Audit financial performance via `GET /sales` and `GET /sales/summary`.
+10. **Dashboard Monitoring & Analytics**:
+    - Admin monitors platform-wide metrics via `GET /dashboard/admin`.
+    - Manager tracks restaurant performance via `GET /dashboard/manager`.

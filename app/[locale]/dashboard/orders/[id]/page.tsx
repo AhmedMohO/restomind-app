@@ -23,8 +23,8 @@ export default async function DashboardOrderDetailsPage({
 
   return (
     <AppSidebar>
-      <main className="flex-1 p-4 sm:p-6 min-w-0 w-full">
-        <DashboardOrderDetails orderGroupId={id} locale={locale} />
+      <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
+        <DashboardOrderDetails groupOrderId={id} locale={locale} />
       </main>
     </AppSidebar>
   )

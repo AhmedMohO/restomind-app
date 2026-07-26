@@ -143,6 +143,7 @@
     "endDate": "End date",
     "resetFilters": "Reset Filters",
     "fetchError": "Failed to load orders list",
+    "cancelOrder": "Cancel Order",
     "detailFetchError": "Failed to load order details",
     "retry": "Try Again",
     "noOrders": "No orders found.",

@@ -268,18 +268,6 @@ export function ProductsContainer() {
             />
           </div>
 
-          {isAdmin && (
-            <div className="hidden md:block md:w-48">
-              <PaginatedRestaurantSelect
-                value={restaurantId}
-                onValueChange={(value) => {
-                  setRestaurantId(value)
-                  setPage(1)
-                }}
-              />
-            </div>
-          )}
-
           <Sheet>
             <SheetTrigger
               render={
@@ -475,7 +463,7 @@ export function ProductsContainer() {
             )}
           </div>
         ) : (
-          <Table className="min-w-[980px] sm:min-w-full">
+          <Table className="min-w-full">
             <TableHeader className="sticky top-0 z-10 bg-card shadow-xs">
               <TableRow>
                 <TableHead className="w-[64px] text-start">

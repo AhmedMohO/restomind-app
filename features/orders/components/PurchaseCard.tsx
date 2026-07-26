@@ -35,7 +35,8 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
         minute: "2-digit",
       }).format(new Date(order.createdAt))
     : ""
-  const shortGroupId = (order.orderGroupId || "").slice(-8).toUpperCase()
+  const targetGroupId = order.groupOrderId || ""
+  const shortGroupId = targetGroupId.slice(-8).toUpperCase()
   const hasDiscount = order.totalDiscount > 0
   const discountPercent =
     hasDiscount && order.totalOriginalPrice > 0
@@ -78,7 +79,7 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
             </Badge>
             <Button
               nativeButton={false}
-              render={<Link href={`/orders/${order.orderGroupId}`} />}
+              render={<Link href={`/orders/${targetGroupId}`} />}
               variant="outline"
               size="sm"
               className="shrink-0 rounded-full border-border text-xs font-semibold text-foreground hover:bg-accent hover:text-accent-foreground"
@@ -91,17 +92,18 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
       </CardHeader>
 
       <CardContent className="space-y-3 p-4 md:p-5">
-        {order.orders.map((restaurantOrder) => {
+        {order.orders.map((restaurantOrder, rIdx) => {
           const meta = getStatusMeta(restaurantOrder.status)
           const RestaurantStatusIcon = meta.Icon
-          const shortOrderId = restaurantOrder.orderId.slice(-8).toUpperCase()
+          const targetOrderId = restaurantOrder.orderId
+          const shortOrderId = targetOrderId.slice(-8).toUpperCase()
           const visibleItems = restaurantOrder.items.slice(0, 3)
           const remainingCount =
             restaurantOrder.items.length - visibleItems.length
 
           return (
             <div
-              key={restaurantOrder.orderId}
+              key={targetOrderId || rIdx}
               className="rounded-2xl border border-border bg-muted/40 p-3.5"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -136,7 +138,7 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
                         <span className="me-1 font-bold text-primary">
                           {item.quantity}×
                         </span>
-                        <span className="truncate">{item.productTitle}</span>
+                        <span className="truncate">{item.title}</span>
                       </Badge>
                     ))}
                     {remainingCount > 0 && (

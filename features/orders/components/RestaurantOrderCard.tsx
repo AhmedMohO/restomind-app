@@ -4,14 +4,14 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import type {
+  ApiGroupSubOrder,
   ApiOrderItem,
-  ApiRestaurantOrder,
 } from "@/features/orders/api/type"
 import { getStatusMeta } from "@/features/orders/status"
 import { cn } from "@/lib/utils"
 
 interface RestaurantOrderCardProps {
-  order: ApiRestaurantOrder
+  order: ApiGroupSubOrder
   t: (key: string) => string
   className?: string
   /**
@@ -27,7 +27,7 @@ interface OrderItemRowProps {
 }
 
 function OrderItemRow({ item, t }: OrderItemRowProps) {
-  const itemHasDiscount = item.offerPrice < item.originalPrice
+  const itemHasDiscount = item.discountedPrice < item.price
 
   return (
     <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-muted/40 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:p-4">
@@ -37,13 +37,13 @@ function OrderItemRow({ item, t }: OrderItemRowProps) {
         </span>
         <div className="min-w-0 space-y-1 text-start">
           <h3 className="truncate text-sm font-semibold text-foreground">
-            {item.productTitle}
+            {item.title}
           </h3>
           <p className="text-xs text-muted-foreground">
-            {t("unitPrice")}: {item.offerPrice.toFixed(2)} EGP
+            {t("unitPrice")}: {item.discountedPrice.toFixed(2)} EGP
             {itemHasDiscount && (
               <span className="ms-1.5 text-muted-foreground/70 line-through">
-                {item.originalPrice.toFixed(2)} EGP
+                {item.price.toFixed(2)} EGP
               </span>
             )}
           </p>
@@ -64,6 +64,7 @@ export default function RestaurantOrderCard({
   statusSlot,
 }: RestaurantOrderCardProps) {
   const statusMeta = getStatusMeta(order.status)
+
   const restaurantName = order.restaurant.name
   const shortOrderId = order.orderId.slice(-8).toUpperCase()
   const hasDiscount = order.totalDiscount > 0

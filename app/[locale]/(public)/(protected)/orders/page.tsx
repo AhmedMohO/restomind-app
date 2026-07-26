@@ -91,7 +91,7 @@ export default async function OrdersPage({
     const queryLower = searchQuery.toLowerCase()
     filtered = filtered.filter(
       (group) =>
-        group.orderGroupId.toLowerCase().includes(queryLower) ||
+        group.groupOrderId.toLowerCase().includes(queryLower) ||
         group.fullName.toLowerCase().includes(queryLower) ||
         group.phoneNumber.toLowerCase().includes(queryLower) ||
         group.emailAddress.toLowerCase().includes(queryLower) ||
@@ -100,7 +100,7 @@ export default async function OrdersPage({
             order.orderId.toLowerCase().includes(queryLower) ||
             order.restaurant.name.toLowerCase().includes(queryLower) ||
             order.items.some((item) =>
-              item.productTitle.toLowerCase().includes(queryLower)
+              item.title.toLowerCase().includes(queryLower)
             )
         )
     )

@@ -15,14 +15,12 @@ import "server-only"
 
 import { AuthorizationError } from "@/lib/auth/errors"
 import type { SessionUser } from "@/features/auth/auth"
-import {
-  getAllOrders,
-  getOrderGroupById,
-  getRestaurantOrders,
-} from "./index"
+import { getAllOrders, getOrderGroupById, getRestaurantOrders } from "./index"
 import type {
+  ApiGroupSubOrder,
   ApiOrderGroup,
   OrderStatus,
+  OverallOrderStatus,
   PaginatedResponse,
   QueryOrderListingParams,
 } from "./type"
@@ -129,15 +127,11 @@ export async function getDashboardOrdersSummary(
 }
 
 /**
- * Group details for a dashboard user.
+ * Group / order details for a dashboard user.
  *
- * `GET /orders/group/:id` returns the group with a flat `items[]` and no
- * sub-orders, so the real sub-orders (their ids and per-restaurant statuses,
- * which the status control needs) are hydrated from
- * `GET /orders/restaurant/:restaurantId?search=<groupId>` — one call per
- * restaurant involved for an admin, exactly one for a manager or staff member.
- *
- * Managers and staff never receive another restaurant's sub-orders.
+ * Admins reach `GET /orders/group/:id` and see every restaurant's sub-order.
+ * Managers and staff reach the same endpoint but are scoped down to their own
+ * restaurant's sub-order within the group.
  */
 export async function getDashboardOrderGroup(
   user: SessionUser,
@@ -145,63 +139,39 @@ export async function getDashboardOrderGroup(
 ): Promise<ApiOrderGroup> {
   const { data: group } = await getOrderGroupById(id)
 
-  const restaurantIds = isAdmin(user)
-    ? [...new Set(group.orders.map((order) => order.restaurant._id).filter(Boolean))]
-    : [ownRestaurantId(user)]
+  if (isAdmin(user)) return group
 
-  const groupId = group.orderGroupId || id
-  const hydrated = (
-    await Promise.all(
-      restaurantIds.map((restaurantId) =>
-        findSubOrders(restaurantId, groupId).catch(() => [])
-      )
-    )
-  ).flat()
+  const restaurantId = ownRestaurantId(user)
+  const scopedOrders = group.orders.filter(
+    (order) => order.restaurant._id === restaurantId
+  )
 
-  if (hydrated.length === 0) {
-    if (isAdmin(user)) return group
-    // A manager/staff member with no sub-order in this group has no business
-    // seeing it — the upstream group endpoint does not scope staff at all.
+  if (scopedOrders.length === 0) {
     throw new AuthorizationError("This order does not belong to your restaurant")
   }
 
-  return withSubOrders(group, hydrated)
-}
-
-/** Sub-orders of a group belonging to one restaurant. */
-async function findSubOrders(
-  restaurantId: string,
-  groupOrderId: string
-): Promise<ApiOrderGroup["orders"]> {
-  const page = await getRestaurantOrders(restaurantId, {
-    search: groupOrderId,
-    limit: 50,
-  })
-  return page.data.filter(
-    (order) => !order.groupOrderId || order.groupOrderId === groupOrderId
-  )
+  return withSubOrders(group, scopedOrders)
 }
 
 /** Replaces a group's sub-orders and recomputes the totals that follow. */
 function withSubOrders(
   group: ApiOrderGroup,
-  orders: ApiOrderGroup["orders"]
+  orders: ApiGroupSubOrder[]
 ): ApiOrderGroup {
   const sum = (
     key: "totalOriginalPrice" | "totalDiscount" | "finalTotalPrice" | "totalQuantity"
-  ) => orders.reduce((acc, order) => acc + (order[key] ?? 0), 0)
+  ) => orders.reduce((acc, order) => acc + order[key], 0)
 
   // With a single restaurant in view (manager/staff) the group badge must show
   // that restaurant's status, not the aggregate of the whole group.
   const statuses = new Set(orders.map((order) => order.status))
-  const overallStatus =
+  const overallStatus: OverallOrderStatus =
     statuses.size === 1 ? orders[0].status : group.overallStatus
 
   return {
     ...group,
     orders,
     overallStatus,
-    items: orders.flatMap((order) => order.items),
     totalOriginalPrice: sum("totalOriginalPrice"),
     totalDiscount: sum("totalDiscount"),
     finalTotalPrice: sum("finalTotalPrice"),

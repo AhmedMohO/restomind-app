@@ -2,10 +2,6 @@ import "server-only"
 
 import { apiClient } from "@/lib/api/client"
 import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
-import {
-  normalizeOrderGroup,
-  normalizeRestaurantOrder,
-} from "../normalize"
 import type {
   CreateOrderPayload,
   ApiOrderGroup,
@@ -17,15 +13,7 @@ import type {
 
 export * from "./type"
 
-/** Applies `map` to a paginated payload while preserving its meta fields. */
-function mapPage<TIn, TOut>(
-  page: PaginatedResponse<TIn>,
-  map: (item: TIn) => TOut
-): PaginatedResponse<TOut> {
-  return { ...page, data: (page.data ?? []).map(map) }
-}
-
-/** Query parameters accepted by `GET /orders/me` (API docs §9.2). */
+/** Query parameters accepted by `GET /orders`. */
 export interface MyOrdersParams {
   page?: number
   limit?: number
@@ -46,25 +34,19 @@ export async function createOrder(
     method: "POST",
     body: JSON.stringify(payload),
   })
-  const body = await parseOrThrow<{ data: unknown }>(response, "createOrder")
-  return {
-    data: Array.isArray(body.data)
-      ? body.data.map(normalizeOrderGroup)
-      : normalizeOrderGroup(body.data),
-  }
+  return parseOrThrow<{ data: ApiOrderGroup | ApiOrderGroup[] }>(response, "createOrder")
 }
 
-/** GET /orders/me — paginated customer order history (customer only). */
+/** GET /orders — paginated customer order history (customer only). */
 export async function getMyOrders(
   params: MyOrdersParams = {}
 ): Promise<PaginatedResponse<ApiOrderGroup>> {
-  const response = await apiClient(`/orders/me${buildQueryString(params)}`)
-  const page = await parseOrThrow<PaginatedResponse<unknown>>(response, "getMyOrders")
-  return mapPage(page, normalizeOrderGroup)
+  const response = await apiClient(`/orders${buildQueryString(params)}`)
+  return parseOrThrow<PaginatedResponse<ApiOrderGroup>>(response, "getMyOrders")
 }
 
 /**
- * Every page of `GET /orders/me`.
+ * Every page of `GET /orders`.
  *
  * The order history screen filters, sorts and paginates client-side (the
  * endpoint exposes none of those knobs beyond `status`), so it needs the full
@@ -82,13 +64,12 @@ export async function getAllMyOrders(): Promise<ApiOrderGroup[]> {
   return [first.data, ...rest.map((page) => page.data)].flat()
 }
 
-/** GET /orders/me/:id — customer order group details (customer only). */
+/** GET /orders/group/:id — customer order group details (customer/admin). */
 export async function getMyOrderById(
-  orderGroupId: string
+  groupOrderId: string
 ): Promise<{ data: ApiOrderGroup }> {
-  const response = await apiClient(`/orders/me/${encodeURIComponent(orderGroupId)}`)
-  const body = await parseOrThrow<{ data: unknown }>(response, "getMyOrderById")
-  return { data: normalizeOrderGroup(body.data) }
+  const response = await apiClient(`/orders/group/${encodeURIComponent(groupOrderId)}`)
+  return parseOrThrow<{ data: ApiOrderGroup }>(response, "getMyOrderById")
 }
 
 /** GET /orders — platform-wide order listing (admin only). */
@@ -96,36 +77,53 @@ export async function getAllOrders(
   params: QueryOrderListingParams = {}
 ): Promise<PaginatedResponse<ApiOrderGroup>> {
   const response = await apiClient(`/orders${buildQueryString(params)}`)
-  const page = await parseOrThrow<PaginatedResponse<unknown>>(response, "getAllOrders")
-  return mapPage(page, normalizeOrderGroup)
+  return parseOrThrow<PaginatedResponse<ApiOrderGroup>>(response, "getAllOrders")
 }
 
 /**
- * GET /orders/restaurant/:restaurantId — sub-orders of a single restaurant
- * (admin, manager, staff). Managers and staff may only pass their own
- * `restaurantId`; the backend enforces it.
+ * GET /orders — sub-orders of a single restaurant (admin, manager, staff).
+ * Managers and staff automatically retrieve sub-orders belonging to their assigned restaurant.
  */
 export async function getRestaurantOrders(
   restaurantId: string,
   params: QueryOrderListingParams = {}
 ): Promise<PaginatedResponse<ApiRestaurantOrder>> {
   const response = await apiClient(
-    `/orders/restaurant/${encodeURIComponent(restaurantId)}${buildQueryString(params)}`
+    `/orders${buildQueryString({ ...params, restaurantId })}`
   )
-  const page = await parseOrThrow<PaginatedResponse<unknown>>(
+  return parseOrThrow<PaginatedResponse<ApiRestaurantOrder>>(
     response,
     "getRestaurantOrders"
   )
-  return mapPage(page, (order) => normalizeRestaurantOrder(order))
 }
 
-/** GET /orders/group/:id — order group details (admin/customer/manager). */
+/** GET /orders/group/:id — order group details (admin/customer). */
 export async function getOrderGroupById(
-  orderGroupId: string
+  groupOrderId: string
 ): Promise<{ data: ApiOrderGroup }> {
-  const response = await apiClient(`/orders/group/${encodeURIComponent(orderGroupId)}`)
-  const body = await parseOrThrow<{ data: unknown }>(response, "getOrderGroupById")
-  return { data: normalizeOrderGroup(body.data) }
+  const response = await apiClient(`/orders/group/${encodeURIComponent(groupOrderId)}`)
+  return parseOrThrow<{ data: ApiOrderGroup }>(response, "getOrderGroupById")
+}
+
+/** GET /orders/:id — child order details (customer/manager/admin). */
+export async function getChildOrderById(
+  id: string
+): Promise<{ data: ApiRestaurantOrder }> {
+  const response = await apiClient(`/orders/${encodeURIComponent(id)}`)
+  return parseOrThrow<{ data: ApiRestaurantOrder }>(response, "getChildOrderById")
+}
+
+/** PATCH /orders/group/:id/cancel — cancel order group (customer only). */
+export async function cancelOrderGroup(
+  groupOrderId: string
+): Promise<{ data: ApiOrderGroup }> {
+  const response = await apiClient(
+    `/orders/group/${encodeURIComponent(groupOrderId)}/cancel`,
+    {
+      method: "PATCH",
+    }
+  )
+  return parseOrThrow<{ data: ApiOrderGroup }>(response, "cancelOrderGroup")
 }
 
 /**
@@ -134,15 +132,11 @@ export async function getOrderGroupById(
  */
 export async function updateOrderStatus(
   id: string,
-  status: OrderStatus,
-  groupOrderId?: string
+  status: OrderStatus
 ): Promise<{ data: ApiRestaurantOrder }> {
-  const response = await apiClient(
-    `/orders/${encodeURIComponent(id)}/status${buildQueryString({ groupOrderId })}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({ status }),
-    }
-  )
+  const response = await apiClient(`/orders/${encodeURIComponent(id)}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  })
   return parseOrThrow<{ data: ApiRestaurantOrder }>(response, "updateOrderStatus")
 }

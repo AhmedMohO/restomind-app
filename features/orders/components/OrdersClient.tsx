@@ -138,35 +138,28 @@ export default function OrdersClient({
         </p>
       </div>
 
-      {/* Static (Non-Sticky) Tabs Bar */}
-      <div className="w-full py-2">
-        <Tabs
-          value={activeStatus}
-          onValueChange={handleTabChange}
-          className="w-full"
-        >
-          <TabsList className="flex h-auto w-max min-w-full scrollbar-none gap-1 overflow-x-auto rounded-full border border-border bg-muted/70 p-1 sm:min-w-0">
-            {TABS.map((tab) => {
-              const count = tabCounts[tab.key] || 0
-              return (
-                <TabsTrigger
-                  key={tab.key}
-                  value={tab.key}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all data-active:bg-primary data-active:text-primary-foreground"
+      <Tabs value={activeStatus} onValueChange={handleTabChange}>
+        <TabsList className="flex h-fit! flex-wrap gap-1 rounded-full border border-border">
+          {TABS.map((tab) => {
+            const count = tabCounts[tab.key] || 0
+            return (
+              <TabsTrigger
+                key={tab.key}
+                value={tab.key}
+                className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all data-active:bg-primary data-active:text-primary-foreground"
+              >
+                <span>{t(tab.labelKey)}</span>
+                <Badge
+                  variant="secondary"
+                  className="h-4 rounded-full bg-muted-foreground/45 px-1.5 text-[10px] font-bold text-muted group-data-active/tabs-trigger:bg-primary-foreground/20 group-data-active/tabs-trigger:text-primary-foreground"
                 >
-                  <span>{t(tab.labelKey)}</span>
-                  <Badge
-                    variant="secondary"
-                    className="h-4 rounded-full bg-muted-foreground/45 px-1.5 text-[10px] font-bold text-muted group-data-active/tabs-trigger:bg-primary-foreground/20 group-data-active/tabs-trigger:text-primary-foreground"
-                  >
-                    {count}
-                  </Badge>
-                </TabsTrigger>
-              )
-            })}
-          </TabsList>
-        </Tabs>
-      </div>
+                  {count}
+                </Badge>
+              </TabsTrigger>
+            )
+          })}
+        </TabsList>
+      </Tabs>
 
       {/* Toolbar: Search Input + Sort Select */}
       <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
@@ -212,7 +205,7 @@ export default function OrdersClient({
           <div className="space-y-4">
             <div className="flex flex-col gap-4">
               {orderGroups.map((group) => {
-                return <PurchaseCard key={group.orderGroupId} order={group} />
+                return <PurchaseCard key={group.groupOrderId} order={group} />
               })}
             </div>
 

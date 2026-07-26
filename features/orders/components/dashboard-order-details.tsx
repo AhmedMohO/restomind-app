@@ -9,7 +9,7 @@ import { Link } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
 import { getErrorMessage } from "@/lib/api/utils"
 import type {
-  ApiRestaurantOrder,
+  ApiGroupSubOrder,
   OrderStatus,
 } from "@/features/orders/api/type"
 import {
@@ -20,12 +20,12 @@ import OrderDetailsPage from "@/features/orders/components/OrderDetailsPage"
 import { OrderStatusSelect } from "@/features/orders/components/order-status-select"
 
 interface DashboardOrderDetailsProps {
-  orderGroupId: string
+  groupOrderId: string
   locale: string
 }
 
-function subOrderId(order: ApiRestaurantOrder): string {
-  return order._id ?? order.orderId
+function subOrderId(order: ApiGroupSubOrder): string {
+  return order.orderId
 }
 
 /**
@@ -36,27 +36,23 @@ function subOrderId(order: ApiRestaurantOrder): string {
  * restaurant's sub-order. Status can be updated in place from each card.
  */
 export function DashboardOrderDetails({
-  orderGroupId,
+  groupOrderId,
   locale,
 }: DashboardOrderDetailsProps) {
   const t = useTranslations("Dashboard.orders")
   const { data, isLoading, isError, refetch } =
-    useDashboardOrderGroup(orderGroupId)
+    useDashboardOrderGroup(groupOrderId)
   const updateStatus = useUpdateOrderStatus()
   const [updatingId, setUpdatingId] = React.useState<string | null>(null)
 
   const handleStatusChange = React.useCallback(
-    async (order: ApiRestaurantOrder, status: OrderStatus) => {
+    async (order: ApiGroupSubOrder, status: OrderStatus) => {
       const id = subOrderId(order)
-      if (!id || status === order.status) return
+      if (status === order.status) return
 
       setUpdatingId(id)
       try {
-        await updateStatus.mutateAsync({
-          id,
-          status,
-          groupOrderId: order.groupOrderId,
-        })
+        await updateStatus.mutateAsync({ id, status })
         toast.success(t("statusUpdateSuccess"))
       } catch (err) {
         console.error("[DashboardOrderDetails] status update failed", err)
@@ -69,7 +65,7 @@ export function DashboardOrderDetails({
   )
 
   const renderStatusControl = React.useCallback(
-    (order: ApiRestaurantOrder) => (
+    (order: ApiGroupSubOrder) => (
       <OrderStatusSelect
         value={order.status}
         onChange={(next) => handleStatusChange(order, next)}
@@ -92,7 +88,11 @@ export function DashboardOrderDetails({
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-center">
         <p className="text-sm text-muted-foreground">{t("detailFetchError")}</p>
-        <Button variant="outline" onClick={() => refetch()} className="rounded-xl">
+        <Button
+          variant="outline"
+          onClick={() => refetch()}
+          className="rounded-xl"
+        >
           {t("retry")}
         </Button>
       </div>

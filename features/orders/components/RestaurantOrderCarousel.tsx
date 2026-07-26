@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import RestaurantOrderCard from "@/features/orders/components/RestaurantOrderCard"
 import type {
+  ApiGroupSubOrder,
   ApiOrderGroup,
-  ApiRestaurantOrder,
   OrderStatus,
 } from "@/features/orders/api/type"
 import { cn } from "@/lib/utils"
@@ -16,7 +16,7 @@ interface RestaurantOrderCarouselProps {
   orderGroup: ApiOrderGroup
   t: (key: string, values?: Record<string, string | number>) => string
   /** Optional per-order status control (dashboard only — customers read only). */
-  renderStatusControl?: (order: ApiRestaurantOrder) => ReactNode
+  renderStatusControl?: (order: ApiGroupSubOrder) => ReactNode
 }
 
 function getStatusDotClass(status: OrderStatus) {

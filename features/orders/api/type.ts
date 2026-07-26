@@ -1,4 +1,4 @@
-import type { ApiOrderUser, ApiRestaurantOrder } from "./dashboard-types"
+import type { ApiOrderUser } from "./dashboard-types"
 
 export type OrderStatus =
   | "Pending"
@@ -8,6 +8,13 @@ export type OrderStatus =
   | "Out For Delivery"
   | "Delivered"
   | "Cancelled"
+
+/** Aggregate status shown on a group when its sub-orders don't all match. */
+export type OverallOrderStatus =
+  | OrderStatus
+  | "Partially Delivered"
+  | "Partially Cancelled"
+  | "Processing"
 
 /** Fulfilment method supported by the orders API. */
 export type DeliveryMethod = "Home Delivery" | "Store Pickup"
@@ -36,46 +43,55 @@ export interface PaginatedResponse<T> {
 export interface ApiRestaurant {
   _id: string
   name: string
+  logo?: string
+  image?: string
 }
 
+/** Line item as returned inside a group's per-restaurant sub-order. */
 export interface ApiOrderItem {
-  offerId: string
   productId: string
-  productTitle: string
-  productImage: string
-  restaurantId: string
-  restaurantName: string
-  originalPrice: number
-  offerPrice: number
-  discountPercentage: number
+  title: string
+  price: number
+  discountedPrice: number
   quantity: number
-  purchasedAt: string
   lineTotal: number
+  offerId?: string
+  discountPercentage?: number
+  productImage?: string
+}
+
+/** A group's sub-order for one restaurant — `ApiOrderGroup.orders[]`. */
+export interface ApiGroupSubOrder {
+  orderId: string
+  restaurant: ApiRestaurant
+  status: OrderStatus
+  items: ApiOrderItem[]
+  totalOriginalPrice: number
+  totalDiscount: number
+  finalTotalPrice: number
+  totalQuantity: number
+  createdAt: string
 }
 
 export interface ApiOrderGroup {
-  orderGroupId: string
-  /** Alias returned by some endpoints (`GET /orders`, `GET /orders/me`). */
-  groupOrderId?: string
-  userId: string | ApiOrderUser
+  _id: string
+  groupOrderId: string
+  user: ApiOrderUser | null
   fullName: string
   phoneNumber: string
   emailAddress: string
   deliveryMethod: DeliveryMethod
   deliveryAddress: ApiDeliveryAddress | null
-  specialNotes: string
+  specialNotes?: string
   paymentMethod: PaymentMethod
+  overallStatus: OverallOrderStatus
   totalOriginalPrice: number
   totalDiscount: number
   finalTotalPrice: number
   totalQuantity: number
-  overallStatus: OrderStatus
-  /** Restaurant sub-orders. Flat listings omit it — always guard with `?? []`. */
-  orders: ApiRestaurantOrder[]
-  /** Flattened line items returned by the listing endpoints. */
-  items?: ApiOrderItem[]
+  orders: ApiGroupSubOrder[]
   createdAt: string
-  updatedAt?: string
+  updatedAt: string
 }
 
 /**

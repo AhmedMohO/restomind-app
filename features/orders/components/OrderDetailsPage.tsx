@@ -6,8 +6,8 @@ import OrderHeader from "@/features/orders/components/OrderHeader"
 import RestaurantOrderCarousel from "@/features/orders/components/RestaurantOrderCarousel"
 import SharedInfoPanel from "@/features/orders/components/SharedInfoPanel"
 import type {
+  ApiGroupSubOrder,
   ApiOrderGroup,
-  ApiRestaurantOrder,
 } from "@/features/orders/api/type"
 
 interface OrderDetailsPageProps {
@@ -18,7 +18,7 @@ interface OrderDetailsPageProps {
    * customer screen (read only), provided on the dashboard where admins,
    * managers and staff can advance an order.
    */
-  renderStatusControl?: (order: ApiRestaurantOrder) => ReactNode
+  renderStatusControl?: (order: ApiGroupSubOrder) => ReactNode
 }
 
 /**
@@ -51,6 +51,7 @@ export default function OrderDetailsPage({
         orderGroup={orderGroup}
         formattedDate={formattedDate}
         t={t}
+        showCancelButton={!renderStatusControl}
       />
       <SharedInfoPanel orderGroup={orderGroup} t={t} mobile />
 
