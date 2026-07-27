@@ -22,6 +22,70 @@ export const STATUS_ORDER: OrderStatus[] = [
 /** Every selectable/filterable status — single source of truth for the UI. */
 export const ORDER_STATUSES: OrderStatus[] = [...STATUS_ORDER, "Cancelled"]
 
+/** Progression ranks for non-cancelled statuses matching backend logic. */
+export const STATUS_RANKS: Record<string, number> = {
+  pending: 0,
+  confirmed: 1,
+  preparing: 2,
+  ready: 3,
+  "out for delivery": 4,
+  delivered: 5,
+}
+
+export function normalizeStatus(status?: string | null): string {
+  if (!status) return "pending"
+  return String(status).trim().toLowerCase().replace(/_/g, " ")
+}
+
+export function isFinalizedStatus(status?: OrderStatus | string | null): boolean {
+  const norm = normalizeStatus(status)
+  return norm === "delivered" || norm === "cancelled" || norm === "canceled"
+}
+
+export function isStatusTransitionAllowed(
+  currentStatus: OrderStatus | string,
+  targetStatus: OrderStatus | string
+): boolean {
+  const currentNorm = normalizeStatus(currentStatus)
+  const targetNorm = normalizeStatus(targetStatus)
+
+  if (currentNorm === targetNorm) return true
+  if (isFinalizedStatus(currentNorm)) return false
+  if (targetNorm === "cancelled" || targetNorm === "canceled") return true
+
+  const currentRank = STATUS_RANKS[currentNorm]
+  const targetRank = STATUS_RANKS[targetNorm]
+
+  if (currentRank !== undefined && targetRank !== undefined) {
+    return targetRank >= currentRank
+  }
+
+  return true
+}
+
+export function getValidNextStatuses(currentStatus?: OrderStatus | string | null): OrderStatus[] {
+  if (!currentStatus) return ORDER_STATUSES
+  if (isFinalizedStatus(currentStatus)) {
+    return [currentStatus as OrderStatus]
+  }
+
+  const currentNorm = normalizeStatus(currentStatus)
+  const currentRank = STATUS_RANKS[currentNorm] ?? 0
+
+  const validStatuses = STATUS_ORDER.filter((s) => {
+    const sNorm = normalizeStatus(s)
+    const sRank = STATUS_RANKS[sNorm] ?? 0
+    return sRank >= currentRank
+  })
+
+  if (!validStatuses.includes("Cancelled")) {
+    validStatuses.push("Cancelled")
+  }
+
+  return validStatuses
+}
+
+
 export function getStatusMeta(status?: OrderStatus | string | null): StatusMeta {
   if (!status) {
     return {

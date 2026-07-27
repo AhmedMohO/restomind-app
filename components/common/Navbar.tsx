@@ -53,7 +53,7 @@ export default function Navbar() {
   async function handleLogout() {
     await logoutAction()
     setUser(null)
-    queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+    queryClient.clear()
     router.refresh()
   }
 

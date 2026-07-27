@@ -61,12 +61,12 @@ const UserDropdown = ({
   const avatarUrl = profileUser?.image?.secure_url;
 
   // Mirrors the logout flow used by the customer Navbar: clears the Zustand
-  // store, invalidates the /api/auth/me query, and refreshes the RSC tree.
+  // store, clears the entire query cache, and refreshes the RSC tree.
   const handleLogout = () => {
     startTransition(async () => {
       await logoutAction();
       setUser(null);
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      queryClient.clear();
       router.refresh();
       router.push(`/${locale}`);
     });

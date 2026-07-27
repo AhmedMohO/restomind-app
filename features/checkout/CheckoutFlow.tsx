@@ -110,6 +110,8 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
     if (res.success) {
       resetCart()
       router.push("/checkout/confirmed")
+      setIsPlacingOrder(false)
+      setStep(1)
       return
     }
 

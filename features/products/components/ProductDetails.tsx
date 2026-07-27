@@ -86,18 +86,18 @@ export default function ProductDetails({
       </div>
 
       {/* Main product view split layout */}
-      <div className="flex gap-8 max-md:flex-wrap">
+      <div className="flex gap-8 max-lg:flex-wrap max-lg:justify-center w-full">
         {/* Left Side: Product Image */}
         <Image
           src={product.image?.secure_url || "/placeholder.svg"}
           alt={product.title}
           width={600}
           height={600}
-          className="aspect-[4/3] h-96 w-96 rounded-md object-cover"
+          className="aspect-[4/3] h-152 w-152 rounded-md object-cover"
         />
 
         {/* Right Side: Product Details */}
-        <div className="flex flex-col gap-4 space-y-6 py-2 text-start">
+        <div className="flex flex-col gap-4 space-y-6 py-2 text-start w-full">
           <div className="space-y-4">
             {/* Top row: Tags and wishlist button */}
             <div className="flex items-center justify-between">

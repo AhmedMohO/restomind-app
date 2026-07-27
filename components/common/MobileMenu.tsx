@@ -39,7 +39,7 @@ export default function MobileMenu() {
   async function handleLogout() {
     await logoutAction()
     setUser(null)
-    queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+    queryClient.clear()
     router.push("/login")
     router.refresh()
   }
