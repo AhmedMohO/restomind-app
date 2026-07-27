@@ -15,26 +15,15 @@ import type { Restaurant } from "@/features/restaurant/types"
 import { Link } from "@/i18n/routing"
 import Image from "next/image"
 import { formatOwner } from "@/features/restaurant/utils/utils"
+import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/features/auth/hooks/useAuth"
-
-export default function ViewRestaurantPage({
+function ViewRestaurantPageContent({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>
 }) {
   const { id } = use(params)
   const t = useTranslations("Dashboard.restaurant")
-  const router = useRouter()
-  const { role, isHydrated } = useAuth()
-
-  useEffect(() => {
-    if (isHydrated && role !== "admin") {
-      router.replace("/dashboard/restaurants")
-    }
-  }, [isHydrated, role, router])
 
   const {
     data: restaurant,
@@ -47,10 +36,6 @@ export default function ViewRestaurantPage({
       return res ?? null
     },
   })
-
-  if (!isHydrated || role !== "admin") {
-    return null
-  }
 
   return (
     <AppSidebar>
@@ -179,5 +164,17 @@ export default function ViewRestaurantPage({
         </div>
       </main>
     </AppSidebar>
+  )
+}
+
+export default function ViewRestaurantPage({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>
+}) {
+  return (
+    <DashboardAuthGuard roles={["admin"]}>
+      <ViewRestaurantPageContent params={params} />
+    </DashboardAuthGuard>
   )
 }

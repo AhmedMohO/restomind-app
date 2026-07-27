@@ -1,46 +1,27 @@
-import type { Metadata } from "next"
-import { setRequestLocale } from "next-intl/server"
+"use client"
 
 import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
-import { getProfileApi } from "@/features/profile/api/profile"
 import { DashboardProfileContainer } from "@/features/profile/components/dashboard-profile-container"
-import { requireAuthOrRedirect } from "@/lib/auth/auth"
+import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
-export const metadata: Metadata = {
-  title: "Account Profile",
-  description: "Manage your executive profile and account settings",
-  robots: { index: false, follow: false },
-}
-
-export default async function DashboardProfilePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}) {
-  const { locale } = await params
-  setRequestLocale(locale)
-  await requireAuthOrRedirect(locale)
-
-  const user = await getProfileApi().catch(() => null)
-
-  const safeUser = user ?? {
-    _id: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    role: "manager" as const,
-    phone: "",
-    isEmailVerified: false,
-    isDeleted: false,
-    createdAt: "",
-    updatedAt: "",
-  }
-
+/**
+ * Profile page — any authenticated dashboard user can access.
+ * DashboardProfileContainer fetches user data client-side via useProfile().
+ */
+function ProfilePageContent() {
   return (
     <AppSidebar>
       <main className="flex-1 p-6">
-        <DashboardProfileContainer initialUser={safeUser} />
+        <DashboardProfileContainer />
       </main>
     </AppSidebar>
+  )
+}
+
+export default function DashboardProfilePage() {
+  return (
+    <DashboardAuthGuard>
+      <ProfilePageContent />
+    </DashboardAuthGuard>
   )
 }

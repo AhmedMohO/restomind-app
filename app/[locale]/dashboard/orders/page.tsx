@@ -1,31 +1,29 @@
-import type { Metadata } from "next"
-import { setRequestLocale } from "next-intl/server"
+"use client"
 
 import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { DashboardOrdersTable } from "@/features/orders/components/dashboard-orders-table"
-import { ORDER_DASHBOARD_ROLES } from "@/features/orders/api/dashboard"
-import { requireRoleOrRedirect } from "@/lib/auth/auth"
+import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import type { UserRole } from "@/features/auth/auth"
 
-export const metadata: Metadata = {
-  title: "Orders Management",
-  description: "View, filter, and manage orders",
-  robots: { index: false, follow: false },
-}
-
-export default async function DashboardOrdersPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}) {
-  const { locale } = await params
-  setRequestLocale(locale)
-  const user = await requireRoleOrRedirect([...ORDER_DASHBOARD_ROLES], locale)
+function OrdersPageContent() {
+  // role is guaranteed non-null here since DashboardAuthGuard already verified
+  // the user is authenticated with one of the allowed roles
+  const { role } = useAuth()
 
   return (
     <AppSidebar>
       <main className="flex-1 p-4 sm:p-6 min-w-0 w-full">
-        <DashboardOrdersTable role={user.role} />
+        <DashboardOrdersTable role={role as UserRole} />
       </main>
     </AppSidebar>
+  )
+}
+
+export default function DashboardOrdersPage() {
+  return (
+    <DashboardAuthGuard roles={["admin", "manager", "staff"]}>
+      <OrdersPageContent />
+    </DashboardAuthGuard>
   )
 }

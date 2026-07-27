@@ -1,14 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useLocale, useTranslations } from "next-intl"
+import { useTranslations } from "next-intl"
 import { useForm, Controller, useWatch } from "react-hook-form"
-import { Upload, Trash2, Info, Loader2, CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
-import { ar, enUS } from "date-fns/locale"
+import { Upload, Trash2, Info, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-
-import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,33 +32,22 @@ import { useProfile, useUpdateProfile } from "../hooks/use-profile"
 import type { FullUser } from "../api/profile"
 
 interface DashboardProfileContainerProps {
-  initialUser: FullUser
+  initialUser?: FullUser
 }
-
-function parseLocalDate(dateStr?: string | null): Date | undefined {
-  if (!dateStr) return undefined
-  const parts = dateStr.split("T")[0].split("-")
-  if (parts.length !== 3) return undefined
-  const [y, m, d] = parts.map(Number)
-  if (isNaN(y) || isNaN(m) || isNaN(d)) return undefined
-  return new Date(y, m - 1, d)
-}
-
 export function DashboardProfileContainer({
   initialUser,
 }: DashboardProfileContainerProps) {
   const t = useTranslations("Dashboard.account")
   const tVal = useTranslations("Validation")
-  const activeLocale = useLocale()
-  const dateLocale = activeLocale === "ar" ? ar : enUS
-
-  // Fetch / sync user data using TanStack Query
-  const { data: queryUser } = useProfile(initialUser)
-  const user = queryUser ?? initialUser
-  const updateProfileMutation = useUpdateProfile()
-  const isPending = updateProfileMutation.isPending
 
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  // Fetch / sync user data using TanStack Query
+  const { data: queryUser, isLoading: isProfileLoading } =
+    useProfile(initialUser)
+  const user = queryUser ?? initialUser
+  const updateProfileMutation = useUpdateProfile()
+
+  const isPending = updateProfileMutation.isPending
 
   // React Hook Form initialized with request-isolated locale-aware Zod resolver
   const {
@@ -102,14 +87,21 @@ export function DashboardProfileContainer({
     control,
     name: "DOB",
   })
-  const selectedDate = parseLocalDate(selectedDOB)
-
   const getInitials = (first?: string, last?: string) => {
     const f = first?.[0]?.toUpperCase() ?? ""
     const l = last?.[0]?.toUpperCase() ?? ""
     return f + l || "U"
   }
 
+  if (isProfileLoading && !user) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!user) return null
   // Handle Avatar Upload via TanStack Query mutation
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -374,7 +366,11 @@ export function DashboardProfileContainer({
                 >
                   {t("phone")}
                 </Label>
-                <PhoneInput id="phone" value={selectedPhone} {...register("phone")} />
+                <PhoneInput
+                  id="phone"
+                  value={selectedPhone}
+                  {...register("phone")}
+                />
                 {errors.phone?.message && (
                   <p className="mt-1 text-xs font-medium text-destructive">
                     {tVal(errors.phone.message)}

@@ -16,8 +16,9 @@ import { useUserById, useUpdateUser } from "@/features/users/hooks/use-users"
 import { Link } from "@/i18n/routing"
 import { getErrorMessage } from "@/lib/api/utils"
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
+import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
-export default function EditUserPage({
+function EditUserPageContent({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>
@@ -119,5 +120,17 @@ export default function EditUserPage({
         </div>
       </main>
     </AppSidebar>
+  )
+}
+
+export default function EditUserPage({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>
+}) {
+  return (
+    <DashboardAuthGuard roles={["admin", "manager"]}>
+      <EditUserPageContent params={params} />
+    </DashboardAuthGuard>
   )
 }

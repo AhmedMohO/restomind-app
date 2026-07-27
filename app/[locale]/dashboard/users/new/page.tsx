@@ -11,8 +11,9 @@ import { UserForm, type UserFormValues } from "@/features/users/components/user-
 import { useCreateUser } from "@/features/users/hooks/use-users"
 import { getErrorMessage } from "@/lib/api/utils"
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
+import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
-export default function NewUserPage() {
+function NewUserPageContent() {
   const t = useTranslations("Dashboard.users")
   const router = useRouter()
   const createMutation = useCreateUser()
@@ -69,5 +70,13 @@ export default function NewUserPage() {
         </div>
       </main>
     </AppSidebar>
+  )
+}
+
+export default function NewUserPage() {
+  return (
+    <DashboardAuthGuard roles={["admin", "manager"]}>
+      <NewUserPageContent />
+    </DashboardAuthGuard>
   )
 }

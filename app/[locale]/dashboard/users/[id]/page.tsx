@@ -13,8 +13,9 @@ import { UserRoleBadge } from "@/features/users/components/user-role-badge"
 import { UserStatusBadge } from "@/features/users/components/user-status-badge"
 import { Link } from "@/i18n/routing"
 import Image from "next/image"
+import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
-export default function ViewUserPage({
+function ViewUserPageContent({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>
@@ -151,5 +152,17 @@ export default function ViewUserPage({
         </div>
       </main>
     </AppSidebar>
+  )
+}
+
+export default function ViewUserPage({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>
+}) {
+  return (
+    <DashboardAuthGuard roles={["admin", "manager"]}>
+      <ViewUserPageContent params={params} />
+    </DashboardAuthGuard>
   )
 }

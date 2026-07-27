@@ -10,26 +10,14 @@ import { BackButton } from "@/components/ui/back-button"
 import { RestaurantForm } from "@/features/restaurant/components/restaurant-form"
 import { useCreateRestaurant } from "@/features/restaurant/hooks/use-restaurant"
 import type { RestaurantInput } from "@/schemas/restaurant"
+import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
-import { useAuth } from "@/features/auth/hooks/useAuth"
-
-export default function NewRestaurantPage() {
+function NewRestaurantPageContent() {
   const t = useTranslations("Dashboard.restaurant")
   const router = useRouter()
-  const { role, isHydrated } = useAuth()
   const [formKey, setFormKey] = React.useState(0)
 
-  React.useEffect(() => {
-    if (isHydrated && role !== "admin") {
-      router.replace("/dashboard/restaurants")
-    }
-  }, [isHydrated, role, router])
-
   const createMutation = useCreateRestaurant()
-
-  if (!isHydrated || role !== "admin") {
-    return null
-  }
 
   const handleSubmit = async (
     values: RestaurantInput,
@@ -90,5 +78,13 @@ export default function NewRestaurantPage() {
         </div>
       </main>
     </AppSidebar>
+  )
+}
+
+export default function NewRestaurantPage() {
+  return (
+    <DashboardAuthGuard roles={["admin"]}>
+      <NewRestaurantPageContent />
+    </DashboardAuthGuard>
   )
 }
