@@ -61,6 +61,7 @@ export function CreateUserDialog({
       email: "",
       password: "",
       phone: "",
+      role: "manager",
       gender: "" as "male" | "female",
       DOB: "",
     },
@@ -69,6 +70,7 @@ export function CreateUserDialog({
   const currentRole = useWatch({ control, name: "role" }) ?? "manager"
   const currentGender = useWatch({ control, name: "gender" }) ?? undefined
   const currentDOB = useWatch({ control, name: "DOB" }) ?? undefined
+  const currentPhone = useWatch({ control, name: "phone" })
   const isPending = createUserMutation.isPending
 
   React.useEffect(() => {
@@ -163,6 +165,7 @@ export function CreateUserDialog({
           <Field data-invalid={!!errors.phone}>
             <FieldLabel>{t("userPhoneLabel")}</FieldLabel>
             <PhoneInput
+              value={currentPhone}
               {...register("phone")}
               disabled={isPending}
               aria-invalid={!!errors.phone}
@@ -212,14 +215,15 @@ export function CreateUserDialog({
             </Field>
           </div>
 
-          <Field>
+          <Field data-invalid={!!errors.role}>
             <FieldLabel>{t("userRoleLabel")}</FieldLabel>
             <Select
               value={currentRole}
               onValueChange={(val) =>
                 setValue(
                   "role",
-                  (val as "admin" | "manager" | "customer") ?? "manager"
+                  (val as "admin" | "manager" | "customer") ?? "manager",
+                  { shouldDirty: true, shouldValidate: true }
                 )
               }
               disabled={isPending}
@@ -233,6 +237,7 @@ export function CreateUserDialog({
                 <SelectItem value="customer">{t("roleCustomer")}</SelectItem>
               </SelectContent>
             </Select>
+            <FieldError errors={[errors.role]} />
           </Field>
 
           <DialogFooter className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

@@ -89,6 +89,7 @@ export function RestaurantForm({
   }, [defaultValues, reset])
 
   const isActive = useWatch({ control, name: "isActive" }) ?? true
+  const selectedPhone = useWatch({ control, name: "phone" })
 
   const handleFormSubmit = handleSubmit(async (values) => {
     if (mode === "create" && !selectedOwnerId) {
@@ -117,6 +118,7 @@ export function RestaurantForm({
                     value={selectedOwnerId}
                     onValueChange={(val) => setSelectedOwnerId(val)}
                     role="manager"
+                    unassignedOnly
                     disabled={isPending}
                   />
 
@@ -161,6 +163,7 @@ export function RestaurantForm({
               <Field data-invalid={!!errors.phone}>
                 <FieldLabel>{t("phoneLabel")}</FieldLabel>
                 <PhoneInput
+                  value={selectedPhone}
                   {...register("phone")}
                   disabled={isPending}
                   aria-invalid={!!errors.phone}

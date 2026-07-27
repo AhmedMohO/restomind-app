@@ -80,6 +80,7 @@ export function RestaurantDialog({
   })
 
   const isActive = useWatch({ control, name: "isActive" }) ?? true
+  const selectedPhone = useWatch({ control, name: "phone" })
 
   React.useEffect(() => {
     if (restaurant) {
@@ -182,6 +183,7 @@ export function RestaurantDialog({
                     value={selectedOwnerId}
                     onValueChange={(val) => setSelectedOwnerId(val)}
                     role="manager"
+                    unassignedOnly
                     disabled={isPending}
                   />
 
@@ -226,6 +228,7 @@ export function RestaurantDialog({
               <Field data-invalid={!!errors.phone}>
                 <FieldLabel>{t("phoneLabel")}</FieldLabel>
                 <PhoneInput
+                  value={selectedPhone}
                   {...register("phone")}
                   disabled={isPending}
                   aria-invalid={!!errors.phone}

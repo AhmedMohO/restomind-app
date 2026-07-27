@@ -12,12 +12,15 @@ import {
 import { clientFetch } from "@/lib/api/fetch-client"
 import type { ApiUser } from "../api"
 
+import { useUserById } from "../hooks/use-users"
+
 interface PaginatedUserSelectProps {
   value?: string
   onValueChange: (value: string, user?: ApiUser) => void
   disabled?: boolean
   placeholder?: string
   role?: string
+  unassignedOnly?: boolean
   className?: string
 }
 
@@ -27,9 +30,20 @@ export function PaginatedUserSelect({
   disabled = false,
   placeholder,
   role = "manager",
+  unassignedOnly = false,
   className,
 }: PaginatedUserSelectProps) {
   const t = useTranslations("Dashboard.restaurant")
+  const { data: selectedUser } = useUserById(value || "")
+
+  const toOption = (user: ApiUser): PaginatedSelectOption<ApiUser> => ({
+    value: user._id,
+    label: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.email,
+    subLabel: user.email,
+    badge: user.role,
+    icon: <UserIcon className="size-3.5" />,
+    data: user,
+  })
 
   const fetchUsers = async ({
     page,
@@ -75,14 +89,19 @@ export function PaginatedUserSelect({
       items = items.filter((user) => user.role !== "customer")
     }
 
-    const options: PaginatedSelectOption<ApiUser>[] = items.map((user) => ({
-      value: user._id,
-      label: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.email,
-      subLabel: user.email,
-      badge: user.role,
-      icon: <UserIcon className="size-3.5" />,
-      data: user,
-    }))
+    // Filter out users who already have a linked restaurant
+    if (unassignedOnly) {
+      items = items.filter((user) => !user.restaurantId)
+    }
+
+    const options: PaginatedSelectOption<ApiUser>[] = items.map(toOption)
+
+    if (
+      selectedUser &&
+      !options.some((option) => option.value === selectedUser._id)
+    ) {
+      options.unshift(toOption(selectedUser))
+    }
 
     return {
       items: options,
@@ -95,7 +114,12 @@ export function PaginatedUserSelect({
       value={value}
       onValueChange={(val, option) => onValueChange(val, option?.data)}
       fetchData={fetchUsers}
-      queryKey={["users-select", role ?? "all"]}
+      queryKey={[
+        "users-select",
+        role ?? "all",
+        unassignedOnly ? "unassigned" : "all",
+        value ?? "",
+      ]}
       placeholder={placeholder ?? t("selectOwnerPlaceholder")}
       searchPlaceholder={t("searchPlaceholder")}
       disabled={disabled}

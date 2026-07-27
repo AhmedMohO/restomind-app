@@ -65,90 +65,66 @@ import { PaginatedCategorySelect } from "@/features/categories/components/pagina
 import { Link, useRouter } from "@/i18n/routing"
 import type { ApiOffer, GetOffersParams } from "@/features/offers/api/type"
 import { useCancelOffer, useOffersList } from "@/features/offers/hooks/use-offers"
+import type { OfferSource, OfferStatus, SortField, SortOrder } from "@/features/offers/types"
+import {
+  computeSoldUnits,
+  getOfferStatusLabel,
+  getStatusBadgeVariant,
+} from "@/features/offers/utils"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { getErrorMessage } from "@/lib/api/utils"
-
-function getOfferStatusLabel(
-  status: ApiOffer["status"],
-  t: (key: string) => string
-): string {
-  switch (status) {
-    case "active":
-      return t("statusActive")
-    case "scheduled":
-      return t("statusScheduled")
-    case "draft":
-      return t("statusDraft")
-    case "sold_out":
-      return t("statusSoldOut")
-    case "expired":
-      return t("statusExpired")
-    case "cancelled":
-      return t("statusCancelled")
-    default:
-      return status
-  }
-}
-
-function getStatusBadgeVariant(
-  status: ApiOffer["status"]
-): "default" | "secondary" | "outline" | "destructive" {
-  switch (status) {
-    case "active":
-      return "default"
-    case "scheduled":
-      return "outline"
-    case "draft":
-      return "secondary"
-    case "sold_out":
-      return "secondary"
-    case "expired":
-    case "cancelled":
-      return "destructive"
-    default:
-      return "secondary"
-  }
-}
 
 export function OffersContainer() {
   const router = useRouter()
   const locale = useLocale()
   const t = useTranslations("Dashboard.offers")
 
-  const sortOptions = [
-    { value: "createdAt", label: t("sortCreatedAt") },
-    { value: "offerPrice", label: t("sortOfferPrice") },
-    { value: "discountPercentage", label: t("sortDiscountPercentage") },
-    { value: "startDate", label: t("sortStartDate") },
-    { value: "endDate", label: t("sortEndDate") },
-  ] as const
-
-  const statusOptions = [
-    { value: "all", label: t("allStatuses") },
-    { value: "active", label: t("statusActive") },
-    { value: "scheduled", label: t("statusScheduled") },
-    { value: "draft", label: t("statusDraft") },
-    { value: "sold_out", label: t("statusSoldOut") },
-    { value: "expired", label: t("statusExpired") },
-    { value: "cancelled", label: t("statusCancelled") },
-  ] as const
-
-  const sourceOptions = [
-    { value: "all", label: t("allSources") },
-    { value: "manual", label: t("sourceManual") },
-    { value: "ai_recommendation", label: t("sourceAiRecommendation") },
-  ] as const
-
   const [page, setPage] = React.useState(1)
   const [limit, setLimit] = React.useState(10)
   const [search, setSearch] = React.useState("")
   const [debouncedSearch, setDebouncedSearch] = React.useState("")
-  const [status, setStatus] = React.useState<string>("all")
-  const [source, setSource] = React.useState<string>("all")
+  const [status, setStatus] = React.useState<OfferStatus | "all">("all")
+  const [source, setSource] = React.useState<OfferSource | "all">("all")
   const [category, setCategory] = React.useState("")
-  const [sort, setSort] = React.useState("createdAt")
-  const [order, setOrder] = React.useState<"asc" | "desc">("desc")
+  const [sort, setSort] = React.useState<SortField>("createdAt")
+  const [order, setOrder] = React.useState<SortOrder>("desc")
   const [cancelTarget, setCancelTarget] = React.useState<ApiOffer | null>(null)
+
+  const sortOptions = React.useMemo(
+    () =>
+      [
+        { value: "createdAt" as SortField, label: t("sortCreatedAt") },
+        { value: "offerPrice" as SortField, label: t("sortOfferPrice") },
+        { value: "discountPercentage" as SortField, label: t("sortDiscountPercentage") },
+        { value: "startDate" as SortField, label: t("sortStartDate") },
+        { value: "endDate" as SortField, label: t("sortEndDate") },
+      ] as const,
+    [t]
+  )
+
+  const statusOptions = React.useMemo(
+    () =>
+      [
+        { value: "all" as const, label: t("allStatuses") },
+        { value: "active" as OfferStatus, label: t("statusActive") },
+        { value: "scheduled" as OfferStatus, label: t("statusScheduled") },
+        { value: "draft" as OfferStatus, label: t("statusDraft") },
+        { value: "sold_out" as OfferStatus, label: t("statusSoldOut") },
+        { value: "expired" as OfferStatus, label: t("statusExpired") },
+        { value: "cancelled" as OfferStatus, label: t("statusCancelled") },
+      ] as const,
+    [t]
+  )
+
+  const sourceOptions = React.useMemo(
+    () =>
+      [
+        { value: "all" as const, label: t("allSources") },
+        { value: "manual" as OfferSource, label: t("sourceManual") },
+        { value: "ai_recommendation" as OfferSource, label: t("sourceAiRecommendation") },
+      ] as const,
+    [t]
+  )
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -162,10 +138,10 @@ export function OffersContainer() {
     page,
     limit,
     search: debouncedSearch || undefined,
-    status: status !== "all" ? (status as ApiOffer["status"]) : undefined,
-    source: source !== "all" ? (source as ApiOffer["source"]) : undefined,
+    status: status !== "all" ? status : undefined,
+    source: source !== "all" ? source : undefined,
     categoryId: category || undefined,
-    sortBy: sort as GetOffersParams["sortBy"],
+    sortBy: sort,
     sortOrder: order,
   }
 
@@ -186,7 +162,7 @@ export function OffersContainer() {
 
   const isFiltered = activeFilterCount > 0 || Boolean(debouncedSearch)
 
-  const resetFilters = () => {
+  const resetFilters = React.useCallback(() => {
     setSearch("")
     setDebouncedSearch("")
     setStatus("all")
@@ -195,43 +171,38 @@ export function OffersContainer() {
     setSort("createdAt")
     setOrder("desc")
     setPage(1)
-  }
+  }, [])
 
-  const handleHeaderSort = (field: string) => {
-    if (sort === field) {
-      setOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-    } else {
-      setSort(field)
-      setOrder("asc")
-    }
-    setPage(1)
-  }
+  const handleHeaderSort = React.useCallback(
+    (field: SortField) => {
+      if (sort === field) {
+        setOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+      } else {
+        setSort(field)
+        setOrder("asc")
+      }
+      setPage(1)
+    },
+    [sort]
+  )
 
-  const renderSortIcon = (field: string) => {
-    if (sort !== field) {
-      return <ArrowUpDown className="size-3.5 text-muted-foreground/60" />
-    }
-    return order === "asc" ? (
-      <ArrowUp className="size-3.5 text-primary" />
-    ) : (
-      <ArrowDown className="size-3.5 text-primary" />
-    )
-  }
+  const handleRowClick = React.useCallback(
+    (offerId: string, e: React.MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (
+        target.closest("button") ||
+        target.closest("a") ||
+        target.closest("input") ||
+        target.closest("[role='switch']")
+      ) {
+        return
+      }
+      router.push(`/dashboard/offers/${offerId}`)
+    },
+    [router]
+  )
 
-  const handleRowClick = (offerId: string, e: React.MouseEvent) => {
-    const target = e.target as HTMLElement
-    if (
-      target.closest("button") ||
-      target.closest("a") ||
-      target.closest("input") ||
-      target.closest("[role='switch']")
-    ) {
-      return
-    }
-    router.push(`/dashboard/offers/${offerId}`)
-  }
-
-  const handleCancelConfirm = async () => {
+  const handleCancelConfirm = React.useCallback(async () => {
     if (!cancelTarget) return
     try {
       await cancelMutation.mutateAsync(cancelTarget._id)
@@ -241,11 +212,18 @@ export function OffersContainer() {
       console.error("[OffersContainer] Cancel offer failed", err)
       toast.error(getErrorMessage(err, t("cancelError")))
     }
+  }, [cancelTarget, cancelMutation, t])
+
+  const renderSortIcon = (field: SortField) => {
+    if (sort !== field) return <ArrowUpDown className="size-3.5 text-muted-foreground/60" />
+    return order === "asc"
+      ? <ArrowUp className="size-3.5 text-primary" />
+      : <ArrowDown className="size-3.5 text-primary" />
   }
 
   return (
     <div className="space-y-6">
-      {/* Header with Title & Active Item Counter */}
+      {/* Header */}
       <div className="flex flex-row items-center justify-between gap-2">
         <div>
           <h1 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-bold tracking-tight">
@@ -276,7 +254,7 @@ export function OffersContainer() {
             <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder={t("searchPlaceholder")}
               className="rounded-xl ps-9"
             />
@@ -307,12 +285,8 @@ export function OffersContainer() {
                     <Filter className="size-5" />
                   </div>
                   <div>
-                    <SheetTitle className="text-base font-bold">
-                      {t("filtersTitle")}
-                    </SheetTitle>
-                    <SheetDescription>
-                      {t("filtersDescription")}
-                    </SheetDescription>
+                    <SheetTitle className="text-base font-bold">{t("filtersTitle")}</SheetTitle>
+                    <SheetDescription>{t("filtersDescription")}</SheetDescription>
                   </div>
                 </div>
               </SheetHeader>
@@ -336,9 +310,7 @@ export function OffersContainer() {
                     </SelectTrigger>
                     <SelectContent>
                       {statusOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -362,9 +334,7 @@ export function OffersContainer() {
                     </SelectTrigger>
                     <SelectContent>
                       {sourceOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -386,7 +356,7 @@ export function OffersContainer() {
                   />
                 </div>
 
-                {/* Sorting Options */}
+                {/* Sorting */}
                 <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
                   <div className="space-y-1.5">
                     <Label className="flex items-center gap-1.5 text-xs font-semibold">
@@ -423,7 +393,7 @@ export function OffersContainer() {
                     <Select
                       value={order}
                       onValueChange={(value) => {
-                        setOrder(value as "asc" | "desc")
+                        setOrder(value as SortOrder)
                         setPage(1)
                       }}
                     >
@@ -442,11 +412,7 @@ export function OffersContainer() {
               </div>
 
               <SheetFooter className="border-t border-border bg-card/60 p-5">
-                <Button
-                  variant="outline"
-                  onClick={resetFilters}
-                  className="w-full gap-2 rounded-xl"
-                >
+                <Button variant="outline" onClick={resetFilters} className="w-full gap-2 rounded-xl">
                   <RotateCcw className="size-4" />
                   <span>{t("resetFilters")}</span>
                 </Button>
@@ -456,7 +422,7 @@ export function OffersContainer() {
         </div>
       </div>
 
-      {/* Table Section */}
+      {/* Table */}
       <div className="max-h-[70vh] w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-card shadow-2xs">
         {isLoading ? (
           <div className="flex h-64 w-full items-center justify-center">
@@ -465,11 +431,7 @@ export function OffersContainer() {
         ) : isError ? (
           <div className="flex h-64 flex-col items-center justify-center gap-3 p-6 text-center">
             <p className="text-sm text-muted-foreground">{t("fetchError")}</p>
-            <Button
-              variant="outline"
-              onClick={() => refetch()}
-              className="rounded-xl"
-            >
+            <Button variant="outline" onClick={() => refetch()} className="rounded-xl">
               {t("retry")}
             </Button>
           </div>
@@ -479,12 +441,8 @@ export function OffersContainer() {
               <PackageX className="size-6" />
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">
-                {t("noOffersMatchFilters")}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("filtersDescription")}
-              </p>
+              <p className="text-sm font-semibold text-foreground">{t("noOffersMatchFilters")}</p>
+              <p className="text-xs text-muted-foreground">{t("filtersDescription")}</p>
             </div>
             {isFiltered && (
               <Button
@@ -502,9 +460,7 @@ export function OffersContainer() {
           <Table className="min-w-full">
             <TableHeader className="sticky top-0 z-10 bg-card shadow-xs">
               <TableRow>
-                <TableHead className="w-[30%] min-w-[200px] text-start">
-                  {t("colProduct")}
-                </TableHead>
+                <TableHead className="w-[30%] min-w-[200px] text-start">{t("colProduct")}</TableHead>
                 <TableHead className="w-[18%] min-w-[130px] px-4 text-start">
                   <Button
                     variant="ghost"
@@ -516,9 +472,7 @@ export function OffersContainer() {
                     {renderSortIcon("offerPrice")}
                   </Button>
                 </TableHead>
-                <TableHead className="w-[18%] min-w-[130px] text-start">
-                  {t("colStock")}
-                </TableHead>
+                <TableHead className="w-[18%] min-w-[130px] text-start">{t("colStock")}</TableHead>
                 <TableHead className="w-[20%] min-w-[160px] text-start">
                   <Button
                     variant="ghost"
@@ -530,26 +484,19 @@ export function OffersContainer() {
                     {renderSortIcon("startDate")}
                   </Button>
                 </TableHead>
-                <TableHead className="w-[10%] min-w-[90px] text-center">
-                  {t("colStatus")}
-                </TableHead>
-                <TableHead className="w-[60px] text-center">
-                  {t("colActions")}
-                </TableHead>
+                <TableHead className="w-[10%] min-w-[90px] text-center">{t("colStatus")}</TableHead>
+                <TableHead className="w-[60px] text-center">{t("colActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {offers.map((offer: ApiOffer) => {
-                const productTitle =
+                const product =
                   typeof offer.productId === "object" && offer.productId !== null
-                    ? offer.productId.title
-                    : "-"
-                const productImage =
-                  typeof offer.productId === "object" && offer.productId !== null
-                    ? offer.productId.image?.secure_url
-                    : undefined
-
-                const sold = offer.actualUnitsSold ?? (offer.availableQuantity - offer.remainingQuantity)
+                    ? offer.productId
+                    : null
+                const productTitle = product?.title ?? "-"
+                const productImage = product?.image?.secure_url
+                const sold = computeSoldUnits(offer)
 
                 return (
                   <TableRow
@@ -557,11 +504,11 @@ export function OffersContainer() {
                     onClick={(e) => handleRowClick(offer._id, e)}
                     className="cursor-pointer transition-colors hover:bg-muted/50"
                   >
-                    {/* Product Cell */}
+                    {/* Product */}
                     <TableCell className="w-[30%] min-w-[200px]">
                       <div className="flex items-center gap-3">
                         {productImage ? (
-                          <div className="relative size-11 overflow-hidden rounded-xl border border-border bg-muted shrink-0">
+                          <div className="relative size-11 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
                             <Image
                               fill
                               src={productImage}
@@ -578,13 +525,9 @@ export function OffersContainer() {
                         )}
                         <div className="min-w-0 space-y-1">
                           <div className="flex items-center gap-1.5">
-                            <span className="truncate font-semibold text-foreground">
-                              {productTitle}
-                            </span>
+                            <span className="truncate font-semibold text-foreground">{productTitle}</span>
                             {offer.featured && (
-                              <Badge className="px-1.5 py-0 text-[9px]">
-                                {t("featured")}
-                              </Badge>
+                              <Badge className="px-1.5 py-0 text-[9px]">{t("featured")}</Badge>
                             )}
                           </div>
                           {offer.source === "ai_recommendation" && (
@@ -597,7 +540,7 @@ export function OffersContainer() {
                       </div>
                     </TableCell>
 
-                    {/* Price & Discount Cell */}
+                    {/* Price */}
                     <TableCell className="w-[18%] min-w-[130px] px-4">
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
@@ -614,7 +557,7 @@ export function OffersContainer() {
                       </div>
                     </TableCell>
 
-                    {/* Stock Cell */}
+                    {/* Stock */}
                     <TableCell className="w-[18%] min-w-[130px]">
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center gap-1 font-medium">
@@ -633,11 +576,11 @@ export function OffersContainer() {
                       </div>
                     </TableCell>
 
-                    {/* Validity Period Cell */}
+                    {/* Dates */}
                     <TableCell className="w-[22%] min-w-[180px] text-xs">
                       <div className="space-y-1.5 text-muted-foreground">
                         <div className="flex items-center gap-1.5 font-medium text-foreground">
-                          <Calendar className="size-3.5 text-primary shrink-0" />
+                          <Calendar className="size-3.5 shrink-0 text-primary" />
                           <span dir="auto" className="truncate">{formatDate(offer.startDate, locale)}</span>
                         </div>
                         <div className="flex items-center gap-1.5 ps-5 text-muted-foreground/80">
@@ -647,14 +590,17 @@ export function OffersContainer() {
                       </div>
                     </TableCell>
 
-                    {/* Status Cell */}
+                    {/* Status */}
                     <TableCell className="w-[10%] min-w-[90px] text-center">
-                      <Badge variant={getStatusBadgeVariant(offer.status)} className="capitalize text-[11px]">
+                      <Badge
+                        variant={getStatusBadgeVariant(offer.status)}
+                        className="text-[11px] capitalize"
+                      >
                         {getOfferStatusLabel(offer.status, t)}
                       </Badge>
                     </TableCell>
 
-                    {/* Actions Cell */}
+                    {/* Actions */}
                     <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger
@@ -671,20 +617,16 @@ export function OffersContainer() {
                         />
                         <DropdownMenuContent align="end" className="w-40">
                           <DropdownMenuItem
-                            render={
-                              <Link href={`/dashboard/offers/${offer._id}`} />
-                            }
-                            onClick={e => e.stopPropagation()}
+                            render={<Link href={`/dashboard/offers/${offer._id}`} />}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <Eye className="size-4" />
                             <span>{t("viewDetails")}</span>
                           </DropdownMenuItem>
                           {offer.status !== "cancelled" && offer.status !== "expired" && (
                             <DropdownMenuItem
-                              render={
-                                <Link href={`/dashboard/offers/${offer._id}/edit`} />
-                              }
-                              onClick={e => e.stopPropagation()}
+                              render={<Link href={`/dashboard/offers/${offer._id}/edit`} />}
+                              onClick={(e) => e.stopPropagation()}
                             >
                               <Pencil className="size-4" />
                               <span>{t("edit")}</span>
@@ -728,12 +670,10 @@ export function OffersContainer() {
         }}
       />
 
-      {/* Cancel Offer Confirmation Dialog */}
+      {/* Cancel Confirmation */}
       <ConfirmDialog
         open={Boolean(cancelTarget)}
-        onOpenChange={(open) => {
-          if (!open) setCancelTarget(null)
-        }}
+        onOpenChange={(open) => { if (!open) setCancelTarget(null) }}
         onConfirm={handleCancelConfirm}
         title={t("cancelConfirmTitle")}
         description={t("cancelConfirmDesc")}

@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Loader2, PackagePlus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -26,6 +27,7 @@ export function ProductFormPage({ mode, id }: ProductFormPageProps) {
   const router = useRouter()
   const t = useTranslations("Dashboard.products")
   const isEdit = mode === "edit"
+  const [formKey, setFormKey] = React.useState(0)
   const createMutation = useCreateProduct()
   const updateMutation = useUpdateProduct()
   const {
@@ -52,6 +54,7 @@ export function ProductFormPage({ mode, id }: ProductFormPageProps) {
 
       const createdProduct = await createMutation.mutateAsync(formData)
       toast.success(t("createSuccess"))
+      setFormKey((k) => k + 1)
       router.push(`/dashboard/products/${createdProduct?._id ?? ""}`)
     } catch (err) {
       console.error("[ProductFormPage] submit failed", err)
@@ -134,6 +137,7 @@ export function ProductFormPage({ mode, id }: ProductFormPageProps) {
           </div>
 
           <ProductForm
+            key={formKey}
             mode={mode}
             product={product}
             onSubmit={handleSubmit}

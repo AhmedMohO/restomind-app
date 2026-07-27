@@ -44,8 +44,7 @@ export default function OrderHeader({
   const isCancellable =
     showCancelButton &&
     (orderGroup.overallStatus === "Pending" ||
-      orderGroup.overallStatus === "Confirmed" ||
-      orderGroup.overallStatus === "Preparing")
+      orderGroup.overallStatus === "Confirmed")
 
   const handleConfirmCancel = async () => {
     if (!displayId) return

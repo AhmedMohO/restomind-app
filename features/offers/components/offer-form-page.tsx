@@ -21,6 +21,7 @@ export function OfferFormPage({ offerId }: OfferFormPageProps) {
   const router = useRouter()
   const t = useTranslations("Dashboard.offers")
   const isEditing = Boolean(offerId)
+  const [formKey, setFormKey] = React.useState(0)
 
   const { data: offer, isLoading: isFetching, isError } = useOfferById(offerId ?? null)
 
@@ -37,6 +38,7 @@ export function OfferFormPage({ offerId }: OfferFormPageProps) {
       } else {
         await createMutation.mutateAsync(data as CreateOfferInput)
         toast.success(t("createSuccess"))
+        setFormKey((k) => k + 1)
       }
       router.push("/dashboard/offers")
     } catch (err) {
@@ -86,6 +88,7 @@ export function OfferFormPage({ offerId }: OfferFormPageProps) {
 
       {/* Reusable Form */}
       <OfferForm
+        key={formKey}
         initialData={offer}
         isEditing={isEditing}
         onSubmit={handleSubmit}

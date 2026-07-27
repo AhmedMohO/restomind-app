@@ -81,6 +81,8 @@ export function useCreateUser() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: ["users-select"] })
+      queryClient.invalidateQueries({ queryKey: ["paginated-select"] })
     },
   })
 }
@@ -114,6 +116,8 @@ export function useUpdateUser() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: ["users-select"] })
+      queryClient.invalidateQueries({ queryKey: ["paginated-select"] })
       queryClient.invalidateQueries({ queryKey: ["user", variables.id] })
     },
   })
@@ -131,6 +135,8 @@ export function useDeleteUser() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: ["users-select"] })
+      queryClient.invalidateQueries({ queryKey: ["paginated-select"] })
     },
   })
 }

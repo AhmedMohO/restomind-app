@@ -158,7 +158,11 @@ export default async function LocaleLayout({
       <body suppressHydrationWarning>
         <QueryProvider>
           <AuthProvider>
-            <ThemeProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              forcedTheme="light"
+            >
               <TooltipProvider>
                 <SmoothScrollProvider>
                   <Suspense fallback={null}>

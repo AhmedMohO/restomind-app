@@ -70,6 +70,7 @@ export function RestaurantProfileForm({
   // Live-watched values for char counter, logo preview, and the status badge.
   const description = useWatch({ control, name: "description" }) ?? ""
   const logoUrl = useWatch({ control, name: "logoUrl" }) ?? ""
+  const selectedPhone = useWatch({ control, name: "phone" })
 
   const isPending = updateMutation.isPending
   const descLength = description.length
@@ -159,6 +160,7 @@ export function RestaurantProfileForm({
             <Field data-invalid={!!errors.phone}>
               <FieldLabel>{t("phoneLabel")}</FieldLabel>
               <PhoneInput
+                value={selectedPhone}
                 {...register("phone")}
                 disabled={isPending}
                 aria-invalid={!!errors.phone}

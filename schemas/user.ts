@@ -1,8 +1,12 @@
 import { z } from "zod"
 import { egyptianPhoneSchema, optionalEgyptianPhoneSchema } from "@/lib/phone"
 
-export const userRoleEnum = z.enum(["admin", "manager", "customer", "staff"])
-export const userGenderEnum = z.enum(["male", "female"])
+export const userRoleEnum = z.enum(["admin", "manager", "customer", "staff"], {
+  message: "required",
+})
+export const userGenderEnum = z.enum(["male", "female"], {
+  message: "required",
+})
 
 export const createUserSchema = z.object({
   firstName: z

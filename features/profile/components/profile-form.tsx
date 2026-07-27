@@ -69,6 +69,7 @@ export function ProfileForm({
     handleSubmit,
     setValue,
     control,
+    reset,
     formState: { errors, isDirty },
   } = useForm<UpdateProfileInput>({
     resolver: useZodResolver(updateProfileSchema),
@@ -79,6 +80,21 @@ export function ProfileForm({
       gender: user.gender ?? undefined,
       DOB: initialDOB,
     },
+  })
+
+  React.useEffect(() => {
+    reset({
+      firstName: user.firstName ?? "",
+      lastName: user.lastName ?? "",
+      phone: user.phone ?? "",
+      gender: user.gender ?? undefined,
+      DOB: user.DOB ? new Date(user.DOB).toISOString().split("T")[0] : "",
+    })
+  }, [user, reset])
+
+  const selectedPhone = useWatch({
+    control,
+    name: "phone",
   })
 
   const selectedGender = useWatch({
@@ -146,6 +162,7 @@ export function ProfileForm({
             <Field>
               <FieldLabel>{authT("phoneLabel")}</FieldLabel>
               <PhoneInput
+                value={selectedPhone}
                 {...register("phone")}
                 disabled={isSubmitting}
               />

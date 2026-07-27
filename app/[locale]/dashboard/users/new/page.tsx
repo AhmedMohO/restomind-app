@@ -18,6 +18,7 @@ export default function NewUserPage() {
   const createMutation = useCreateUser()
   const currentUserRole = useAuthStore((s) => s.user?.role)
   const isManager = currentUserRole === "manager"
+  const [formKey, setFormKey] = React.useState(0)
 
   const handleSubmit = async (values: UserFormValues) => {
     try {
@@ -32,6 +33,7 @@ export default function NewUserPage() {
         DOB: values.DOB!,
       })
       toast.success(t("createSuccess"))
+      setFormKey((k) => k + 1)
       router.push("/dashboard/users")
     } catch (err) {
       console.error("[NewUserPage] submit failed", err)
@@ -59,6 +61,7 @@ export default function NewUserPage() {
           </div>
 
           <UserForm
+            key={formKey}
             mode="create"
             onSubmit={handleSubmit}
             isPending={createMutation.isPending}

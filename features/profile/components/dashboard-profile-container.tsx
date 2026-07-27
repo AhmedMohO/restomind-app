@@ -71,7 +71,7 @@ export function DashboardProfileContainer({
     control,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<UpdateProfileInput>({
     resolver: useZodResolver(updateProfileSchema),
     defaultValues: {
@@ -94,6 +94,10 @@ export function DashboardProfileContainer({
     })
   }, [user, reset])
 
+  const selectedPhone = useWatch({
+    control,
+    name: "phone",
+  })
   const selectedDOB = useWatch({
     control,
     name: "DOB",
@@ -370,7 +374,7 @@ export function DashboardProfileContainer({
                 >
                   {t("phone")}
                 </Label>
-                <PhoneInput id="phone" {...register("phone")} />
+                <PhoneInput id="phone" value={selectedPhone} {...register("phone")} />
                 {errors.phone?.message && (
                   <p className="mt-1 text-xs font-medium text-destructive">
                     {tVal(errors.phone.message)}
@@ -447,13 +451,14 @@ export function DashboardProfileContainer({
                 type="button"
                 variant="outline"
                 onClick={handleResetForm}
+                disabled={!isDirty || isPending}
                 className="h-10 flex-1 rounded-xl border-border/80 px-5 text-xs font-semibold transition-all hover:bg-accent sm:flex-none sm:text-sm"
               >
                 {t("reset")}
               </Button>
               <Button
                 type="submit"
-                disabled={isPending}
+                disabled={!isDirty || isPending}
                 className="h-10 flex-1 rounded-xl bg-primary px-6 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 sm:flex-none sm:text-sm"
               >
                 {isPending ? (

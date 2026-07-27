@@ -17,6 +17,7 @@ export default function NewRestaurantPage() {
   const t = useTranslations("Dashboard.restaurant")
   const router = useRouter()
   const { role, isHydrated } = useAuth()
+  const [formKey, setFormKey] = React.useState(0)
 
   React.useEffect(() => {
     if (isHydrated && role !== "admin") {
@@ -53,6 +54,7 @@ export default function NewRestaurantPage() {
         },
       })
       toast.success(t("createSuccess"))
+      setFormKey((k) => k + 1)
       router.push("/dashboard/restaurants")
     } catch (err) {
       console.error("[NewRestaurantPage] submit failed", err)
@@ -80,6 +82,7 @@ export default function NewRestaurantPage() {
           </div>
 
           <RestaurantForm
+            key={formKey}
             mode="create"
             onSubmit={handleSubmit}
             isPending={createMutation.isPending}

@@ -102,7 +102,7 @@ export function PaginatedSelect<T = unknown>({
   const { data, isLoading, isFetching } = useQuery<
     PaginatedSelectFetchResult<T>
   >({
-    queryKey: ["paginated-select", ...queryKey, page, limit, debouncedSearch],
+    queryKey: [...queryKey, "paginated-select", page, limit, debouncedSearch],
     queryFn: () => fetchData({ page, limit, search: debouncedSearch }),
     staleTime: 30 * 1000,
   })

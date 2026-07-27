@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { Link, useRouter } from "@/i18n/routing"
+import { Link } from "@/i18n/routing"
 import { useCancelOffer, useOfferById } from "@/features/offers/hooks/use-offers"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { getErrorMessage } from "@/lib/api/utils"
@@ -77,7 +77,6 @@ function getStatusBadgeVariant(
 }
 
 export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
-  const router = useRouter()
   const locale = useLocale()
   const t = useTranslations("Dashboard.offers")
 

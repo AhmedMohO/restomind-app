@@ -103,6 +103,7 @@ export function UserForm({
   }, [defaultValues, isManager, reset, setValue])
 
   const selectedRole = useWatch({ control, name: "role" }) ?? (isManager ? "staff" : "customer")
+  const selectedPhone = useWatch({ control, name: "phone" })
   const selectedGender = useWatch({ control, name: "gender" }) ?? ""
   const selectedDOB = useWatch({ control, name: "DOB" }) ?? undefined
 
@@ -175,6 +176,7 @@ export function UserForm({
             <Field data-invalid={!!errors.phone}>
               <FieldLabel>{t("phone")}</FieldLabel>
               <PhoneInput
+                value={selectedPhone}
                 {...register("phone")}
                 disabled={isPending}
                 aria-invalid={!!errors.phone}

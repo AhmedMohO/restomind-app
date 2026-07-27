@@ -94,6 +94,7 @@ export function AddressDialog({
   }, [open, initialData, defaultUserName, defaultUserPhone, reset])
 
   const isDefaultChecked = useWatch({ control, name: "isDefault" })
+  const selectedPhone = useWatch({ control, name: "phoneNumber" })
 
   const handleFormSubmit = async (data: AddressInput) => {
     await onSubmit(data)
@@ -129,6 +130,7 @@ export function AddressDialog({
             <Field className="sm:col-span-2">
               <FieldLabel>{t("phoneNumber")}</FieldLabel>
               <PhoneInput
+                value={selectedPhone}
                 {...register("phoneNumber")}
                 disabled={isSubmitting}
               />
