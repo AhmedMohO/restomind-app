@@ -16,19 +16,28 @@ interface ProductPageProps {
 export async function generateStaticParams() {
   try {
     const res = await getActiveOffers({ limit: 5 })
-    return routing.locales.flatMap((locale) =>
-      (res?.items || []).map((offer) => ({
-        locale,
-        id: offer.productId.slug || offer._id,
-      }))
-    )
+    const items = res?.items || []
+    if (items.length > 0) {
+      return routing.locales.flatMap((locale) =>
+        items.map((offer) => ({
+          locale,
+          id: typeof offer.productId === "object" && offer.productId?.slug
+            ? offer.productId.slug
+            : offer._id,
+        }))
+      )
+    }
   } catch (error) {
     console.error(
       "[generateStaticParams] Failed to fetch active offers for static params:",
       error
     )
-    return []
   }
+
+  return routing.locales.map((locale) => ({
+    locale,
+    id: "placeholder",
+  }))
 }
 
 export async function generateMetadata({

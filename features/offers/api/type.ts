@@ -10,6 +10,7 @@ export interface ApiOffer {
   originalPrice: number
   offerPrice: number
   discountPercentage: number
+  discountType?: "percentage" | "fixed"
   availableQuantity: number
   remainingQuantity: number
   maxPerCustomer?: number
@@ -78,5 +79,30 @@ export interface GetRecommendedOffersParams {
   maxPrice?: number
   page?: number | string
   limit?: number | string
+}
+
+export interface CreateOfferInput {
+  productId: string
+  discountType?: "percentage" | "fixed"
+  discountPercentage?: number
+  offerPrice?: number
+  startDate: string
+  endDate: string
+  availableQuantity: number
+  maxPerCustomer?: number
+  featured?: boolean
+  status?: "draft" | "scheduled" | "active" | "expired" | "cancelled" | "sold_out"
+}
+
+export interface UpdateOfferInput {
+  discountType?: "percentage" | "fixed"
+  discountPercentage?: number
+  offerPrice?: number
+  startDate?: string
+  endDate?: string
+  availableQuantity?: number
+  maxPerCustomer?: number
+  featured?: boolean
+  status?: "draft" | "scheduled" | "active" | "expired" | "cancelled" | "sold_out"
 }
 
