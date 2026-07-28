@@ -9,8 +9,15 @@ import { Button } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 import { useRouter } from "@/i18n/routing"
 import { OfferForm } from "./offer-form"
-import { useCreateOffer, useOfferById, useUpdateOffer } from "@/features/offers/hooks/use-offers"
-import type { CreateOfferInput, UpdateOfferInput } from "@/features/offers/api/type"
+import {
+  useCreateOffer,
+  useOfferById,
+  useUpdateOffer,
+} from "@/features/offers/hooks/use-offers"
+import type {
+  CreateOfferInput,
+  UpdateOfferInput,
+} from "@/features/offers/api/type"
 import { getErrorMessage } from "@/lib/api/utils"
 
 interface OfferFormPageProps {
@@ -23,7 +30,11 @@ export function OfferFormPage({ offerId }: OfferFormPageProps) {
   const isEditing = Boolean(offerId)
   const [formKey, setFormKey] = React.useState(0)
 
-  const { data: offer, isLoading: isFetching, isError } = useOfferById(offerId ?? null)
+  const {
+    data: offer,
+    isLoading: isFetching,
+    isError,
+  } = useOfferById(offerId ?? null)
 
   const createMutation = useCreateOffer()
   const updateMutation = useUpdateOffer()
@@ -33,7 +44,10 @@ export function OfferFormPage({ offerId }: OfferFormPageProps) {
   const handleSubmit = async (data: CreateOfferInput | UpdateOfferInput) => {
     try {
       if (isEditing && offerId) {
-        await updateMutation.mutateAsync({ id: offerId, data: data as UpdateOfferInput })
+        await updateMutation.mutateAsync({
+          id: offerId,
+          data: data as UpdateOfferInput,
+        })
         toast.success(t("updateSuccess"))
       } else {
         await createMutation.mutateAsync(data as CreateOfferInput)
@@ -72,7 +86,7 @@ export function OfferFormPage({ offerId }: OfferFormPageProps) {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       {/* Back Button & Header */}
       <div className="flex items-center gap-3">
         <BackButton href="/dashboard/offers" />
@@ -81,7 +95,9 @@ export function OfferFormPage({ offerId }: OfferFormPageProps) {
             {isEditing ? t("editOffer") : t("createOffer")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {isEditing ? t("formPageSubtitleEdit") : t("formPageSubtitleCreate")}
+            {isEditing
+              ? t("formPageSubtitleEdit")
+              : t("formPageSubtitleCreate")}
           </p>
         </div>
       </div>

@@ -14,7 +14,7 @@ export default function OfferDetailsPage({
   const { id } = use(params)
 
   return (
-    <DashboardAuthGuard roles={["manager"]}>
+    <DashboardAuthGuard roles={["manager", "staff"]}>
       <AppSidebar>
         <main className="flex-1 p-4 sm:p-6 min-w-0 w-full">
           <OfferDetailsContainer offerId={id} />

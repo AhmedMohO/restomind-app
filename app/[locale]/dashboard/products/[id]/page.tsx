@@ -14,7 +14,7 @@ export default function ProductDetailsPage({
   const { id } = use(params)
 
   return (
-    <DashboardAuthGuard roles={["admin", "manager"]}>
+    <DashboardAuthGuard roles={["admin", "manager", "staff"]}>
       <AppSidebar>
         <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
           <ProductDetailsContainer id={id} />

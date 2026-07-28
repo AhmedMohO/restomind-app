@@ -11,7 +11,7 @@ import {
   requireAnyRole,
 } from "@/lib/api/route-helpers"
 
-const PRODUCT_ROLES = ["admin", "manager"] as const
+const PRODUCT_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(
   _request: Request,

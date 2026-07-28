@@ -6,7 +6,7 @@ import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
 export default function NewOfferPage() {
   return (
-    <DashboardAuthGuard roles={["manager"]}>
+    <DashboardAuthGuard roles={["manager", "staff"]}>
       <AppSidebar>
         <main className="flex-1 p-4 sm:p-6 min-w-0 w-full">
           <OfferFormPage />

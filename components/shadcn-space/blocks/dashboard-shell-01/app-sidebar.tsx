@@ -123,13 +123,13 @@ function useDashboardNav(): NavItem[] {
       title: t("products"),
       icon: Package,
       href: "/dashboard/products",
-      roles: ["admin", "manager"],
+      roles: ["admin", "manager", "staff"],
     },
     {
       title: t("offers"),
       icon: Percent,
       href: "/dashboard/offers",
-      roles: ["manager"],
+      roles: ["manager", "staff"],
     },
     {
       title: t("ingredients"),

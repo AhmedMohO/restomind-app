@@ -6,7 +6,7 @@ import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
 export default function NewProductPage() {
   return (
-    <DashboardAuthGuard roles={["admin", "manager"]}>
+    <DashboardAuthGuard roles={["admin", "manager", "staff"]}>
       <AppSidebar>
         <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
           <ProductFormPage mode="create" />

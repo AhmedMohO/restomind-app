@@ -87,6 +87,8 @@ export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
   "/dashboard/ingredients": ["manager"],
   "/dashboard/recipes": ["manager"],
   "/dashboard/sales": ["admin", "manager"],
+  "/dashboard/products": ["admin", "manager", "staff"],
+  "/dashboard/offers": ["manager", "staff"],
   "/dashboard/orders": ["admin", "manager", "staff"],
   "/dashboard": DASHBOARD_ALLOWED_ROLES,
   "/orders": [],

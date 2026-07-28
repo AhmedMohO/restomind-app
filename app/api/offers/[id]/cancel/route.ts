@@ -7,7 +7,7 @@ import {
   requireAnyRole,
 } from "@/lib/api/route-helpers"
 
-const OFFER_ROLES = ["manager"] as const
+const OFFER_ROLES = ["manager", "staff"] as const
 
 export async function PATCH(
   _request: Request,

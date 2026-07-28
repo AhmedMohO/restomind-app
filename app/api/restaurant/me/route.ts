@@ -53,7 +53,7 @@ async function resolveMyRestaurant(): Promise<ResolvedRestaurant> {
       return { restaurant, status: 200 }
     }
 
-    if (role === "admin") {
+    if (role === "admin" || role === "staff") {
       if (!restaurantId) {
         return { restaurant: null, status: 404, error: "NOT_FOUND" }
       }
