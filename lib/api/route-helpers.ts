@@ -32,7 +32,7 @@ export async function requireAuth(requiredRole?: UserRole): Promise<NextResponse
  * Checks if the current user has one of the allowed roles.
  */
 export async function requireAnyRole(
-  roles: UserRole[]
+  roles: readonly UserRole[]
 ): Promise<NextResponse<ApiResponse> | null> {
   const session = await getSession()
 

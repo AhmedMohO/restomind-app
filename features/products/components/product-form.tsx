@@ -330,6 +330,7 @@ export function ProductForm({
             <Textarea
               id="product-description"
               {...register("description")}
+              maxLength={500}
               className="min-h-20"
               disabled={isPending}
             />
@@ -343,6 +344,7 @@ export function ProductForm({
             <Textarea
               id="product-long-description"
               {...register("longDescription")}
+              maxLength={2000}
               className="min-h-32"
               disabled={isPending}
             />
