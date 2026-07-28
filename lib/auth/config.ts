@@ -73,7 +73,7 @@ export const PUBLIC_ROUTE_PATTERNS: RegExp[] = [
 /**
  * Roles allowed to access the /dashboard path.
  */
-export const DASHBOARD_ALLOWED_ROLES = ["admin", "manager"] as const
+export const DASHBOARD_ALLOWED_ROLES = ["admin", "manager", "staff"] as const
 
 /**
  * Route prefix → required roles.
@@ -97,10 +97,13 @@ export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
 /**
  * Returns the required roles for a given path prefix, or null if the
  * route does not appear in ROUTE_ROLE_MAP (i.e. it is public).
+ * Locale prefixes (/en, /ar, …) are stripped before matching.
  */
 export function getRouteRoles(path: string): UserRole[] | null {
+  // Strip optional locale segment (e.g. /en/dashboard → /dashboard)
+  const normalised = path.replace(/^\/[a-z]{2}(\/|$)/, "/")
   for (const [prefix, roles] of Object.entries(ROUTE_ROLE_MAP)) {
-    if (path.startsWith(prefix)) return [...roles] as UserRole[]
+    if (normalised.startsWith(prefix)) return [...roles] as UserRole[]
   }
   return null
 }

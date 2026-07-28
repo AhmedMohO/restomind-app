@@ -10,18 +10,11 @@ import {
   type PaginatedSelectOption,
 } from "@/components/ui/paginated-select"
 import { clientFetch } from "@/lib/api/fetch-client"
-import type { ApiCategory, PaginatedCategories } from "@/features/categories/api/type"
+import type {
+  ApiCategory,
+  PaginatedCategories,
+} from "@/features/categories/api/type"
 import { useCategoryById } from "@/features/categories/hooks/use-categories"
-
-type CategoriesResponse =
-  | PaginatedCategories
-  | ApiCategory[]
-  | {
-      data?: PaginatedCategories | ApiCategory[] | { data?: PaginatedCategories | ApiCategory[] }
-      items?: ApiCategory[]
-      totalPages?: number
-      total?: number
-    }
 
 interface PaginatedCategorySelectProps {
   value?: string
@@ -69,7 +62,9 @@ export function PaginatedCategorySelect({
     if (search) searchParams.set("search", search)
 
     const qs = searchParams.toString() ? `?${searchParams.toString()}` : ""
-    const res = await clientFetch<PaginatedCategories | ApiCategory[]>(`/categories${qs}`)
+    const res = await clientFetch<PaginatedCategories | ApiCategory[]>(
+      `/categories${qs}`
+    )
 
     const { categories, totalPages, total } = normalizeCategoriesResponse(res)
     const options: PaginatedSelectOption<ApiCategory>[] = categories.map(

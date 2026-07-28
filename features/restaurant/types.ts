@@ -20,13 +20,18 @@ export interface OwnerUserSummary {
   role?: string
 }
 
+export interface RestaurantImage {
+  public_id: string
+  secure_url: string
+}
+
 export interface Restaurant {
   _id: string
   name: string
   ownerUserId: OwnerUserSummary
   description?: string
-  /** Public URL string per the API schema. */
-  logoUrl?: string
+  /** Cloudinary image object per backend schema */
+  image?: RestaurantImage
   phone?: string
   address?: RestaurantAddress
   isActive: boolean
@@ -38,9 +43,10 @@ export interface Restaurant {
 
 export interface UpdateRestaurantPayload {
   name?: string
+  ownerUserId?: string
   description?: string | null
   phone?: string | null
-  logoUrl?: string | null
+  image?: string | null
   address?: RestaurantAddress
   isActive?: boolean
 }
@@ -64,7 +70,6 @@ export interface CreateRestaurantPayload {
   ownerUserId: string
   description?: string
   phone?: string
-  logoUrl?: string
+  image?: string
   address?: RestaurantAddress
 }
-

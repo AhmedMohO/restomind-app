@@ -21,11 +21,13 @@ This documentation provides comprehensive details for integrating with the **Res
 13. [Suppliers Module (`/suppliers`)](#13-suppliers-module-suppliers)
 14. [Purchase Orders Module (`/purchase-orders`)](#14-purchase-orders-module-purchase-orders)
 15. [Inventory & Waste Management Module (`/inventory`)](#15-inventory--waste-management-module-inventory)
-16. [Daily Production Planning Module (`/predictions/production-plan`)](#16-daily-production-planning-module-predictionsproduction-plan)
-17. [Data Ingestion & CSV Import Jobs Module (`/imports`)](#17-data-ingestion--csv-import-jobs-module-imports)
-18. [Dashboard Module (`/dashboard`)](#18-dashboard-module-dashboard)
-19. [Sales Module (`/sales`)](#19-sales-module-sales)
-20. [End-to-End Shopping, Inventory, Production & Order Analytics Workflow](#20-end-to-end-shopping-inventory-production--order-analytics-workflow)
+16. [Waste Reports Analytics Module (`/waste-reports`)](#16-waste-reports-analytics-module-waste-reports)
+17. [Weekly Predictions & Daily Production Planning Module (`/predictions`)](#17-weekly-predictions--daily-production-planning-module-predictions)
+18. [AI Recommendations & Surplus Management Module (`/recommendations`)](#18-ai-recommendations--surplus-management-module-recommendations)
+19. [Data Ingestion & CSV Import Jobs Module (`/imports`)](#19-data-ingestion--csv-import-jobs-module-imports)
+20. [Dashboard Module (`/dashboard`)](#20-dashboard-module-dashboard)
+21. [Sales Module (`/sales`)](#21-sales-module-sales)
+22. [End-to-End Shopping, Inventory, Production & Order Analytics Workflow](#22-end-to-end-shopping-inventory-production--order-analytics-workflow)
 
 ---
 
@@ -1659,7 +1661,9 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Method / URL**: `POST /restaurants`
 - **Auth Level**: Access Token (`admin`)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`application/json`)**:
+- **Content-Type**: `application/json` or `multipart/form-data`
+- **File Upload**: Optional image file field (`image`) for uploading restaurant logo/picture.
+- **Request Body**:
   ```json
   {
     "name": "Pizza Gourmet",
@@ -1740,7 +1744,9 @@ Orders support multi-restaurant cart checkouts through an aggregated **`GroupOrd
 - **Method / URL**: `PATCH /restaurants/:id`
 - **Auth Level**: Access Token (`admin`, `manager` - own restaurant only)
 - **Headers**: `Authorization: Bearer <accessToken>`
-- **Request Body (`application/json`)**: `name`, `description`, `phone`, `address`, `isActive`.
+- **Content-Type**: `application/json` or `multipart/form-data`
+- **File Upload**: Optional image file field (`image`) for updating restaurant logo.
+- **Request Body**: `name`, `description`, `phone`, `address`, `isActive`.
 
 ---
 
@@ -2286,11 +2292,182 @@ The Inventory & Waste Management module allows tracking raw material batches, au
 
 ---
 
-## 16. Daily Production Planning Module (`/predictions/production-plan`)
+## 16. Waste Reports Analytics Module (`/waste-reports`)
 
-The Production Planning module provides AI-driven daily meal preparation recommendations based on historical sales data, seasonal demand trends, and waste history.
+The Waste Reports Analytics module provides detailed audit reports and aggregate financial impact analysis of raw material spoilage, expiration, overproduction loss, and kitchen prep waste.
 
-### 16.1 Get Daily Production Plan
+### 16.1 Get Waste Reports List (Paginated & Filtered)
+
+- **Method / URL**: `GET /waste-reports`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter      | Type            | Default | Description                                              |
+  | :------------- | :-------------- | :------ | :------------------------------------------------------- |
+  | `page`         | Number / String | `1`     | Page number                                              |
+  | `limit`        | Number / String | `10`    | Items per page                                           |
+  | `startDate`    | ISO Date String | _None_  | Filter reports starting from date                        |
+  | `endDate`      | ISO Date String | _None_  | Filter reports up to date                                |
+  | `ingredientId` | String          | _None_  | Filter by specific Ingredient ObjectId                   |
+  | `wasteReason`  | String          | _None_  | Filter by waste reason enum                              |
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "data": [
+      {
+        "_id": "669fc5555555555abcdef111",
+        "restaurantId": "669fc8888888888abcdef222",
+        "ingredientId": {
+          "_id": "669fc3333333333abcdef123",
+          "name": "Whole Milk",
+          "unit": "liter"
+        },
+        "quantity": 5,
+        "unit": "liter",
+        "wasteReason": "expired",
+        "estimatedCost": 12.5,
+        "date": "2026-07-27T14:30:00.000Z",
+        "createdAt": "2026-07-27T14:30:00.000Z"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+  ```
+
+---
+
+### 16.2 Get Waste Reports Summary Statistics
+
+- **Method / URL**: `GET /waste-reports/summary`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Description**: Returns financial summary metrics of raw material waste for the authenticated manager's restaurant, including total waste cost and a breakdown by reason.
+- **Response (200 OK)**:
+  ```json
+  {
+    "totalWasteEvents": 12,
+    "totalQuantityWasted": 45.5,
+    "totalEstimatedCost": 185.75,
+    "breakdownByReason": [
+      {
+        "reason": "expired",
+        "count": 6,
+        "totalCost": 95.00
+      },
+      {
+        "reason": "spoiled",
+        "count": 4,
+        "totalCost": 60.75
+      },
+      {
+        "reason": "preparation_loss",
+        "count": 2,
+        "totalCost": 30.00
+      }
+    ]
+  }
+  ```
+
+---
+
+## 17. Weekly Predictions & Daily Production Planning Module (`/predictions`)
+
+The Predictions & Production Planning module provides AI-driven weekly demand forecasting, automated batch recalculations, ML model training status, and daily meal preparation planning to balance stock requirements and minimize overproduction.
+
+### 17.1 Recalculate Single Product Demand Prediction
+
+- **Method / URL**: `POST /predictions/recalculate`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field        | Type   | Required | Description                                                    |
+  | :----------- | :----- | :------- | :------------------------------------------------------------- |
+  | `productId`  | String | Yes      | Product MongoId to recalculate demand for                      |
+  | `targetWeek` | String | Yes      | Target week start date (`YYYY-MM-DD` or ISO Date, e.g. `2026-08-03`) |
+
+  _Request Example_:
+
+  ```json
+  {
+    "productId": "669fc3333333333abcdef444",
+    "targetWeek": "2026-08-03"
+  }
+  ```
+
+- **Response (200 OK)**: Updated `WeeklyPrediction` object for the requested product.
+
+---
+
+### 17.2 Batch Recalculate Weekly Predictions
+
+- **Method / URL**: `POST /predictions/batch-recalculate`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field        | Type   | Required | Description                                                    |
+  | :----------- | :----- | :------- | :------------------------------------------------------------- |
+  | `targetWeek` | String | Yes      | Target week start date (`YYYY-MM-DD` or ISO Date, e.g. `2026-08-03`) |
+
+  _Request Example_:
+
+  ```json
+  {
+    "targetWeek": "2026-08-03"
+  }
+  ```
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "message": "Batch prediction recalculation initiated successfully",
+    "recalculatedCount": 18
+  }
+  ```
+
+---
+
+### 17.3 Get Weekly Predictions List
+
+- **Method / URL**: `GET /predictions`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter    | Type   | Required | Default | Description                                           |
+  | :----------- | :----- | :------- | :------ | :---------------------------------------------------- |
+  | `targetWeek` | String | No       | _Current Week_ | Filter by target week date (`YYYY-MM-DD`)      |
+  | `productId`  | String | No       | _None_  | Filter by specific Product MongoId                    |
+
+- **Response (200 OK)**: Array of weekly prediction forecasts per product with recommended quantities, confidence indicators, and upper/lower bounds.
+
+---
+
+### 17.4 Get ML Model Learned Status
+
+- **Method / URL**: `GET /predictions/learned-status`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**:
+  ```json
+  {
+    "isModelTrained": true,
+    "historicalDataDays": 45,
+    "confidenceScore": 0.88,
+    "lastTrainedAt": "2026-07-25T12:00:00.000Z",
+    "status": "ready"
+  }
+  ```
+
+---
+
+### 17.5 Get Daily Production Plan
 
 - **Method / URL**: `GET /predictions/production-plan`
 - **Auth Level**: Access Token (`manager`)
@@ -2332,7 +2509,7 @@ The Production Planning module provides AI-driven daily meal preparation recomme
 
 ---
 
-### 16.2 Record Actual Kitchen Production
+### 17.6 Record Actual Kitchen Production
 
 - **Method / URL**: `POST /predictions/production-plan/actuals`
 - **Auth Level**: Access Token (`manager`)
@@ -2364,11 +2541,126 @@ The Production Planning module provides AI-driven daily meal preparation recomme
 
 ---
 
-## 17. Data Ingestion & CSV Import Jobs Module (`/imports`)
+## 18. AI Recommendations & Surplus Management Module (`/recommendations`)
+
+The AI Recommendations module periodically scans raw material inventory and batch expiration dates, issuing intelligent recommendations to discount near-expiry products, create promotional surplus offers, or adjust production plans.
+
+### 18.1 Get AI Recommendations List
+
+- **Method / URL**: `GET /recommendations`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Query Parameters**:
+
+  | Parameter | Type   | Default  | Description                                                     |
+  | :-------- | :----- | :------- | :-------------------------------------------------------------- |
+  | `status`  | String | `active` | Filter status (`active`, `approved`, `dismissed`, `expired`)    |
+  | `page`    | Number | `1`      | Page number                                                     |
+  | `limit`   | Number | `10`     | Items per page                                                  |
+
+- **Response (200 OK)**:
+  ```json
+  {
+    "data": [
+      {
+        "_id": "669fc7777777777abcdef999",
+        "restaurantId": "669fc8888888888abcdef222",
+        "recommendationType": "surplus_discount",
+        "title": "Surplus Ingredient Clearance: Milk",
+        "description": "Batch LOT-20260726-01 expires in 2 days. Recommend creating 20% discount offer.",
+        "suggestedDiscount": 20,
+        "productId": "669fc3333333333abcdef444",
+        "status": "active",
+        "createdAt": "2026-07-28T10:00:00.000Z"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "limit": 10
+  }
+  ```
+
+---
+
+### 18.2 Scan Surplus Stock & Trigger AI Recommendations
+
+- **Method / URL**: `POST /recommendations/scan-surplus`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Description**: Triggers instant audit of inventory batches expiring within threshold, producing AI recommendations for surplus mitigation.
+- **Response (200 OK)**:
+  ```json
+  {
+    "message": "Inventory surplus scan completed",
+    "recommendationsGenerated": 2
+  }
+  ```
+
+---
+
+### 18.3 Approve AI Recommendation
+
+- **Method / URL**: `PATCH /recommendations/:id/approve`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field                | Type   | Required | Description                                     |
+  | :------------------- | :----- | :------- | :---------------------------------------------- |
+  | `discountPercentage` | Number | No       | Discount percentage override ($\ge 1, \le 99$)  |
+  | `offerTitle`         | String | No       | Custom title for generated promotional offer    |
+
+- **Response (200 OK)**: Updated recommendation entity (`status: 'approved'`) and newly created active `Offer`.
+
+---
+
+### 18.4 Edit AI Recommendation
+
+- **Method / URL**: `PATCH /recommendations/:id/edit`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field                | Type   | Required | Description                                     |
+  | :------------------- | :----- | :------- | :---------------------------------------------- |
+  | `discountPercentage` | Number | Yes      | Updated proposed discount percentage            |
+
+- **Response (200 OK)**: Updated recommendation entity.
+
+---
+
+### 18.5 Dismiss AI Recommendation
+
+- **Method / URL**: `PATCH /recommendations/:id/dismiss`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Response (200 OK)**: Updated recommendation entity (`status: 'dismissed'`).
+
+---
+
+### 18.6 Validate Production Plan against Demand
+
+- **Method / URL**: `POST /predictions/validate-plan`
+- **Auth Level**: Access Token (`manager`)
+- **Headers**: `Authorization: Bearer <accessToken>`
+- **Request Body (`application/json`)**:
+
+  | Field              | Type   | Required | Description                                  |
+  | :----------------- | :----- | :------- | :------------------------------------------- |
+  | `date`             | String | Yes      | Production date (`YYYY-MM-DD`)               |
+  | `items`            | Array  | Yes      | Array of planned production quantities       |
+  | `items[].productId`| String | Yes      | Product MongoId                              |
+  | `items[].plannedQty`| Number| Yes      | Planned preparation volume                   |
+
+- **Response (200 OK)**: Validation result highlighting potential shortages, overproduction risks, or stock constraints.
+
+---
+
+## 19. Data Ingestion & CSV Import Jobs Module (`/imports`)
 
 The Imports module provides asynchronous bulk ingestion for historical sales, inventory transactions, raw ingredients, menu items, and recipes, featuring AI-assisted header column matching and error reporting.
 
-### 17.1 Create Data Import Job
+### 21.1 Create Data Import Job
 
 - **Method / URL**: `POST /imports`
 - **Auth Level**: Access Token (`manager`, `admin`)
@@ -2384,7 +2676,7 @@ The Imports module provides asynchronous bulk ingestion for historical sales, in
 
 ---
 
-### 17.2 Preview Import Mapping
+### 21.2 Preview Import Mapping
 
 - **Method / URL**: `POST /imports/:id/preview`
 - **Auth Level**: Access Token (`manager`, `admin`)
@@ -2411,7 +2703,7 @@ The Imports module provides asynchronous bulk ingestion for historical sales, in
 
 ---
 
-### 17.3 Confirm & Ingest Data Import
+### 19.3 Confirm & Ingest Data Import
 
 - **Method / URL**: `POST /imports/:id/confirm`
 - **Auth Level**: Access Token (`manager`, `admin`)
@@ -2426,7 +2718,7 @@ The Imports module provides asynchronous bulk ingestion for historical sales, in
 
 ---
 
-### 17.4 Get Import Jobs (Paginated & Filtered)
+### 19.4 Get Import Jobs (Paginated & Filtered)
 
 - **Method / URL**: `GET /imports`
 - **Auth Level**: Access Token (`manager`, `admin`)
@@ -2442,7 +2734,7 @@ The Imports module provides asynchronous bulk ingestion for historical sales, in
 
 ---
 
-### 17.5 Get Import Job Details by ID
+### 19.5 Get Import Job Details by ID
 
 - **Method / URL**: `GET /imports/:id`
 - **Auth Level**: Access Token (`manager`, `admin`)
@@ -2451,7 +2743,7 @@ The Imports module provides asynchronous bulk ingestion for historical sales, in
 
 ---
 
-### 17.6 Retry AI Ingest
+### 19.6 Retry AI Ingest
 
 - **Method / URL**: `POST /imports/:id/retry-ai-ingest`
 - **Auth Level**: Access Token (`manager`, `admin`)
@@ -2461,11 +2753,11 @@ The Imports module provides asynchronous bulk ingestion for historical sales, in
 
 ---
 
-## 18. Dashboard Module (`/dashboard`)
+## 20. Dashboard Module (`/dashboard`)
 
 The Dashboard module provides analytics, KPI aggregations, revenue trends, order status distributions, ranked top products/categories/restaurants, fulfillment method distributions, and operational alerts for both System Administrators and Restaurant Managers.
 
-### 18.1 Get Admin Dashboard Analytics
+### 20.1 Get Admin Dashboard Analytics
 
 Retrieves high-level platform-wide analytics, metrics, rankings, and operational alerts for system administrators.
 
@@ -2570,7 +2862,7 @@ Retrieves high-level platform-wide analytics, metrics, rankings, and operational
 
 ---
 
-### 18.2 Get Restaurant Manager Dashboard Analytics
+### 20.2 Get Restaurant Manager Dashboard Analytics
 
 Retrieves analytics, metrics, ranked top products/categories, fulfillment distribution, and operational alerts specifically scoped to the authenticated manager's assigned restaurant.
 
@@ -2649,11 +2941,11 @@ Retrieves analytics, metrics, ranked top products/categories, fulfillment distri
 
 ---
 
-## 19. Sales Module (`/sales`)
+## 21. Sales Module (`/sales`)
 
 The Sales Module provides granular sales transaction tracking, historical sales listing, source-based revenue audit trails, and aggregate financial sales statistics for System Administrators and Restaurant Managers.
 
-### 19.1 Get Sales Transactions (Paginated & Filtered)
+### 21.1 Get Sales Transactions (Paginated & Filtered)
 
 - **Method / URL**: `GET /sales`
 - **Auth Level**: Access Token (`admin`, `manager`)
@@ -2711,7 +3003,7 @@ The Sales Module provides granular sales transaction tracking, historical sales 
 
 ---
 
-### 19.2 Get Sales Summary Statistics
+### 21.2 Get Sales Summary Statistics
 
 - **Method / URL**: `GET /sales/summary`
 - **Auth Level**: Access Token (`admin`, `manager`)
@@ -2736,7 +3028,7 @@ The Sales Module provides granular sales transaction tracking, historical sales 
 
 ---
 
-## 20. End-to-End Shopping, Inventory, Production & Order Analytics Workflow
+## 22. End-to-End Shopping, Inventory, Production & Order Analytics Workflow
 
 1. **Create Restaurant & Assign Manager** (Admin): `POST /restaurants`, `POST /users` with `role: manager`.
 2. **Setup Vendor Suppliers** (Manager):

@@ -1,24 +1,6 @@
 import { z } from "zod"
 import { optionalEgyptianPhoneSchema } from "@/lib/phone"
 
-const optionalUrl = z
-  .string()
-  .optional()
-  .nullable()
-  .transform((val) => (val && val.trim() !== "" ? val.trim() : undefined))
-  .refine(
-    (val) => {
-      if (!val) return true
-      try {
-        new URL(val)
-        return true
-      } catch {
-        return false
-      }
-    },
-    { message: "invalidLogoUrl" }
-  )
-
 export const restaurantSchema = z.object({
   name: z
     .string()
@@ -30,7 +12,7 @@ export const restaurantSchema = z.object({
     .optional()
     .nullable(),
   phone: optionalEgyptianPhoneSchema,
-  logoUrl: optionalUrl,
+  image: z.string().optional().nullable(),
   address: z
     .object({
       street: z

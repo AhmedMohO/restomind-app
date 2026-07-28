@@ -2,14 +2,15 @@
 
 import * as React from "react"
 import { useForm, useWatch } from "react-hook-form"
+import { useDropzone } from "react-dropzone"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { AlertTriangle, Loader2, Save } from "lucide-react"
+import { AlertTriangle, Loader2, Save, Upload, X } from "lucide-react"
 
 import { restaurantSchema, type RestaurantInput } from "@/schemas/restaurant"
 import { useZodResolver } from "@/lib/zod-locale"
 import { useUpdateRestaurant } from "../hooks/use-restaurant"
-import type { Restaurant, UpdateRestaurantPayload } from "../types"
+import type { Restaurant } from "../types"
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,7 @@ import { Input } from "@/components/ui/input"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { Textarea } from "@/components/ui/textarea"
 import Image from "next/image"
+import { getErrorMessage } from "@/lib/api/utils"
 
 interface RestaurantProfileFormProps {
   initialData: Restaurant
@@ -35,7 +37,6 @@ function buildDefaults(r: Restaurant): RestaurantInput {
     name: r.name ?? "",
     description: r.description ?? "",
     phone: r.phone ?? "",
-    logoUrl: r.logoUrl ?? "",
     address: {
       street: r.address?.street ?? "",
       city: r.address?.city ?? "",
@@ -51,6 +52,29 @@ export function RestaurantProfileForm({
   const t = useTranslations("Dashboard.restaurant")
   const updateMutation = useUpdateRestaurant()
 
+  const [imageFile, setImageFile] = React.useState<File | null>(null)
+  const initialImageUrl = initialData.image?.secure_url || null
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(initialImageUrl)
+
+  const [prevInitialData, setPrevInitialData] = React.useState(initialData)
+
+  if (initialData !== prevInitialData) {
+    setPrevInitialData(initialData)
+    const imgUrl = initialData.image?.secure_url || null
+    setPreviewUrl((prev) => {
+      if (prev && prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev)
+      }
+      return imgUrl
+    })
+    setImageFile(null)
+  }
+
+  const formValues = React.useMemo(
+    () => buildDefaults(initialData),
+    [initialData]
+  )
+
   const {
     register,
     handleSubmit,
@@ -59,51 +83,100 @@ export function RestaurantProfileForm({
     formState: { errors, isDirty },
   } = useForm<RestaurantInput>({
     resolver: useZodResolver(restaurantSchema),
-    defaultValues: buildDefaults(initialData),
+    values: formValues,
   })
 
-  // Re-sync when the parent passes a fresh initialData (e.g. refetch).
-  React.useEffect(() => {
-    reset(buildDefaults(initialData))
-  }, [initialData, reset])
+  const resetImage = React.useCallback((url: string | null) => {
+    setPreviewUrl((prev) => {
+      if (prev && prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev)
+      }
+      return url
+    })
+    setImageFile(null)
+  }, [])
 
-  // Live-watched values for char counter, logo preview, and the status badge.
   const description = useWatch({ control, name: "description" }) ?? ""
-  const logoUrl = useWatch({ control, name: "logoUrl" }) ?? ""
   const selectedPhone = useWatch({ control, name: "phone" })
 
   const isPending = updateMutation.isPending
   const descLength = description.length
 
+  const onDrop = React.useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0]
+    if (!file) return
+
+    setPreviewUrl((prev) => {
+      if (prev && prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev)
+      }
+      return URL.createObjectURL(file)
+    })
+    setImageFile(file)
+  }, [])
+
+  const onDropRejected = React.useCallback(() => {
+    toast.error(t("invalidImageError"))
+  }, [t])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    onDropRejected,
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png", ".webp"],
+    },
+    maxFiles: 1,
+    maxSize: 5 * 1024 * 1024,
+    disabled: isPending,
+  })
+
+  const handleRemoveImage = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    resetImage(initialImageUrl)
+  }
+
   const onSubmit = handleSubmit(async (values) => {
-    const payload: UpdateRestaurantPayload = {
-      name: values.name,
-      description: values.description || null,
-      phone: values.phone || null,
-      // logoUrl: values.logoUrl || null,
-      address: {
-        street: values.address?.street || undefined,
-        city: values.address?.city || undefined,
-        country: values.address?.country || undefined,
-      },
-      // isActive: values.isActive,
+    const formData = new FormData()
+    formData.append("name", values.name.trim())
+    if (values.description) {
+      formData.append("description", values.description.trim())
+    }
+    if (values.phone) {
+      formData.append("phone", values.phone.trim())
+    }
+    if (values.address?.street) {
+      formData.append("address[street]", values.address.street.trim())
+    }
+    if (values.address?.city) {
+      formData.append("address[city]", values.address.city.trim())
+    }
+    if (values.address?.country) {
+      formData.append("address[country]", values.address.country.trim())
+    }
+
+    if (imageFile) {
+      formData.append("image", imageFile)
     }
 
     try {
-      const updated = await updateMutation.mutateAsync(payload)
+      const updated = await updateMutation.mutateAsync(formData)
       toast.success(t("saveSuccess"))
-      // Clear isDirty by resetting to the just-saved state.
-      if (updated) reset(buildDefaults(updated))
+      if (updated) {
+        reset(buildDefaults(updated))
+        resetImage(updated.image?.secure_url || null)
+      }
     } catch (err) {
       console.error("[restaurant-profile-form] PATCH failed", err)
-      toast.error(t("saveError"))
+      toast.error(getErrorMessage(err, t("saveError")))
     }
   })
+
+  const isFormModified = isDirty || imageFile !== null
 
   return (
     <div className="flex w-full flex-col gap-6">
       {/* Dirty warning */}
-      {isDirty && (
+      {isFormModified && (
         <Alert variant="warning">
           <AlertTriangle className="size-4" />
           <AlertDescription>{t("dirtyWarning")}</AlertDescription>
@@ -117,7 +190,7 @@ export function RestaurantProfileForm({
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-6">
         {/* ----------------- Basic info ----------------- */}
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="font-heading text-xl">
               {t("sectionBasic")}
@@ -132,6 +205,7 @@ export function RestaurantProfileForm({
                 placeholder={t("namePlaceholder")}
                 disabled={isPending}
                 aria-invalid={!!errors.name}
+                className="rounded-xl"
               />
               <FieldError errors={[errors.name]} />
             </Field>
@@ -153,6 +227,7 @@ export function RestaurantProfileForm({
                 maxLength={500}
                 disabled={isPending}
                 aria-invalid={!!errors.description}
+                className="rounded-xl"
               />
               <FieldError errors={[errors.description]} />
             </Field>
@@ -171,33 +246,65 @@ export function RestaurantProfileForm({
         </Card>
 
         {/* ----------------- Logo & address ----------------- */}
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="font-heading text-xl">
               {t("sectionLogo")}
             </CardTitle>
             <CardDescription>{t("sectionLogoDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <Field data-invalid={!!errors.logoUrl}>
-              <FieldLabel>{t("logoUrlLabel")}</FieldLabel>
-              <Input
-                {...register("logoUrl")}
-                placeholder={t("logoUrlPlaceholder")}
-                disabled={isPending}
-                aria-invalid={!!errors.logoUrl}
-              />
-              <FieldError errors={[errors.logoUrl]} />
-              {logoUrl ? (
-                <Image
-                  src={logoUrl}
-                  alt="Logo preview"
-                  width={100}
-                  height={100}
-                  className="mt-2 rounded-xl"
-                />
-              ) : null}
-            </Field>
+          <CardContent className="flex flex-col gap-5">
+            {/* Image Dropzone */}
+            <div className="space-y-2">
+              <FieldLabel>{t("imageLabel")}</FieldLabel>
+              <div
+                {...getRootProps()}
+                className={`group relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-all cursor-pointer ${
+                  isDragActive
+                    ? "border-primary bg-primary/10 scale-[1.01]"
+                    : "border-border hover:border-primary/50 hover:bg-muted/30"
+                } ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <input {...getInputProps()} />
+                {previewUrl ? (
+                  <div className="relative flex flex-col items-center gap-3">
+                    <div className="relative size-32 overflow-hidden rounded-2xl border border-border bg-muted shadow-md">
+                      <Image
+                        fill
+                        src={previewUrl}
+                        alt="Logo preview"
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute top-2 end-2 flex size-7 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-md transition-transform hover:scale-110"
+                        title={t("removeImage")}
+                      >
+                        <X className="size-4" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground group-hover:text-primary transition-colors">
+                      {t("changeImageHint")}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3 py-4">
+                    <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
+                      <Upload className="size-7" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-foreground">
+                        {isDragActive ? t("dropzoneActive") : t("uploadImage")}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("dropzoneIdle")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
               <Field data-invalid={!!errors.address?.street}>
@@ -207,6 +314,7 @@ export function RestaurantProfileForm({
                   placeholder={t("streetPlaceholder")}
                   disabled={isPending}
                   aria-invalid={!!errors.address?.street}
+                  className="rounded-xl"
                 />
                 <FieldError errors={[errors.address?.street]} />
               </Field>
@@ -218,6 +326,7 @@ export function RestaurantProfileForm({
                   placeholder={t("cityPlaceholder")}
                   disabled={isPending}
                   aria-invalid={!!errors.address?.city}
+                  className="rounded-xl"
                 />
                 <FieldError errors={[errors.address?.city]} />
               </Field>
@@ -229,6 +338,7 @@ export function RestaurantProfileForm({
                   placeholder={t("countryPlaceholder")}
                   disabled={isPending}
                   aria-invalid={!!errors.address?.country}
+                  className="rounded-xl"
                 />
                 <FieldError errors={[errors.address?.country]} />
               </Field>
@@ -240,7 +350,7 @@ export function RestaurantProfileForm({
         <div className="flex justify-end">
           <Button
             type="submit"
-            disabled={isPending || !isDirty}
+            disabled={isPending || !isFormModified}
             className="w-full gap-2 rounded-xl sm:w-auto"
           >
             {isPending ? (

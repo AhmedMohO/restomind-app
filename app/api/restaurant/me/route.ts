@@ -103,23 +103,13 @@ export async function PATCH(request: Request) {
     )
   }
 
-  let body: UpdateRestaurantPayload
+
+  let payload: FormData | UpdateRestaurantPayload
   try {
-    body = (await request.json()) as UpdateRestaurantPayload
+    payload = await request.formData()
   } catch {
     return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Invalid JSON body" },
-      { status: 400 }
-    )
-  }
-
-  if (!body || typeof body !== "object" || Object.keys(body).length === 0) {
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "Bad Request",
-        message: "Request body must not be empty",
-      },
+      { success: false, error: "Bad Request", message: "Invalid request body" },
       { status: 400 }
     )
   }
@@ -169,7 +159,7 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const updated = await updateRestaurantApi(restaurantId, body)
+    const updated = await updateRestaurantApi(restaurantId, payload)
     return NextResponse.json<ApiResponse<Restaurant>>(
       { success: true, data: updated },
       { status: 200 }

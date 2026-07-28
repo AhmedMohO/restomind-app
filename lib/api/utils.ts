@@ -7,7 +7,6 @@
  * `typeof body.message === "string" ? ...` pattern.
  */
 
-import type { BackendResponseBody } from "@/features/auth/auth"
 import { ApiError } from "@/lib/auth/errors"
 
 /**
@@ -21,14 +20,7 @@ export function extractApiMessage(
   body: unknown,
   fallback: string
 ): string {
-  if (!body || typeof body !== "object") return fallback
-
-  const { message } = body as BackendResponseBody
-
-  if (typeof message === "string" && message.length > 0) return message
-  if (Array.isArray(message) && message.length > 0) return message.join(", ")
-
-  return fallback
+  return getErrorMessage(body, fallback)
 }
 
 /**
@@ -38,12 +30,12 @@ export async function parseOrThrow<T>(
   response: Response,
   context: string
 ): Promise<T> {
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as unknown
+  const body = (await response.json().catch(() => ({}))) as unknown
+  if (!response.ok || (typeof body === "object" && body !== null && (body as { success?: boolean }).success === false)) {
     const message = extractApiMessage(body, `${context} failed`)
     throw new ApiError(response.status, message)
   }
-  return response.json() as Promise<T>
+  return body as T
 }
 
 /**
@@ -66,19 +58,27 @@ export function buildQueryString<T extends object>(
 export function getErrorMessage(err: unknown, fallback: string = "An error occurred"): string {
   if (!err) return fallback
   if (typeof err === "string" && err.trim().length > 0) return err
+
   if (typeof err === "object" && err !== null) {
     const record = err as Record<string, unknown>
+
+    // Prefer message field (string or array)
     if (typeof record.message === "string" && record.message.trim().length > 0) {
       return record.message
     }
     if (Array.isArray(record.message) && record.message.length > 0) {
       return record.message.join(", ")
     }
+
+    // Fall back to error code only if it's a human-readable code, not a generic sentinel
+    if (
+      typeof record.error === "string" &&
+      record.error.trim().length > 0 &&
+      !["INTERNAL_ERROR", "BAD_REQUEST", "Unauthorized", "Forbidden", "NOT_FOUND"].includes(record.error)
+    ) {
+      return record.error
+    }
   }
-  if (err instanceof Error && err.message) {
-    return err.message
-  }
+
   return fallback
 }
-
-

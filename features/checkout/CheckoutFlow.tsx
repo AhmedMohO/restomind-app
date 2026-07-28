@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { useCart } from "@/hooks/use-cart"
 import { createOrderAction } from "@/features/orders/actions"
 import { DELIVERY_FEE } from "@/features/checkout/constants"
+import { getErrorMessage } from "@/lib/api/utils"
 import type { UserAddress } from "@/features/profile/api/profile"
 
 import CheckoutStepper from "./components/CheckoutStepper"
@@ -120,7 +121,7 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
       router.push("/login")
       return
     }
-    toast.error(res.message || t("orderError"))
+    toast.error(getErrorMessage(res, t("orderError")))
   }
 
   const deliveryFee = deliveryMethod === "home" ? DELIVERY_FEE : 0

@@ -89,9 +89,9 @@ function ViewRestaurantPageContent({
           ) : (
             <Card className="rounded-2xl">
               <CardHeader className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                {restaurant.logoUrl ? (
+                {restaurant.image?.secure_url ? (
                   <Image
-                    src={restaurant.logoUrl}
+                    src={restaurant.image.secure_url}
                     alt={restaurant.name}
                     className="size-16 shrink-0 rounded-xl border border-border object-cover"
                     width={64}

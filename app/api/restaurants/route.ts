@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth/session"
 import type { ApiResponse, UserRole } from "@/features/auth/auth"
 import type { PaginatedRestaurants, Restaurant } from "@/features/restaurant/types"
 import { createRestaurantApi, getRestaurants } from "@/features/restaurant/api"
+import { handleUpstreamError } from "@/lib/api/route-helpers"
 
 export async function GET(request: Request) {
   await connection()
@@ -32,14 +33,7 @@ export async function GET(request: Request) {
     )
   } catch (err) {
     console.error("[api/restaurants] GET failed", err)
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "INTERNAL_ERROR",
-        message: err instanceof Error ? err.message : "Failed to fetch restaurants",
-      },
-      { status: 500 }
-    )
+    return handleUpstreamError(err, "Failed to fetch restaurants")
   }
 }
 
@@ -62,42 +56,16 @@ export async function POST(request: Request) {
     )
   }
 
-  let body: Record<string, unknown>
   try {
-    body = (await request.json()) as Record<string, unknown>
-  } catch {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Invalid JSON body" },
-      { status: 400 }
-    )
-  }
+    const payload = await request.formData()
 
-  if (!body.name || typeof body.name !== "string" || !body.ownerUserId) {
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "Bad Request",
-        message: "Restaurant name and ownerUserId are required",
-      },
-      { status: 400 }
-    )
-  }
-
-  try {
-    const created = await createRestaurantApi(body)
+    const created = await createRestaurantApi(payload)
     return NextResponse.json<ApiResponse<Restaurant>>(
       { success: true, data: created },
       { status: 201 }
     )
   } catch (err) {
     console.error("[api/restaurants] POST failed", err)
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "INTERNAL_ERROR",
-        message: err instanceof Error ? err.message : "Failed to create restaurant",
-      },
-      { status: 500 }
-    )
+    return handleUpstreamError(err, "Failed to create restaurant")
   }
 }

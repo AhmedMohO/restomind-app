@@ -14,7 +14,8 @@
 import "server-only"
 
 import { apiClient } from "@/lib/api/client"
-import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
+import { buildQueryString, extractApiMessage, parseOrThrow } from "@/lib/api/utils"
+import { ApiError } from "@/lib/auth/errors"
 import type { PaginatedRestaurants, Restaurant, UpdateRestaurantPayload } from "../types"
 
 export type { PaginatedRestaurants, Restaurant, UpdateRestaurantPayload }
@@ -26,22 +27,23 @@ export interface GetRestaurantsParams {
 }
 
 interface ApiEnvelope<T> {
+  success?: boolean
   data?: T
   message?: string | string[]
+  error?: string
   [key: string]: unknown
 }
 
 async function parseJson<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as ApiEnvelope<T>
-    const msg = Array.isArray(body.message) ? body.message.join(", ") : body.message
-    throw new Error(msg || `API ${response.status}`)
-  }
   const body = (await response.json().catch(() => ({}))) as ApiEnvelope<T>
-  if (!body.data) {
+  if (!response.ok || body.success === false) {
+    const msg = extractApiMessage(body, `API ${response.status}`)
+    throw new ApiError(response.status, msg)
+  }
+  if (body.data === undefined && !body.message) {
     throw new Error("Unexpected API response — missing `data` field")
   }
-  return body.data as T
+  return (body.data ?? body) as T
 }
 
 /**
@@ -74,29 +76,31 @@ export async function getRestaurantByIdApi(id: string): Promise<Restaurant> {
 }
 
 /**
- * PATCH /restaurants/:id — updates restaurant fields.
+ * PATCH /restaurants/:id — updates restaurant fields (supports JSON or FormData).
  * Managers can only update their own assigned restaurant (enforced by backend).
  */
 export async function updateRestaurantApi(
   id: string,
-  payload: UpdateRestaurantPayload
+  payload: FormData | UpdateRestaurantPayload
 ): Promise<Restaurant> {
+  const isFormData = payload instanceof FormData
   const res = await apiClient(`/restaurants/${encodeURIComponent(id)}`, {
     method: "PATCH",
-    body: JSON.stringify(payload),
+    body: isFormData ? payload : JSON.stringify(payload),
   })
   return parseJson<Restaurant>(res)
 }
 
 /**
- * POST /restaurants — creates a new restaurant (admin only).
+ * POST /restaurants — creates a new restaurant (admin only, supports JSON or FormData).
  */
 export async function createRestaurantApi(
-  payload: Record<string, unknown>
+  payload: FormData | Record<string, unknown>
 ): Promise<Restaurant> {
+  const isFormData = payload instanceof FormData
   const res = await apiClient("/restaurants", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: isFormData ? payload : JSON.stringify(payload),
   })
   return parseJson<Restaurant>(res)
 }
@@ -110,11 +114,12 @@ export async function deleteRestaurantApi(id: string): Promise<{ message: string
   })
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as ApiEnvelope<unknown>
-    const msg = Array.isArray(body.message) ? body.message.join(", ") : body.message
-    throw new Error(msg || `API ${res.status}`)
+    const msg = extractApiMessage(body, `API ${res.status}`)
+    throw new ApiError(res.status, msg)
   }
   return { message: "Restaurant deleted successfully" }
 }
+
 
 
 

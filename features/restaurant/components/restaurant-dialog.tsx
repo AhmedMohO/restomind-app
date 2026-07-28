@@ -2,9 +2,11 @@
 
 import * as React from "react"
 import { useForm, useWatch } from "react-hook-form"
+import { useDropzone } from "react-dropzone"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { Loader2, Plus, Store } from "lucide-react"
+import { Loader2, Plus, Store, Upload, X } from "lucide-react"
+import Image from "next/image"
 
 import { restaurantSchema, type RestaurantInput } from "@/schemas/restaurant"
 import { useZodResolver } from "@/lib/zod-locale"
@@ -29,6 +31,7 @@ import {
   useCreateRestaurant,
 } from "../hooks/use-restaurant"
 import type { OwnerUserSummary, Restaurant } from "../types"
+import { getErrorMessage } from "@/lib/api/utils"
 
 interface RestaurantDialogProps {
   open: boolean
@@ -55,107 +58,194 @@ export function RestaurantDialog({
   const [selectedOwnerId, setSelectedOwnerId] = React.useState<string>(
     getOwnerId(restaurant?.ownerUserId)
   )
+  const [imageFile, setImageFile] = React.useState<File | null>(null)
+
+  const initialImageUrl = restaurant?.image?.secure_url || null
+
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(
+    initialImageUrl
+  )
 
   const createMutation = useCreateRestaurant()
   const updateMutation = useAdminUpdateRestaurant()
   const isEditing = !!restaurant
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    reset,
-    control,
-    formState: { errors },
-  } = useForm<RestaurantInput>({
-    resolver: useZodResolver(restaurantSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      phone: "",
-      logoUrl: "",
-      address: { street: "", city: "", country: "" },
-      isActive: true,
-    },
-  })
+  const [prevOpen, setPrevOpen] = React.useState(open)
+  const [prevRestaurant, setPrevRestaurant] = React.useState(restaurant)
 
-  const isActive = useWatch({ control, name: "isActive" }) ?? true
-  const selectedPhone = useWatch({ control, name: "phone" })
+  if (open !== prevOpen || restaurant !== prevRestaurant) {
+    setPrevOpen(open)
+    setPrevRestaurant(restaurant)
+    if (open) {
+      if (restaurant) {
+        setSelectedOwnerId(getOwnerId(restaurant.ownerUserId))
+        const imgUrl = restaurant.image?.secure_url || null
+        setPreviewUrl((prev) => {
+          if (prev && prev.startsWith("blob:")) {
+            URL.revokeObjectURL(prev)
+          }
+          return imgUrl
+        })
+        setImageFile(null)
+      } else {
+        setSelectedOwnerId("")
+        setPreviewUrl((prev) => {
+          if (prev && prev.startsWith("blob:")) {
+            URL.revokeObjectURL(prev)
+          }
+          return null
+        })
+        setImageFile(null)
+      }
+    } else {
+      setPreviewUrl((prev) => {
+        if (prev && prev.startsWith("blob:")) {
+          URL.revokeObjectURL(prev)
+        }
+        return null
+      })
+      setImageFile(null)
+    }
+  }
 
-  React.useEffect(() => {
+  const formValues: RestaurantInput = React.useMemo(() => {
+    if (!open) {
+      return {
+        name: "",
+        description: "",
+        phone: "",
+        address: { street: "", city: "", country: "" },
+        isActive: true,
+      }
+    }
     if (restaurant) {
-      reset({
+      return {
         name: restaurant.name ?? "",
         description: restaurant.description ?? "",
         phone: restaurant.phone ?? "",
-        logoUrl: restaurant.logoUrl ?? "",
         address: {
           street: restaurant.address?.street ?? "",
           city: restaurant.address?.city ?? "",
           country: restaurant.address?.country ?? "",
         },
         isActive: restaurant.isActive ?? true,
-      })
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedOwnerId(getOwnerId(restaurant.ownerUserId))
-    } else {
-      reset({
-        name: "",
-        description: "",
-        phone: "",
-        logoUrl: "",
-        address: { street: "", city: "", country: "" },
-        isActive: true,
-      })
-      setSelectedOwnerId("")
+      }
     }
-  }, [restaurant, reset, open])
+    return {
+      name: "",
+      description: "",
+      phone: "",
+      address: { street: "", city: "", country: "" },
+      isActive: true,
+    }
+  }, [open, restaurant])
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    control,
+    formState: { errors },
+  } = useForm<RestaurantInput>({
+    resolver: useZodResolver(restaurantSchema),
+    values: formValues,
+  })
 
   const isPending = createMutation.isPending || updateMutation.isPending
+  const isActive = useWatch({ control, name: "isActive" }) ?? true
+  const selectedPhone = useWatch({ control, name: "phone" })
+  const onDrop = React.useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0]
+    if (!file) return
+
+    setPreviewUrl((prev) => {
+      if (prev && prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev)
+      }
+      return URL.createObjectURL(file)
+    })
+    setImageFile(file)
+  }, [])
+
+  const onDropRejected = React.useCallback(() => {
+    toast.error(t("invalidImageError"))
+  }, [t])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    onDropRejected,
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png", ".webp"],
+    },
+    maxFiles: 1,
+    maxSize: 5 * 1024 * 1024,
+    disabled: isPending,
+  })
+
+  const resetImage = React.useCallback((url: string | null) => {
+    setPreviewUrl((prev) => {
+      if (prev && prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev)
+      }
+      return url
+    })
+    setImageFile(null)
+  }, [])
+
+  const handleRemoveImage = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    resetImage(initialImageUrl)
+  }
 
   const onSubmit = handleSubmit(async (values) => {
-    if (!selectedOwnerId) {
+    if (!isEditing && !selectedOwnerId) {
       toast.error("Please select a restaurant owner / manager")
       return
+    }
+
+    const formData = new FormData()
+    formData.append("name", values.name.trim())
+    if (!isEditing && selectedOwnerId) {
+      formData.append("ownerUserId", selectedOwnerId)
+    }
+    if (values.description) {
+      formData.append("description", values.description.trim())
+    }
+    if (values.phone) {
+      formData.append("phone", values.phone.trim())
+    }
+    if (values.address?.street) {
+      formData.append("address[street]", values.address.street.trim())
+    }
+    if (values.address?.city) {
+      formData.append("address[city]", values.address.city.trim())
+    }
+    if (values.address?.country) {
+      formData.append("address[country]", values.address.country.trim())
+    }
+    formData.append("isActive", String(values.isActive ?? true))
+
+    if (imageFile) {
+      formData.append("image", imageFile)
     }
 
     try {
       if (isEditing && restaurant) {
         await updateMutation.mutateAsync({
           id: restaurant._id,
-          payload: {
-            name: values.name,
-            description: values.description || null,
-            phone: values.phone || null,
-            logoUrl: values.logoUrl || null,
-            address: {
-              street: values.address?.street || undefined,
-              city: values.address?.city || undefined,
-              country: values.address?.country || undefined,
-            },
-            isActive: values.isActive,
-          },
+          payload: formData,
         })
         toast.success(t("saveSuccess"))
       } else {
-        await createMutation.mutateAsync({
-          name: values.name,
-          ownerUserId: selectedOwnerId,
-          description: values.description || undefined,
-          phone: values.phone || undefined,
-          logoUrl: values.logoUrl || undefined,
-          address: {
-            street: values.address?.street || undefined,
-            city: values.address?.city || undefined,
-            country: values.address?.country || undefined,
-          },
-        })
+        await createMutation.mutateAsync(formData)
         toast.success(t("createSuccess"))
       }
       onOpenChange(false)
     } catch (err) {
       console.error("[RestaurantDialog] submit failed", err)
-      toast.error(isEditing ? t("saveError") : t("createError"))
+      toast.error(
+        getErrorMessage(err, isEditing ? t("saveError") : t("createError"))
+      )
     }
   })
 
@@ -164,7 +254,7 @@ export function RestaurantDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="w-[95vw] max-w-xl rounded-2xl p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg">
+            <DialogTitle className="flex items-center gap-2 font-heading text-lg">
               <Store className="size-5 text-primary" />
               <span>
                 {isEditing ? t("editRestaurant") : t("createRestaurant")}
@@ -173,7 +263,10 @@ export function RestaurantDialog({
             <DialogDescription>{t("adminSubtitle")}</DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          <form
+            onSubmit={onSubmit}
+            className="flex max-h-[75vh] flex-col gap-4 overflow-y-auto px-1"
+          >
             {/* Owner selection */}
             {!isEditing && (
               <Field>
@@ -201,6 +294,58 @@ export function RestaurantDialog({
               </Field>
             )}
 
+            {/* Dropzone Image Field */}
+            <div className="space-y-2">
+              <FieldLabel>{t("imageLabel")}</FieldLabel>
+              <div
+                {...getRootProps()}
+                className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 text-center transition-colors ${
+                  isDragActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50 hover:bg-muted/30"
+                } ${isPending ? "cursor-not-allowed opacity-50" : ""}`}
+              >
+                <input {...getInputProps()} />
+                {previewUrl ? (
+                  <div className="relative flex flex-col items-center gap-2">
+                    <div className="relative size-24 overflow-hidden rounded-xl border border-border bg-muted shadow-sm">
+                      <Image
+                        fill
+                        src={previewUrl}
+                        alt="Restaurant Preview"
+                        className="object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="text-destructive-foreground absolute end-1 top-1 flex size-6 items-center justify-center rounded-full bg-destructive shadow-md transition-transform hover:scale-110"
+                        title={t("removeImage")}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground transition-colors group-hover:text-primary">
+                      {t("changeImageHint")}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 py-2">
+                    <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Upload className="size-5" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-foreground">
+                        {isDragActive ? t("dropzoneActive") : t("uploadImage")}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {t("dropzoneIdle")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <Field data-invalid={!!errors.name}>
               <FieldLabel>{t("nameLabel")}</FieldLabel>
               <Input
@@ -208,6 +353,7 @@ export function RestaurantDialog({
                 placeholder={t("namePlaceholder")}
                 disabled={isPending}
                 aria-invalid={!!errors.name}
+                className="rounded-xl"
               />
               <FieldError errors={[errors.name]} />
             </Field>
@@ -220,33 +366,21 @@ export function RestaurantDialog({
                 rows={3}
                 disabled={isPending}
                 aria-invalid={!!errors.description}
+                className="rounded-xl"
               />
               <FieldError errors={[errors.description]} />
             </Field>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Field data-invalid={!!errors.phone}>
-                <FieldLabel>{t("phoneLabel")}</FieldLabel>
-                <PhoneInput
-                  value={selectedPhone}
-                  {...register("phone")}
-                  disabled={isPending}
-                  aria-invalid={!!errors.phone}
-                />
-                <FieldError errors={[errors.phone]} />
-              </Field>
-
-              <Field data-invalid={!!errors.logoUrl}>
-                <FieldLabel>{t("logoUrlLabel")}</FieldLabel>
-                <Input
-                  {...register("logoUrl")}
-                  placeholder={t("logoUrlPlaceholder")}
-                  disabled={isPending}
-                  aria-invalid={!!errors.logoUrl}
-                />
-                <FieldError errors={[errors.logoUrl]} />
-              </Field>
-            </div>
+            <Field data-invalid={!!errors.phone}>
+              <FieldLabel>{t("phoneLabel")}</FieldLabel>
+              <PhoneInput
+                value={selectedPhone}
+                {...register("phone")}
+                disabled={isPending}
+                aria-invalid={!!errors.phone}
+              />
+              <FieldError errors={[errors.phone]} />
+            </Field>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <Field data-invalid={!!errors.address?.street}>
@@ -256,6 +390,7 @@ export function RestaurantDialog({
                   placeholder={t("streetPlaceholder")}
                   disabled={isPending}
                   aria-invalid={!!errors.address?.street}
+                  className="rounded-xl"
                 />
                 <FieldError errors={[errors.address?.street]} />
               </Field>
@@ -266,6 +401,7 @@ export function RestaurantDialog({
                   placeholder={t("cityPlaceholder")}
                   disabled={isPending}
                   aria-invalid={!!errors.address?.city}
+                  className="rounded-xl"
                 />
                 <FieldError errors={[errors.address?.city]} />
               </Field>
@@ -276,6 +412,7 @@ export function RestaurantDialog({
                   placeholder={t("countryPlaceholder")}
                   disabled={isPending}
                   aria-invalid={!!errors.address?.country}
+                  className="rounded-xl"
                 />
                 <FieldError errors={[errors.address?.country]} />
               </Field>

@@ -12,15 +12,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { RestaurantForm } from "@/features/restaurant/components/restaurant-form"
 import { useAdminUpdateRestaurant } from "@/features/restaurant/hooks/use-restaurant"
-import type { RestaurantInput } from "@/schemas/restaurant"
 import { useQuery } from "@tanstack/react-query"
 import { clientFetch } from "@/lib/api/fetch-client"
-import type {
-  Restaurant,
-  UpdateRestaurantPayload,
-} from "@/features/restaurant/types"
+import type { Restaurant } from "@/features/restaurant/types"
 import { Link } from "@/i18n/routing"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
+import { getErrorMessage } from "@/lib/api/utils"
 
 function EditRestaurantPageContent({
   params,
@@ -45,44 +42,16 @@ function EditRestaurantPageContent({
 
   const updateMutation = useAdminUpdateRestaurant()
 
-  const handleSubmit = async (values: RestaurantInput) => {
+  const handleSubmit = async (formData: FormData) => {
     try {
-      const payload: UpdateRestaurantPayload = {
-        name: values.name,
-        description: values.description || null,
-        phone: values.phone || null,
-        // logoUrl: values.logoUrl || null,
-        address: {
-          street: values.address?.street || undefined,
-          city: values.address?.city || undefined,
-          country: values.address?.country || undefined,
-        },
-        isActive: values.isActive,
-      }
-
-      await updateMutation.mutateAsync({ id, payload })
+      await updateMutation.mutateAsync({ id, payload: formData })
       toast.success(t("saveSuccess"))
       router.push("/dashboard/restaurants")
     } catch (err) {
       console.error("[EditRestaurantPage] submit failed", err)
-      toast.error(t("saveError"))
+      toast.error(getErrorMessage(err, t("saveError")))
     }
   }
-
-  const defaultValues: Partial<RestaurantInput> | undefined = restaurant
-    ? {
-        name: restaurant.name ?? "",
-        description: restaurant.description ?? "",
-        phone: restaurant.phone ?? "",
-        logoUrl: restaurant.logoUrl ?? "",
-        address: {
-          street: restaurant.address?.street ?? "",
-          city: restaurant.address?.city ?? "",
-          country: restaurant.address?.country ?? "",
-        },
-        isActive: restaurant.isActive ?? true,
-      }
-    : undefined
 
   return (
     <AppSidebar>
@@ -125,7 +94,7 @@ function EditRestaurantPageContent({
           ) : (
             <RestaurantForm
               mode="edit"
-              defaultValues={defaultValues}
+              restaurant={restaurant}
               onSubmit={handleSubmit}
               isPending={updateMutation.isPending}
             />

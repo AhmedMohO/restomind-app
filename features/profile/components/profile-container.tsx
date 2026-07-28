@@ -7,6 +7,7 @@ import { toast } from "sonner"
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
+import { getErrorMessage } from "@/lib/api/utils"
 import { ProfileHeader } from "./profile-header"
 import { ProfileForm } from "./profile-form"
 import { AddressList } from "./address-list"
@@ -84,7 +85,7 @@ export function ProfileContainer({
         })
         toast.success(t("updateSuccess"))
       } else {
-        toast.error(res.message || "Failed to update profile")
+        toast.error(getErrorMessage(res, "Failed to update profile"))
       }
     })
   }
@@ -110,7 +111,7 @@ export function ProfileContainer({
       })
       toast.success(t("updateSuccess"))
     } else {
-      toast.error(res.message || "Failed to upload avatar")
+      toast.error(getErrorMessage(res, "Failed to upload avatar"))
     }
   }
 
@@ -124,7 +125,7 @@ export function ProfileContainer({
           toast.success(t("addressUpdateSuccess"))
           setIsAddressDialogOpen(false)
         } else {
-          toast.error(res.message || "Failed to update address")
+          toast.error(getErrorMessage(res, "Failed to update address"))
         }
       } else {
         const res = await addAddressAction(payload)
@@ -133,7 +134,7 @@ export function ProfileContainer({
           toast.success(t("addressAddSuccess"))
           setIsAddressDialogOpen(false)
         } else {
-          toast.error(res.message || "Failed to add address")
+          toast.error(getErrorMessage(res, "Failed to add address"))
         }
       }
     })
@@ -150,7 +151,7 @@ export function ProfileContainer({
       }
       toast.success(t("addressDeleteSuccess"))
     } else {
-      toast.error(res.message || "Failed to delete address")
+      toast.error(getErrorMessage(res, "Failed to delete address"))
     }
   }
 
@@ -170,7 +171,7 @@ export function ProfileContainer({
       }
       toast.success(t("addressDefaultSuccess"))
     } else {
-      toast.error(res.message || "Failed to set default address")
+      toast.error(getErrorMessage(res, "Failed to set default address"))
     }
   }
 

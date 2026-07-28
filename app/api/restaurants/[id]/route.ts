@@ -1,12 +1,13 @@
 import { NextResponse, connection } from "next/server"
 import { getSession } from "@/lib/auth/session"
 import type { ApiResponse, UserRole } from "@/features/auth/auth"
-import type { Restaurant, UpdateRestaurantPayload } from "@/features/restaurant/types"
+import type { Restaurant } from "@/features/restaurant/types"
 import {
   deleteRestaurantApi,
   getRestaurantByIdApi,
   updateRestaurantApi,
 } from "@/features/restaurant/api"
+import { handleUpstreamError } from "@/lib/api/route-helpers"
 
 export async function GET(
   _request: Request,
@@ -31,14 +32,7 @@ export async function GET(
       { status: 200 }
     )
   } catch (err) {
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "NOT_FOUND",
-        message: err instanceof Error ? err.message : "Restaurant not found",
-      },
-      { status: 404 }
-    )
+    return handleUpstreamError(err, "Restaurant not found", 404)
   }
 }
 
@@ -66,32 +60,17 @@ export async function PATCH(
 
   const { id } = await params
 
-  let body: UpdateRestaurantPayload
   try {
-    body = (await request.json()) as UpdateRestaurantPayload
-  } catch {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Invalid JSON body" },
-      { status: 400 }
-    )
-  }
+    const payload = await request.formData()
 
-  try {
-    const updated = await updateRestaurantApi(id, body)
+    const updated = await updateRestaurantApi(id, payload)
     return NextResponse.json<ApiResponse<Restaurant>>(
       { success: true, data: updated },
       { status: 200 }
     )
   } catch (err) {
     console.error("[api/restaurants/[id]] PATCH failed", err)
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "INTERNAL_ERROR",
-        message: err instanceof Error ? err.message : "Failed to update restaurant",
-      },
-      { status: 500 }
-    )
+    return handleUpstreamError(err, "Failed to update restaurant")
   }
 }
 
@@ -127,13 +106,6 @@ export async function DELETE(
     )
   } catch (err) {
     console.error("[api/restaurants/[id]] DELETE failed", err)
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "INTERNAL_ERROR",
-        message: err instanceof Error ? err.message : "Failed to delete restaurant",
-      },
-      { status: 500 }
-    )
+    return handleUpstreamError(err, "Failed to delete restaurant")
   }
 }

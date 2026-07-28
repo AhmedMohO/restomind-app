@@ -26,6 +26,7 @@ import {
 import type { Restaurant } from "../types"
 import { RestaurantStatusBadge } from "./restaurant-status-badge"
 import { formatOwner } from "../utils/utils"
+import { getErrorMessage } from "@/lib/api/utils"
 
 export function AdminRestaurantTable() {
   const t = useTranslations("Dashboard.restaurant")
@@ -69,7 +70,7 @@ export function AdminRestaurantTable() {
       toast.success(t("deleteSuccess"))
     } catch (err) {
       console.error("[AdminRestaurantTable] delete failed", err)
-      toast.error(t("deleteError"))
+      toast.error(getErrorMessage(err, t("deleteError")))
     } finally {
       setDeletingId(null)
       setDeleteTarget(null)
@@ -147,31 +148,33 @@ export function AdminRestaurantTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((restaurant: Restaurant) => (
-                <TableRow
-                  onClick={() =>
-                    router.push(`/dashboard/restaurants/${restaurant._id}`)
-                  }
-                  className="cursor-pointer"
-                  key={restaurant._id}
-                >
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      {restaurant.logoUrl ? (
-                        <div className="relative size-9 shrink-0 overflow-hidden rounded-lg border border-border">
-                          <Image
-                            fill
-                            src={restaurant.logoUrl}
-                            alt={restaurant.name}
-                            className="object-cover"
-                            sizes="36px"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
-                          {restaurant.name?.[0]?.toUpperCase() ?? "R"}
-                        </div>
-                      )}
+              {items.map((restaurant: Restaurant) => {
+                const logoSrc = restaurant.image?.secure_url
+                return (
+                  <TableRow
+                    onClick={() =>
+                      router.push(`/dashboard/restaurants/${restaurant._id}`)
+                    }
+                    className="cursor-pointer"
+                    key={restaurant._id}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        {logoSrc ? (
+                          <div className="relative size-9 shrink-0 overflow-hidden rounded-lg border border-border">
+                            <Image
+                              fill
+                              src={logoSrc}
+                              alt={restaurant.name}
+                              className="object-cover"
+                              sizes="36px"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+                            {restaurant.name?.[0]?.toUpperCase() ?? "R"}
+                          </div>
+                        )}
                       <div className="flex min-w-0 flex-col">
                         <span className="max-w-[160px] truncate font-semibold text-foreground sm:max-w-xs">
                           {restaurant.name}
@@ -244,7 +247,8 @@ export function AdminRestaurantTable() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              )
+            })}
             </TableBody>
           </Table>
         )}

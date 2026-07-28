@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/tooltip"
 
 import { useZodResolver } from "@/lib/zod-locale"
+import { getErrorMessage } from "@/lib/api/utils"
 import { updateProfileSchema, type UpdateProfileInput } from "@/schemas/profile"
 import { useProfile, useUpdateProfile } from "../hooks/use-profile"
 import type { FullUser } from "../api/profile"
@@ -60,22 +61,22 @@ export function DashboardProfileContainer({
   } = useForm<UpdateProfileInput>({
     resolver: useZodResolver(updateProfileSchema),
     defaultValues: {
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      phone: user.phone || "",
-      gender: (user.gender as "male" | "female") || undefined,
-      DOB: user.DOB ? new Date(user.DOB).toISOString().split("T")[0] : "",
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      phone: user?.phone || "",
+      gender: (user?.gender as "male" | "female") || undefined,
+      DOB: user?.DOB ? new Date(user.DOB).toISOString().split("T")[0] : "",
     },
   })
 
   // Synchronize form when user data updates
   useEffect(() => {
     reset({
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      phone: user.phone || "",
-      gender: (user.gender as "male" | "female") || undefined,
-      DOB: user.DOB ? new Date(user.DOB).toISOString().split("T")[0] : "",
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      phone: user?.phone || "",
+      gender: (user?.gender as "male" | "female") || undefined,
+      DOB: user?.DOB ? new Date(user.DOB).toISOString().split("T")[0] : "",
     })
   }, [user, reset])
 
@@ -118,7 +119,7 @@ export function DashboardProfileContainer({
       },
       onError: (err) => {
         setIsUploadingAvatar(false)
-        toast.error(err.message || "Failed to update avatar")
+        toast.error(getErrorMessage(err, "Failed to update avatar"))
       },
     })
   }
@@ -166,7 +167,7 @@ export function DashboardProfileContainer({
         toast.success(t("saveChanges"))
       },
       onError: (err) => {
-        toast.error(err.message || "Failed to update profile")
+        toast.error(getErrorMessage(err, "Failed to update profile"))
       },
     })
   }

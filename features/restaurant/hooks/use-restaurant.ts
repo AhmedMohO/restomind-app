@@ -13,10 +13,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { clientFetch, ClientFetchError } from "@/lib/api/fetch-client"
 import type {
-  CreateRestaurantPayload,
   PaginatedRestaurants,
   Restaurant,
-  UpdateRestaurantPayload,
 } from "../types"
 
 export const RESTAURANT_QUERY_KEY = ["restaurant", "me"] as const
@@ -56,15 +54,16 @@ export function useUpdateRestaurant() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (payload: UpdateRestaurantPayload) => {
+    mutationFn: async (payload: FormData) => {
       const data = await clientFetch<Restaurant>("/restaurant/me", {
         method: "PATCH",
-        body: payload as unknown as Record<string, unknown>,
+        body: payload,
       })
       return data as Restaurant
     },
     onSuccess: (updated) => {
       queryClient.setQueryData<Restaurant | null>(RESTAURANT_QUERY_KEY, updated)
+      queryClient.invalidateQueries({ queryKey: RESTAURANTS_LIST_QUERY_KEY })
     },
   })
 }
@@ -99,10 +98,10 @@ export function useCreateRestaurant() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (payload: CreateRestaurantPayload) => {
+    mutationFn: async (payload: FormData) => {
       const data = await clientFetch<Restaurant>("/restaurants", {
         method: "POST",
-        body: payload as unknown as Record<string, unknown>,
+        body: payload,
       })
       return data as Restaurant
     },
@@ -116,7 +115,7 @@ export function useAdminUpdateRestaurant() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, payload }: { id: string; payload: UpdateRestaurantPayload }) => {
+    mutationFn: async ({ id, payload }: { id: string; payload: FormData }) => {
       const data = await clientFetch<Restaurant>(`/restaurants/${id}`, {
         method: "PATCH",
         body: payload as unknown as Record<string, unknown>,

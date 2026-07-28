@@ -5,6 +5,7 @@ import { PackageCheck, XCircle, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "@/i18n/routing"
 import { clientFetch } from "@/lib/api/fetch-client"
+import { getErrorMessage } from "@/lib/api/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -61,9 +62,7 @@ export default function OrderHeader({
         router.refresh()
       }
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to cancel order"
-      )
+      toast.error(getErrorMessage(err, "Failed to cancel order"))
     } finally {
       setIsCancelling(false)
     }

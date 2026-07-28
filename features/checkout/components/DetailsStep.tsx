@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { AddressDialog } from "@/features/profile/components/address-dialog"
 import { addAddressAction } from "@/features/profile/actions/profile-actions"
+import { getErrorMessage } from "@/lib/api/utils"
 import type {
   UserAddress,
   AddressPayload,
@@ -74,7 +75,7 @@ export default function DetailsStep({
         setDialogOpen(false)
         toast.success(res.message || t("addressAdded"))
       } else {
-        toast.error(res.message || t("addressAddError"))
+        toast.error(getErrorMessage(res, t("addressAddError")))
       }
     } finally {
       setIsAddingAddress(false)

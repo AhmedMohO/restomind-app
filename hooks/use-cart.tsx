@@ -25,6 +25,7 @@ import {
 } from "@/features/favorites/actions"
 import type { ApiCartItem } from "@/features/cart/api/type"
 import type { ApiOffer } from "@/features/offers/api/type"
+import { getErrorMessage } from "@/lib/api/utils"
 
 export type CartItem = ApiCartItem
 
@@ -144,7 +145,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (res.error === "UNAUTHENTICATED") {
         router.push("/login")
       } else {
-        toast.error(res.error || "Failed to add to cart")
+        toast.error(getErrorMessage(res.error, "Failed to add to cart"))
       }
       return false
     }
@@ -168,7 +169,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (res.error === "UNAUTHENTICATED") {
         router.push("/login")
       } else {
-        toast.error(res.error || "Failed to remove from cart")
+        toast.error(getErrorMessage(res.error, "Failed to remove from cart"))
       }
       return false
     }
@@ -199,7 +200,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (res.error === "UNAUTHENTICATED") {
         router.push("/login")
       } else {
-        toast.error(res.error || "Failed to update cart quantity")
+        toast.error(getErrorMessage(res.error, "Failed to update cart quantity"))
       }
       return false
     }
@@ -239,7 +240,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (res.error === "UNAUTHENTICATED") {
         router.push("/login")
       } else {
-        toast.error(res.error || "Failed to update wishlist")
+        toast.error(getErrorMessage(res.error, "Failed to update wishlist"))
       }
       return false
     }
@@ -262,7 +263,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (res?.error === "UNAUTHENTICATED") {
         router.push("/login")
       } else {
-        toast.error(res?.error || "Failed to clear cart")
+        toast.error(getErrorMessage(res?.error, "Failed to clear cart"))
       }
       return false
     }

@@ -9,8 +9,8 @@ import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-
 import { BackButton } from "@/components/ui/back-button"
 import { RestaurantForm } from "@/features/restaurant/components/restaurant-form"
 import { useCreateRestaurant } from "@/features/restaurant/hooks/use-restaurant"
-import type { RestaurantInput } from "@/schemas/restaurant"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
+import { getErrorMessage } from "@/lib/api/utils"
 
 function NewRestaurantPageContent() {
   const t = useTranslations("Dashboard.restaurant")
@@ -20,7 +20,7 @@ function NewRestaurantPageContent() {
   const createMutation = useCreateRestaurant()
 
   const handleSubmit = async (
-    values: RestaurantInput,
+    formData: FormData,
     ownerUserId?: string
   ) => {
     if (!ownerUserId) {
@@ -29,24 +29,13 @@ function NewRestaurantPageContent() {
     }
 
     try {
-      await createMutation.mutateAsync({
-        name: values.name,
-        ownerUserId,
-        description: values.description || undefined,
-        phone: values.phone || undefined,
-        // logoUrl: values.logoUrl || undefined,
-        address: {
-          street: values.address?.street || undefined,
-          city: values.address?.city || undefined,
-          country: values.address?.country || undefined,
-        },
-      })
+      await createMutation.mutateAsync(formData)
       toast.success(t("createSuccess"))
       setFormKey((k) => k + 1)
       router.push("/dashboard/restaurants")
     } catch (err) {
       console.error("[NewRestaurantPage] submit failed", err)
-      toast.error(t("createError"))
+      toast.error(getErrorMessage(err, t("createError")))
     }
   }
 
