@@ -351,6 +351,29 @@
     "tags": "Tags",
     "restaurants": "Restaurants"
   },
+  "ai": {
+    "source": {
+      "ai_model": "AI model",
+      "rule_based": "AI model",
+      "fallback_naive": "Estimated",
+      "fallback_yesterday": "Estimated"
+    },
+    "sourceTooltip": {
+      "ai_model": "Forecast produced by the demand model.",
+      "fallback_naive": "The AI service was unreachable. Estimated from last week's sales.",
+      "fallback_yesterday": "The AI service was unreachable. Copied from yesterday's plan."
+    },
+    "confidence": { "high": "High", "medium": "Medium", "low": "Low" },
+    "degraded": {
+      "title": "AI service unavailable",
+      "body": "Showing estimates instead of model forecasts. Numbers may be less accurate.",
+      "dismiss": "Dismiss"
+    },
+    "status": { "trained": "Trained", "learning": "Learning", "cold_start": "No data yet" },
+    "risk": { "low": "Low risk", "medium": "Medium risk", "high": "High risk" },
+    "tableView": "View as table",
+    "chartView": "View as chart"
+  },
   "Auth": {
     "loginTitle": "Login to your account",
     "loginDescription": "Enter your email below to login to your account",
