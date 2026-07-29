@@ -9,6 +9,13 @@ export interface ApiSupplier {
   updatedAt?: string
 }
 
+export interface CreateSupplierPayload {
+  name: string
+  email?: string
+  phone?: string
+  leadTimeDays?: number
+}
+
 export interface GetSuppliersParams {
   page?: number
   limit?: number
@@ -22,3 +29,4 @@ export interface PaginatedSuppliers {
   total: number
   totalPages: number
 }
+

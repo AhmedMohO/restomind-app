@@ -101,12 +101,12 @@ export function AdminRestaurantTable() {
       {/* Filter and search bar */}
       <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         <div className="relative w-full max-w-full flex-1 sm:max-w-sm">
-          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="rounded-xl pl-9"
+            className="rounded-xl ps-9"
           />
         </div>
       </div>

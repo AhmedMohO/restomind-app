@@ -599,5 +599,20 @@
     "validationInvalidEmail": "Please enter a valid email address",
     "validationInvalidPhone": "Please enter a valid phone number",
     "whatHappensNext": "What next?"
+  },
+  "Common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "close": "Close",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "actions": "Actions",
+    "pagination": {
+      "pageOf": "Page {page} of {totalPages}",
+      "rowsPerPage": "Rows per page"
+    }
   }
 }

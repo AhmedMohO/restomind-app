@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Pagination } from "@/components/ui/pagination"
 import {
   Select,
@@ -29,6 +30,8 @@ export function TablePagination({
   onLimitChange,
   className,
 }: TablePaginationProps) {
+  const t = useTranslations("Dashboard.pagination")
+
   if (total <= 0) return null
 
   return (
@@ -39,7 +42,7 @@ export function TablePagination({
       )}
     >
       <span className="text-center text-xs text-muted-foreground sm:text-start">
-        Page {page} of {totalPages}
+        {t("pageOf", { page, totalPages })}
       </span>
 
       <Pagination
@@ -50,7 +53,7 @@ export function TablePagination({
 
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>Rows per page</span>
+          <span>{t("rowsPerPage")}</span>
           <Select
             value={String(limit)}
             onValueChange={(val) => {

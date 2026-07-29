@@ -1,4 +1,8 @@
 {
+  "pagination": {
+    "pageOf": "Page {page} of {totalPages}",
+    "rowsPerPage": "Rows per page"
+  },
   "nav": {
     "overview": "Overview",
     "management": "Management",
@@ -17,6 +21,7 @@
     "ingredients": "Ingredients",
     "recipes": "Recipes",
     "purchaseOrders": "Purchase Orders",
+    "suppliers": "Suppliers",
     "inventory": "Inventory"
   },
   "restaurant": {
@@ -799,6 +804,7 @@
     "itemTotal": "Item Total",
     "addItem": "Add Ingredient Item",
     "removeRow": "Remove item",
+    "removeItem": "Remove item",
     "orderSummary": "Order Financial Summary",
     "totalCost": "Total Estimated Cost",
     "saveChanges": "Save Order",
@@ -937,5 +943,67 @@
     "selectIngredientFirst": "Please select all ingredients",
     "validQuantityError": "All quantities must be greater than 0",
     "validExpiryError": "Please set expiry dates for all batches"
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "subtitle": "Manage vendor contact details, lead times, and inventory replenishment sources.",
+    "addSupplierButton": "Add Supplier",
+    "createTitle": "Create New Supplier",
+    "createSubtitle": "Enter vendor contact details and default order lead time.",
+    "createButton": "Create Supplier",
+    "detailsSubtitle": "Vendor details and procurement overview.",
+    "contactSectionTitle": "Contact Information",
+    "createPoPromptTitle": "Replenish Inventory",
+    "createPoPromptSubtitle": "Create a purchase order for this supplier.",
+    "createPoButton": "Create PO",
+    "searchPlaceholder": "Search suppliers by name...",
+    "refreshTooltip": "Refresh list",
+    "noContact": "No contact details provided",
+    "unknownDate": "Unknown date",
+    "leadTimeBadge": "{count, plural, =1 {1 Day Lead Time} other {# Days Lead Time}}",
+    "metrics": {
+      "totalSuppliers": "Total Suppliers",
+      "avgLeadTime": "Avg Lead Time",
+      "days": "days",
+      "contactCoverage": "Contact Coverage",
+      "fastFulfillment": "Fast Delivery (≤ 2d)",
+      "purchaseOrders": "Purchase Orders",
+      "viewPurchaseOrders": "View Purchase Orders"
+    },
+    "table": {
+      "name": "Supplier Name",
+      "contact": "Contact Info",
+      "leadTime": "Lead Time",
+      "created": "Added On",
+      "actions": "Actions"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "createPo": "Create Purchase Order"
+    },
+    "form": {
+      "nameLabel": "Supplier Name",
+      "namePlaceholder": "e.g. Fresh Produce Co.",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "supplier@example.com",
+      "phoneLabel": "Phone Number",
+      "phonePlaceholder": "+1 234 567 890",
+      "leadTimeLabel": "Delivery Lead Time (Days)",
+      "leadTimePlaceholder": "1",
+      "leadTimeHelp": "Expected days from purchase order placement to stock delivery."
+    },
+    "errors": {
+      "nameRequired": "Supplier name is required",
+      "invalidEmail": "Please enter a valid email address",
+      "invalidLeadTime": "Lead time days cannot be negative"
+    },
+    "notifications": {
+      "createSuccess": "Supplier created successfully",
+      "createError": "Failed to create supplier"
+    },
+    "cancel": "Cancel",
+    "close": "Close",
+    "saving": "Saving..."
   }
 }
+

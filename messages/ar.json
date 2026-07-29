@@ -599,5 +599,20 @@
     "validationInvalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
     "validationInvalidPhone": "يرجى إدخال رقم هاتف صحيح",
     "whatHappensNext": "الخطوة القادمة؟"
+  },
+  "Common": {
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "saving": "جاري الحفظ...",
+    "close": "إغلاق",
+    "confirm": "تأكيد",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "search": "بحث",
+    "actions": "الإجراءات",
+    "pagination": {
+      "pageOf": "الصفحة {page} من {totalPages}",
+      "rowsPerPage": "عدد الصفوف في الصفحة"
+    }
   }
 }

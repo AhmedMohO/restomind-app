@@ -3,7 +3,18 @@
 import * as React from "react"
 import { useLocale, useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { Calendar, Loader2, Plus, ShoppingBag, Trash2, Truck } from "lucide-react"
+import {
+  Building2,
+  Calendar,
+  Loader2,
+  Plus,
+  ShoppingBag,
+  Tag,
+  Trash2,
+  Truck,
+} from "lucide-react"
+
+import { useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -34,8 +45,10 @@ export function PurchaseOrderForm() {
   const router = useRouter()
   const locale = useLocale()
   const t = useTranslations("Dashboard.purchaseOrders")
+  const searchParams = useSearchParams()
+  const initialSupplierId = searchParams?.get("supplierId") ?? ""
 
-  const [supplierId, setSupplierId] = React.useState("")
+  const [supplierId, setSupplierId] = React.useState(initialSupplierId)
   const [expectedDeliveryDate, setExpectedDeliveryDate] = React.useState("")
   const [status, setStatus] = React.useState<PurchaseOrderStatus>("draft")
 
@@ -154,7 +167,9 @@ export function PurchaseOrderForm() {
     }
   }
 
-  const selectedIngredientIds = items.map((item) => item.ingredientId).filter(Boolean)
+  const selectedIngredientIds = items
+    .map((item) => item.ingredientId)
+    .filter(Boolean)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -166,10 +181,11 @@ export function PurchaseOrderForm() {
             <span>{t("formTitle")}</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-3 items-center">
+        <CardContent className="grid gap-4 sm:grid-cols-3">
           {/* Supplier */}
           <div className="space-y-2">
-            <Label className="text-xs font-semibold">
+            <Label className="flex h-5 items-center gap-1.5 text-xs font-semibold">
+              <Building2 className="size-3.5 text-primary" />
               <span>{t("supplier")}</span>
               <span className="text-destructive">*</span>
             </Label>
@@ -182,7 +198,7 @@ export function PurchaseOrderForm() {
 
           {/* Expected Delivery Date */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-1.5 text-xs font-semibold">
+            <Label className="flex h-5 items-center gap-1.5 text-xs font-semibold">
               <Calendar className="size-3.5 text-primary" />
               <span>{t("expectedDeliveryDate")}</span>
             </Label>
@@ -197,7 +213,10 @@ export function PurchaseOrderForm() {
 
           {/* Initial Status */}
           <div className="space-y-2">
-            <Label className="text-xs font-semibold">{t("status")}</Label>
+            <Label className="flex h-5 items-center gap-1.5 text-xs font-semibold">
+              <Tag className="size-3.5 text-primary" />
+              <span>{t("status")}</span>
+            </Label>
             <Select
               value={status}
               onValueChange={(val) => {
@@ -211,7 +230,9 @@ export function PurchaseOrderForm() {
                 <SelectItem value="draft">{t("statusDraft")}</SelectItem>
                 <SelectItem value="sent">{t("statusSent")}</SelectItem>
                 <SelectItem value="received">{t("statusReceived")}</SelectItem>
-                <SelectItem value="cancelled">{t("statusCancelled")}</SelectItem>
+                <SelectItem value="cancelled">
+                  {t("statusCancelled")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -234,7 +255,7 @@ export function PurchaseOrderForm() {
             variant="outline"
             size="sm"
             onClick={handleAddItemRow}
-            className="gap-1.5 rounded-xl text-xs font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
+            className="gap-1.5 rounded-xl text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground"
           >
             <Plus className="size-3.5" />
             <span>{t("addItem")}</span>
@@ -242,7 +263,7 @@ export function PurchaseOrderForm() {
         </CardHeader>
         <CardContent className="space-y-3">
           {/* Table Header for Desktop Screens */}
-          <div className="hidden sm:grid sm:grid-cols-12 gap-3 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="hidden gap-3 px-3.5 py-1 text-[11px] font-bold tracking-wider text-muted-foreground uppercase sm:grid sm:grid-cols-12">
             <div className="col-span-5">{t("colIngredient")}</div>
             <div className="col-span-2">{t("quantity")}</div>
             <div className="col-span-2">{t("unitCost")}</div>
@@ -256,7 +277,7 @@ export function PurchaseOrderForm() {
             return (
               <div
                 key={row.id}
-                className="group relative grid grid-cols-1 items-center gap-3 rounded-xl border border-border/70 bg-card/60 p-3.5 sm:grid-cols-12 hover:border-primary/40 hover:bg-card/90 transition-all shadow-2xs"
+                className="group relative grid grid-cols-1 items-center gap-3 rounded-xl border border-border/70 bg-card/60 p-3.5 shadow-2xs transition-all hover:border-primary/40 hover:bg-card/90 sm:grid-cols-12"
               >
                 {/* Ingredient Select (5 cols) */}
                 <div className="space-y-1.5 sm:col-span-5">
@@ -296,10 +317,10 @@ export function PurchaseOrderForm() {
                           parseFloat(e.target.value) || 0
                         )
                       }
-                      className="h-10 w-full rounded-xl text-xs pe-9 font-medium"
+                      className="h-10 w-full rounded-xl pe-9 text-xs font-medium"
                     />
                     {row.unit && (
-                      <span className="absolute end-2.5 text-[10px] font-semibold text-muted-foreground uppercase pointer-events-none select-none">
+                      <span className="pointer-events-none absolute end-2.5 text-[10px] font-semibold text-muted-foreground uppercase select-none">
                         {row.unit}
                       </span>
                     )}
@@ -324,16 +345,16 @@ export function PurchaseOrderForm() {
                           parseFloat(e.target.value) || 0
                         )
                       }
-                      className="h-10 w-full rounded-xl text-xs pe-10 font-medium"
+                      className="h-10 w-full rounded-xl pe-10 text-xs font-medium"
                     />
-                    <span className="absolute end-2.5 text-[10px] font-semibold text-muted-foreground pointer-events-none select-none">
+                    <span className="pointer-events-none absolute end-2.5 text-[10px] font-semibold text-muted-foreground select-none">
                       EGP
                     </span>
                   </div>
                 </div>
 
                 {/* Line Total (2 cols) */}
-                <div className="flex items-center justify-between sm:justify-end gap-2 sm:col-span-2">
+                <div className="flex items-center justify-between gap-2 sm:col-span-2 sm:justify-end">
                   <span className="block text-[10px] text-muted-foreground sm:hidden">
                     {t("itemTotal")}
                   </span>
@@ -345,15 +366,15 @@ export function PurchaseOrderForm() {
                 </div>
 
                 {/* Remove Action (1 col) */}
-                <div className="flex items-center justify-end sm:justify-center sm:col-span-1">
+                <div className="flex items-center justify-end sm:col-span-1 sm:justify-center">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     disabled={items.length <= 1}
                     onClick={() => handleRemoveRow(row.id)}
-                    title={t("removeItem") || "Remove item"}
-                    className="size-8 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors disabled:opacity-30"
+                    title={t("removeItem")}
+                    className="size-8 rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-30"
                   >
                     <Trash2 className="size-4" />
                   </Button>
@@ -365,8 +386,8 @@ export function PurchaseOrderForm() {
       </Card>
 
       {/* Financial Summary Card */}
-      <Card className="rounded-2xl border-border bg-card shadow-2xs overflow-hidden">
-        <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5 bg-gradient-to-r from-card via-card to-primary/5">
+      <Card className="overflow-hidden rounded-2xl border-border bg-card shadow-2xs">
+        <CardContent className="flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-card via-card to-primary/5 p-5">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <ShoppingBag className="size-5" />
@@ -416,4 +437,3 @@ export function PurchaseOrderForm() {
     </form>
   )
 }
-

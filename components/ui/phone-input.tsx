@@ -336,13 +336,13 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
           >
             {/* Search Input */}
             <div className="relative mb-2">
-              <Search className="absolute top-2.5 left-2.5 size-3.5 text-muted-foreground" />
+              <Search className="absolute top-2.5 start-2.5 size-3.5 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search country..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-8 pl-8 text-xs focus-visible:ring-1"
+                className="h-8 ps-8 text-xs focus-visible:ring-1"
               />
             </div>
 

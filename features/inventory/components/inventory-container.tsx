@@ -392,12 +392,12 @@ export function InventoryContainer() {
             {/* Search Input */}
             {activeTab === "batches" && (
               <div className="relative w-full sm:w-64">
-                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground ltr:left-3 rtl:right-3" />
+                <Search className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder={t("searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-10 rounded-xl pl-9 text-xs ltr:pl-9 rtl:pr-9"
+                  className="h-10 rounded-xl ps-9 text-xs"
                 />
               </div>
             )}

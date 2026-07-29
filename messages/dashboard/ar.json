@@ -1,4 +1,8 @@
 {
+  "pagination": {
+    "pageOf": "الصفحة {page} من {totalPages}",
+    "rowsPerPage": "عدد الصفوف في الصفحة"
+  },
   "nav": {
     "overview": "نظرة عامة",
     "management": "الإدارة",
@@ -17,6 +21,7 @@
     "ingredients": "المكونات",
     "recipes": "الوصفات",
     "purchaseOrders": "طلبات الشراء",
+    "suppliers": "الموردين",
     "inventory": "المخزون"
   },
   "restaurant": {
@@ -799,6 +804,7 @@
     "itemTotal": "إجمالي العنصر",
     "addItem": "إضافة مكون للأمر",
     "removeRow": "إزالة العنصر",
+    "removeItem": "إزالة العنصر",
     "orderSummary": "الملخص المالي للأمر",
     "totalCost": "التكلفة التقديرية الإجمالية",
     "saveChanges": "حفظ الأمر",
@@ -937,5 +943,67 @@
     "selectIngredientFirst": "يرجى اختيار جميع المكونات",
     "validQuantityError": "يجب أن تكون جميع الكميات أكبر من صفر",
     "validExpiryError": "يرجى تحديد تواريخ انتهاء الصلاحية لجميع الدُفعات"
+  },
+  "suppliers": {
+    "title": "الموردين",
+    "subtitle": "إدارة تفاصيل الاتصال بالموردين، وأوقات التسليم، ومصادر إعادة تزويد المخزون.",
+    "addSupplierButton": "إضافة مورد",
+    "createTitle": "إضافة مورد جديد",
+    "createSubtitle": "أدخل تفاصيل التواصل مع المورد والوقت المتوقع للتسليم.",
+    "createButton": "إضافة المورد",
+    "detailsSubtitle": "تفاصيل المورد ونظرة عامة على عمليات الشراء.",
+    "contactSectionTitle": "معلومات الاتصال",
+    "createPoPromptTitle": "إعادة تزويد المخزون",
+    "createPoPromptSubtitle": "إنشاء طلب شراء لهذا المورد.",
+    "createPoButton": "إنشاء طلب شراء",
+    "searchPlaceholder": "البحث عن مورد بالأسم...",
+    "refreshTooltip": "تحديث القائمة",
+    "noContact": "لا تتوفر تفاصيل اتصال",
+    "unknownDate": "تاريخ غير معروف",
+    "leadTimeBadge": "{count, plural, =1 {تسليم خلال يوم} =2 {تسليم خلال يومين} few {تسليم خلال # أيام} many {تسليم خلال # يوماً} other {تسليم خلال # يوم}}",
+    "metrics": {
+      "totalSuppliers": "إجمالي الموردين",
+      "avgLeadTime": "متوسط وقت التسليم",
+      "days": "أيام",
+      "contactCoverage": "نسبة التواصل",
+      "fastFulfillment": "توصيل سريع (≤ 2 يوم)",
+      "purchaseOrders": "طلبات الشراء",
+      "viewPurchaseOrders": "عرض طلبات الشراء"
+    },
+    "table": {
+      "name": "اسم المورد",
+      "contact": "معلومات الاتصال",
+      "leadTime": "مدة التسليم",
+      "created": "تاريخ الإضافة",
+      "actions": "الإجراءات"
+    },
+    "actions": {
+      "viewDetails": "عرض التفاصيل",
+      "createPo": "إنشاء طلب شراء"
+    },
+    "form": {
+      "nameLabel": "اسم المورد",
+      "namePlaceholder": "مثال: شركة الخضروات الطازجة",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "supplier@example.com",
+      "phoneLabel": "رقم الهاتف",
+      "phonePlaceholder": "+20 100 000 0000",
+      "leadTimeLabel": "مدة التوريد (بالأيام)",
+      "leadTimePlaceholder": "1",
+      "leadTimeHelp": "عدد الأيام المتوقعة من إنشاء طلب الشراء وحتى وصول البضاعة."
+    },
+    "errors": {
+      "nameRequired": "اسم المورد مطلوب",
+      "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+      "invalidLeadTime": "لا يمكن أن تكون أيام التوريد بالسالب"
+    },
+    "notifications": {
+      "createSuccess": "تم إنشاء المورد بنجاح",
+      "createError": "فشل في إنشاء المورد"
+    },
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "saving": "جاري الحفظ..."
   }
 }
+
