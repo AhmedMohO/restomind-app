@@ -13,7 +13,7 @@ import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
 import { Link } from "@/i18n/routing"
 import { NavMain } from "@/components/shadcn-space/blocks/dashboard-shell-01/nav-main"
-import { BarChart3, Carrot, ChefHat, FolderTree, Package, Percent, Receipt, ShoppingBag, Store, Settings, Truck, Users, type LucideIcon } from "lucide-react"
+import { BarChart3, Boxes, Carrot, ChefHat, FolderTree, Package, Percent, Receipt, ShoppingBag, Store, Settings, Truck, Users, type LucideIcon } from "lucide-react"
 import { SiteHeader } from "@/components/shadcn-space/blocks/dashboard-shell-01/site-header"
 import SimpleBar from "simplebar-react"
 import "simplebar-react/dist/simplebar.min.css"
@@ -147,6 +147,12 @@ function useDashboardNav(): NavItem[] {
       title: t("purchaseOrders"),
       icon: Truck,
       href: "/dashboard/purchase-orders",
+      roles: ["manager"],
+    },
+    {
+      title: t("inventory"),
+      icon: Boxes,
+      href: "/dashboard/inventory",
       roles: ["manager"],
     },
 

@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Carrot } from "lucide-react"
 import { useTranslations } from "next-intl"
 
@@ -44,16 +45,24 @@ export function PaginatedIngredientSelect({
   const t = useTranslations("Dashboard.ingredients")
   const { data: selectedIngredient } = useIngredientById(value || null)
 
-  const toOption = (
-    ingredient: ApiIngredient
-  ): PaginatedSelectOption<ApiIngredient> => ({
-    value: ingredient._id,
-    label: ingredient.name,
-    subLabel: ingredient.ingredientCode,
-    badge: t(`unit_${ingredient.unit}`),
-    icon: <Carrot className="size-3.5" />,
-    data: ingredient,
-  })
+  const toOption = React.useCallback(
+    (ingredient: ApiIngredient): PaginatedSelectOption<ApiIngredient> => ({
+      value: ingredient._id,
+      label: ingredient.name,
+      subLabel: ingredient.ingredientCode,
+      badge: t(`unit_${ingredient.unit}`),
+      icon: <Carrot className="size-3.5" />,
+      data: ingredient,
+    }),
+    [t]
+  )
+
+  const selectedOption = React.useMemo(() => {
+    if (selectedIngredient) {
+      return toOption(selectedIngredient)
+    }
+    return undefined
+  }, [selectedIngredient, toOption])
 
   const fetchIngredients = async ({
     page,
@@ -88,9 +97,15 @@ export function PaginatedIngredientSelect({
   return (
     <PaginatedSelect<ApiIngredient>
       value={value}
+      selectedOption={selectedOption}
       onValueChange={(val, option) => onValueChange(val, option?.data)}
       fetchData={fetchIngredients}
-      queryKey={["ingredients-select", value ?? "", excludeIds.join(",")]}
+      queryKey={[
+        "ingredients-select",
+        value ?? "",
+        selectedIngredient?.name ?? "",
+        excludeIds.join(","),
+      ]}
       placeholder={placeholder ?? t("selectIngredient")}
       searchPlaceholder={t("searchPlaceholder")}
       disabled={disabled}

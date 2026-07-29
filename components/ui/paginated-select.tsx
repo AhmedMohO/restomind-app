@@ -46,6 +46,7 @@ export interface PaginatedSelectFetchResult<T = unknown> {
 
 export interface PaginatedSelectProps<T = unknown> {
   value?: string
+  selectedOption?: PaginatedSelectOption<T>
   onValueChange: (
     value: string,
     selectedOption?: PaginatedSelectOption<T>
@@ -68,6 +69,7 @@ export interface PaginatedSelectProps<T = unknown> {
 
 export function PaginatedSelect<T = unknown>({
   value,
+  selectedOption,
   onValueChange,
   fetchData,
   queryKey = [],
@@ -123,7 +125,11 @@ export function PaginatedSelect<T = unknown>({
   const activeOption =
     (value
       ? items.find((item: PaginatedSelectOption<T>) => item.value === value)
-      : null) ?? (cachedOption?.value === value ? cachedOption : null)
+      : null) ??
+    (cachedOption?.value === value ? cachedOption : null) ??
+    (selectedOption?.value === value ? selectedOption : null)
+
+
 
   const handleSelect = (option: PaginatedSelectOption<T>) => {
     if (value === option.value) {

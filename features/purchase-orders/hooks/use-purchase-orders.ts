@@ -70,6 +70,8 @@ export function useReceivePurchaseOrder() {
       queryClient.invalidateQueries({
         queryKey: [...PURCHASE_ORDERS_QUERY_KEY, "details", id],
       })
+      // Receiving a PO creates inventory batches & stock transactions — invalidate them too
+      queryClient.invalidateQueries({ queryKey: ["inventory"] })
     },
   })
 }
@@ -96,6 +98,10 @@ export function useUpdatePurchaseOrderStatus() {
       queryClient.invalidateQueries({
         queryKey: [...PURCHASE_ORDERS_QUERY_KEY, "details", variables.id],
       })
+      // Status change to "received" triggers batch creation on backend
+      if (variables.status === "received") {
+        queryClient.invalidateQueries({ queryKey: ["inventory"] })
+      }
     },
   })
 }

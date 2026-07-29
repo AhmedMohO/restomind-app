@@ -4,7 +4,6 @@ import * as React from "react"
 import { useLocale, useTranslations } from "next-intl"
 import { toast } from "sonner"
 import {
-  CheckCircle2,
   Clock,
   Eye,
   Filter,
@@ -62,11 +61,7 @@ import {
   useReceivePurchaseOrder,
   useUpdatePurchaseOrderStatus,
 } from "../hooks/use-purchase-orders"
-import {
-  calculateOrderTotal,
-  getStatusConfig,
-  getSupplierName,
-} from "../utils"
+import { calculateOrderTotal, getStatusConfig, getSupplierName } from "../utils"
 
 export function PurchaseOrdersContainer() {
   const router = useRouter()
@@ -79,12 +74,10 @@ export function PurchaseOrdersContainer() {
   const [supplierId, setSupplierId] = React.useState("")
   const [search, setSearch] = React.useState("")
 
-  const [receiveTarget, setReceiveTarget] = React.useState<ApiPurchaseOrder | null>(
-    null
-  )
-  const [cancelTarget, setCancelTarget] = React.useState<ApiPurchaseOrder | null>(
-    null
-  )
+  const [receiveTarget, setReceiveTarget] =
+    React.useState<ApiPurchaseOrder | null>(null)
+  const [cancelTarget, setCancelTarget] =
+    React.useState<ApiPurchaseOrder | null>(null)
 
   const queryParams: GetPurchaseOrdersParams = {
     page,
@@ -93,22 +86,22 @@ export function PurchaseOrdersContainer() {
     supplierId: supplierId || undefined,
   }
 
-  const { data, isLoading, isError, refetch } = usePurchaseOrdersList(queryParams)
+  const { data, isLoading, isError, refetch } =
+    usePurchaseOrdersList(queryParams)
   const receiveMutation = useReceivePurchaseOrder()
   const statusMutation = useUpdatePurchaseOrderStatus()
 
-  const allOrders = data?.items ?? []
-  
   // Client-side search filter by PO ID or supplier name if search text entered
   const orders = React.useMemo(() => {
+    const allOrders = data?.items ?? []
     if (!search.trim()) return allOrders
     const query = search.toLowerCase().trim()
-    return allOrders.filter((po) => {
+    return allOrders.filter((po: ApiPurchaseOrder) => {
       const idMatch = po._id.toLowerCase().includes(query)
       const supplierName = getSupplierName(po.supplierId).toLowerCase()
       return idMatch || supplierName.includes(query)
     })
-  }, [allOrders, search])
+  }, [data, search])
 
   const total = data?.total ?? 0
   const totalPages = data?.totalPages ?? 1
@@ -151,7 +144,10 @@ export function PurchaseOrdersContainer() {
   const handleConfirmCancel = async () => {
     if (!cancelTarget) return
     try {
-      await statusMutation.mutateAsync({ id: cancelTarget._id, status: "cancelled" })
+      await statusMutation.mutateAsync({
+        id: cancelTarget._id,
+        status: "cancelled",
+      })
       toast.success(t("statusUpdateSuccess"))
       setCancelTarget(null)
     } catch (err) {
@@ -160,7 +156,10 @@ export function PurchaseOrdersContainer() {
     }
   }
 
-  const handleStatusUpdate = async (id: string, newStatus: PurchaseOrderStatus) => {
+  const handleStatusUpdate = async (
+    id: string,
+    newStatus: PurchaseOrderStatus
+  ) => {
     try {
       await statusMutation.mutateAsync({ id, status: newStatus })
       toast.success(t("statusUpdateSuccess"))
@@ -217,7 +216,7 @@ export function PurchaseOrdersContainer() {
         >
           <SelectTrigger
             className={cn(
-              "h-7 w-auto items-center justify-center gap-1.5 rounded-full border px-3 text-xs font-semibold shadow-2xs transition-colors outline-hidden focus:ring-1 focus:ring-ring cursor-pointer",
+              "h-7 w-auto cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 text-xs font-semibold shadow-2xs outline-hidden transition-colors focus:ring-1 focus:ring-ring",
               config.styles
             )}
           >
@@ -226,14 +225,23 @@ export function PurchaseOrdersContainer() {
               <span>{config.label}</span>
             </div>
           </SelectTrigger>
-          <SelectContent align="center" className="min-w-[140px] rounded-xl p-1">
+          <SelectContent
+            align="center"
+            className="min-w-[140px] rounded-xl p-1"
+          >
             {availableStatuses.map((s) => {
               const itemConfig = getStatusConfig(s, t)
               const ItemIcon = itemConfig.icon
               return (
-                <SelectItem key={s} value={s} className="rounded-lg text-xs font-medium">
+                <SelectItem
+                  key={s}
+                  value={s}
+                  className="rounded-lg text-xs font-medium"
+                >
                   <div className="flex items-center gap-2">
-                    <ItemIcon className={cn("size-3.5 shrink-0", itemConfig.iconColor)} />
+                    <ItemIcon
+                      className={cn("size-3.5 shrink-0", itemConfig.iconColor)}
+                    />
                     <span>{itemConfig.label}</span>
                   </div>
                 </SelectItem>
@@ -329,21 +337,29 @@ export function PurchaseOrdersContainer() {
                   <Select
                     value={status || "all"}
                     onValueChange={(val) => {
-                      setStatus(val === "all" ? "" : (val as PurchaseOrderStatus))
+                      setStatus(
+                        val === "all" ? "" : (val as PurchaseOrderStatus)
+                      )
                       setPage(1)
                     }}
                   >
                     <SelectTrigger className="h-9 w-full rounded-xl text-xs">
                       <SelectValue placeholder={t("allStatuses")}>
-                        {status ? getStatusConfig(status, t).label : t("allStatuses")}
+                        {status
+                          ? getStatusConfig(status, t).label
+                          : t("allStatuses")}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">{t("allStatuses")}</SelectItem>
                       <SelectItem value="draft">{t("statusDraft")}</SelectItem>
                       <SelectItem value="sent">{t("statusSent")}</SelectItem>
-                      <SelectItem value="received">{t("statusReceived")}</SelectItem>
-                      <SelectItem value="cancelled">{t("statusCancelled")}</SelectItem>
+                      <SelectItem value="received">
+                        {t("statusReceived")}
+                      </SelectItem>
+                      <SelectItem value="cancelled">
+                        {t("statusCancelled")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -5,8 +5,6 @@ import { useLocale, useTranslations } from "next-intl"
 import { toast } from "sonner"
 import {
   Calendar,
-  CheckCircle2,
-  Clock,
   Loader2,
   PackageCheck,
   PackageX,
@@ -282,7 +280,7 @@ export function PurchaseOrderDetailsContainer({ id }: { id: string }) {
                       </div>
                     </TableCell>
                     <TableCell className="text-center font-medium">
-                      {item.quantity} {t(`unit_${item.unit}` as any) || item.unit}
+                      {item.quantity} {t(`unit_${item.unit}` as Parameters<typeof t>[0]) || item.unit}
                     </TableCell>
                     <TableCell className="px-4 text-end font-medium">
                       {formatCurrency(item.unitCost, locale)}
