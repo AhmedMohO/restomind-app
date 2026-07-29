@@ -10,12 +10,34 @@ import { DegradedBanner } from "@/components/ai/degraded-banner"
 import { getErrorMessage } from "@/lib/api/utils"
 import { useScanSurplus } from "@/features/recommendations/hooks/use-recommendations"
 
+export interface ScanSurplusPanelProps {
+  /** The page title, translated server-side and passed down so the <h1>
+   * can live in this client component alongside the button it sits next
+   * to — see the layout note below. */
+  title: string
+}
+
 /**
- * The scan button and its degraded-AI banner. Split out from the page (a
- * server component) because both need client state: the mutation itself,
- * and whether the last scan came back degraded.
+ * The page's title/scan-button row, plus its degraded-AI banner. A client
+ * component because both the scan button and the banner's visibility need
+ * client state: the mutation itself, and whether the last scan came back
+ * degraded.
+ *
+ * Layout note (fix round 1, item 6): the banner is rendered as a
+ * block-level sibling BELOW the title/button row, not inside it.
+ * Reproduced and confirmed the bug this replaces: with the banner nested
+ * as a flex item opposite the <h1> inside
+ * `flex flex-wrap items-center justify-between`, the Alert's `w-full`
+ * resolves against that flex item's own shrink-to-fit width (flex items
+ * don't get the normal block "fill parent" behavior), so the banner
+ * rendered squeezed into a narrow column matching the row's remaining
+ * space instead of spanning the page — and at narrower viewports the row
+ * wrapped, pushing the title onto its own line above a still-narrow
+ * banner. Keeping the banner as a sibling below the row (a plain block
+ * context, not a flex item) lets it span full width like every other
+ * alert on this page.
  */
-export function ScanSurplusPanel() {
+export function ScanSurplusPanel({ title }: ScanSurplusPanelProps) {
   const t = useTranslations("recommendations")
   const scanMutation = useScanSurplus()
   const [degradedReason, setDegradedReason] = React.useState<string | undefined>(
@@ -43,15 +65,18 @@ export function ScanSurplusPanel() {
 
   return (
     <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-heading text-lg font-semibold">{title}</h1>
+        <Button onClick={handleScan} disabled={scanMutation.isPending}>
+          {scanMutation.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Sparkles className="size-4" />
+          )}
+          {scanMutation.isPending ? t("scanning") : t("scanButton")}
+        </Button>
+      </div>
       {showDegraded && <DegradedBanner reason={degradedReason} />}
-      <Button onClick={handleScan} disabled={scanMutation.isPending}>
-        {scanMutation.isPending ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <Sparkles className="size-4" />
-        )}
-        {scanMutation.isPending ? t("scanning") : t("scanButton")}
-      </Button>
     </div>
   )
 }

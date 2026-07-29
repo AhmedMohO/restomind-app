@@ -354,12 +354,13 @@
   "ai": {
     "source": {
       "ai_model": "AI model",
-      "rule_based": "AI model",
+      "rule_based": "Rule-based",
       "fallback_naive": "Estimated",
       "fallback_yesterday": "Estimated"
     },
     "sourceTooltip": {
       "ai_model": "Forecast produced by the demand model.",
+      "rule_based": "Computed from a fixed discount rule, not the AI model.",
       "fallback_naive": "The AI service was unreachable. Estimated from last week's sales.",
       "fallback_yesterday": "The AI service was unreachable. Copied from yesterday's plan."
     },
@@ -392,8 +393,16 @@
     "originalPrice": "Original price",
     "aiCopyLabel": "AI-suggested copy",
     "approveSuccess": "Recommendation approved",
+    "approveError": {
+      "conflict": "An active offer already exists for this product",
+      "invalid": "This recommendation can no longer be approved",
+      "notFound": "The product no longer exists",
+      "generic": "Could not approve the recommendation"
+    },
     "dismissSuccess": "Recommendation dismissed",
     "dismissError": "Could not dismiss the recommendation",
+    "unknownProduct": "Unknown product",
+    "priceUnavailable": "Price unavailable",
     "editDialogTitle": "Adjust discount",
     "editDialogDescription": "Change the suggested discount percentage before approving.",
     "discountPercentLabel": "Discount percentage",

@@ -354,12 +354,13 @@
   "ai": {
     "source": {
       "ai_model": "نموذج الذكاء الاصطناعي",
-      "rule_based": "نموذج الذكاء الاصطناعي",
+      "rule_based": "قاعدة ثابتة",
       "fallback_naive": "تقدير",
       "fallback_yesterday": "تقدير"
     },
     "sourceTooltip": {
       "ai_model": "توقع صادر من نموذج الطلب.",
+      "rule_based": "محسوبة من قاعدة خصم ثابتة، وليست من نموذج الذكاء الاصطناعي.",
       "fallback_naive": "تعذر الوصول إلى خدمة الذكاء الاصطناعي. تم التقدير من مبيعات الأسبوع الماضي.",
       "fallback_yesterday": "تعذر الوصول إلى خدمة الذكاء الاصطناعي. تم النسخ من خطة أمس."
     },
@@ -392,8 +393,16 @@
     "originalPrice": "السعر الأصلي",
     "aiCopyLabel": "نص مقترح من الذكاء الاصطناعي",
     "approveSuccess": "تم اعتماد التوصية",
+    "approveError": {
+      "conflict": "يوجد بالفعل عرض نشط لهذا المنتج",
+      "invalid": "لم يعد بالإمكان اعتماد هذه التوصية",
+      "notFound": "المنتج لم يعد موجوداً",
+      "generic": "تعذر اعتماد التوصية"
+    },
     "dismissSuccess": "تم تجاهل التوصية",
     "dismissError": "تعذر تجاهل التوصية",
+    "unknownProduct": "منتج غير معروف",
+    "priceUnavailable": "السعر غير متاح",
     "editDialogTitle": "تعديل نسبة الخصم",
     "editDialogDescription": "غيّر نسبة الخصم المقترحة قبل الاعتماد.",
     "discountPercentLabel": "نسبة الخصم",

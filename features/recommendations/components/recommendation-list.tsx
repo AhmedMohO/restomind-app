@@ -3,7 +3,6 @@
 import * as React from "react"
 import { useTranslations } from "next-intl"
 import { Sparkles } from "lucide-react"
-import { toast } from "sonner"
 
 import {
   Select,
@@ -13,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getErrorMessage } from "@/lib/api/utils"
 import {
   useApproveRecommendation,
   useDismissRecommendation,
@@ -59,24 +57,28 @@ export function RecommendationList() {
   })
   const items = data?.items ?? []
 
-  const approveMutation = useApproveRecommendation()
-  const dismissMutation = useDismissRecommendation()
+  // Passed into the hooks (rather than as onSuccess/onError to mutate())
+  // so the toasts live at mutation level — see the comment in
+  // use-recommendations.ts on why per-call callbacks get dropped when a
+  // second mutate() supersedes the first on the same observer.
+  const approveMutation = useApproveRecommendation({
+    success: t("approveSuccess"),
+    conflict: t("approveError.conflict"),
+    invalid: t("approveError.invalid"),
+    notFound: t("approveError.notFound"),
+    generic: t("approveError.generic"),
+  })
+  const dismissMutation = useDismissRecommendation({
+    success: t("dismissSuccess"),
+    error: t("dismissError"),
+  })
 
   const handleApprove = (id: string) => {
-    approveMutation.mutate(
-      { id, input: {} },
-      {
-        onSuccess: () => toast.success(t("approveSuccess")),
-        // The mutation's own onError already surfaces 409/400/404 distinctly.
-      }
-    )
+    approveMutation.mutate({ id, input: {} })
   }
 
   const handleDismiss = (id: string) => {
-    dismissMutation.mutate(id, {
-      onSuccess: () => toast.success(t("dismissSuccess")),
-      onError: (err) => toast.error(getErrorMessage(err, t("dismissError"))),
-    })
+    dismissMutation.mutate(id)
   }
 
   return (

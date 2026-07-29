@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
@@ -19,6 +18,7 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { getErrorMessage } from "@/lib/api/utils"
+import { useZodResolver } from "@/lib/zod-locale"
 import { useEditRecommendation } from "@/features/recommendations/hooks/use-recommendations"
 import {
   editRecommendationSchema,
@@ -52,7 +52,7 @@ export function ApproveDialog({
     reset,
     formState: { errors },
   } = useForm<EditRecommendationInput>({
-    resolver: zodResolver(editRecommendationSchema),
+    resolver: useZodResolver(editRecommendationSchema),
     defaultValues: { suggestedValue: recommendation?.suggestedValue ?? 1 },
   })
 

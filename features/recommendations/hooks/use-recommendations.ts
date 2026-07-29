@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { clientFetch } from "@/lib/api/fetch-client"
-import { buildQueryString } from "@/lib/api/utils"
+import { buildQueryString, getErrorMessage } from "@/lib/api/utils"
 import {
   EMPTY_RECOMMENDATIONS_PAGE,
   type GetRecommendationsParams,
@@ -44,7 +44,21 @@ export function useScanSurplus() {
   })
 }
 
-export function useApproveRecommendation() {
+// Translated strings for the outcomes of an approve attempt. There is no
+// existing precedent in this codebase for calling useTranslations()/
+// getTranslations() from inside a hook (grepped every features/**/hooks
+// file — none import next-intl), so rather than invent a new mechanism
+// here, the calling component resolves these via useTranslations and
+// passes the strings in. See recommendation-list.tsx.
+export interface ApproveRecommendationMessages {
+  success: string
+  conflict: string
+  invalid: string
+  notFound: string
+  generic: string
+}
+
+export function useApproveRecommendation(messages: ApproveRecommendationMessages) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({
@@ -75,14 +89,18 @@ export function useApproveRecommendation() {
       )
       return { snapshot }
     },
+    // Mutation-level (not per-call) so a second approve firing before the
+    // first settles can't discard this callback — TanStack Query drops
+    // per-call mutate() options when a later call supersedes the observer.
+    onSuccess: () => toast.success(messages.success),
     onError: (err: unknown, _vars, ctx) => {
       ctx?.snapshot.forEach(([key, data]) => qc.setQueryData(key, data))
       const status = (err as { status?: number })?.status
       // These are distinct outcomes, not one generic failure.
-      if (status === 409) toast.error("An active offer already exists for this product")
-      else if (status === 400) toast.error("This recommendation can no longer be approved")
-      else if (status === 404) toast.error("The product no longer exists")
-      else toast.error("Could not approve the recommendation")
+      if (status === 409) toast.error(messages.conflict)
+      else if (status === 400) toast.error(messages.invalid)
+      else if (status === 404) toast.error(messages.notFound)
+      else toast.error(messages.generic)
     },
     onSettled: () =>
       qc.invalidateQueries({ queryKey: RECOMMENDATIONS_QUERY_KEY }),
@@ -101,11 +119,22 @@ export function useEditRecommendation() {
   })
 }
 
-export function useDismissRecommendation() {
+export interface DismissRecommendationMessages {
+  success: string
+  error: string
+}
+
+export function useDismissRecommendation(messages: DismissRecommendationMessages) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) =>
       clientFetch(`/recommendations/${id}/dismiss`, { method: "PATCH" }),
+    // Mutation-level, same reasoning as useApproveRecommendation above:
+    // per-call onError here was previously the ONLY place dismiss errors
+    // were reported, so a second dismiss superseding the first silently
+    // swallowed the first dismiss's error toast entirely.
+    onSuccess: () => toast.success(messages.success),
+    onError: (err: unknown) => toast.error(getErrorMessage(err, messages.error)),
     onSettled: () => qc.invalidateQueries({ queryKey: RECOMMENDATIONS_QUERY_KEY }),
   })
 }

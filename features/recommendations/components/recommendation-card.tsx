@@ -7,6 +7,7 @@ import { ImageOff, Quote } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { SourceBadge } from "@/components/ai/source-badge"
 import { cn } from "@/lib/utils"
 import { formatEgp, formatPercent } from "@/lib/charts/format"
 import type { Recommendation } from "@/features/recommendations/api/type"
@@ -42,8 +43,13 @@ export function RecommendationCard({
 
   const product =
     typeof recommendation.productId === "string" ? null : recommendation.productId
-  const title = product?.title ?? recommendation.productId.toString()
-  const price = product?.price ?? 0
+  // An unpopulated productId (bare ObjectId string) or a populated product
+  // with a null price both mean "we don't actually know the price" — do
+  // not default either case to 0, since `null ?? 0` silently produces the
+  // same fabricated EGP 0.00 as a missing product would.
+  const hasPrice = product != null && typeof product.price === "number"
+  const title = product?.title ?? t("unknownProduct")
+  const price = hasPrice ? product.price : 0
   const offerPrice = price * (1 - recommendation.suggestedValue / 100)
 
   const isActionable =
@@ -93,19 +99,34 @@ export function RecommendationCard({
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
-          <h3 className="line-clamp-1 font-heading text-sm font-semibold">
-            {title}
-          </h3>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="font-heading text-sm font-semibold text-foreground">
-              <span className="sr-only">{t("offerPrice")}: </span>
-              {formatEgp(offerPrice, locale)}
-            </span>
-            <span className="text-xs text-muted-foreground line-through">
-              <span className="sr-only">{t("originalPrice")}: </span>
-              {formatEgp(price, locale)}
-            </span>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="line-clamp-1 font-heading text-sm font-semibold">
+              {title}
+            </h3>
+            {/* The discount percentage is computed by a backend rule, not
+                the AI model — only gptExplanation/offerCopyAr is
+                AI-generated, and that goes null when the AI leg degrades.
+                "rule_based" is therefore the truthful, static provenance
+                for every card here; it is NOT inferred from whether
+                gptExplanation is present. See task-3-report.md fix round 1. */}
+            <SourceBadge source="rule_based" />
           </div>
+          {hasPrice ? (
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="font-heading text-sm font-semibold text-foreground">
+                <span className="sr-only">{t("offerPrice")}: </span>
+                {formatEgp(offerPrice, locale)}
+              </span>
+              <span className="text-xs text-muted-foreground line-through">
+                <span className="sr-only">{t("originalPrice")}: </span>
+                {formatEgp(price, locale)}
+              </span>
+            </div>
+          ) : (
+            <p className="mt-1 text-xs text-muted-foreground italic">
+              {t("priceUnavailable")}
+            </p>
+          )}
         </div>
 
         {/* AI marketing copy — Egyptian Arabic, always rendered RTL regardless
