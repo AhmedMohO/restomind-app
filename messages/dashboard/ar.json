@@ -926,7 +926,7 @@
     "reason_preparation_loss": "خسائر التحضير",
     "reason_customer_return": "إرجاع من العميل",
     "reason_damaged": "تالف / متضرر",
-    "reason_other": "أسباب أخرى",
+    "reason_unknown": "غير معروف",
     "createBatchPageTitle": "إنشاء دُفعات مخزون",
     "createBatchPageSubtitle": "سجّل دُفعة أو أكثر من المكونات في مخزون مطعمك في عملية واحدة.",
     "backToInventory": "العودة للمخزون",
@@ -1006,4 +1006,3 @@
     "saving": "جاري الحفظ..."
   }
 }
-

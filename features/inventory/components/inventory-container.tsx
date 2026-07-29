@@ -10,7 +10,6 @@ import {
   ChevronRight,
   History,
   Plus,
-  RefreshCw,
   Search,
   Trash2,
   TrendingDown,
@@ -53,6 +52,7 @@ import { CreateTransactionDialog } from "./create-transaction-dialog"
 import { CreateWasteDialog } from "./create-waste-dialog"
 import { ApiIngredient } from "@/features/ingredients/api"
 import { Link } from "@/i18n/routing"
+import { formatCurrency } from "@/lib/utils"
 
 /** Pure helper — defined outside component so it never triggers react-hooks/purity */
 function getExpiryStatus(
@@ -101,39 +101,33 @@ export function InventoryContainer() {
   const ingredients: ApiIngredient[] = ingredientsData?.items ?? []
 
   // Fetch Batches
-  const {
-    data: batchesData,
-    isLoading: isLoadingBatches,
-    refetch: refetchBatches,
-  } = useInventoryBatches({
-    page: batchPage,
-    limit: 10,
-    ingredientId:
-      selectedIngredientFilter !== "all" ? selectedIngredientFilter : undefined,
-  })
+  const { data: batchesData, isLoading: isLoadingBatches } =
+    useInventoryBatches({
+      page: batchPage,
+      limit: 10,
+      ingredientId:
+        selectedIngredientFilter !== "all"
+          ? selectedIngredientFilter
+          : undefined,
+    })
 
   // Fetch Stock Transactions
-  const {
-    data: transactionsData,
-    isLoading: isLoadingTxns,
-    refetch: refetchTxns,
-  } = useStockTransactions({
-    page: txnPage,
-    limit: 10,
-    ingredientId:
-      selectedIngredientFilter !== "all" ? selectedIngredientFilter : undefined,
-    transactionType:
-      selectedTypeFilter !== "all"
-        ? (selectedTypeFilter as StockTransactionTypeEnum)
-        : undefined,
-  })
+  const { data: transactionsData, isLoading: isLoadingTxns } =
+    useStockTransactions({
+      page: txnPage,
+      limit: 10,
+      ingredientId:
+        selectedIngredientFilter !== "all"
+          ? selectedIngredientFilter
+          : undefined,
+      transactionType:
+        selectedTypeFilter !== "all"
+          ? (selectedTypeFilter as StockTransactionTypeEnum)
+          : undefined,
+    })
 
   // Fetch Waste Events
-  const {
-    data: wasteData,
-    isLoading: isLoadingWaste,
-    refetch: refetchWaste,
-  } = useWasteEvents({
+  const { data: wasteData, isLoading: isLoadingWaste } = useWasteEvents({
     page: wastePage,
     limit: 10,
     ingredientId:
@@ -293,9 +287,7 @@ export function InventoryContainer() {
             <Boxes className="size-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {batchesData?.total ?? 0}
-            </div>
+            <div className="text-2xl font-bold">{batchesData?.total ?? 0}</div>
             <p className="mt-1 text-xs text-muted-foreground">
               {t("statActiveBatchesHint")}
             </p>
@@ -327,9 +319,7 @@ export function InventoryContainer() {
             <AlertTriangle className="size-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {wasteData?.total ?? 0}
-            </div>
+            <div className="text-2xl font-bold">{wasteData?.total ?? 0}</div>
             <p className="mt-1 text-xs text-muted-foreground">
               {t("statWasteEventsHint")}
             </p>
@@ -345,7 +335,7 @@ export function InventoryContainer() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">
-              ${totalWasteLoss.toFixed(2)}
+              {formatCurrency(totalWasteLoss, locale)}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               {t("statWasteLossHint")}
@@ -392,7 +382,7 @@ export function InventoryContainer() {
             {/* Search Input */}
             {activeTab === "batches" && (
               <div className="relative w-full sm:w-64">
-                <Search className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder={t("searchPlaceholder")}
                   value={searchQuery}
@@ -471,19 +461,6 @@ export function InventoryContainer() {
                 </SelectContent>
               </Select>
             )}
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-10 w-10 rounded-xl"
-              onClick={() => {
-                refetchBatches()
-                refetchTxns()
-                refetchWaste()
-              }}
-            >
-              <RefreshCw className="size-4 text-muted-foreground" />
-            </Button>
           </div>
         </div>
 
@@ -544,7 +521,7 @@ export function InventoryContainer() {
                             {batch.quantityRemaining} {ingUnit}
                           </TableCell>
                           <TableCell className="text-xs">
-                            ${batch.unitCost?.toFixed(2)}
+                            {formatCurrency(batch.unitCost ?? 0, locale)}
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
                             {new Date(batch.expiryDate).toLocaleDateString()}
@@ -757,7 +734,7 @@ export function InventoryContainer() {
                             {wst.quantity} {wst.unit}
                           </TableCell>
                           <TableCell className="text-xs font-bold text-destructive">
-                            ${wst.estimatedCost?.toFixed(2)}
+                            {formatCurrency(wst.estimatedCost ?? 0, locale)}
                           </TableCell>
                           <TableCell className="font-mono text-xs text-muted-foreground">
                             {batchNo}

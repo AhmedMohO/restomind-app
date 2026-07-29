@@ -1,6 +1,6 @@
 "use client"
 
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { Link } from "@/i18n/routing"
 import { Eye, PackageCheck, Store, Tag } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import type { ApiOrderGroup } from "@/features/orders/api/type"
 import { getStatusMeta } from "@/features/orders/status"
-import { cn } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 
 interface PurchaseCardProps {
   order: ApiOrderGroup
 }
 
 export default function PurchaseCard({ order }: PurchaseCardProps) {
+  const locale = useLocale()
   const t = useTranslations("Orders")
   const statusMeta = getStatusMeta(order.overallStatus)
   const StatusIcon = statusMeta.Icon
@@ -28,15 +29,12 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
   const formattedDate = order.createdAt
     ? new Intl.DateTimeFormat(undefined, {
         weekday: "short",
-        day: "numeric",
         month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
+        day: "numeric",
       }).format(new Date(order.createdAt))
     : ""
-  const targetGroupId = order.groupOrderId || ""
-  const shortGroupId = targetGroupId.slice(-8).toUpperCase()
+  const displayId = order.groupOrderId || ""
+  const shortDisplayId = displayId.slice(-8).toUpperCase()
   const hasDiscount = order.totalDiscount > 0
   const discountPercent =
     hasDiscount && order.totalOriginalPrice > 0
@@ -44,109 +42,83 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
       : 0
 
   return (
-    <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-2xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm md:rounded-[28px]">
-      <CardHeader className="border-b border-border p-4 pb-3 md:p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3 text-start">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-muted text-primary">
-              <PackageCheck className="size-5" />
-            </div>
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <h3 className="truncate text-base font-bold text-foreground">
-                  {purchaseTitle || t("restaurant")}
-                </h3>
-                <span className="font-mono text-xs font-semibold text-muted-foreground">
-                  #{shortGroupId}
-                </span>
-              </div>
-              <p className="text-xs font-medium text-muted-foreground">
-                {formattedDate} · {order.totalQuantity} {t("items")}
-              </p>
-            </div>
+    <Card className="flex flex-col justify-between overflow-hidden rounded-[28px] border-border bg-card p-0 shadow-xs transition-shadow duration-200 hover:shadow-md md:rounded-[32px]">
+      <CardHeader className="flex flex-col gap-3 p-4 pb-0 sm:flex-row sm:items-center sm:justify-between sm:p-5 sm:pb-0 md:p-6 md:pb-0">
+        <div className="flex min-w-0 items-center gap-3 text-start">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-muted text-primary">
+            <PackageCheck className="size-5" />
           </div>
+          <div className="min-w-0 space-y-0.5">
+            <div className="flex items-center gap-2">
+              <h3 className="truncate font-serif text-lg font-bold text-foreground">
+                {purchaseTitle}
+              </h3>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              #{shortDisplayId} {formattedDate ? `· ${formattedDate}` : ""}
+            </p>
+          </div>
+        </div>
 
-          <div className="flex shrink-0 items-center gap-2 self-start sm:self-auto">
-            <Badge
-              variant="outline"
-              className={cn(
-                "gap-1.5 px-3 py-1 text-xs font-bold",
-                statusMeta.badgeClass
-              )}
-            >
-              <StatusIcon className="size-3.5" />
-              <span>{t(statusMeta.labelKey)}</span>
-            </Badge>
-            <Button
-              nativeButton={false}
-              render={<Link href={`/orders/${targetGroupId}`} />}
-              variant="outline"
-              size="sm"
-              className="shrink-0 rounded-full border-border text-xs font-semibold text-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-              <Eye className="me-1 size-3.5" />
-              <span>{t("viewDetails")}</span>
-            </Button>
-          </div>
+        <div className="flex items-center justify-between gap-2 sm:justify-end">
+          <Badge
+            variant="outline"
+            className={cn(
+              "gap-1.5 rounded-full px-3 py-1 text-xs font-bold",
+              statusMeta.badgeClass
+            )}
+          >
+            <StatusIcon className="size-3.5" />
+            <span>{t(statusMeta.labelKey)}</span>
+          </Badge>
+
+          <Button
+            nativeButton={false}
+            render={<Link href={`/orders/${displayId}`} />}
+            variant="outline"
+            size="sm"
+            className="rounded-full text-xs font-bold"
+          >
+            <Eye className="me-1 size-3.5" />
+            <span>{t("viewDetails")}</span>
+          </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3 p-4 md:p-5">
-        {order.orders.map((restaurantOrder, rIdx) => {
-          const meta = getStatusMeta(restaurantOrder.status)
-          const RestaurantStatusIcon = meta.Icon
-          const targetOrderId = restaurantOrder.orderId
-          const shortOrderId = targetOrderId.slice(-8).toUpperCase()
-          const visibleItems = restaurantOrder.items.slice(0, 3)
-          const remainingCount =
-            restaurantOrder.items.length - visibleItems.length
+      <CardContent className="space-y-3 p-4 sm:p-5 md:p-6">
+        {(order.orders || []).map((restaurantOrder, idx) => {
+          const restaurantName =
+            restaurantOrder.restaurant?.name || t("restaurant")
+          const subStatusMeta = getStatusMeta(restaurantOrder.status)
+          const SubStatusIcon = subStatusMeta.Icon
 
           return (
             <div
-              key={targetOrderId || rIdx}
-              className="rounded-2xl border border-border bg-muted/40 p-3.5"
+              key={`${restaurantOrder.orderId}-${idx}`}
+              className="rounded-2xl border border-border bg-muted/40 p-3 sm:p-4"
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0 flex-1 space-y-2 text-start">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Store className="size-4 shrink-0 text-primary" />
-                    <span className="text-sm font-bold text-foreground">
-                      {restaurantOrder.restaurant.name}
-                    </span>
-                    <span className="font-mono text-[11px] font-semibold text-muted-foreground">
-                      #{shortOrderId}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "gap-1 px-2 py-0.5 text-[11px] font-bold",
-                        meta.badgeClass
-                      )}
-                    >
-                      <RestaurantStatusIcon className="size-3" />
-                      <span>{t(meta.labelKey)}</span>
-                    </Badge>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0 space-y-1 text-start">
+                  <div className="flex items-center gap-2">
+                    <Store className="size-4 shrink-0 text-muted-foreground" />
+                    <p className="truncate text-sm font-bold text-foreground">
+                      {restaurantName}
+                    </p>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {visibleItems.map((item) => (
-                      <Badge
-                        key={item.offerId}
-                        variant="secondary"
-                        className="max-w-[220px] truncate rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground"
-                      >
-                        <span className="me-1 font-bold text-primary">
-                          {item.quantity}×
-                        </span>
-                        <span className="truncate">{item.title}</span>
-                      </Badge>
-                    ))}
-                    {remainingCount > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span>
+                      {restaurantOrder.totalQuantity} {t("items")}
+                    </span>
+                    {order.orders.length > 1 && (
                       <Badge
                         variant="outline"
-                        className="rounded-full border-border bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground"
+                        className={cn(
+                          "h-5 gap-1 rounded-full px-2 text-[10px] font-semibold",
+                          subStatusMeta.badgeClass
+                        )}
                       >
-                        +{remainingCount} {t("more")}
+                        <SubStatusIcon className="size-3" />
+                        <span>{t(subStatusMeta.labelKey)}</span>
                       </Badge>
                     )}
                   </div>
@@ -154,7 +126,7 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
 
                 <div className="flex shrink-0 items-center justify-end border-t border-border pt-3 sm:border-t-0 sm:pt-0">
                   <span className="font-serif text-lg font-extrabold text-foreground">
-                    {restaurantOrder.finalTotalPrice.toFixed(2)} EGP
+                    {formatCurrency(restaurantOrder.finalTotalPrice, locale)}
                   </span>
                 </div>
               </div>
@@ -167,11 +139,11 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
         <div className="space-y-1 self-stretch text-start sm:self-auto">
           <div className="flex items-baseline gap-2">
             <span className="font-serif text-lg font-extrabold text-foreground md:text-xl">
-              {order.finalTotalPrice.toFixed(2)} EGP
+              {formatCurrency(order.finalTotalPrice, locale)}
             </span>
             {hasDiscount && (
               <span className="text-xs font-medium text-muted-foreground line-through">
-                {order.totalOriginalPrice.toFixed(2)} EGP
+                {formatCurrency(order.totalOriginalPrice, locale)}
               </span>
             )}
           </div>
@@ -183,7 +155,7 @@ export default function PurchaseCard({ order }: PurchaseCardProps) {
             >
               <Tag className="size-3" />
               <span>
-                {t("saved")} {order.totalDiscount.toFixed(2)} EGP (
+                {t("saved")} {formatCurrency(order.totalDiscount, locale)} (
                 {discountPercent}% OFF)
               </span>
             </Badge>

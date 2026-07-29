@@ -40,7 +40,7 @@ import {
   ApiSalesTransaction,
 } from "@/features/sales/api/type"
 import { useSalesList, useSalesSummary } from "@/features/sales/hooks/use-sales"
-import { formatCurrency, formatDate, formatNumber } from "@/lib/utils"
+import { formatCurrency, formatDate, formatNumber, roundPrice } from "@/lib/utils"
 import { SalesSummaryCards } from "./sales-summary-cards"
 
 const ALL_SOURCES = "all"
@@ -329,8 +329,9 @@ export function SalesContainer() {
             </TableHeader>
             <TableBody>
               {transactions.map((transaction: ApiSalesTransaction) => {
-                const lineTotal =
+                const lineTotal = roundPrice(
                   transaction.sellingPrice * transaction.quantitySold
+                )
                 const discount = getLineDiscount(transaction)
 
                 return (

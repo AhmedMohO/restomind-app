@@ -926,7 +926,7 @@
     "reason_preparation_loss": "Preparation Loss",
     "reason_customer_return": "Customer Return",
     "reason_damaged": "Damaged",
-    "reason_other": "Other",
+    "reason_unknown": "unknown",
     "createBatchPageTitle": "Create Inventory Batches",
     "createBatchPageSubtitle": "Log one or more ingredient batches into your restaurant inventory in a single operation.",
     "backToInventory": "Back to Inventory",
@@ -1006,4 +1006,3 @@
     "saving": "Saving..."
   }
 }
-

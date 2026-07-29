@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { Store } from "lucide-react"
+import { useLocale } from "next-intl"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -8,7 +9,7 @@ import type {
   ApiOrderItem,
 } from "@/features/orders/api/type"
 import { getStatusMeta } from "@/features/orders/status"
-import { cn } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 
 interface RestaurantOrderCardProps {
   order: ApiGroupSubOrder
@@ -27,6 +28,7 @@ interface OrderItemRowProps {
 }
 
 function OrderItemRow({ item, t }: OrderItemRowProps) {
+  const locale = useLocale()
   const itemHasDiscount = item.discountedPrice < item.price
 
   return (
@@ -40,10 +42,10 @@ function OrderItemRow({ item, t }: OrderItemRowProps) {
             {item.title}
           </h3>
           <p className="text-xs text-muted-foreground">
-            {t("unitPrice")}: {item.discountedPrice.toFixed(2)} EGP
+            {t("unitPrice")}: {formatCurrency(item.discountedPrice, locale)}
             {itemHasDiscount && (
               <span className="ms-1.5 text-muted-foreground/70 line-through">
-                {item.price.toFixed(2)} EGP
+                {formatCurrency(item.price, locale)}
               </span>
             )}
           </p>
@@ -51,7 +53,7 @@ function OrderItemRow({ item, t }: OrderItemRowProps) {
       </div>
 
       <span className="shrink-0 text-start font-serif text-base font-bold text-foreground sm:text-end">
-        {item.lineTotal.toFixed(2)} EGP
+        {formatCurrency(item.lineTotal, locale)}
       </span>
     </div>
   )
@@ -63,6 +65,7 @@ export default function RestaurantOrderCard({
   className,
   statusSlot,
 }: RestaurantOrderCardProps) {
+  const locale = useLocale()
   const statusMeta = getStatusMeta(order.status)
 
   const restaurantName = order.restaurant.name
@@ -119,19 +122,19 @@ export default function RestaurantOrderCard({
             <div className="flex items-center justify-between gap-3 text-muted-foreground">
               <span>{t("subtotal")}</span>
               <span className="font-semibold text-foreground">
-                {order.totalOriginalPrice.toFixed(2)} EGP
+                {formatCurrency(order.totalOriginalPrice, locale)}
               </span>
             </div>
             {hasDiscount && (
               <div className="flex items-center justify-between gap-3 font-semibold text-emerald-600 dark:text-emerald-400">
                 <span>{t("discount")}</span>
-                <span>- {order.totalDiscount.toFixed(2)} EGP</span>
+                <span>- {formatCurrency(order.totalDiscount, locale)}</span>
               </div>
             )}
             <div className="flex items-baseline justify-between gap-3 font-serif font-bold text-foreground">
               <span>{t("grandTotal")}</span>
               <span className="text-xl font-extrabold text-primary">
-                {order.finalTotalPrice.toFixed(2)} EGP
+                {formatCurrency(order.finalTotalPrice, locale)}
               </span>
             </div>
           </div>
@@ -140,3 +143,4 @@ export default function RestaurantOrderCard({
     </Card>
   )
 }
+

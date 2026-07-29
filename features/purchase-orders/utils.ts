@@ -62,6 +62,8 @@ export function getIngredientDetails(
   }
 }
 
+import { roundPrice } from "@/lib/utils"
+
 /**
  * Calculates the total monetary cost for a PO or list of items
  */
@@ -71,10 +73,11 @@ export function calculateOrderTotal(
   if (!itemsOrPo) return 0
   const items = Array.isArray(itemsOrPo) ? itemsOrPo : itemsOrPo.items
   if (!items || !Array.isArray(items)) return 0
-  return items.reduce(
+  const total = items.reduce(
     (sum, item) => sum + (item.quantity || 0) * (item.unitCost || 0),
     0
   )
+  return roundPrice(total)
 }
 
 /**

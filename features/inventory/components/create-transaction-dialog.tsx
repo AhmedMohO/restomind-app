@@ -242,7 +242,7 @@ export function CreateTransactionDialog({
             </Field>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid hidden gap-4 sm:grid-cols-2">
             <Field data-invalid={!!errors.unit}>
               <FieldLabel>{t("unitLabel")} *</FieldLabel>
               <Select
@@ -292,8 +292,8 @@ export function CreateTransactionDialog({
                   }
                   disabled={isPending}
                 >
-                  <SelectTrigger className="h-10 w-full rounded-xl bg-background">
-                    <SelectValue />
+                  <SelectTrigger>
+                    <SelectValue className="h-full" />
                   </SelectTrigger>
                   <SelectContent>
                     {WASTE_REASONS.map((r) => (

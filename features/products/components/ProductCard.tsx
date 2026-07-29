@@ -5,9 +5,9 @@ import { Link, useRouter } from "@/i18n/routing"
 import { Plus, Heart, Star } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
-import { cn } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 import Image from "next/image"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import type { ApiOffer } from "@/features/offers/api/type"
 
 interface ProductCardProps {
@@ -15,6 +15,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product: rawProduct }: ProductCardProps) {
+  const locale = useLocale()
   const { addToCart, toggleWishlist, wishlist } = useCart()
   const { isAuthenticated } = useAuth()
   const router = useRouter()
@@ -121,10 +122,10 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
           <div className="flex items-center justify-between border-t border-dashed border-[#ECE6DB] pt-1 dark:border-neutral-800">
             <div className="flex items-baseline gap-1.5">
               <span className="font-serif text-base font-bold text-[#2B1B15] dark:text-neutral-100">
-                {discountedPrice} {t("egp")}
+                {formatCurrency(discountedPrice, locale)}
               </span>
               <span className="text-xs text-muted-foreground line-through">
-                {product.price} {t("egp")}
+                {formatCurrency(product.price, locale)}
               </span>
             </div>
             <div className="flex items-center gap-1.5">

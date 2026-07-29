@@ -12,7 +12,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import type { ApiOrderGroup } from "@/features/orders/api/type"
 import { getStatusMeta } from "@/features/orders/status"
-import { cn } from "@/lib/utils"
+import { useLocale } from "next-intl"
+import { cn, formatCurrency } from "@/lib/utils"
 
 interface OrderHeaderProps {
   orderGroup: ApiOrderGroup
@@ -27,6 +28,7 @@ export default function OrderHeader({
   t,
   showCancelButton = false,
 }: OrderHeaderProps) {
+  const locale = useLocale()
   const router = useRouter()
   const [isCancelling, setIsCancelling] = useState(false)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
@@ -119,11 +121,11 @@ export default function OrderHeader({
 
             <div className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-start sm:text-end">
               <div className="font-serif text-2xl font-extrabold text-primary">
-                {orderGroup.finalTotalPrice.toFixed(2)} EGP
+                {formatCurrency(orderGroup.finalTotalPrice, locale)}
               </div>
               {hasDiscount && (
                 <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  {t("saved")} {orderGroup.totalDiscount.toFixed(2)} EGP (
+                  {t("saved")} {formatCurrency(orderGroup.totalDiscount, locale)} (
                   {discountPercent}% OFF)
                 </p>
               )}
@@ -131,6 +133,7 @@ export default function OrderHeader({
           </div>
         </CardContent>
       </Card>
+
 
       <ConfirmDialog
         open={showCancelDialog}

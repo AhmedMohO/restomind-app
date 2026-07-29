@@ -169,7 +169,7 @@ export function CreateWasteDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel>{t("batchIdLabel")}</FieldLabel>
+              <FieldLabel className="h-5">{t("batchIdLabel")}</FieldLabel>
               <Select
                 value={useWatch({ control, name: "batchId" }) || "none"}
                 onValueChange={(val) => {
@@ -192,7 +192,7 @@ export function CreateWasteDialog({
             </Field>
 
             <Field data-invalid={!!errors.wasteReason}>
-              <FieldLabel>{t("wasteReasonLabel")} *</FieldLabel>
+              <FieldLabel className="h-5">{t("wasteReasonLabel")} *</FieldLabel>
               <Select
                 value={selectedWasteReason}
                 onValueChange={(val) => {
@@ -233,7 +233,7 @@ export function CreateWasteDialog({
               <FieldError errors={[errors.quantity]} />
             </Field>
 
-            <Field data-invalid={!!errors.unit}>
+            <Field className="hidden" data-invalid={!!errors.unit}>
               <FieldLabel>{t("unitLabel")} *</FieldLabel>
               <Select
                 value={selectedUnit}
@@ -255,9 +255,6 @@ export function CreateWasteDialog({
               </Select>
               <FieldError errors={[errors.unit]} />
             </Field>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
             <Field data-invalid={!!errors.estimatedCost}>
               <FieldLabel htmlFor="wst-cost">
                 {t("estimatedCostLabel")} *
@@ -272,21 +269,21 @@ export function CreateWasteDialog({
               />
               <FieldError errors={[errors.estimatedCost]} />
             </Field>
-
-            <Field data-invalid={!!errors.date}>
-              <FieldLabel htmlFor="wst-date">{t("dateLabel")}</FieldLabel>
-              <DatePicker
-                value={wasteDate}
-                onChange={(val) =>
-                  setValue("date", val || "", { shouldValidate: true })
-                }
-                placeholder={t("dateLabel")}
-                disabled={isPending}
-                className="h-10 w-full rounded-xl text-xs"
-              />
-              <FieldError errors={[errors.date]} />
-            </Field>
           </div>
+
+          <Field data-invalid={!!errors.date}>
+            <FieldLabel htmlFor="wst-date">{t("dateLabel")}</FieldLabel>
+            <DatePicker
+              value={wasteDate}
+              onChange={(val) =>
+                setValue("date", val || "", { shouldValidate: true })
+              }
+              placeholder={t("dateLabel")}
+              disabled={isPending}
+              className="h-10 w-full rounded-xl text-xs"
+            />
+            <FieldError errors={[errors.date]} />
+          </Field>
 
           <DialogFooter className="mt-4 flex gap-2">
             <Button

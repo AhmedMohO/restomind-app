@@ -7,7 +7,6 @@ import {
   Archive,
   Calendar,
   CalendarDays,
-  DollarSign,
   Loader2,
   Package,
   Plus,
@@ -319,7 +318,6 @@ export function CreateBatchPage() {
                       handleUpdateRow(row.id, "receivedDate", val ?? "")
                     }
                     placeholder={t("receivedDateLabel")}
-                    maxDate={new Date()}
                     className="h-10 w-full rounded-xl text-xs"
                   />
                 </div>
@@ -346,9 +344,6 @@ export function CreateBatchPage() {
             </div>
           </div>
           <div className="flex items-center gap-2.5 text-end">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <DollarSign className="size-4" />
-            </div>
             <div>
               <span className="block text-xs font-medium text-muted-foreground">
                 {t("totalBatchValue")}

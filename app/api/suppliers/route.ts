@@ -1,6 +1,6 @@
 import { connection } from "next/server"
 
-import { getSuppliers } from "@/features/suppliers/api"
+import { createSupplier, getSuppliers } from "@/features/suppliers/api"
 import {
   handleServerError,
   jsonSuccess,
@@ -31,3 +31,19 @@ export async function GET(request: Request) {
     return handleServerError(err, "Failed to fetch suppliers")
   }
 }
+
+export async function POST(request: Request) {
+  await connection()
+
+  const authError = await requireAnyRole([...MANAGER_ROLES])
+  if (authError) return authError
+
+  try {
+    const body = await request.json()
+    const data = await createSupplier(body)
+    return jsonSuccess(data, 201)
+  } catch (err) {
+    return handleServerError(err, "Failed to create supplier")
+  }
+}
+

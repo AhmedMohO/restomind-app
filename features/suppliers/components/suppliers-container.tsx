@@ -8,7 +8,6 @@ import {
   Mail,
   Phone,
   Plus,
-  RefreshCw,
   Search,
   Truck,
   Users,
@@ -209,17 +208,6 @@ export function SuppliersContainer() {
             </Button>
           )}
         </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => refetch()}
-            title={t("refreshTooltip")}
-          >
-            <RefreshCw className="size-4" />
-          </Button>
-        </div>
       </div>
 
       {/* Table Container */}
@@ -318,13 +306,18 @@ export function SuppliersContainer() {
                   </TableCell>
 
                   {/* Direct Action Button */}
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <TableCell
+                    className="text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Button
                       variant="outline"
                       size="sm"
                       className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10 hover:text-primary"
                       render={
-                        <Link href={`/dashboard/purchase-orders/new?supplierId=${supplier._id}`}>
+                        <Link
+                          href={`/dashboard/purchase-orders/new?supplierId=${supplier._id}`}
+                        >
                           <Truck className="size-3.5" />
                           <span>{t("actions.createPo")}</span>
                         </Link>
