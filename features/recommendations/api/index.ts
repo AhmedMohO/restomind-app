@@ -19,11 +19,9 @@ export async function getRecommendations(
 ): Promise<PaginatedRecommendations> {
   const qs = buildQueryString(params)
   const response = await apiClient(`/recommendations${qs}`)
-  console.log('response from recommendations.ts', response)
   const body = await parseOrThrow<PaginatedRecommendations>(
     response,
     "getRecommendations"
   )
-  console.log('body from recommendations.ts', body)
   return body ?? EMPTY_RECOMMENDATIONS_PAGE
 }
