@@ -15,6 +15,7 @@ export enum WasteReasonEnum {
   SPOILED = "spoiled",
   CUSTOMER_RETURN = "customer_return",
   DAMAGED = "damaged",
+  INCORRECT_ORDER = "incorrect_order",
   UNKNOWN = "unknown",
 }
 
