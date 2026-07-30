@@ -497,11 +497,12 @@
     "generationTimeoutTitle": "Still generating",
     "generationTimeoutDescription": "This is taking longer than expected. Try refreshing in a moment.",
     "retry": "Try again",
+    "retryRow": "Retry",
     "actualsSaved": "Saved {count} row(s)",
     "actualsSkipped": "{count} row(s) weren't saved — they're no longer part of this plan",
     "actualsError": "Could not save actuals",
     "rowSkipped": "Not part of this plan anymore",
-    "saveFailed": "Couldn't save — will retry",
+    "saveFailed": "Couldn't save — tap retry",
     "rowStatus": {
       "idle": "Not recorded yet",
       "saving": "Saving…",

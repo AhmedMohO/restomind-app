@@ -51,6 +51,11 @@ interface RowState {
   value: string
   status: RowSaveStatus
   error?: string
+  /** True only for a `failed` row caused by a network/5xx failure — a
+   * `skipped` row (rejected by the backend because it's no longer part of
+   * the plan) has no retry affordance since resubmitting would just be
+   * skipped again. Drives whether `ActualsRow` shows the retry button. */
+  retryable?: boolean
 }
 
 function SkeletonCard() {
@@ -174,20 +179,6 @@ export function PlanTable() {
     flushRef.current = flush
   })
 
-  // Drains a flush that arrived while the previous batch was still in
-  // flight (a second row edited mid-save, or the same row edited again).
-  // This — not a per-call `mutate(vars, {...})` — is how a queued edit gets
-  // sent: it runs once `isPending` flips back to false, picking up
-  // whatever is in `dirtyRef` at that moment, which may include rows the
-  // just-settled batch already covered (re-dirtied by a newer edit) as
-  // well as rows that never got a chance to flush at all.
-  React.useEffect(() => {
-    if (!recordActuals.isPending && flushQueuedRef.current) {
-      flushQueuedRef.current = false
-      flushRef.current()
-    }
-  }, [recordActuals.isPending])
-
   // Reconciles a successful batch against the exact rows it covered
   // (`recordActuals.variables`, the payload of the call that just
   // resolved) — never a per-call `mutate(vars, { onSuccess })`, which
@@ -207,10 +198,11 @@ export function PlanTable() {
       for (const id of submittedIds) {
         if (skippedSet.has(id)) {
           // A skipped productId wasn't part of the plan — retrying would
-          // just be skipped again, so this row is NOT re-marked dirty.
-          next[id] = { ...next[id], status: "failed", error: t("rowSkipped") }
+          // just be skipped again, so this row is NOT re-marked dirty and
+          // gets no retry affordance (`retryable` stays unset).
+          next[id] = { ...next[id], status: "failed", error: t("rowSkipped"), retryable: false }
         } else {
-          next[id] = { ...next[id], status: "saved", error: undefined }
+          next[id] = { ...next[id], status: "saved", error: undefined, retryable: false }
         }
       }
       return next
@@ -219,7 +211,12 @@ export function PlanTable() {
 
   // Same identity-guarded pattern for a failed batch (network/5xx) — unlike
   // a `skipped` row, nothing here says the value itself was rejected, so
-  // these rows go back into `dirtyRef` for the next flush to retry.
+  // these rows go back into `dirtyRef` (a later flush — e.g. editing a
+  // different row — will pick them up) AND get an explicit retry
+  // affordance (`retryable: true`, see `handleRetry` below), since nothing
+  // else on this screen otherwise re-triggers a flush for a row nobody
+  // touches again. A kitchen worker shouldn't have to edit an unrelated
+  // field to un-strand a failed entry.
   React.useEffect(() => {
     const err = recordActuals.error
     if (!err || err === lastHandledErrorRef.current) return
@@ -229,18 +226,60 @@ export function PlanTable() {
     setRows((prev) => {
       const next = { ...prev }
       for (const id of submittedIds) {
-        next[id] = { ...next[id], status: "failed", error: t("saveFailed") }
+        next[id] = { ...next[id], status: "failed", error: t("saveFailed"), retryable: true }
         dirtyRef.current.add(id)
       }
       return next
     })
   }, [recordActuals.error, recordActuals.variables, t])
 
+  // Drains a flush that arrived while the previous batch was still in
+  // flight (a second row edited mid-save, or the same row edited again).
+  // This — not a per-call `mutate(vars, {...})` — is how a queued edit gets
+  // sent: it runs once `isPending` flips back to false, picking up
+  // whatever is in `dirtyRef` at that moment, which may include rows the
+  // just-settled batch already covered (re-dirtied by a newer edit) as
+  // well as rows that never got a chance to flush at all.
+  //
+  // Declared AFTER both reconciliation effects above, not before — same
+  // commit, same-phase effects run in declaration order, so this ordering
+  // is load-bearing: it guarantees the reconciliation effects always get
+  // to react to a *just-settled* batch's outcome before this one
+  // potentially fires the *next* batch and flips a row back to "saving".
+  // Getting this backwards was a real bug in an earlier version of this
+  // file (caught in review): with the drain effect declared first, a row
+  // edited again while its own submission was still in flight would
+  // flash "saving" -> the queued flush's next POST -> then get stomped
+  // back to "saved"/"failed" by the reconciliation effect reacting to the
+  // FIRST, now-superseded response, even though a second POST for a
+  // different value was already outstanding.
+  React.useEffect(() => {
+    if (!recordActuals.isPending && flushQueuedRef.current) {
+      flushQueuedRef.current = false
+      flushRef.current()
+    }
+  }, [recordActuals.isPending])
+
   React.useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
   }, [])
+
+  /** Manual retry for a `failed` row caused by a network/5xx failure (brief
+   * fix-round item 2). The row is already back in `dirtyRef` (the error
+   * effect above put it there), so this just needs to trigger a flush now
+   * instead of waiting for some other row to be edited. Deliberately a
+   * manual, explicit action rather than an automatic re-flush: a silent
+   * auto-retry loop against a persistently unreachable network would keep
+   * firing POSTs with no visible feedback beyond a repeating toast, which
+   * is worse on a kitchen tablet than a single visible "tap to retry" — and
+   * it matches how a `skipped` row already surfaces as an inline,
+   * worker-actionable state rather than an invisible background process. */
+  function handleRetry(productId: string) {
+    dirtyRef.current.add(productId)
+    flushRef.current()
+  }
 
   function handleChange(productId: string, raw: string) {
     setRows((prev) => ({
@@ -367,6 +406,7 @@ export function PlanTable() {
                 value={row.value}
                 status={row.status}
                 errorMessage={row.error}
+                onRetry={row.retryable ? () => handleRetry(id) : undefined}
                 onChange={(raw) => handleChange(id, raw)}
                 onBlur={handleBlur}
               />

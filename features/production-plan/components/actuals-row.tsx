@@ -2,10 +2,11 @@
 
 import Image from "next/image"
 import { useTranslations } from "next-intl"
-import { AlertTriangle, Check, ImageOff, Loader2 } from "lucide-react"
+import { AlertTriangle, Check, ImageOff, Loader2, RotateCcw } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { formatQty } from "@/lib/charts/format"
+import { Button } from "@/components/ui/button"
 import { ConfidenceBadge } from "@/components/ai/confidence-badge"
 import { SourceBadge } from "@/components/ai/source-badge"
 import { getProductId, type ProductionPlanItem } from "@/features/production-plan/api/type"
@@ -61,6 +62,10 @@ export interface ActualsRowProps {
   value: string
   status: RowSaveStatus
   errorMessage?: string
+  /** Present only for a `failed` row caused by a network/5xx failure (never
+   * for a `skipped` row — retrying that is pointless). Renders an inline
+   * retry button next to the error message. */
+  onRetry?: () => void
   onChange: (raw: string) => void
   onBlur: () => void
 }
@@ -81,6 +86,7 @@ export function ActualsRow({
   value,
   status,
   errorMessage,
+  onRetry,
   onChange,
   onBlur,
 }: ActualsRowProps) {
@@ -127,13 +133,25 @@ export function ActualsRow({
             {formatQty(item.recommendedQty, locale)}
           </p>
           {hasRange ? (
-            // dir="ltr": a numeric range's two Latin-numeral runs, separated
-            // by a neutral en-dash, get visually reordered by the bidi
-            // algorithm inside an RTL paragraph ("12–22" renders as
-            // "22–12") unless explicitly isolated — confirmed by rendering
-            // this exact component in Arabic (see task-5-report.md).
-            <p dir="ltr" className="text-xs text-muted-foreground tabular-nums">
-              {formatQty(item.lowerBound!, locale)}–{formatQty(item.upperBound!, locale)}
+            // A numeric range's two Latin-numeral runs, separated by a
+            // neutral en-dash, get visually reordered by the bidi algorithm
+            // inside an RTL paragraph ("12–22" renders as "22–12") unless
+            // isolated — confirmed by rendering this exact component in
+            // Arabic (see task-5-report.md). Fix-round item 3: an earlier
+            // version put `dir="ltr"` on the whole `<p>`, which also forced
+            // this line's OWN text-align to resolve against its own (now
+            // ltr) direction — "start" = left — instead of the ambient
+            // page direction its unmarked sibling lines above use, so in
+            // Arabic this line broke left while "Recommended"/the qty
+            // stayed right-aligned. `<bdi>` isolates ONLY the digit run's
+            // bidi ordering (an inline construct — it has no block-level
+            // text-align of its own to fight with), leaving the `<p>`'s
+            // alignment inherited from the ambient direction like its
+            // siblings, in both locales.
+            <p className="text-xs text-muted-foreground tabular-nums">
+              <bdi dir="ltr">
+                {formatQty(item.lowerBound!, locale)}–{formatQty(item.upperBound!, locale)}
+              </bdi>
             </p>
           ) : null}
         </div>
@@ -164,7 +182,25 @@ export function ActualsRow({
             )}
           />
           {status === "failed" && errorMessage ? (
-            <p className="mt-1 text-xs text-destructive">{errorMessage}</p>
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <p className="text-xs text-destructive">{errorMessage}</p>
+              {onRetry ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRetry}
+                  // A retry tap sits right next to a save failure the
+                  // worker was just about to move past — keep it a real
+                  // tap target (Common kitchen-input sizing), not a bare
+                  // text link.
+                  className="h-8 min-w-11 gap-1 px-2 text-xs text-destructive hover:text-destructive"
+                >
+                  <RotateCcw className="size-3.5" />
+                  {t("retryRow")}
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>

@@ -497,11 +497,12 @@
     "generationTimeoutTitle": "لا تزال قيد الإنشاء",
     "generationTimeoutDescription": "هذا يستغرق وقتًا أطول من المتوقع. جرّب التحديث بعد قليل.",
     "retry": "إعادة المحاولة",
+    "retryRow": "إعادة المحاولة",
     "actualsSaved": "تم حفظ {count} صف",
     "actualsSkipped": "لم يتم حفظ {count} صف — لم تعد ضمن هذه الخطة",
     "actualsError": "تعذّر حفظ الكميات الفعلية",
     "rowSkipped": "لم تعد ضمن هذه الخطة",
-    "saveFailed": "تعذّر الحفظ — سيُعاد المحاولة",
+    "saveFailed": "تعذّر الحفظ — اضغط لإعادة المحاولة",
     "rowStatus": {
       "idle": "لم تُسجَّل بعد",
       "saving": "جارٍ الحفظ…",
