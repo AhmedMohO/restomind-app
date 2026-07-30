@@ -510,6 +510,45 @@
       "failed": "Save failed"
     }
   },
+  "waste": {
+    "title": "Waste & surplus",
+    "subtitle": "Ingredient-level surplus risk from the last scan, and the forecast behind each report.",
+    "scanButton": "Scan for surplus",
+    "scanning": "Scanning…",
+    "scanSuccess": "Scan complete — waste reports updated.",
+    "scanDegradedSuccess": "Scan incomplete — partial results saved.",
+    "scanError": "Could not run the surplus scan",
+    "summary": {
+      "totalSurplus": "Total surplus quantity",
+      "wasteCost": "Estimated waste cost",
+      "highRiskCount": "High-risk ingredients",
+      "windowLabel": "Last {days} days"
+    },
+    "riskBreakdown": {
+      "title": "Risk breakdown",
+      "empty": "No waste reports in this window",
+      "level": "Risk level",
+      "count": "Count",
+      "share": "Share"
+    },
+    "table": {
+      "title": "Waste reports",
+      "ingredient": "Ingredient",
+      "expectedConsumption": "Expected consumption",
+      "usableStock": "Usable stock",
+      "expectedSurplus": "Expected surplus",
+      "risk": "Risk",
+      "prediction": "Linked forecast",
+      "noPrediction": "No linked forecast",
+      "unknownIngredient": "Unknown ingredient",
+      "viewPrediction": "View forecast",
+      "riskFilter": "All risk levels",
+      "empty": "No waste reports yet",
+      "emptyHint": "Run a surplus scan to generate waste reports.",
+      "fetchError": "Could not load waste reports",
+      "retry": "Try again"
+    }
+  },
   "Auth": {
     "loginTitle": "Login to your account",
     "loginDescription": "Enter your email below to login to your account",
