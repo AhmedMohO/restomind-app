@@ -417,6 +417,61 @@
       "edited": "Edited"
     }
   },
+  "predictions": {
+    "title": "Demand forecast",
+    "subtitle": "Weekly unit forecasts per product, with the factors behind each number.",
+    "targetWeek": "Target week",
+    "targetWeekPlaceholder": "Pick a Sunday",
+    "recalculateAll": "Recalculate all",
+    "recalculating": "Recalculating…",
+    "recalculatingHint": "Running in the background — rows will update as each product finishes.",
+    "batchSuccess": "Batch recalculation finished",
+    "batchError": "Could not start batch recalculation",
+    "recalculateOne": "Recalculate this product",
+    "recalculateOneSuccess": "Prediction recalculated",
+    "recalculateOneError": "Could not recalculate this prediction",
+    "predicted": "Predicted",
+    "actual": "Actual",
+    "variance": "Variance",
+    "date": "Date",
+    "unknownProduct": "Unknown product",
+    "product": "Product",
+    "predictedOrders": "Predicted units",
+    "confidence": "Confidence",
+    "source": "Source",
+    "lastUpdated": "Last updated",
+    "actualWeekTotal": "Actual (week total)",
+    "errorAbs": "Error",
+    "factorsTitle": "Why this number",
+    "noFactors": "No explainability factors reported for this forecast.",
+    "expandRow": "Show daily breakdown",
+    "collapseRow": "Hide daily breakdown",
+    "empty": "No forecasts for this week yet",
+    "emptyHint": "Run Recalculate all to generate forecasts for this week.",
+    "fetchError": "Could not load forecasts",
+    "retry": "Try again",
+    "learning": {
+      "title": "Model training",
+      "headline": "{trained} / {total} products trained",
+      "backfillButton": "Backfill history",
+      "backfilling": "Backfilling…",
+      "backfillSuccess": "History backfilled — training will pick up the new data shortly.",
+      "backfillError": "Could not backfill history",
+      "empty": "No products to train yet."
+    },
+    "accuracy": {
+      "title": "Forecast accuracy",
+      "latestLabel": "Latest MAPE",
+      "mape": "MAPE",
+      "noData": "Not enough closed weeks yet to chart accuracy."
+    },
+    "shortfalls": {
+      "title": "Ingredients you can't order yet",
+      "subtitle": "Left over from the last batch run — no supplier is assigned.",
+      "shortfall": "Shortfall",
+      "assignSupplier": "Assign a supplier"
+    }
+  },
   "Auth": {
     "loginTitle": "Login to your account",
     "loginDescription": "Enter your email below to login to your account",

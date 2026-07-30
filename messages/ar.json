@@ -417,6 +417,61 @@
       "edited": "معدّل"
     }
   },
+  "predictions": {
+    "title": "توقع الطلب",
+    "subtitle": "توقعات الوحدات الأسبوعية لكل منتج، مع العوامل المؤثرة في كل رقم.",
+    "targetWeek": "الأسبوع المستهدف",
+    "targetWeekPlaceholder": "اختر يوم أحد",
+    "recalculateAll": "إعادة حساب الكل",
+    "recalculating": "جارٍ إعادة الحساب…",
+    "recalculatingHint": "تعمل في الخلفية — ستظهر الصفوف تباعاً كلما اكتمل حساب كل منتج.",
+    "batchSuccess": "اكتملت إعادة الحساب الجماعية",
+    "batchError": "تعذر بدء إعادة الحساب الجماعية",
+    "recalculateOne": "إعادة حساب هذا المنتج",
+    "recalculateOneSuccess": "تم إعادة حساب التوقع",
+    "recalculateOneError": "تعذر إعادة حساب هذا التوقع",
+    "predicted": "المتوقع",
+    "actual": "الفعلي",
+    "variance": "الفرق",
+    "date": "التاريخ",
+    "unknownProduct": "منتج غير معروف",
+    "product": "المنتج",
+    "predictedOrders": "الوحدات المتوقعة",
+    "confidence": "الثقة",
+    "source": "المصدر",
+    "lastUpdated": "آخر تحديث",
+    "actualWeekTotal": "الفعلي (إجمالي الأسبوع)",
+    "errorAbs": "الخطأ",
+    "factorsTitle": "سبب هذا الرقم",
+    "noFactors": "لا توجد عوامل تفسيرية لهذا التوقع.",
+    "expandRow": "إظهار التفصيل اليومي",
+    "collapseRow": "إخفاء التفصيل اليومي",
+    "empty": "لا توجد توقعات لهذا الأسبوع بعد",
+    "emptyHint": "شغّل إعادة حساب الكل لتوليد توقعات هذا الأسبوع.",
+    "fetchError": "تعذر تحميل التوقعات",
+    "retry": "إعادة المحاولة",
+    "learning": {
+      "title": "تدريب النموذج",
+      "headline": "{trained} / {total} منتج تم تدريبه",
+      "backfillButton": "تعويض السجل التاريخي",
+      "backfilling": "جارٍ تعويض السجل…",
+      "backfillSuccess": "تم تعويض السجل التاريخي — سيبدأ التدريب باستخدام البيانات الجديدة قريباً.",
+      "backfillError": "تعذر تعويض السجل التاريخي",
+      "empty": "لا توجد منتجات للتدريب بعد."
+    },
+    "accuracy": {
+      "title": "دقة التوقعات",
+      "latestLabel": "أحدث نسبة خطأ (MAPE)",
+      "mape": "نسبة الخطأ (MAPE)",
+      "noData": "لا توجد أسابيع مغلقة كافية بعد لعرض الدقة."
+    },
+    "shortfalls": {
+      "title": "مكونات لا يمكن طلبها بعد",
+      "subtitle": "متبقية من آخر تشغيل جماعي — لا يوجد مورّد معيّن لها.",
+      "shortfall": "النقص",
+      "assignSupplier": "تعيين مورّد"
+    }
+  },
   "Auth": {
     "loginTitle": "تسجيل الدخول إلى حسابك",
     "loginDescription": "أدخل بريدك الإلكتروني أدناه لتسجيل الدخول",
