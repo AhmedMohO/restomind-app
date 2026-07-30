@@ -78,7 +78,10 @@ export function PredictionRow({ prediction }: PredictionRowProps) {
             onClick={() => setOpen((v) => !v)}
           >
             <ChevronDown
-              className={cn("size-4 transition-transform", open && "rotate-180")}
+              className={cn(
+                "size-4 transition-transform",
+                open && "rotate-180"
+              )}
             />
           </Button>
         </TableCell>
@@ -87,7 +90,7 @@ export function PredictionRow({ prediction }: PredictionRowProps) {
             <div className="relative size-9 shrink-0 overflow-hidden rounded-lg bg-muted">
               {product?.image ? (
                 <Image
-                  src={product.image}
+                  src={product.image.secure_url}
                   alt={title}
                   fill
                   sizes="36px"
@@ -145,15 +148,20 @@ export function PredictionRow({ prediction }: PredictionRowProps) {
 
       {open ? (
         <TableRow className="hover:bg-transparent">
-          <TableCell colSpan={COLUMN_COUNT} className="bg-muted/30 whitespace-normal">
+          <TableCell
+            colSpan={COLUMN_COUNT}
+            className="bg-muted/30 whitespace-normal"
+          >
             <div className="space-y-4 py-2">
               {prediction.actualOrders !== null ? (
                 <p className="text-xs text-muted-foreground">
-                  {t("actualWeekTotal")}: {formatQty(prediction.actualOrders, locale)}
+                  {t("actualWeekTotal")}:{" "}
+                  {formatQty(prediction.actualOrders, locale)}
                   {prediction.errorAbs !== null ? (
                     <>
                       {" "}
-                      · {t("errorAbs")}: {formatQty(prediction.errorAbs, locale)}
+                      · {t("errorAbs")}:{" "}
+                      {formatQty(prediction.errorAbs, locale)}
                     </>
                   ) : null}
                 </p>

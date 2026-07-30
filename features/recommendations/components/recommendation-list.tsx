@@ -12,6 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { TablePagination } from "@/components/ui/table-pagination"
+import { useTableControls } from "@/hooks/use-table-controls"
 import {
   useApproveRecommendation,
   useDismissRecommendation,
@@ -50,12 +52,18 @@ export function RecommendationList() {
   const t = useTranslations("recommendations")
   const [status, setStatus] = React.useState<RecommendationStatus | "all">("all")
   const [editing, setEditing] = React.useState<Recommendation | null>(null)
+  const { page, setPage, limit, setLimit, resetPage } = useTableControls({
+    initialLimit: 9,
+  })
 
   const { data, isLoading } = useRecommendationsList({
     status: status === ALL_STATUSES ? undefined : status,
-    limit: 50,
+    page,
+    limit,
   })
   const items = data?.items ?? []
+  const total = data?.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / limit))
 
   // Passed into the hooks (rather than as onSuccess/onError to mutate())
   // so the toasts live at mutation level — see the comment in
@@ -86,7 +94,12 @@ export function RecommendationList() {
       <div className="flex items-center justify-between gap-3">
         <Select
           value={status}
-          onValueChange={(v) => v && setStatus(v as RecommendationStatus | "all")}
+          onValueChange={(v) => {
+            if (v) {
+              setStatus(v as RecommendationStatus | "all")
+              resetPage()
+            }
+          }}
         >
           <SelectTrigger className="w-40">
             <SelectValue placeholder={t("statusFilter")} />
@@ -135,6 +148,15 @@ export function RecommendationList() {
           ))}
         </div>
       )}
+
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        limit={limit}
+        onPageChange={setPage}
+        onLimitChange={setLimit}
+      />
 
       <ApproveDialog
         open={editing !== null}

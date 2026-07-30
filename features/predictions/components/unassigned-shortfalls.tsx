@@ -1,10 +1,13 @@
 "use client"
 
+import * as React from "react"
 import { useLocale, useTranslations } from "next-intl"
 import { TriangleAlert } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { TablePagination } from "@/components/ui/table-pagination"
+import { useTableControls } from "@/hooks/use-table-controls"
 import { Link } from "@/i18n/routing"
 import { formatQty } from "@/lib/charts/format"
 import type { UnassignedShortfall } from "@/features/predictions/hooks/use-predictions"
@@ -24,8 +27,17 @@ export interface UnassignedShortfallsProps {
 export function UnassignedShortfalls({ shortfalls }: UnassignedShortfallsProps) {
   const t = useTranslations("predictions")
   const locale = useLocale()
+  const { page, setPage, limit, setLimit } = useTableControls({ initialLimit: 5 })
 
   if (shortfalls.length === 0) return null
+
+  const total = shortfalls.length
+  const totalPages = Math.max(1, Math.ceil(total / limit))
+  const currentPage = Math.min(page, totalPages)
+  const paginatedItems = shortfalls.slice(
+    (currentPage - 1) * limit,
+    currentPage * limit
+  )
 
   return (
     <Card className="border-amber-500/30">
@@ -36,9 +48,9 @@ export function UnassignedShortfalls({ shortfalls }: UnassignedShortfallsProps) 
         </CardTitle>
         <p className="text-xs text-muted-foreground">{t("shortfalls.subtitle")}</p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <ul className="divide-y divide-border">
-          {shortfalls.map((item) => (
+          {paginatedItems.map((item) => (
             <li
               key={item.ingredientId}
               className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
@@ -67,7 +79,17 @@ export function UnassignedShortfalls({ shortfalls }: UnassignedShortfallsProps) 
             </li>
           ))}
         </ul>
+
+        <TablePagination
+          page={currentPage}
+          totalPages={totalPages}
+          total={total}
+          limit={limit}
+          onPageChange={setPage}
+          onLimitChange={setLimit}
+        />
       </CardContent>
     </Card>
   )
 }
+

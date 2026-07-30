@@ -9,7 +9,6 @@ import { Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DatePicker } from "@/components/ui/date-picker"
 import { useBatchRecalculate } from "@/features/predictions/hooks/use-predictions"
-import { AccuracyCard } from "./accuracy-card"
 import { LearningStatusStrip } from "./learning-status-strip"
 import { PredictionList } from "./prediction-list"
 import { UnassignedShortfalls } from "./unassigned-shortfalls"
@@ -141,8 +140,6 @@ export function PredictionsDashboard() {
       ) : null}
 
       <LearningStatusStrip />
-
-      <AccuracyCard />
 
       <UnassignedShortfalls shortfalls={shortfalls} />
 

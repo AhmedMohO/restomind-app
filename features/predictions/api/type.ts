@@ -1,5 +1,6 @@
 import type { ConfidenceLevel } from "@/components/ai/confidence-badge"
 import type { PredictionSource } from "@/components/ai/source-badge"
+import { ApiImage } from "@/features/users/api"
 
 export interface Factor {
   factor: string
@@ -14,7 +15,7 @@ export interface DailyBreakdownItem {
 export interface PredictionProduct {
   _id: string
   title: string
-  image?: string
+  image?: ApiImage
 }
 
 export interface Prediction {
