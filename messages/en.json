@@ -439,6 +439,7 @@
     "predictedOrders": "Predicted units",
     "confidence": "Confidence",
     "source": "Source",
+    "modelVersion": "Model version",
     "lastUpdated": "Last updated",
     "actualWeekTotal": "Actual (week total)",
     "errorAbs": "Error",
@@ -463,7 +464,11 @@
       "title": "Forecast accuracy",
       "latestLabel": "Latest MAPE",
       "mape": "MAPE",
-      "noData": "Not enough closed weeks yet to chart accuracy."
+      "noData": "Not enough closed weeks yet to chart accuracy.",
+      "week": "Week",
+      "predictionsCount": "Predictions",
+      "totalPredicted": "Total predicted",
+      "totalActual": "Total actual"
     },
     "shortfalls": {
       "title": "Ingredients you can't order yet",

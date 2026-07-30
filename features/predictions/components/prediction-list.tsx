@@ -64,6 +64,7 @@ export function PredictionList({ targetWeek, refetchInterval }: PredictionListPr
                 <TableHead className="text-end">{t("predictedOrders")}</TableHead>
                 <TableHead className="text-start">{t("confidence")}</TableHead>
                 <TableHead className="text-start">{t("source")}</TableHead>
+                <TableHead className="text-start">{t("modelVersion")}</TableHead>
                 <TableHead className="text-start">{t("lastUpdated")}</TableHead>
                 <TableHead className="text-end">{tCommon("actions")}</TableHead>
               </TableRow>

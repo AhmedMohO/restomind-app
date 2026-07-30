@@ -45,7 +45,7 @@ export function UnassignedShortfalls({ shortfalls }: UnassignedShortfallsProps) 
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-foreground">
-                  {item.name}
+                  {item.ingredientName}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   <span className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono">

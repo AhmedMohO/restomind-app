@@ -17,7 +17,7 @@ import { useRecalculatePrediction } from "@/features/predictions/hooks/use-predi
 import { ForecastChart } from "./forecast-chart"
 import { ForecastTable } from "./forecast-table"
 
-const COLUMN_COUNT = 7
+const COLUMN_COUNT = 8
 
 function formatUpdatedAt(value: string, locale: string): string {
   const date = new Date(value)
@@ -112,6 +112,11 @@ export function PredictionRow({ prediction }: PredictionRowProps) {
         </TableCell>
         <TableCell>
           <SourceBadge source={prediction.source} />
+        </TableCell>
+        <TableCell>
+          <span className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+            {prediction.modelVersionId}
+          </span>
         </TableCell>
         <TableCell className="text-xs text-muted-foreground">
           {formatUpdatedAt(prediction.updatedAt, locale)}

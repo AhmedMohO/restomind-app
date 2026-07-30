@@ -439,6 +439,7 @@
     "predictedOrders": "الوحدات المتوقعة",
     "confidence": "الثقة",
     "source": "المصدر",
+    "modelVersion": "إصدار النموذج",
     "lastUpdated": "آخر تحديث",
     "actualWeekTotal": "الفعلي (إجمالي الأسبوع)",
     "errorAbs": "الخطأ",
@@ -463,7 +464,11 @@
       "title": "دقة التوقعات",
       "latestLabel": "أحدث نسبة خطأ (MAPE)",
       "mape": "نسبة الخطأ (MAPE)",
-      "noData": "لا توجد أسابيع مغلقة كافية بعد لعرض الدقة."
+      "noData": "لا توجد أسابيع مغلقة كافية بعد لعرض الدقة.",
+      "week": "الأسبوع",
+      "predictionsCount": "عدد التوقعات",
+      "totalPredicted": "إجمالي المتوقع",
+      "totalActual": "إجمالي الفعلي"
     },
     "shortfalls": {
       "title": "مكونات لا يمكن طلبها بعد",

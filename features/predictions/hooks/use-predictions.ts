@@ -42,6 +42,14 @@ export function usePredictionsList(
     staleTime: 60 * 1000,
     placeholderData: (previous) => previous,
     refetchInterval: options.refetchInterval ?? false,
+    // TanStack v5 doesn't fire mutation-level callbacks after a component
+    // unmounts (the observer unsubscribes), so navigating away mid-batch
+    // drops both the toast and the final onSettled invalidateQueries.
+    // Without this, returning within the 60s staleTime above would then
+    // show pre-batch rows with no refetch. "always" forces a fresh fetch
+    // on every mount regardless of staleTime, so a return visit always
+    // reflects reality instead of a possibly-stale cache.
+    refetchOnMount: "always",
   })
 }
 
@@ -98,18 +106,18 @@ export function useRecalculatePrediction(messages: RecalculatePredictionMessages
 
 /**
  * One ingredient the batch run needed but couldn't place an order for
- * because no supplier is assigned to it. The backend's batch-recalculate
- * response shape for this field isn't pinned down anywhere in the repo
- * (Task 2 typed the route's body as `unknown`) — this interface is inferred
- * from the brief's prose ("ingredient name, code, shortfall + unit") and
- * matches the field names `features/ingredients/api/type.ts` already uses
- * (`ingredientCode`, `name`, `unit`) so it reads as the same ingredient
- * shape everywhere else in the app. See task-4-report.md.
+ * because no supplier is assigned to it. Confirmed against the real backend
+ * (`supplier-auto-draft.service.ts:233-239`) during code review: the shape
+ * is `{ ingredientId, ingredientName, ingredientCode, shortfall, unit }`.
+ * `batch-recalculate` replies `res.status(200).json(result)` raw, so this
+ * sits at the top of the upstream body — `jsonSuccess(body.data ?? body)`
+ * on the BFF route, then `clientFetch` unwrapping one `.data`, lands it
+ * here correctly with no further nesting to account for.
  */
 export interface UnassignedShortfall {
   ingredientId: string
+  ingredientName: string
   ingredientCode: string
-  name: string
   unit: string
   shortfall: number
 }
@@ -147,6 +155,14 @@ export function useBatchRecalculate(
         {
           method: "POST",
           body: { targetWeek },
+          // `clientFetch` sets no default timeout, and the BFF route's
+          // `maxDuration = 300` is a serverless hint a self-hosted Node
+          // server ignores — without this, a stalled socket would leave
+          // `isPending` (and the page's 5s poll + spinner) stuck forever.
+          // Scoped to this one call, not a change to clientFetch's global
+          // behaviour. 300s matches the BFF route's own budget so this
+          // never fires *before* a legitimately long batch would finish.
+          signal: AbortSignal.timeout(300_000),
         }
       ))!,
     onSuccess: () => {

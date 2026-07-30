@@ -116,7 +116,13 @@ export function ForecastChart({ breakdown, actuals }: ForecastChartProps) {
               stroke={colors.series2}
               strokeWidth={2}
               dot={{ r: 4, strokeWidth: 2 }}
-              connectNulls
+              // false, not the brief's literal `connectNulls` (= true):
+              // a day with no actuals entry is a day with no recorded
+              // sales data, not a day that sold zero — the line must
+              // break there instead of interpolating across it, same
+              // reasoning as AccuracyCard's `connectNulls={false}`.
+              // Human-ruled during code review; see task-4-report.md.
+              connectNulls={false}
             />
           ) : null}
         </ComposedChart>
