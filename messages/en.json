@@ -477,6 +477,38 @@
       "assignSupplier": "Assign a supplier"
     }
   },
+  "productionPlan": {
+    "title": "Production plan",
+    "subtitle": "How much to make today, and what actually came off the line.",
+    "date": "Date",
+    "datePlaceholder": "Pick a date",
+    "today": "Today",
+    "totalRecommended": "Total recommended: {qty} units",
+    "recommended": "Recommended",
+    "actualLabel": "Actual produced",
+    "unknownProduct": "Unknown product",
+    "generatingHint": "Generating today's plan — this can take up to 30 seconds.",
+    "noPlanTitle": "No plan for this date",
+    "noPlanDescription": "No plan was generated for this date.",
+    "horizonCapTitle": "Too far ahead",
+    "horizonCapDescription": "Production plans are only generated up to {days} days ahead. Pick a closer date.",
+    "fetchErrorTitle": "Couldn't load the plan",
+    "fetchError": "Could not load the production plan",
+    "generationTimeoutTitle": "Still generating",
+    "generationTimeoutDescription": "This is taking longer than expected. Try refreshing in a moment.",
+    "retry": "Try again",
+    "actualsSaved": "Saved {count} row(s)",
+    "actualsSkipped": "{count} row(s) weren't saved — they're no longer part of this plan",
+    "actualsError": "Could not save actuals",
+    "rowSkipped": "Not part of this plan anymore",
+    "saveFailed": "Couldn't save — will retry",
+    "rowStatus": {
+      "idle": "Not recorded yet",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "failed": "Save failed"
+    }
+  },
   "Auth": {
     "loginTitle": "Login to your account",
     "loginDescription": "Enter your email below to login to your account",

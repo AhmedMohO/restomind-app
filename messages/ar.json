@@ -477,6 +477,38 @@
       "assignSupplier": "تعيين مورّد"
     }
   },
+  "productionPlan": {
+    "title": "خطة الإنتاج",
+    "subtitle": "الكمية المطلوب تحضيرها اليوم، وما تم تحضيره فعليًا.",
+    "date": "التاريخ",
+    "datePlaceholder": "اختر تاريخًا",
+    "today": "اليوم",
+    "totalRecommended": "إجمالي الكمية الموصى بها: {qty} وحدة",
+    "recommended": "الكمية الموصى بها",
+    "actualLabel": "الكمية الفعلية المُنتَجة",
+    "unknownProduct": "منتج غير معروف",
+    "generatingHint": "جارٍ إنشاء خطة اليوم — قد يستغرق هذا حتى 30 ثانية.",
+    "noPlanTitle": "لا توجد خطة لهذا التاريخ",
+    "noPlanDescription": "لم يتم إنشاء خطة لهذا التاريخ.",
+    "horizonCapTitle": "تاريخ بعيد جدًا",
+    "horizonCapDescription": "يتم إنشاء خطط الإنتاج لغاية {days} يومًا مقدمًا فقط. اختر تاريخًا أقرب.",
+    "fetchErrorTitle": "تعذّر تحميل الخطة",
+    "fetchError": "تعذّر تحميل خطة الإنتاج",
+    "generationTimeoutTitle": "لا تزال قيد الإنشاء",
+    "generationTimeoutDescription": "هذا يستغرق وقتًا أطول من المتوقع. جرّب التحديث بعد قليل.",
+    "retry": "إعادة المحاولة",
+    "actualsSaved": "تم حفظ {count} صف",
+    "actualsSkipped": "لم يتم حفظ {count} صف — لم تعد ضمن هذه الخطة",
+    "actualsError": "تعذّر حفظ الكميات الفعلية",
+    "rowSkipped": "لم تعد ضمن هذه الخطة",
+    "saveFailed": "تعذّر الحفظ — سيُعاد المحاولة",
+    "rowStatus": {
+      "idle": "لم تُسجَّل بعد",
+      "saving": "جارٍ الحفظ…",
+      "saved": "تم الحفظ",
+      "failed": "فشل الحفظ"
+    }
+  },
   "Auth": {
     "loginTitle": "تسجيل الدخول إلى حسابك",
     "loginDescription": "أدخل بريدك الإلكتروني أدناه لتسجيل الدخول",
