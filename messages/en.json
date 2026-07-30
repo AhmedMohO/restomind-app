@@ -370,7 +370,11 @@
       "body": "Showing estimates instead of model forecasts. Numbers may be less accurate.",
       "dismiss": "Dismiss"
     },
-    "status": { "trained": "Trained", "learning": "Learning", "cold_start": "No data yet" },
+    "status": {
+      "trained": "Trained",
+      "learning": "Learning",
+      "cold_start": "No data yet"
+    },
     "risk": { "low": "Low risk", "medium": "Medium risk", "high": "High risk" },
     "tableView": "View as table",
     "chartView": "View as chart"
@@ -547,6 +551,112 @@
       "emptyHint": "Run a surplus scan to generate waste reports.",
       "fetchError": "Could not load waste reports",
       "retry": "Try again"
+    }
+  },
+  "imports": {
+    "title": "CSV import",
+    "subtitle": "Pick a data type and drop its file — column mapping and validation happen automatically.",
+    "uploadCard": {
+      "title": "Import restaurant data",
+      "description": "Upload one CSV at a time. The system maps columns and imports rows as soon as you drop the file — no manual mapping or preview step."
+    },
+    "typePicker": {
+      "legend": "1. Choose what you're importing",
+      "needs": "Needs {list} first"
+    },
+    "types": {
+      "menu_items": {
+        "title": "Menu items",
+        "description": "The dishes your restaurant sells — name, price, and category."
+      },
+      "ingredients": {
+        "title": "Ingredients",
+        "description": "Raw materials used in recipes and inventory tracking."
+      },
+      "recipes": {
+        "title": "Recipes",
+        "description": "Which ingredients, and how much of each, go into a menu item."
+      },
+      "inventory_transactions": {
+        "title": "Inventory transactions",
+        "description": "Stock received into inventory — batches, quantities, and cost."
+      },
+      "sales_history": {
+        "title": "Sales history",
+        "description": "Past orders, used to train demand forecasts."
+      }
+    },
+    "dropzone": {
+      "title": "Drop a CSV file here",
+      "subtitle": "or choose a file from your computer",
+      "browse": "Browse files",
+      "hint": "CSV files up to 5 MB",
+      "invalidType": "Only .csv files are accepted.",
+      "tooLarge": "This file is larger than 5 MB. Split it into smaller files and import each one separately."
+    },
+    "progress": {
+      "uploading": "Uploading",
+      "importing": "Importing"
+    },
+    "result": {
+      "successTitle": "Import complete",
+      "successBody": "{count} rows imported.",
+      "partialTitle": "Partial import",
+      "partialBody": "{valid} of {total} rows imported. {invalid} rows were skipped — fix them and re-upload just those rows.",
+      "failedTitle": "Nothing imported",
+      "failedBody": "All {invalid} rows failed. Fix the errors below and re-upload.",
+      "dependencyTitle": "Import order",
+      "goTo": "Go to {type}",
+      "aiIngestFailedTitle": "Saved, but the forecast model wasn't updated",
+      "aiIngestFailedBody": "All {count} rows were saved to sales history. The AI ingest step failed, so demand forecasts don't reflect this data yet.",
+      "aiIngestError": "Last error",
+      "retryAiIngest": "Retry AI ingest",
+      "retrying": "Retrying…",
+      "retrySuccess": "AI ingest retried — forecasts now include this data.",
+      "retryError": "Retry failed"
+    },
+    "errors": {
+      "groupTitle": "Row errors",
+      "occurrences": "{count} rows affected",
+      "firstRows": "Rows: {rows}",
+      "andMore": "and {count} more",
+      "capNotice": "Showing the first {cap} of {total} rows in this group.",
+      "downloadCsv": "Download failed rows as CSV"
+    },
+    "failure": {
+      "emptyFile": "This file is empty — nothing to parse.",
+      "noDataRows": "This file has headers but no rows.",
+      "fileRequired": "Choose a CSV file before importing.",
+      "auth": "Your session or role doesn't allow this. Sign in again, or check that your account has manager or admin access.",
+      "network": "The connection was interrupted. The import may already have started — check the history below before uploading again.",
+      "notFound": "This import job no longer exists.",
+      "alreadyCompleted": "This import already finished. Check the history below.",
+      "generic": "Could not complete the import.",
+      "retryButton": "Try again"
+    },
+    "history": {
+      "title": "Recent imports",
+      "empty": "No imports yet",
+      "emptyHint": "Your upload history will appear here.",
+      "fetchError": "Could not load import history",
+      "retry": "Try again",
+      "typeFilter": "All types",
+      "statusFilter": "All statuses",
+      "columns": {
+        "file": "File",
+        "type": "Type",
+        "status": "Status",
+        "rows": "Rows",
+        "time": "Uploaded"
+      }
+    },
+    "status": {
+      "processing": "Processing",
+      "validated": "Validated",
+      "ai_ingest_pending": "AI ingest pending",
+      "ai_ingest_failed": "AI ingest failed",
+      "completed": "Completed",
+      "failed": "Failed"
     }
   },
   "Auth": {
