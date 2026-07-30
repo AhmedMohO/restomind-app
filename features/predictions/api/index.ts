@@ -14,17 +14,27 @@ import {
 
 export * from "./type"
 
-/** GET /predictions — paginated weekly forecasts for the manager's restaurant. */
+/**
+ * GET /predictions — raw `{ items, page, limit, total, totalPages }`, no
+ * `data` wrapper. Confirmed against `WeeklyPredictionService.getPredictions`
+ * (`weekly-prediction.service.ts`), which returns
+ * `predictionRepository.findManyPaginated(...)` straight through the
+ * controller's `res.status(200).json(result)` — same shape as
+ * `getRecommendations` in the sibling feature. `body` itself IS the page, so
+ * it's returned as-is; `body.data ?? EMPTY_PREDICTIONS_PAGE` here evaluated
+ * `undefined ?? EMPTY_PREDICTIONS_PAGE` on every request and rendered the
+ * demand-forecast screen permanently empty.
+ */
 export async function getPredictions(
   params: GetPredictionsParams = {}
 ): Promise<PaginatedPredictions> {
   const qs = buildQueryString(params)
   const response = await apiClient(`/predictions${qs}`)
-  const body = await parseOrThrow<{ data?: PaginatedPredictions }>(
+  const body = await parseOrThrow<PaginatedPredictions>(
     response,
     "getPredictions"
   )
-  return body.data ?? EMPTY_PREDICTIONS_PAGE
+  return body ?? EMPTY_PREDICTIONS_PAGE
 }
 
 /** GET /predictions/learned-status — per-product model training progress. */

@@ -24,8 +24,18 @@ export async function POST(request: Request) {
       method: "POST",
       body: JSON.stringify(parsed.data),
     })
-    const body = await parseOrThrow<{ data?: unknown }>(response, "recalculate")
-    return jsonSuccess(body.data ?? body)
+    // `WeeklyPredictionService.recalculateSingle` (weekly-prediction.service.ts)
+    // returns `{ data: prediction, ...degradationFields(degradation) }` — the
+    // `degraded`/`degradedReason`/`degradedKind`/`degradedStatus` fields sit
+    // alongside `data`, not inside it, same as production-plan's two routes.
+    // `jsonSuccess(body.data ?? body)` would silently drop them whenever
+    // `data` is present (the common case), which is exactly the "siblings
+    // dropped" failure shape. Pass the whole envelope through instead.
+    const body = await parseOrThrow<Record<string, unknown>>(
+      response,
+      "recalculate"
+    )
+    return jsonSuccess(body)
   } catch (err) {
     return handleUpstreamError(err, "Failed to recalculate prediction")
   }
