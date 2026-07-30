@@ -182,31 +182,39 @@ export function WasteTable() {
                     </TableCell>
                     <TableCell className="text-start">
                       {prediction ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto flex-col items-start gap-1 px-2 py-1.5"
-                          nativeButton={false}
-                          render={
-                            <Link
-                              href={`/dashboard/predictions?targetWeek=${encodeURIComponent(prediction.targetWeek)}`}
-                            />
-                          }
-                        >
-                          <span className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {/* `SourceBadge` renders a base-ui `<Tooltip>` whose
+                              trigger is a real `<button>` — nesting it inside
+                              this `Button`-as-`<a>` would put a `<button>`
+                              inside an `<a>`, which the HTML content model
+                              disallows (two Tab stops for one row link, a
+                              confused screen-reader announcement). Keeping it
+                              as a sibling, not a descendant, is why this is a
+                              `<div>` wrapper and not the link itself. */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto flex-col items-start gap-0.5 px-2 py-1.5"
+                            nativeButton={false}
+                            render={
+                              <Link
+                                href={`/dashboard/predictions?targetWeek=${encodeURIComponent(prediction.targetWeek)}`}
+                              />
+                            }
+                          >
                             <bdi
                               dir="ltr"
                               className="text-xs font-medium tabular-nums"
                             >
                               {prediction.targetWeek}
                             </bdi>
-                            <SourceBadge source={prediction.source} />
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {t("table.viewPrediction")} ·{" "}
-                            {formatQty(prediction.predictedOrders, locale)}
-                          </span>
-                        </Button>
+                            <span className="text-xs text-muted-foreground">
+                              {t("table.viewPrediction")} ·{" "}
+                              {formatQty(prediction.predictedOrders, locale)}
+                            </span>
+                          </Button>
+                          <SourceBadge source={prediction.source} />
+                        </div>
                       ) : (
                         <span className="text-xs text-muted-foreground italic">
                           {t("table.noPrediction")}

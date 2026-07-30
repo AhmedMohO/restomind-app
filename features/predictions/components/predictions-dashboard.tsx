@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useTranslations } from "next-intl"
+import { useSearchParams } from "next/navigation"
 import { format } from "date-fns"
 import { Loader2, RefreshCw } from "lucide-react"
 
@@ -17,8 +18,34 @@ import { UnassignedShortfalls } from "./unassigned-shortfalls"
 function nextSunday(): string {
   const now = new Date()
   const daysUntilSunday = (7 - now.getDay()) % 7
-  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSunday)
+  const target = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + daysUntilSunday
+  )
   return format(target, "yyyy-MM-dd")
+}
+
+const TARGET_WEEK_RE = /^\d{4}-\d{2}-\d{2}$/
+
+/**
+ * Validates an incoming `?targetWeek=` search param (Task 6's waste-report
+ * "linked forecast" deep link lands here) before trusting it as the initial
+ * filter — format-valid (YYYY-MM-DD) and an actually-parseable calendar
+ * date. Deliberately does NOT require it to land on a Sunday: the value
+ * comes from a real `Prediction.targetWeek` on the other end of that link,
+ * and rejecting a real, already-generated prediction's week because it
+ * doesn't match this screen's own Sunday-only *input* convention would
+ * defeat the deep link for no safety reason — the query just returns
+ * whatever `usePredictionsList` finds for that value, same as any other
+ * `targetWeek`. Anything unparseable (missing, malformed, garbage query
+ * string) falls back to `nextSunday()` rather than putting the screen in a
+ * broken state.
+ */
+function parseTargetWeekParam(raw: string | null): string | null {
+  if (!raw || !TARGET_WEEK_RE.test(raw)) return null
+  const parsed = new Date(`${raw}T12:00:00Z`)
+  return Number.isNaN(parsed.getTime()) ? null : raw
 }
 
 /**
@@ -54,7 +81,14 @@ function nextSunday(): string {
  */
 export function PredictionsDashboard() {
   const t = useTranslations("predictions")
-  const [targetWeek, setTargetWeek] = React.useState<string>(() => nextSunday())
+  const searchParams = useSearchParams()
+  // Lazy initializer — reads the URL only on first mount, so this seeds the
+  // *initial* week from a deep link without disturbing normal in-page week
+  // navigation afterwards (the DatePicker below still just calls
+  // `setTargetWeek` directly, same as before this change).
+  const [targetWeek, setTargetWeek] = React.useState<string>(
+    () => parseTargetWeekParam(searchParams.get("targetWeek")) ?? nextSunday()
+  )
 
   const batchMutation = useBatchRecalculate(targetWeek, {
     success: t("batchSuccess"),
@@ -101,7 +135,9 @@ export function PredictionsDashboard() {
       </div>
 
       {isRecalculating ? (
-        <p className="text-xs text-muted-foreground">{t("recalculatingHint")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("recalculatingHint")}
+        </p>
       ) : null}
 
       <LearningStatusStrip />
