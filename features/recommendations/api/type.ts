@@ -1,3 +1,5 @@
+import { ApiImage } from "@/features/users/api"
+
 export type RecommendationStatus =
   | "pending"
   | "approved"
@@ -8,7 +10,7 @@ export interface RecommendationProduct {
   _id: string
   title: string
   price: number
-  image?: string
+  image?: ApiImage
   freshnessWindow?: number
 }
 

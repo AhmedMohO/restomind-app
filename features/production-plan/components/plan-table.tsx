@@ -114,7 +114,9 @@ export function PlanTable() {
   // means the timer always invokes the CURRENT flush, not the one that
   // existed when the timer was scheduled.
   const flushRef = React.useRef<() => void>(() => {})
-  const lastHandledResultRef = React.useRef<RecordActualsResponse | undefined>(undefined)
+  const lastHandledResultRef = React.useRef<RecordActualsResponse | undefined>(
+    undefined
+  )
   const lastHandledErrorRef = React.useRef<unknown>(undefined)
 
   // Re-seed row state from server data — but only for rows that aren't
@@ -128,9 +130,15 @@ export function PlanTable() {
       for (const item of items) {
         const id = getProductId(item)
         const existing = next[id]
-        if (!existing || (!dirtyRef.current.has(id) && existing.status !== "saving")) {
+        if (
+          !existing ||
+          (!dirtyRef.current.has(id) && existing.status !== "saving")
+        ) {
           next[id] = {
-            value: item.actualProducedQty != null ? String(item.actualProducedQty) : "",
+            value:
+              item.actualProducedQty != null
+                ? String(item.actualProducedQty)
+                : "",
             status: "idle",
           }
         }
@@ -200,9 +208,19 @@ export function PlanTable() {
           // A skipped productId wasn't part of the plan — retrying would
           // just be skipped again, so this row is NOT re-marked dirty and
           // gets no retry affordance (`retryable` stays unset).
-          next[id] = { ...next[id], status: "failed", error: t("rowSkipped"), retryable: false }
+          next[id] = {
+            ...next[id],
+            status: "failed",
+            error: t("rowSkipped"),
+            retryable: false,
+          }
         } else {
-          next[id] = { ...next[id], status: "saved", error: undefined, retryable: false }
+          next[id] = {
+            ...next[id],
+            status: "saved",
+            error: undefined,
+            retryable: false,
+          }
         }
       }
       return next
@@ -226,7 +244,12 @@ export function PlanTable() {
     setRows((prev) => {
       const next = { ...prev }
       for (const id of submittedIds) {
-        next[id] = { ...next[id], status: "failed", error: t("saveFailed"), retryable: true }
+        next[id] = {
+          ...next[id],
+          status: "failed",
+          error: t("saveFailed"),
+          retryable: true,
+        }
         dirtyRef.current.add(id)
       }
       return next
@@ -310,13 +333,16 @@ export function PlanTable() {
   // --- date-state branching (brief, Step 4) -------------------------------
   const error = query.error as (ClientFetchError & { name?: string }) | null
   const status = error?.status
-  const isTimeout = error?.name === "TimeoutError" || error?.name === "AbortError"
+  const isTimeout =
+    error?.name === "TimeoutError" || error?.name === "AbortError"
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <h1 className="flex items-center gap-2 font-heading text-2xl font-bold tracking-tight">
+            {t("title")}
+          </h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
@@ -380,7 +406,9 @@ export function PlanTable() {
         <EmptyState
           icon={AlertCircle}
           title={isTimeout ? t("generationTimeoutTitle") : t("fetchErrorTitle")}
-          description={isTimeout ? t("generationTimeoutDescription") : t("fetchError")}
+          description={
+            isTimeout ? t("generationTimeoutDescription") : t("fetchError")
+          }
           action={
             <Button variant="outline" onClick={() => query.refetch()}>
               {t("retry")}
@@ -397,7 +425,10 @@ export function PlanTable() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {items.map((item: ProductionPlanItem) => {
             const id = getProductId(item)
-            const row = rows[id] ?? { value: "", status: "idle" as RowSaveStatus }
+            const row = rows[id] ?? {
+              value: "",
+              status: "idle" as RowSaveStatus,
+            }
             return (
               <ActualsRow
                 key={id}

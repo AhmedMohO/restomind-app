@@ -2,14 +2,24 @@
 
 import Image from "next/image"
 import { useTranslations } from "next-intl"
-import { AlertTriangle, Check, ImageOff, Loader2, RotateCcw } from "lucide-react"
+import {
+  AlertTriangle,
+  Check,
+  ImageOff,
+  Loader2,
+  RotateCcw,
+} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { formatQty } from "@/lib/charts/format"
 import { Button } from "@/components/ui/button"
 import { ConfidenceBadge } from "@/components/ai/confidence-badge"
 import { SourceBadge } from "@/components/ai/source-badge"
-import { getProductId, type ProductionPlanItem } from "@/features/production-plan/api/type"
+import {
+  getProductId,
+  type ProductionPlanItem,
+} from "@/features/production-plan/api/type"
+import { Input } from "@/components/ui/input"
 
 export type RowSaveStatus = "idle" | "saving" | "saved" | "failed"
 
@@ -94,7 +104,7 @@ export function ActualsRow({
   const product = typeof item.productId === "string" ? null : item.productId
   const productId = getProductId(item)
   const title = product?.title ?? t("unknownProduct")
-  const hasRange = item.lowerBound != null && item.upperBound != null
+  // const hasRange = item.lowerBound != null && item.upperBound != null
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-2xs">
@@ -103,7 +113,7 @@ export function ActualsRow({
           <div className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-muted">
             {product?.image ? (
               <Image
-                src={product.image}
+                src={product.image.secure_url}
                 alt={title}
                 fill
                 sizes="44px"
@@ -116,7 +126,9 @@ export function ActualsRow({
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">{title}</p>
+            <p className="truncate text-sm font-semibold text-foreground">
+              {title}
+            </p>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
               <ConfidenceBadge confidence={item.confidence} />
               <SourceBadge source={item.source} />
@@ -126,13 +138,13 @@ export function ActualsRow({
         <StatusLight status={status} />
       </div>
 
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+      <div className="flex w-full flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs text-muted-foreground">{t("recommended")}</p>
-          <p className="text-lg font-bold tabular-nums text-foreground">
+          <p className="text-lg font-bold text-foreground tabular-nums">
             {formatQty(item.recommendedQty, locale)}
           </p>
-          {hasRange ? (
+          {/* {hasRange ? (
             // A numeric range's two Latin-numeral runs, separated by a
             // neutral en-dash, get visually reordered by the bidi algorithm
             // inside an RTL paragraph ("12–22" renders as "22–12") unless
@@ -150,20 +162,21 @@ export function ActualsRow({
             // siblings, in both locales.
             <p className="text-xs text-muted-foreground tabular-nums">
               <bdi dir="ltr">
-                {formatQty(item.lowerBound!, locale)}–{formatQty(item.upperBound!, locale)}
+                {formatQty(item.lowerBound!, locale)}–
+                {formatQty(item.upperBound!, locale)}
               </bdi>
             </p>
-          ) : null}
+          ) : null} */}
         </div>
 
-        <div className="min-w-36 flex-1">
+        <div>
           <label
             htmlFor={`actual-${productId}`}
             className="mb-1.5 block text-xs font-medium text-muted-foreground"
           >
             {t("actualLabel")}
           </label>
-          <input
+          <Input
             id={`actual-${productId}`}
             inputMode="numeric"
             pattern="[0-9]*"
@@ -176,8 +189,7 @@ export function ActualsRow({
             // Kitchen data-entry primitive: 44px minimum hit area, 16px+ text
             // so mobile Safari doesn't zoom on focus (brief, Step 2).
             className={cn(
-              "min-h-11 w-full rounded-lg border bg-background px-3 text-base tabular-nums shadow-xs transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "w-24",
               status === "failed" ? "border-destructive" : "border-input"
             )}
           />

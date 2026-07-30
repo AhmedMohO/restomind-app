@@ -1,5 +1,6 @@
 import type { ConfidenceLevel } from "@/components/ai/confidence-badge"
 import type { PredictionSource } from "@/components/ai/source-badge"
+import { ApiImage } from "@/features/users/api"
 
 /** Beyond `today + MAX_HORIZON_DAYS`, the backend throws a 400 — see
  * `getProductionPlan` in the service (`MAX_HORIZON_DAYS = 14`). */
@@ -8,7 +9,7 @@ export const MAX_HORIZON_DAYS = 14
 export interface ProductionPlanProduct {
   _id: string
   title: string
-  image?: string
+  image?: ApiImage
   price: number
   freshnessWindow?: number
   category?: string

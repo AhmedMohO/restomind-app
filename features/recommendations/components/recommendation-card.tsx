@@ -42,7 +42,9 @@ export function RecommendationCard({
   const locale = useLocale()
 
   const product =
-    typeof recommendation.productId === "string" ? null : recommendation.productId
+    typeof recommendation.productId === "string"
+      ? null
+      : recommendation.productId
   // An unpopulated productId (bare ObjectId string) or a populated product
   // with a null price both mean "we don't actually know the price" — do
   // not default either case to 0, since `null ?? 0` silently produces the
@@ -61,7 +63,7 @@ export function RecommendationCard({
       <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-muted">
         {product?.image ? (
           <Image
-            src={product.image}
+            src={product.image.secure_url}
             alt={title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -76,7 +78,9 @@ export function RecommendationCard({
         {/* The discount is the visual anchor: a sale-sticker corner tag. */}
         <div
           className="absolute start-3 top-3 flex -rotate-6 flex-col items-center rounded-full bg-primary px-3 py-2 text-primary-foreground shadow-md"
-          aria-label={t("discountLabel", { percent: recommendation.suggestedValue })}
+          aria-label={t("discountLabel", {
+            percent: recommendation.suggestedValue,
+          })}
         >
           <span
             aria-hidden="true"
@@ -87,7 +91,6 @@ export function RecommendationCard({
         </div>
 
         <Badge
-          variant="outline"
           className={cn(
             "absolute end-3 top-3 border",
             STATUS_STYLES[recommendation.status]
@@ -145,7 +148,7 @@ export function RecommendationCard({
           </p>
         </div>
 
-        <div className="mt-1 flex items-center gap-2">
+        <div className="mt-auto flex items-center gap-2">
           <Button
             size="sm"
             className="flex-1"
@@ -165,7 +168,7 @@ export function RecommendationCard({
           </Button>
           <Button
             size="sm"
-            variant="ghost"
+            variant="destructive"
             disabled={!isActionable || isDismissing}
             onClick={() => onDismiss(recommendation._id)}
           >

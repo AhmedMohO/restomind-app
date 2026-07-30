@@ -40,9 +40,9 @@ export interface ScanSurplusPanelProps {
 export function ScanSurplusPanel({ title }: ScanSurplusPanelProps) {
   const t = useTranslations("recommendations")
   const scanMutation = useScanSurplus()
-  const [degradedReason, setDegradedReason] = React.useState<string | undefined>(
-    undefined
-  )
+  const [degradedReason, setDegradedReason] = React.useState<
+    string | undefined
+  >(undefined)
   const [showDegraded, setShowDegraded] = React.useState(false)
 
   const handleScan = () => {
@@ -66,7 +66,9 @@ export function ScanSurplusPanel({ title }: ScanSurplusPanelProps) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-heading text-lg font-semibold">{title}</h1>
+        <h1 className="flex items-center gap-2 font-heading text-2xl font-bold tracking-tight">
+          {title}
+        </h1>
         <Button onClick={handleScan} disabled={scanMutation.isPending}>
           {scanMutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
