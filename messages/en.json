@@ -349,7 +349,8 @@
     "active": "Active:",
     "off": "{percent}%+ Off",
     "tags": "Tags",
-    "restaurants": "Restaurants"
+    "restaurants": "Restaurants",
+    "updating": "Updating..."
   },
   "ai": {
     "source": {
@@ -462,7 +463,9 @@
       "backfilling": "Backfilling…",
       "backfillSuccess": "History backfilled — training will pick up the new data shortly.",
       "backfillError": "Could not backfill history",
-      "empty": "No products to train yet."
+      "empty": "No products to train yet.",
+      "allStatuses": "All statuses",
+      "statusFilter": "Status"
     },
     "accuracy": {
       "title": "Forecast accuracy",

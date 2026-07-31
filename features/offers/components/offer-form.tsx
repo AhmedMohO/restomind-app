@@ -211,10 +211,9 @@ export function OfferForm({
       }
     } else {
       if (!offerPrice || offerPrice <= 0) {
-        errs.offerPrice = t("positiveValue") ?? "Offer price must be greater than zero"
+        errs.offerPrice = t("positiveOfferPriceError")
       } else if (originalPrice > 0 && offerPrice >= originalPrice) {
-        errs.offerPrice =
-          t("offerPriceLessThanOriginalError") ?? "Offer price must be less than original price"
+        errs.offerPrice = t("offerPriceLessThanOriginalError")
       }
     }
 
@@ -224,12 +223,10 @@ export function OfferForm({
       errs.endDate = t("dateOrderError")
     }
     if (finalEndFull && finalEndFull <= now) {
-      errs.endDate = t("endDateFutureError") ?? "End date must be in the future"
+      errs.endDate = t("endDateFutureError")
     }
     if (status === "active" && finalStartFull && finalStartFull > now && !isEditing) {
-      errs.status =
-        t("activeStatusFutureStartError") ??
-        "Status cannot be active when start date is in the future"
+      errs.status = t("activeStatusFutureStartError")
     }
     if (
       (status === "draft" || status === "scheduled") &&
@@ -237,17 +234,13 @@ export function OfferForm({
       finalStartFull < now &&
       !isEditing
     ) {
-      errs.startDate =
-        t("draftScheduledPastStartError") ??
-        "Start date must be in the future for a draft/scheduled offer"
+      errs.startDate = t("draftScheduledPastStartError")
     }
     if (!availableQuantity || availableQuantity < 1) {
       errs.availableQuantity = t("quantityRequiredError")
     }
     if (isEditing && availableQuantity < alreadySold) {
-      errs.availableQuantity =
-        t("quantityBelowSoldError", { sold: alreadySold }) ??
-        `Available quantity cannot be less than ${alreadySold} unit(s) already sold`
+      errs.availableQuantity = t("quantityBelowSoldError", { sold: alreadySold })
     }
 
     setErrors(errs)
@@ -333,8 +326,7 @@ export function OfferForm({
         <div className="flex items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
           <AlertCircle className="size-5 shrink-0" />
           <div className="text-xs font-semibold">
-            {t("readOnlyWarning", { status: initialData?.status }) ??
-              `Cannot edit an offer with status "${initialData?.status}". This offer is final and read-only.`}
+            {t("readOnlyWarning", { status: initialData?.status })}
           </div>
         </div>
       )}
@@ -447,7 +439,7 @@ export function OfferForm({
                       : `-${estimatedDiscountPercentage}%`}
                   </span>
                   <Badge variant="secondary" className="text-[10px]">
-                    {t("preview") ?? "Preview"}
+                    {t("preview")}
                   </Badge>
                 </div>
               </div>
@@ -469,8 +461,7 @@ export function OfferForm({
               />
               {alreadySold > 0 && (
                 <p className="text-[11px] text-muted-foreground">
-                  {t("alreadySoldHint", { sold: alreadySold }) ??
-                    `(${alreadySold} unit(s) already sold)`}
+                  {t("alreadySoldHint", { sold: alreadySold })}
                 </p>
               )}
               {errors.availableQuantity && (
@@ -542,10 +533,7 @@ export function OfferForm({
               {!canEditStartDate && (
                 <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
                   <Info className="size-3 shrink-0" />
-                  <span>
-                    {t("startDateEditHint") ??
-                      "(Start date can only be changed when offer is draft or scheduled)"}
-                  </span>
+                  <span>{t("startDateEditHint")}</span>
                 </p>
               )}
               {errors.startDate && (

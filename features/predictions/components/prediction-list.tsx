@@ -28,10 +28,15 @@ export interface PredictionListProps {
  * The main product table (brief Step 4): one row per prediction, expandable
  * to the daily chart/table and the model's factor chips.
  */
-export function PredictionList({ targetWeek, refetchInterval }: PredictionListProps) {
+export function PredictionList({
+  targetWeek,
+  refetchInterval,
+}: PredictionListProps) {
   const t = useTranslations("predictions")
   const tCommon = useTranslations("Common")
-  const { page, setPage, limit, setLimit } = useTableControls({ initialLimit: 20 })
+  const { page, setPage, limit, setLimit } = useTableControls({
+    initialLimit: 10,
+  })
 
   const { data, isLoading, isError, refetch } = usePredictionsList(
     { targetWeek, page, limit },
@@ -61,10 +66,14 @@ export function PredictionList({ targetWeek, refetchInterval }: PredictionListPr
               <TableRow>
                 <TableHead className="w-10" />
                 <TableHead className="text-start">{t("product")}</TableHead>
-                <TableHead className="text-end">{t("predictedOrders")}</TableHead>
+                <TableHead className="text-end">
+                  {t("predictedOrders")}
+                </TableHead>
                 <TableHead className="text-start">{t("confidence")}</TableHead>
                 <TableHead className="text-start">{t("source")}</TableHead>
-                <TableHead className="text-start">{t("modelVersion")}</TableHead>
+                <TableHead className="text-start">
+                  {t("modelVersion")}
+                </TableHead>
                 <TableHead className="text-start">{t("lastUpdated")}</TableHead>
                 <TableHead className="text-end">{tCommon("actions")}</TableHead>
               </TableRow>

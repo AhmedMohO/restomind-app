@@ -130,7 +130,7 @@ export function ActualsRow({
               {title}
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
-              <ConfidenceBadge confidence={item.confidence} />
+              {/* <ConfidenceBadge confidence={item.confidence} /> */}
               <SourceBadge source={item.source} />
             </div>
           </div>
