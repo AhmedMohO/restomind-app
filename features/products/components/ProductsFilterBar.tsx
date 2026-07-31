@@ -5,6 +5,7 @@ import { Search } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 import { useRouter, usePathname } from "@/i18n/routing"
 import { useTranslations } from "next-intl"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -102,12 +103,14 @@ export function ProductsFilterBar({ startTransition }: ProductsFilterBarProps) {
       <div className="flex flex-wrap items-center gap-3">
         {/* Sort selector */}
         <div className="inline-flex items-center">
-          <span className="flex h-8 items-center rounded-s-xl border border-e-0 border-[#ECE6DB] bg-[#FAF7F2] px-3 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase dark:border-neutral-800 dark:bg-neutral-800/80">
+          <Label htmlFor="sort-by-select" className="flex h-8 cursor-pointer items-center rounded-s-xl border border-e-0 border-[#ECE6DB] bg-[#FAF7F2] px-3 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase dark:border-neutral-800 dark:bg-neutral-800/80">
             {t("sortBy")}
-          </span>
+          </Label>
           <Select value={currentSort} onValueChange={handleSortChange}>
             <SelectTrigger
+              id="sort-by-select"
               size="sm"
+              aria-label={t("sortBy")}
               className="h-8 rounded-s-none rounded-e-xl border-[#ECE6DB] bg-white px-3 text-xs focus:ring-primary dark:border-neutral-800 dark:bg-neutral-900"
             >
               <SelectValue />
@@ -123,12 +126,14 @@ export function ProductsFilterBar({ startTransition }: ProductsFilterBarProps) {
 
         {/* Page size selector */}
         <div className="inline-flex items-center">
-          <span className="flex h-8 items-center rounded-s-xl border border-e-0 border-[#ECE6DB] bg-[#FAF7F2] px-3 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase dark:border-neutral-800 dark:bg-neutral-800/80">
+          <Label htmlFor="limit-select" className="flex h-8 cursor-pointer items-center rounded-s-xl border border-e-0 border-[#ECE6DB] bg-[#FAF7F2] px-3 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase dark:border-neutral-800 dark:bg-neutral-800/80">
             {t("show")}
-          </span>
+          </Label>
           <Select value={currentLimit} onValueChange={handleLimitChange}>
             <SelectTrigger
+              id="limit-select"
               size="sm"
+              aria-label={t("show")}
               className="h-8 rounded-s-none rounded-e-xl border-[#ECE6DB] bg-white px-3 text-xs focus:ring-primary dark:border-neutral-800 dark:bg-neutral-900"
             >
               <SelectValue />

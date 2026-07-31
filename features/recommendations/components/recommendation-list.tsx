@@ -4,6 +4,7 @@ import * as React from "react"
 import { useTranslations } from "next-intl"
 import { Sparkles } from "lucide-react"
 
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -92,27 +93,32 @@ export function RecommendationList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <Select
-          value={status}
-          onValueChange={(v) => {
-            if (v) {
-              setStatus(v as RecommendationStatus | "all")
-              resetPage()
-            }
-          }}
-        >
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder={t("statusFilter")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_STATUSES}>{t("statusFilter")}</SelectItem>
-            {FILTERABLE_STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>
-                {t(`status.${s}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="recommendation-status-filter" className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+            {t("statusFilter")}:
+          </Label>
+          <Select
+            value={status}
+            onValueChange={(v) => {
+              if (v) {
+                setStatus(v as RecommendationStatus | "all")
+                resetPage()
+              }
+            }}
+          >
+            <SelectTrigger id="recommendation-status-filter" aria-label={t("statusFilter")} className="w-40">
+              <SelectValue placeholder={t("statusFilter")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_STATUSES}>{t("statusFilter")}</SelectItem>
+              {FILTERABLE_STATUSES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {t(`status.${s}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {isLoading ? (

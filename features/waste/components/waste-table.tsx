@@ -12,6 +12,7 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -98,28 +99,33 @@ export function WasteTable() {
         <h2 className="font-heading text-lg font-semibold text-foreground">
           {t("table.title")}
         </h2>
-        <Select
-          value={riskLevel}
-          onValueChange={(v) => {
-            if (!v) return
-            setRiskLevel(v as RiskLevel | "all")
-            setPage(1)
-          }}
-        >
-          <SelectTrigger className="w-44">
-            <SelectValue placeholder={t("table.riskFilter")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_RISK_LEVELS}>
-              {t("table.riskFilter")}
-            </SelectItem>
-            {RISK_LEVELS.map((level) => (
-              <SelectItem key={level} value={level}>
-                {tAi(`risk.${level}`)}
+        <div className="flex items-center gap-2">
+          <Label htmlFor="waste-risk-filter" className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+            {t("table.riskFilter")}:
+          </Label>
+          <Select
+            value={riskLevel}
+            onValueChange={(v) => {
+              if (!v) return
+              setRiskLevel(v as RiskLevel | "all")
+              setPage(1)
+            }}
+          >
+            <SelectTrigger id="waste-risk-filter" aria-label={t("table.riskFilter")} className="w-44">
+              <SelectValue placeholder={t("table.riskFilter")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_RISK_LEVELS}>
+                {t("table.riskFilter")}
               </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              {RISK_LEVELS.map((level) => (
+                <SelectItem key={level} value={level}>
+                  {tAi(`risk.${level}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-card shadow-2xs">

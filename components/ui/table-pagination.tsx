@@ -1,6 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
+import { Label } from "@/components/ui/label"
 import { Pagination } from "@/components/ui/pagination"
 import {
   Select,
@@ -53,14 +54,16 @@ export function TablePagination({
 
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>{t("rowsPerPage")}</span>
+          <Label htmlFor="rows-per-page-select" className="cursor-pointer text-xs font-normal text-muted-foreground">
+            {t("rowsPerPage")}
+          </Label>
           <Select
             value={String(limit)}
             onValueChange={(val) => {
               if (val) onLimitChange(Number(val))
             }}
           >
-            <SelectTrigger className="h-8 w-[70px] rounded-lg text-xs">
+            <SelectTrigger id="rows-per-page-select" aria-label={t("rowsPerPage")} className="h-8 w-[70px] rounded-lg text-xs">
               <SelectValue placeholder={String(limit)} />
             </SelectTrigger>
             <SelectContent>
