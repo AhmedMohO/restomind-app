@@ -6,6 +6,10 @@
   "nav": {
     "overview": "Overview",
     "management": "Management",
+    "aiIntelligence": "AI & Intelligence",
+    "catalog": "Menu & Catalog",
+    "inventoryOps": "Inventory & Supply",
+    "administration": "Administration",
     "settings": "Settings",
     "analytics": "Analytics",
     "restaurants": "Restaurants",
@@ -22,7 +26,12 @@
     "recipes": "Recipes",
     "purchaseOrders": "Purchase Orders",
     "suppliers": "Suppliers",
-    "inventory": "Inventory"
+    "inventory": "Inventory",
+    "predictions": "Predictions",
+    "productionPlan": "Production Plan",
+    "recommendations": "Recommendations",
+    "waste": "Waste & Surplus",
+    "imports": "Data Imports"
   },
   "restaurant": {
     "pageTitle": "Restaurant Profile",

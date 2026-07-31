@@ -6,6 +6,10 @@
   "nav": {
     "overview": "نظرة عامة",
     "management": "الإدارة",
+    "aiIntelligence": "الذكاء الاصطناعي والتوقعات",
+    "catalog": "القائمة والمنتجات",
+    "inventoryOps": "المخزون والتوريد",
+    "administration": "الإدارة والنظام",
     "settings": "الإعدادات",
     "analytics": "التحليلات",
     "restaurants": "المطاعم",
@@ -22,7 +26,12 @@
     "recipes": "الوصفات",
     "purchaseOrders": "طلبات الشراء",
     "suppliers": "الموردين",
-    "inventory": "المخزون"
+    "inventory": "المخزون",
+    "predictions": "التوقعات",
+    "productionPlan": "خطة الإنتاج",
+    "recommendations": "التوصيات",
+    "waste": "الهدر والمتبقي",
+    "imports": "استيراد البيانات"
   },
   "restaurant": {
     "pageTitle": "إدارة المطعم",

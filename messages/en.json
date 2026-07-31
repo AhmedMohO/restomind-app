@@ -558,11 +558,13 @@
     "subtitle": "Pick a data type and drop its file — column mapping and validation happen automatically.",
     "uploadCard": {
       "title": "Import restaurant data",
-      "description": "Upload one CSV at a time. The system maps columns and imports rows as soon as you drop the file — no manual mapping or preview step."
+      "description": "Upload one CSV at a time. The system maps columns and imports rows as soon as you drop the file."
     },
     "typePicker": {
       "legend": "1. Choose what you're importing",
-      "needs": "Needs {list} first"
+      "needs": "Needs {list} first",
+      "selectedDetailsTitle": "Selected Import Type & Details",
+      "expectedHeadersTitle": "Recognized CSV Columns"
     },
     "types": {
       "menu_items": {
