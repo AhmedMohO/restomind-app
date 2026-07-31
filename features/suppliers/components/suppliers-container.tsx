@@ -62,9 +62,10 @@ export function SuppliersContainer() {
     search: debouncedSearch || undefined,
   })
 
+  const items = data?.items
   const suppliers: ApiSupplier[] = React.useMemo(
-    () => data?.items ?? [],
-    [data?.items]
+    () => items ?? [],
+    [items]
   )
   const total = data?.total ?? 0
   const totalPages = data?.totalPages ?? 1

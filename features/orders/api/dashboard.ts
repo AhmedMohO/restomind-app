@@ -4,7 +4,7 @@
  * A single place decides *which* upstream endpoint a dashboard user may reach:
  *
  *   admin            → the whole platform (`/orders`, `/orders/group/:id`)
- *   manager / staff  → their own restaurant only (`/orders/restaurant/:id`)
+ *   manager / staff  → their own restaurant only (`/orders/:id`)
  *
  * Route handlers stay thin and can never accidentally widen a manager's or a
  * staff member's scope, because the restaurant id always comes from the session
@@ -15,8 +15,9 @@ import "server-only"
 
 import { AuthorizationError } from "@/lib/auth/errors"
 import type { SessionUser } from "@/features/auth/auth"
-import { getAllOrders, getOrderGroupById, getRestaurantOrders } from "./index"
+import { getAllOrders, getChildOrderById, getOrderGroupById, getRestaurantOrders } from "./index"
 import type {
+  ApiChildOrder,
   ApiGroupSubOrder,
   ApiOrderGroup,
   OrderStatus,
@@ -127,54 +128,33 @@ export async function getDashboardOrdersSummary(
 }
 
 /**
- * Group / order details for a dashboard user.
- *
- * Admins reach `GET /orders/group/:id` and see every restaurant's sub-order.
- * Managers and staff reach the same endpoint but are scoped down to their own
- * restaurant's sub-order within the group.
+ * Child order details for manager or admin using `GET /orders/:id`.
+ * Returns `ApiChildOrder` directly without mapping.
+ */
+export async function getDashboardChildOrder(
+  user: SessionUser,
+  id: string
+): Promise<ApiChildOrder> {
+  const { data } = await getChildOrderById(id)
+
+  if (isAdmin(user)) return data
+
+  const restaurantId = ownRestaurantId(user)
+  if (data.restaurant._id !== restaurantId) {
+    throw new AuthorizationError("This order does not belong to your restaurant")
+  }
+
+  return data
+}
+
+/**
+ * Group order details for an admin using `GET /orders/group/:id`.
  */
 export async function getDashboardOrderGroup(
   user: SessionUser,
   id: string
 ): Promise<ApiOrderGroup> {
   const { data: group } = await getOrderGroupById(id)
-
-  if (isAdmin(user)) return group
-
-  const restaurantId = ownRestaurantId(user)
-  const scopedOrders = group.orders.filter(
-    (order) => order.restaurant._id === restaurantId
-  )
-
-  if (scopedOrders.length === 0) {
-    throw new AuthorizationError("This order does not belong to your restaurant")
-  }
-
-  return withSubOrders(group, scopedOrders)
+  return group
 }
 
-/** Replaces a group's sub-orders and recomputes the totals that follow. */
-function withSubOrders(
-  group: ApiOrderGroup,
-  orders: ApiGroupSubOrder[]
-): ApiOrderGroup {
-  const sum = (
-    key: "totalOriginalPrice" | "totalDiscount" | "finalTotalPrice" | "totalQuantity"
-  ) => orders.reduce((acc, order) => acc + order[key], 0)
-
-  // With a single restaurant in view (manager/staff) the group badge must show
-  // that restaurant's status, not the aggregate of the whole group.
-  const statuses = new Set(orders.map((order) => order.status))
-  const overallStatus: OverallOrderStatus =
-    statuses.size === 1 ? orders[0].status : group.overallStatus
-
-  return {
-    ...group,
-    orders,
-    overallStatus,
-    totalOriginalPrice: sum("totalOriginalPrice"),
-    totalDiscount: sum("totalDiscount"),
-    finalTotalPrice: sum("finalTotalPrice"),
-    totalQuantity: sum("totalQuantity"),
-  }
-}

@@ -14,7 +14,7 @@
  */
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "@/i18n/routing"
 import { Loader2 } from "lucide-react"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import type { UserRole } from "@/features/auth/auth"

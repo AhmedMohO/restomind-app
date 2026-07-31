@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
+import { NextThemeProvider, useTheme } from "@space-man/react-theme-animation"
 
 import { Toaster } from "@/components/ui/sonner"
 
@@ -22,19 +22,48 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
 function ThemeProvider({
   children,
   ...props
-}: React.ComponentProps<typeof NextThemesProvider>) {
+}: React.ComponentProps<typeof NextThemeProvider>) {
   return (
-    <NextThemesProvider
+    <NextThemeProvider
       attribute="class"
       defaultTheme="system"
+      enableSystem
       disableTransitionOnChange
       {...props}
     >
+      <ThemeGuard />
       <ThemeHotkey />
       {children}
       <Toaster position="top-center" richColors />
-    </NextThemesProvider>
+    </NextThemeProvider>
   )
+}
+
+/**
+ * Re-applies the correct theme class on <html> after every React commit.
+ *
+ * When the locale changes, Next.js streams new server-rendered HTML that
+ * overwrites <html>'s className (stripping "dark"). useLayoutEffect runs
+ * synchronously BEFORE the browser paints, so the user never sees the
+ * wrong theme — even during soft navigations.
+ */
+function ThemeGuard() {
+  const { resolvedTheme } = useTheme()
+
+  // No dependency array → runs after every render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useLayoutEffect(() => {
+    const el = document.documentElement
+    if (resolvedTheme === "dark") {
+      if (!el.classList.contains("dark")) el.classList.add("dark")
+      el.style.colorScheme = "dark"
+    } else {
+      if (el.classList.contains("dark")) el.classList.remove("dark")
+      el.style.colorScheme = "light"
+    }
+  })
+
+  return null
 }
 
 function isTypingTarget(target: EventTarget | null) {

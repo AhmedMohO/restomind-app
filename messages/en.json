@@ -349,7 +349,320 @@
     "active": "Active:",
     "off": "{percent}%+ Off",
     "tags": "Tags",
-    "restaurants": "Restaurants"
+    "restaurants": "Restaurants",
+    "updating": "Updating..."
+  },
+  "ai": {
+    "source": {
+      "ai_model": "AI model",
+      "rule_based": "Rule-based",
+      "fallback_naive": "Estimated",
+      "fallback_yesterday": "Estimated"
+    },
+    "sourceTooltip": {
+      "ai_model": "Forecast produced by the demand model.",
+      "rule_based": "Computed from a fixed discount rule, not the AI model.",
+      "fallback_naive": "The AI service was unreachable. Estimated from last week's sales.",
+      "fallback_yesterday": "The AI service was unreachable. Copied from yesterday's plan."
+    },
+    "confidence": { "high": "High", "medium": "Medium", "low": "Low" },
+    "degraded": {
+      "title": "AI service unavailable",
+      "body": "Showing estimates instead of model forecasts. Numbers may be less accurate.",
+      "dismiss": "Dismiss"
+    },
+    "status": {
+      "trained": "Trained",
+      "learning": "Learning",
+      "cold_start": "No data yet"
+    },
+    "risk": { "low": "Low risk", "medium": "Medium risk", "high": "High risk" },
+    "tableView": "View as table",
+    "chartView": "View as chart"
+  },
+  "recommendations": {
+    "title": "Recommendations",
+    "scanButton": "Scan for surplus",
+    "scanning": "Scanning…",
+    "scanSuccess": "Scan complete — new recommendations are ready.",
+    "scanDegradedSuccess": "Scan complete with partial results — surplus items were saved, but AI copy wasn't generated for all of them.",
+    "scanError": "Could not run the surplus scan",
+    "empty": "No recommendations yet",
+    "emptyHint": "Run a surplus scan to find discount opportunities.",
+    "statusFilter": "All statuses",
+    "approve": "Approve",
+    "edit": "Edit %",
+    "dismiss": "Dismiss",
+    "discountLabel": "{percent}% off",
+    "offerPrice": "Offer price",
+    "originalPrice": "Original price",
+    "aiCopyLabel": "AI-suggested copy",
+    "approveSuccess": "Recommendation approved",
+    "approveError": {
+      "conflict": "An active offer already exists for this product",
+      "invalid": "This recommendation can no longer be approved",
+      "notFound": "The product no longer exists",
+      "generic": "Could not approve the recommendation"
+    },
+    "dismissSuccess": "Recommendation dismissed",
+    "dismissError": "Could not dismiss the recommendation",
+    "unknownProduct": "Unknown product",
+    "priceUnavailable": "Price unavailable",
+    "editDialogTitle": "Adjust discount",
+    "editDialogDescription": "Change the suggested discount percentage before approving.",
+    "discountPercentLabel": "Discount percentage",
+    "cancel": "Cancel",
+    "saveChanges": "Save changes",
+    "editSuccess": "Discount updated",
+    "editError": "Could not update the discount",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "dismissed": "Dismissed",
+      "edited": "Edited"
+    }
+  },
+  "predictions": {
+    "title": "Demand forecast",
+    "subtitle": "Weekly unit forecasts per product, with the factors behind each number.",
+    "targetWeek": "Target week",
+    "targetWeekPlaceholder": "Pick a Sunday",
+    "recalculateAll": "Recalculate all",
+    "recalculating": "Recalculating…",
+    "recalculatingHint": "Running in the background — rows will update as each product finishes.",
+    "batchSuccess": "Batch recalculation finished",
+    "batchError": "Could not start batch recalculation",
+    "recalculateOne": "Recalculate this product",
+    "recalculateOneSuccess": "Prediction recalculated",
+    "recalculateOneError": "Could not recalculate this prediction",
+    "predicted": "Predicted",
+    "actual": "Actual",
+    "variance": "Variance",
+    "date": "Date",
+    "unknownProduct": "Unknown product",
+    "product": "Product",
+    "predictedOrders": "Predicted units",
+    "confidence": "Confidence",
+    "source": "Source",
+    "modelVersion": "Model version",
+    "lastUpdated": "Last updated",
+    "actualWeekTotal": "Actual (week total)",
+    "errorAbs": "Error",
+    "factorsTitle": "Why this number",
+    "noFactors": "No explainability factors reported for this forecast.",
+    "expandRow": "Show daily breakdown",
+    "collapseRow": "Hide daily breakdown",
+    "empty": "No forecasts for this week yet",
+    "emptyHint": "Run Recalculate all to generate forecasts for this week.",
+    "fetchError": "Could not load forecasts",
+    "retry": "Try again",
+    "learning": {
+      "title": "Model training",
+      "headline": "{trained} / {total} products trained",
+      "backfillButton": "Backfill history",
+      "backfilling": "Backfilling…",
+      "backfillSuccess": "History backfilled — training will pick up the new data shortly.",
+      "backfillError": "Could not backfill history",
+      "empty": "No products to train yet.",
+      "allStatuses": "All statuses",
+      "statusFilter": "Status"
+    },
+    "accuracy": {
+      "title": "Forecast accuracy",
+      "latestLabel": "Latest MAPE",
+      "mape": "MAPE",
+      "noData": "Not enough closed weeks yet to chart accuracy.",
+      "week": "Week",
+      "predictionsCount": "Predictions",
+      "totalPredicted": "Total predicted",
+      "totalActual": "Total actual"
+    },
+    "shortfalls": {
+      "title": "Ingredients you can't order yet",
+      "subtitle": "Left over from the last batch run — no supplier is assigned.",
+      "shortfall": "Shortfall",
+      "assignSupplier": "Assign a supplier"
+    }
+  },
+  "productionPlan": {
+    "title": "Production plan",
+    "subtitle": "How much to make today, and what actually came off the line.",
+    "date": "Date",
+    "datePlaceholder": "Pick a date",
+    "today": "Today",
+    "totalRecommended": "Total recommended: {qty} units",
+    "recommended": "Recommended",
+    "actualLabel": "Actual produced",
+    "unknownProduct": "Unknown product",
+    "generatingHint": "Generating today's plan — this can take up to 30 seconds.",
+    "noPlanTitle": "No plan for this date",
+    "noPlanDescription": "No plan was generated for this date.",
+    "horizonCapTitle": "Too far ahead",
+    "horizonCapDescription": "Production plans are only generated up to {days} days ahead. Pick a closer date.",
+    "fetchErrorTitle": "Couldn't load the plan",
+    "fetchError": "Could not load the production plan",
+    "generationTimeoutTitle": "Still generating",
+    "generationTimeoutDescription": "This is taking longer than expected. Try refreshing in a moment.",
+    "retry": "Try again",
+    "retryRow": "Retry",
+    "actualsSaved": "Saved {count} row(s)",
+    "actualsSkipped": "{count} row(s) weren't saved — they're no longer part of this plan",
+    "actualsError": "Could not save actuals",
+    "rowSkipped": "Not part of this plan anymore",
+    "saveFailed": "Couldn't save — tap retry",
+    "rowStatus": {
+      "idle": "Not recorded yet",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "failed": "Save failed"
+    }
+  },
+  "waste": {
+    "title": "Waste & surplus",
+    "subtitle": "Ingredient-level surplus risk from the last scan, and the forecast behind each report.",
+    "scanButton": "Scan for surplus",
+    "scanning": "Scanning…",
+    "scanSuccess": "Scan complete — waste reports updated.",
+    "scanDegradedSuccess": "Scan incomplete — partial results saved.",
+    "scanError": "Could not run the surplus scan",
+    "summary": {
+      "totalSurplus": "Total surplus quantity",
+      "wasteCost": "Estimated waste cost",
+      "highRiskCount": "High-risk ingredients",
+      "windowLabel": "Last {days} days"
+    },
+    "riskBreakdown": {
+      "title": "Risk breakdown",
+      "empty": "No waste reports in this window",
+      "level": "Risk level",
+      "count": "Count",
+      "share": "Share"
+    },
+    "table": {
+      "title": "Waste reports",
+      "ingredient": "Ingredient",
+      "expectedConsumption": "Expected consumption",
+      "usableStock": "Usable stock",
+      "expectedSurplus": "Expected surplus",
+      "risk": "Risk",
+      "prediction": "Linked forecast",
+      "noPrediction": "No linked forecast",
+      "unknownIngredient": "Unknown ingredient",
+      "viewPrediction": "View forecast",
+      "riskFilter": "All risk levels",
+      "empty": "No waste reports yet",
+      "emptyHint": "Run a surplus scan to generate waste reports.",
+      "fetchError": "Could not load waste reports",
+      "retry": "Try again"
+    }
+  },
+  "imports": {
+    "title": "CSV import",
+    "subtitle": "Pick a data type and drop its file — column mapping and validation happen automatically.",
+    "uploadCard": {
+      "title": "Import restaurant data",
+      "description": "Upload one CSV at a time. The system maps columns and imports rows as soon as you drop the file."
+    },
+    "typePicker": {
+      "legend": "1. Choose what you're importing",
+      "needs": "Needs {list} first",
+      "selectedDetailsTitle": "Selected Import Type & Details",
+      "expectedHeadersTitle": "Recognized CSV Columns"
+    },
+    "types": {
+      "menu_items": {
+        "title": "Menu items",
+        "description": "The dishes your restaurant sells — name, price, and category."
+      },
+      "ingredients": {
+        "title": "Ingredients",
+        "description": "Raw materials used in recipes and inventory tracking."
+      },
+      "recipes": {
+        "title": "Recipes",
+        "description": "Which ingredients, and how much of each, go into a menu item."
+      },
+      "inventory_transactions": {
+        "title": "Inventory transactions",
+        "description": "Stock received into inventory — batches, quantities, and cost."
+      },
+      "sales_history": {
+        "title": "Sales history",
+        "description": "Past orders, used to train demand forecasts."
+      }
+    },
+    "dropzone": {
+      "title": "Drop a CSV file here",
+      "subtitle": "or choose a file from your computer",
+      "browse": "Browse files",
+      "hint": "CSV files up to 5 MB",
+      "invalidType": "Only .csv files are accepted.",
+      "tooLarge": "This file is larger than 5 MB. Split it into smaller files and import each one separately."
+    },
+    "progress": {
+      "uploading": "Uploading",
+      "importing": "Importing"
+    },
+    "result": {
+      "successTitle": "Import complete",
+      "successBody": "{count} rows imported.",
+      "partialTitle": "Partial import",
+      "partialBody": "{valid} of {total} rows imported. {invalid} rows were skipped — fix them and re-upload just those rows.",
+      "failedTitle": "Nothing imported",
+      "failedBody": "All {invalid} rows failed. Fix the errors below and re-upload.",
+      "dependencyTitle": "Import order",
+      "goTo": "Go to {type}",
+      "aiIngestFailedTitle": "Saved, but the forecast model wasn't updated",
+      "aiIngestFailedBody": "All {count} rows were saved to sales history. The AI ingest step failed, so demand forecasts don't reflect this data yet.",
+      "aiIngestError": "Last error",
+      "retryAiIngest": "Retry AI ingest",
+      "retrying": "Retrying…",
+      "retrySuccess": "AI ingest retried — forecasts now include this data.",
+      "retryError": "Retry failed"
+    },
+    "errors": {
+      "groupTitle": "Row errors",
+      "occurrences": "{count} rows affected",
+      "firstRows": "Rows: {rows}",
+      "andMore": "and {count} more",
+      "capNotice": "Showing the first {cap} of {total} rows in this group.",
+      "downloadCsv": "Download failed rows as CSV"
+    },
+    "failure": {
+      "emptyFile": "This file is empty — nothing to parse.",
+      "noDataRows": "This file has headers but no rows.",
+      "fileRequired": "Choose a CSV file before importing.",
+      "auth": "Your session or role doesn't allow this. Sign in again, or check that your account has manager or admin access.",
+      "network": "The connection was interrupted. The import may already have started — check the history below before uploading again.",
+      "notFound": "This import job no longer exists.",
+      "alreadyCompleted": "This import already finished. Check the history below.",
+      "generic": "Could not complete the import.",
+      "retryButton": "Try again"
+    },
+    "history": {
+      "title": "Recent imports",
+      "empty": "No imports yet",
+      "emptyHint": "Your upload history will appear here.",
+      "fetchError": "Could not load import history",
+      "retry": "Try again",
+      "typeFilter": "All types",
+      "statusFilter": "All statuses",
+      "columns": {
+        "file": "File",
+        "type": "Type",
+        "status": "Status",
+        "rows": "Rows",
+        "time": "Uploaded"
+      }
+    },
+    "status": {
+      "processing": "Processing",
+      "validated": "Validated",
+      "ai_ingest_pending": "AI ingest pending",
+      "ai_ingest_failed": "AI ingest failed",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
   },
   "Auth": {
     "loginTitle": "Login to your account",

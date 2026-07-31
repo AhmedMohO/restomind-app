@@ -217,7 +217,7 @@ export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
             </div>
             <div>
               <Badge variant="secondary" className="px-2 py-0.5 text-[11px] font-bold">
-                -{offer.discountPercentage}% OFF
+                {t("offDiscount", { percent: offer.discountPercentage })}
               </Badge>
             </div>
           </CardContent>
@@ -246,7 +246,7 @@ export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
                 />
               </div>
               <p className="text-[11px] text-muted-foreground">
-                {offer.remainingQuantity} unit(s) remaining
+                {t("unitsRemaining", { count: offer.remainingQuantity })}
               </p>
             </div>
           </CardContent>
@@ -273,7 +273,7 @@ export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
             {offer.estimatedWasteReduction && (
               <p className="text-xs text-emerald-600/90 dark:text-emerald-400/90 flex items-center gap-1">
                 <Leaf className="size-3" />
-                <span>{t("kgSuffix", { count: offer.estimatedWasteReduction })} waste saved</span>
+                <span>{t("wasteSaved", { count: offer.estimatedWasteReduction })}</span>
               </p>
             )}
           </CardContent>
@@ -293,8 +293,8 @@ export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
             </div>
             <p className="text-xs text-muted-foreground">
               {offer.maxPerCustomer
-                ? `Max ${offer.maxPerCustomer} units per customer`
-                : "No customer purchase limits"}
+                ? t("maxUnitsPerCustomer", { count: offer.maxPerCustomer })
+                : t("noCustomerLimits")}
             </p>
           </CardContent>
         </Card>
@@ -383,13 +383,13 @@ export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
                 {createdByName && (
                   <div className="flex items-center gap-1.5">
                     <User className="size-3.5 text-primary" />
-                    <span>Created by: <strong className="text-foreground">{createdByName}</strong></span>
+                    <span>{t("createdBy", { name: createdByName })}</span>
                   </div>
                 )}
                 {offer.createdAt && (
                   <div className="flex items-center gap-1.5">
                     <Clock className="size-3.5" />
-                    <span>Created on {formatDate(offer.createdAt, locale)}</span>
+                    <span>{t("createdOn", { date: formatDate(offer.createdAt, locale) })}</span>
                   </div>
                 )}
               </div>

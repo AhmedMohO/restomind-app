@@ -1,6 +1,7 @@
 "use client"
 
 import { Clock } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import {
   Select,
@@ -30,11 +31,13 @@ export function TimePicker({
   onMinuteChange,
   onAmpmChange,
 }: TimePickerProps) {
+  const t = useTranslations("Dashboard.offers")
+
   return (
     <div className="flex items-center justify-between gap-2 border-t border-border bg-muted/20 p-3">
       <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
         <Clock className="size-3.5 text-primary" />
-        <span>Time</span>
+        <span>{t("time")}</span>
       </div>
       <div className="flex items-center gap-1">
         <Select value={hour} onValueChange={(val) => val && onHourChange(val)} disabled={disabled}>
@@ -66,8 +69,8 @@ export function TimePicker({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="AM">AM</SelectItem>
-            <SelectItem value="PM">PM</SelectItem>
+            <SelectItem value="AM">{t("am")}</SelectItem>
+            <SelectItem value="PM">{t("pm")}</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -13,9 +13,30 @@ import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
 import { Link } from "@/i18n/routing"
 import { NavMain } from "@/components/shadcn-space/blocks/dashboard-shell-01/nav-main"
-import { BarChart3, Boxes, Building2, Carrot, ChefHat, FolderTree, Package, Percent, Receipt, ShoppingBag, Store, Settings, Truck, Users, type LucideIcon } from "lucide-react"
+import {
+  BarChart3,
+  Boxes,
+  Building2,
+  CalendarClock,
+  Carrot,
+  ChefHat,
+  FolderTree,
+  Package,
+  Percent,
+  Receipt,
+  ShoppingBag,
+  Sparkles,
+  Store,
+  Settings,
+  Trash2,
+  TrendingUp,
+  Truck,
+  Upload,
+  Users,
+  type LucideIcon,
+} from "lucide-react"
+
 import { SiteHeader } from "@/components/shadcn-space/blocks/dashboard-shell-01/site-header"
-import SimpleBar from "simplebar-react"
 import "simplebar-react/dist/simplebar.min.css"
 
 import { useAuth } from "@/features/auth/hooks/useAuth"
@@ -33,40 +54,84 @@ export type NavItem = {
 }
 
 /**
+ * Edge-case resilient role checking helper.
+ */
+function isRoleAllowed(
+  allowedRoles: UserRole[] | undefined,
+  userRole: UserRole | null,
+  isHydrated: boolean
+): boolean {
+  if (!allowedRoles || allowedRoles.length === 0) return true
+  if (userRole !== null) {
+    return allowedRoles.includes(userRole)
+  }
+  // When hydrated and userRole is null (unauthenticated / guest), disallow protected routes
+  if (isHydrated) {
+    return false
+  }
+  return true
+}
+
+/**
  * Filter nav items and section headers according to the user's role.
- * Empty sections (sections with zero allowed items) are automatically omitted.
+ * Handles edge cases:
+ * 1. Disallowed parent roles automatically prune all children.
+ * 2. Containers with no href whose children are all filtered out get pruned.
+ * 3. Parents with an href whose children get filtered out revert to flat items.
+ * 4. Empty or orphan section headers (sections with zero allowed items) are automatically omitted.
  */
 function filterNavByRole(
   items: NavItem[],
   userRole: UserRole | null,
   isHydrated: boolean
 ): NavItem[] {
-  const result: NavItem[] = []
-  let currentSection: NavItem | null = null
+  const step1: NavItem[] = []
 
   for (const item of items) {
     if (item.isSection) {
-      currentSection = item
-    } else {
-      const isAllowed =
-        !item.roles ||
-        !isHydrated ||
-        (userRole !== null && item.roles.includes(userRole))
+      step1.push({ ...item })
+      continue
+    }
 
-      if (isAllowed) {
-        if (currentSection) {
-          result.push(currentSection)
-          currentSection = null
+    // Check item level role permission
+    if (!isRoleAllowed(item.roles, userRole, isHydrated)) {
+      continue
+    }
+
+    // Process children recursively if any
+    let filteredChildren: NavItem[] | undefined = undefined
+    if (item.children && item.children.length > 0) {
+      const childResults = filterNavByRole(item.children, userRole, isHydrated)
+      if (childResults.length > 0) {
+        filteredChildren = childResults
+      } else {
+        // If parent has no href and all children were pruned, prune parent
+        if (!item.href) {
+          continue
         }
-        const filteredChildren = item.children
-          ? filterNavByRole(item.children, userRole, isHydrated)
-          : undefined
-
-        result.push({
-          ...item,
-          children: filteredChildren,
-        })
+        filteredChildren = undefined
       }
+    }
+
+    step1.push({
+      ...item,
+      children: filteredChildren,
+    })
+  }
+
+  // Step 2: Remove empty/orphan section headers
+  const result: NavItem[] = []
+  let pendingSectionHeader: NavItem | null = null
+
+  for (const item of step1) {
+    if (item.isSection) {
+      pendingSectionHeader = item
+    } else {
+      if (pendingSectionHeader) {
+        result.push(pendingSectionHeader)
+        pendingSectionHeader = null
+      }
+      result.push(item)
     }
   }
 
@@ -93,8 +158,8 @@ function useDashboardNav(): NavItem[] {
       roles: ["admin", "manager"],
     },
 
-    // Section 2: Management
-    { label: t("management"), isSection: true },
+    // Section 5: Administration
+    { label: t("administration"), isSection: true },
     {
       title: role === "admin" ? t("restaurants") : t("restaurantProfile"),
       icon: Store,
@@ -114,6 +179,42 @@ function useDashboardNav(): NavItem[] {
       roles: ["admin", "manager"],
     },
     {
+      title: t("imports"),
+      icon: Upload,
+      href: "/dashboard/imports",
+      roles: ["admin", "manager"],
+    },
+
+    // Section 2: AI & Intelligence
+    { label: t("aiIntelligence"), isSection: true },
+    {
+      title: t("predictions"),
+      icon: TrendingUp,
+      href: "/dashboard/predictions",
+      roles: ["manager"],
+    },
+    {
+      title: t("recommendations"),
+      icon: Sparkles,
+      href: "/dashboard/recommendations",
+      roles: ["manager"],
+    },
+    {
+      title: t("productionPlan"),
+      icon: CalendarClock,
+      href: "/dashboard/production-plan",
+      roles: ["manager"],
+    },
+    {
+      title: t("waste"),
+      icon: Trash2,
+      href: "/dashboard/waste",
+      roles: ["manager"],
+    },
+
+    // Section 3: Menu & Catalog
+    { label: t("catalog"), isSection: true },
+    {
       title: t("categories"),
       icon: FolderTree,
       href: "/dashboard/categories",
@@ -132,9 +233,18 @@ function useDashboardNav(): NavItem[] {
       roles: ["manager", "staff"],
     },
     {
-      title: t("suppliers"),
-      icon: Building2,
-      href: "/dashboard/suppliers",
+      title: t("recipes"),
+      icon: ChefHat,
+      href: "/dashboard/recipes",
+      roles: ["manager"],
+    },
+
+    // Section 4: Inventory & Supply
+    { label: t("inventoryOps"), isSection: true },
+    {
+      title: t("inventory"),
+      icon: Boxes,
+      href: "/dashboard/inventory",
       roles: ["manager"],
     },
     {
@@ -144,25 +254,19 @@ function useDashboardNav(): NavItem[] {
       roles: ["manager"],
     },
     {
-      title: t("recipes"),
-      icon: ChefHat,
-      href: "/dashboard/recipes",
-      roles: ["manager"],
-    },
-    {
       title: t("purchaseOrders"),
       icon: Truck,
       href: "/dashboard/purchase-orders",
       roles: ["manager"],
     },
     {
-      title: t("inventory"),
-      icon: Boxes,
-      href: "/dashboard/inventory",
+      title: t("suppliers"),
+      icon: Building2,
+      href: "/dashboard/suppliers",
       roles: ["manager"],
     },
 
-    // Section 3: Settings
+    // Section 6: Settings
     { label: t("settings"), isSection: true },
     {
       title: t("accountSettings"),
@@ -182,10 +286,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <SidebarProvider>
-      <Sidebar
-        side={isEN ? "left" : "right"}
-        className="bg-background px-0"
-      >
+      <Sidebar side={isEN ? "left" : "right"} className="bg-background px-0">
         <div className="flex h-full flex-col gap-4 bg-background py-4">
           {/* ---------------- Header ---------------- */}
           <SidebarHeader className="px-4 py-1">
@@ -210,14 +311,9 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
 
           {/* ---------------- Content ---------------- */}
           <SidebarContent className="flex-1 gap-0 overflow-hidden px-3">
-            <SimpleBar
-              autoHide={true}
-              className="h-full"
-            >
-              <div className="space-y-1.5 py-2">
-                <NavMain items={navData} />
-              </div>
-            </SimpleBar>
+            <div className="scrollbar-hide space-y-1.5 overflow-y-auto py-2">
+              <NavMain items={navData} />
+            </div>
           </SidebarContent>
         </div>
       </Sidebar>

@@ -362,7 +362,7 @@ export function OffersContentClient({
                 <div className="flex items-center gap-2 rounded-full border border-[#ECE6DB] bg-white px-4 py-2 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   <span className="text-xs font-medium text-muted-foreground">
-                    Updating...
+                    {t("updating")}
                   </span>
                 </div>
               </div>

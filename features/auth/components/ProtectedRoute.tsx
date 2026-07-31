@@ -80,12 +80,8 @@ export default async function ProtectedRoute({
 
   // redirect() throws NEXT_REDIRECT — must be called OUTSIDE the try block.
   if (authError === "unauthenticated") {
-    const loginUrl = new URL(
-      `/${safeLocale}/login`,
-      process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-    )
-    if (route) loginUrl.searchParams.set("callbackUrl", route)
-    redirect(loginUrl.toString())
+    const callbackParam = route ? `?callbackUrl=${encodeURIComponent(route)}` : ""
+    redirect(`/${safeLocale}/login${callbackParam}`)
   }
 
   if (authError === "unauthorized") {

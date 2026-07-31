@@ -10,6 +10,7 @@ import { Link, useRouter } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { TablePagination } from "@/components/ui/table-pagination"
 import {
   Select,
@@ -134,7 +135,10 @@ export function AdminUserTable() {
         </div>
 
         {!isManager && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="admin-role-filter" className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+              {t("role")}:
+            </Label>
             <Select
               value={roleFilter}
               onValueChange={(val) => {
@@ -142,7 +146,7 @@ export function AdminUserTable() {
                 setPage(1)
               }}
             >
-              <SelectTrigger className="w-[150px] rounded-xl">
+              <SelectTrigger id="admin-role-filter" aria-label={t("role")} className="w-[150px] rounded-xl">
                 <SelectValue placeholder={t("roleAll")} />
               </SelectTrigger>
               <SelectContent>

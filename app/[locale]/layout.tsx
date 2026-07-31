@@ -151,6 +151,11 @@ export default async function LocaleLayout({
     >
       <head>
         <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('theme')||'system';var r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;if(r==='dark'){d.classList.add('dark')}else{d.classList.remove('dark')}d.style.colorScheme=r}catch(e){}})()`,
+          }}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
         />
@@ -160,8 +165,8 @@ export default async function LocaleLayout({
           <AuthProvider>
             <ThemeProvider
               attribute="class"
-              defaultTheme="light"
-              forcedTheme="light"
+              defaultTheme="system"
+              enableSystem
             >
               <TooltipProvider>
                 <SmoothScrollProvider>
