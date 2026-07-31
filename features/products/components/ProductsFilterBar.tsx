@@ -94,19 +94,22 @@ export function ProductsFilterBar({ startTransition }: ProductsFilterBarProps) {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder={t("searchPlaceholder")}
-          className="w-full rounded-xl border border-[#ECE6DB] bg-white py-2 ps-9 pe-4 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary dark:border-neutral-800 dark:bg-neutral-900"
+          className="h-8 w-full rounded-xl border border-[#ECE6DB] bg-white py-2 ps-9 pe-4 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary dark:border-neutral-800 dark:bg-neutral-900"
         />
       </div>
 
       {/* Sorting & Limit selectors */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Sort selector */}
-        <div className="flex items-center">
-          <span className="flex h-8 items-center rounded-s-md border border-e-0 border-input bg-[#FAF7F2] px-2.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase dark:bg-neutral-800">
+        <div className="inline-flex items-center">
+          <span className="flex h-8 items-center rounded-s-xl border border-e-0 border-[#ECE6DB] bg-[#FAF7F2] px-3 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase dark:border-neutral-800 dark:bg-neutral-800/80">
             {t("sortBy")}
           </span>
           <Select value={currentSort} onValueChange={handleSortChange}>
-            <SelectTrigger className="h-8 rounded-s-none rounded-e-md border-input bg-white text-xs dark:bg-neutral-900">
+            <SelectTrigger
+              size="sm"
+              className="h-8 rounded-s-none rounded-e-xl border-[#ECE6DB] bg-white px-3 text-xs focus:ring-primary dark:border-neutral-800 dark:bg-neutral-900"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -119,12 +122,15 @@ export function ProductsFilterBar({ startTransition }: ProductsFilterBarProps) {
         </div>
 
         {/* Page size selector */}
-        <div className="flex items-center">
-          <span className="flex h-8 items-center rounded-s-md border border-e-0 border-input bg-[#FAF7F2] px-2.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase dark:bg-neutral-800">
+        <div className="inline-flex items-center">
+          <span className="flex h-8 items-center rounded-s-xl border border-e-0 border-[#ECE6DB] bg-[#FAF7F2] px-3 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase dark:border-neutral-800 dark:bg-neutral-800/80">
             {t("show")}
           </span>
           <Select value={currentLimit} onValueChange={handleLimitChange}>
-            <SelectTrigger className="h-8 rounded-s-none rounded-e-md border-input bg-white text-xs dark:bg-neutral-900">
+            <SelectTrigger
+              size="sm"
+              className="h-8 rounded-s-none rounded-e-xl border-[#ECE6DB] bg-white px-3 text-xs focus:ring-primary dark:border-neutral-800 dark:bg-neutral-900"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

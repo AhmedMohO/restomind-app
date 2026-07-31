@@ -2,13 +2,11 @@
 
 import * as React from "react"
 import { Moon, Sun } from "lucide-react"
-import { useThemeAnimation } from "@space-man/react-theme-animation"
+import { useTheme } from "@space-man/react-theme-animation"
 import { Button } from "@/components/ui/button"
 
 export function ThemeToggle() {
-  const { toggleTheme, ref } = useThemeAnimation({
-    defaultTheme: "system",
-  })
+  const { toggleTheme, ref } = useTheme()
 
   return (
     <Button

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "@/i18n/routing"
 import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { DashboardContainer } from "@/components/shadcn-space/blocks/dashboard-shell-01/dashboard-container"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"

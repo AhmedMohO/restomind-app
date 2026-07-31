@@ -7,7 +7,6 @@ import { ImageOff, Quote } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { SourceBadge } from "@/components/ai/source-badge"
 import { cn } from "@/lib/utils"
 import { formatEgp, formatPercent } from "@/lib/charts/format"
 import type { Recommendation } from "@/features/recommendations/api/type"
@@ -76,19 +75,9 @@ export function RecommendationCard({
         )}
 
         {/* The discount is the visual anchor: a sale-sticker corner tag. */}
-        <div
-          className="absolute start-3 top-3 flex -rotate-6 flex-col items-center rounded-full bg-primary px-3 py-2 text-primary-foreground shadow-md"
-          aria-label={t("discountLabel", {
-            percent: recommendation.suggestedValue,
-          })}
-        >
-          <span
-            aria-hidden="true"
-            className="font-heading text-xl leading-none font-bold tabular-nums"
-          >
-            -{formatPercent(recommendation.suggestedValue / 100, locale)}
-          </span>
-        </div>
+        <Badge className={cn("absolute start-3 top-3 z-30 border")}>
+          -{formatPercent(recommendation.suggestedValue / 100, locale)}
+        </Badge>
 
         <Badge
           className={cn(
@@ -106,13 +95,6 @@ export function RecommendationCard({
             <h3 className="line-clamp-1 font-heading text-sm font-semibold">
               {title}
             </h3>
-            {/* The discount percentage is computed by a backend rule, not
-                the AI model — only gptExplanation/offerCopyAr is
-                AI-generated, and that goes null when the AI leg degrades.
-                "rule_based" is therefore the truthful, static provenance
-                for every card here; it is NOT inferred from whether
-                gptExplanation is present. See task-3-report.md fix round 1. */}
-            <SourceBadge source="rule_based" />
           </div>
           {hasPrice ? (
             <div className="mt-1 flex items-baseline gap-2">

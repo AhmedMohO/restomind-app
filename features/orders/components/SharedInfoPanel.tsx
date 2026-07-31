@@ -15,11 +15,11 @@ import {
 } from "@/components/ui/accordion"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import type { ApiOrderGroup } from "@/features/orders/api/type"
+import type { ApiChildOrder, ApiOrderGroup } from "@/features/orders/api/type"
 import { cn } from "@/lib/utils"
 
 interface SharedInfoPanelProps {
-  orderGroup: ApiOrderGroup
+  orderGroup: ApiOrderGroup | ApiChildOrder
   t: (key: string) => string
   className?: string
   mobile?: boolean

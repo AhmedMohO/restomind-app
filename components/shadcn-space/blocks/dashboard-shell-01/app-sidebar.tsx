@@ -37,7 +37,6 @@ import {
 } from "lucide-react"
 
 import { SiteHeader } from "@/components/shadcn-space/blocks/dashboard-shell-01/site-header"
-import SimpleBar from "simplebar-react"
 import "simplebar-react/dist/simplebar.min.css"
 
 import { useAuth } from "@/features/auth/hooks/useAuth"

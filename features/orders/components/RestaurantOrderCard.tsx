@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import type {
+  ApiChildOrder,
+  ApiChildOrderItem,
   ApiGroupSubOrder,
   ApiOrderItem,
 } from "@/features/orders/api/type"
@@ -12,7 +14,7 @@ import { getStatusMeta } from "@/features/orders/status"
 import { cn, formatCurrency } from "@/lib/utils"
 
 interface RestaurantOrderCardProps {
-  order: ApiGroupSubOrder
+  order: ApiGroupSubOrder | ApiChildOrder
   t: (key: string) => string
   className?: string
   /**
@@ -23,13 +25,16 @@ interface RestaurantOrderCardProps {
 }
 
 interface OrderItemRowProps {
-  item: ApiOrderItem
+  item: ApiOrderItem | ApiChildOrderItem
   t: (key: string) => string
 }
 
 function OrderItemRow({ item, t }: OrderItemRowProps) {
   const locale = useLocale()
-  const itemHasDiscount = item.discountedPrice < item.price
+  const title = "productTitle" in item && item.productTitle ? item.productTitle : ("title" in item ? item.title : "")
+  const price = "originalPrice" in item ? item.originalPrice : item.price
+  const discountedPrice = "offerPrice" in item ? item.offerPrice : item.discountedPrice
+  const itemHasDiscount = discountedPrice < price
 
   return (
     <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-muted/40 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:p-4">
@@ -39,13 +44,13 @@ function OrderItemRow({ item, t }: OrderItemRowProps) {
         </span>
         <div className="min-w-0 space-y-1 text-start">
           <h3 className="truncate text-sm font-semibold text-foreground">
-            {item.title}
+            {title}
           </h3>
           <p className="text-xs text-muted-foreground">
-            {t("unitPrice")}: {formatCurrency(item.discountedPrice, locale)}
+            {t("unitPrice")}: {formatCurrency(discountedPrice, locale)}
             {itemHasDiscount && (
               <span className="ms-1.5 text-muted-foreground/70 line-through">
-                {formatCurrency(item.price, locale)}
+                {formatCurrency(price, locale)}
               </span>
             )}
           </p>
@@ -69,8 +74,10 @@ export default function RestaurantOrderCard({
   const statusMeta = getStatusMeta(order.status)
 
   const restaurantName = order.restaurant.name
-  const shortOrderId = order.orderId.slice(-8).toUpperCase()
+  const rawId = "orderId" in order ? order.orderId : order._id
+  const shortOrderId = (rawId || "").slice(-8).toUpperCase()
   const hasDiscount = order.totalDiscount > 0
+
 
   return (
     <Card

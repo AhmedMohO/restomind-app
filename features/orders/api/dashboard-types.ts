@@ -68,9 +68,35 @@ export interface ApiRestaurantOrder {
   updatedAt: string
 }
 
-export interface UpdateOrderStatusPayload {
+/** Dedicated type alias for a child order returned by `GET /orders/:id` & `PATCH /orders/:id/status`. */
+export type ApiChildOrder = ApiRestaurantOrder
+
+/** Dedicated response type for `GET /orders/:id` (Get child order by ID). */
+export interface GetChildOrderByIdResponse {
+  data: ApiChildOrder
+}
+
+/** Dedicated response type for `PATCH /orders/:id/status` (Update child order status). */
+export interface UpdateOrderStatusResponse {
+  data: ApiChildOrder
+}
+
+/** Dedicated body DTO for `PATCH /orders/:id/status`. */
+export interface UpdateOrderStatusDto {
   status: OrderStatus
 }
+
+export type UpdateOrderStatusPayload = UpdateOrderStatusDto
+
+export interface GetChildOrderByIdParams {
+  id: string
+}
+
+export interface UpdateOrderStatusParams {
+  id: string
+  status: OrderStatus
+}
+
 
 export interface QueryOrderListingParams {
   page?: number

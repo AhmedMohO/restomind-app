@@ -3,16 +3,13 @@ import type { ApiResponse } from "@/features/auth/auth"
 import {
   ORDER_DASHBOARD_ROLES,
   getDashboardChildOrder,
-  getDashboardOrderGroup,
 } from "@/features/orders/api/dashboard"
 import { handleUpstreamError, requireSessionUser } from "@/lib/api/route-helpers"
-import type { ApiChildOrder, ApiOrderGroup } from "@/features/orders/api/type"
+import type { ApiChildOrder } from "@/features/orders/api/type"
 
 /**
- * GET /api/orders/group/:id — order details for the dashboard.
- *
- * Admins reach `GET /orders/group/:id`.
- * Managers and staff reach `GET /orders/:id` via getDashboardChildOrder.
+ * GET /api/orders/:id — child order details for manager, admin, or customer.
+ * Uses `GET /orders/:id` backend endpoint (orders.controller.ts:L64-L73).
  */
 export async function GET(
   _request: Request,
@@ -26,18 +23,13 @@ export async function GET(
   const { id } = await params
 
   try {
-    const data =
-      auth.user.role === "admin"
-        ? await getDashboardOrderGroup(auth.user, id)
-        : await getDashboardChildOrder(auth.user, id)
-
-    return NextResponse.json<ApiResponse<ApiOrderGroup | ApiChildOrder>>(
+    const data = await getDashboardChildOrder(auth.user, id)
+    return NextResponse.json<ApiResponse<ApiChildOrder>>(
       { success: true, data },
       { status: 200 }
     )
   } catch (err) {
-    console.error("[api/orders/group/[id]] GET failed", err)
-    return handleUpstreamError(err, "Order not found", 404)
+    console.error("[api/orders/[id]] GET failed", err)
+    return handleUpstreamError(err, "Child order not found", 404)
   }
 }
-

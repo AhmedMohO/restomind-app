@@ -23,8 +23,8 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const t = useTranslations("Offers")
 
   if (!rawProduct) return null
-
   const product = rawProduct.productId
+  if (!product) return null
   const isFavorite = wishlist.includes(rawProduct._id)
   const discountedPrice = rawProduct.offerPrice ?? product.discountedPrice
   const discountPercentage = rawProduct.discountPercentage || 0

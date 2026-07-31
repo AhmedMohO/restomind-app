@@ -9,11 +9,12 @@ import { Link } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
 import { getErrorMessage } from "@/lib/api/utils"
 import type {
+  ApiChildOrder,
   ApiGroupSubOrder,
   OrderStatus,
 } from "@/features/orders/api/type"
 import {
-  useDashboardOrderGroup,
+  useDashboardOrderDetails,
   useUpdateOrderStatus,
 } from "@/features/orders/hooks/use-dashboard-orders"
 import OrderDetailsPage from "@/features/orders/components/OrderDetailsPage"
@@ -24,16 +25,14 @@ interface DashboardOrderDetailsProps {
   locale: string
 }
 
-function subOrderId(order: ApiGroupSubOrder): string {
-  return order.orderId
+function subOrderId(order: ApiGroupSubOrder | ApiChildOrder): string {
+  return "orderId" in order ? order.orderId : order._id
 }
 
 /**
  * Order details for every dashboard role.
  *
- * The BFF scopes the group to the caller: admins get all restaurant sub-orders
- * of the group (rendered as a carousel), managers and staff get only their own
- * restaurant's sub-order. Status can be updated in place from each card.
+ * The BFF scopes details to the caller: admins get group orders, managers get child orders (`GET /orders/:id`).
  */
 export function DashboardOrderDetails({
   groupOrderId,
@@ -41,12 +40,12 @@ export function DashboardOrderDetails({
 }: DashboardOrderDetailsProps) {
   const t = useTranslations("Dashboard.orders")
   const { data, isLoading, isError, refetch } =
-    useDashboardOrderGroup(groupOrderId)
+    useDashboardOrderDetails(groupOrderId)
   const updateStatus = useUpdateOrderStatus()
   const [updatingId, setUpdatingId] = React.useState<string | null>(null)
 
   const handleStatusChange = React.useCallback(
-    async (order: ApiGroupSubOrder, status: OrderStatus) => {
+    async (order: ApiGroupSubOrder | ApiChildOrder, status: OrderStatus) => {
       const id = subOrderId(order)
       if (status === order.status) return
 
@@ -65,7 +64,7 @@ export function DashboardOrderDetails({
   )
 
   const renderStatusControl = React.useCallback(
-    (order: ApiGroupSubOrder) => (
+    (order: ApiGroupSubOrder | ApiChildOrder) => (
       <OrderStatusSelect
         value={order.status}
         onChange={(next) => handleStatusChange(order, next)}
@@ -75,6 +74,7 @@ export function DashboardOrderDetails({
     ),
     [handleStatusChange, updatingId]
   )
+
 
   if (isLoading) {
     return (

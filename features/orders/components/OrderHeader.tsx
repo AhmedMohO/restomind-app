@@ -10,13 +10,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import type { ApiOrderGroup } from "@/features/orders/api/type"
+import type { ApiChildOrder, ApiOrderGroup } from "@/features/orders/api/type"
 import { getStatusMeta } from "@/features/orders/status"
 import { useLocale } from "next-intl"
 import { cn, formatCurrency } from "@/lib/utils"
 
 interface OrderHeaderProps {
-  orderGroup: ApiOrderGroup
+  orderGroup: ApiOrderGroup | ApiChildOrder
   formattedDate: string
   t: (key: string) => string
   showCancelButton?: boolean
@@ -32,10 +32,11 @@ export default function OrderHeader({
   const router = useRouter()
   const [isCancelling, setIsCancelling] = useState(false)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
-  const statusMeta = getStatusMeta(orderGroup.overallStatus)
+  const overallStatus = "overallStatus" in orderGroup ? orderGroup.overallStatus : orderGroup.status
+  const statusMeta = getStatusMeta(overallStatus)
   const StatusIcon = statusMeta.Icon
-  const displayId = orderGroup.groupOrderId
-  const shortDisplayId = displayId.slice(-8).toUpperCase()
+  const displayId = "groupOrderId" in orderGroup && orderGroup.groupOrderId ? orderGroup.groupOrderId : orderGroup._id
+  const shortDisplayId = displayId ? displayId.slice(-8).toUpperCase() : ""
   const hasDiscount = orderGroup.totalDiscount > 0
   const discountPercent =
     hasDiscount && orderGroup.totalOriginalPrice > 0
@@ -46,8 +47,9 @@ export default function OrderHeader({
 
   const isCancellable =
     showCancelButton &&
-    (orderGroup.overallStatus === "Pending" ||
-      orderGroup.overallStatus === "Confirmed")
+    (overallStatus === "Pending" ||
+      overallStatus === "Confirmed")
+
 
   const handleConfirmCancel = async () => {
     if (!displayId) return

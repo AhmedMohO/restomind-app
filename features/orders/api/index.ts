@@ -9,6 +9,8 @@ import type {
   OrderStatus,
   PaginatedResponse,
   QueryOrderListingParams,
+  GetChildOrderByIdResponse,
+  UpdateOrderStatusResponse,
 } from "./type"
 
 export * from "./type"
@@ -108,9 +110,9 @@ export async function getOrderGroupById(
 /** GET /orders/:id — child order details (customer/manager/admin). */
 export async function getChildOrderById(
   id: string
-): Promise<{ data: ApiRestaurantOrder }> {
+): Promise<GetChildOrderByIdResponse> {
   const response = await apiClient(`/orders/${encodeURIComponent(id)}`)
-  return parseOrThrow<{ data: ApiRestaurantOrder }>(response, "getChildOrderById")
+  return parseOrThrow<GetChildOrderByIdResponse>(response, "getChildOrderById")
 }
 
 /** PATCH /orders/group/:id/cancel — cancel order group (customer only). */
@@ -127,16 +129,17 @@ export async function cancelOrderGroup(
 }
 
 /**
- * PATCH /orders/:id/status — update a sub-order status (admin/manager).
+ * PATCH /orders/:id/status — update a child order status (admin/manager).
  * Managers may only touch orders of their own restaurant (enforced upstream).
  */
 export async function updateOrderStatus(
   id: string,
   status: OrderStatus
-): Promise<{ data: ApiRestaurantOrder }> {
+): Promise<UpdateOrderStatusResponse> {
   const response = await apiClient(`/orders/${encodeURIComponent(id)}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
   })
-  return parseOrThrow<{ data: ApiRestaurantOrder }>(response, "updateOrderStatus")
+  return parseOrThrow<UpdateOrderStatusResponse>(response, "updateOrderStatus")
 }
+

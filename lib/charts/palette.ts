@@ -1,6 +1,6 @@
 "use client"
 
-import { useTheme } from "next-themes"
+import { useTheme } from "@space-man/react-theme-animation"
 
 /**
  * Chart palette, validated with the dataviz validator against this app's own
