@@ -31,7 +31,8 @@
     "productionPlan": "خطة الإنتاج",
     "recommendations": "التوصيات",
     "waste": "الهدر والمتبقي",
-    "imports": "استيراد البيانات"
+    "imports": "استيراد البيانات",
+    "partnershipApplications": "طلبات الشراكة"
   },
   "restaurant": {
     "pageTitle": "إدارة المطعم",
@@ -1034,5 +1035,25 @@
     "cancel": "إلغاء",
     "close": "إغلاق",
     "saving": "جاري الحفظ..."
+  },
+  "partnershipApplications": {
+    "title": "طلبات الشراكة",
+    "subtitle": "إدارة طلبات الشراكة من المطاعم والمخابز ومراجعة البيانات وتفعيل الحسابات.",
+    "searchLabel": "البحث في الطلبات",
+    "searchPlaceholder": "ابحث بالاسم، المالك، البريد...",
+    "statusFilter": "الحالة",
+    "colBusiness": "المشروع / النوع",
+    "colOwner": "بيانات المالك",
+    "colLocation": "الموقع",
+    "colStatus": "الحالة",
+    "colDate": "تاريخ التقديم",
+    "colActions": "الإجراءات",
+    "fetchError": "فشل في تحميل طلبات الشراكة.",
+    "noApplications": "لا توجد طلبات شراكة.",
+    "reviewSuccess": "تم تغيير حالة الطلب إلى قيد المراجعة.",
+    "approveSuccess": "تم قبول الطلب وإنشاء حساب المدير وإرسال رابط التفعيل.",
+    "rejectSuccess": "تم رفض الطلب.",
+    "resendSuccess": "تم إعادة إرسال رابط التفعيل.",
+    "notFound": "طلب الشراكة غير موجود."
   }
 }

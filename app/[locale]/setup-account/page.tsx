@@ -1,0 +1,86 @@
+import { setRequestLocale, getTranslations } from "next-intl/server"
+import type { Metadata } from "next"
+import { SetupAccountForm } from "@/components/setup-account-form"
+import Image from "next/image"
+import { Link } from "@/i18n/routing"
+import LangToggle from "@/components/common/LangToggle"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { getAlternates } from "@/lib/seo/metadata"
+
+type Props = {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Auth" })
+
+  return {
+    title: `Setup Account — RestoMind`,
+    description: t("registerDescription"),
+    alternates: getAlternates(locale, "/setup-account"),
+  }
+}
+
+export default async function SetupAccountPage({ params }: Props) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations("Auth")
+
+  return (
+    <div className="grid min-h-svh bg-background select-none lg:grid-cols-2">
+      {/* Form panel */}
+      <div className="flex flex-col p-6 md:p-8">
+        {/* Auth Page Header */}
+        <div className="flex w-full items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center transition-opacity hover:opacity-90"
+          >
+            <Image
+              src="/images/logo.webp"
+              alt={t("logoAlt")}
+              height={40}
+              width={120}
+              priority
+              className="h-9 w-auto object-contain"
+            />
+          </Link>
+          <div className="flex items-center gap-2">
+            <LangToggle />
+            <ThemeToggle />
+          </div>
+        </div>
+
+        {/* Form container */}
+        <div className="flex flex-1 items-center justify-center py-8">
+          <div className="w-full max-w-md rounded-2xl border border-border/40 bg-card p-6 shadow-xs md:p-8">
+            <SetupAccountForm />
+          </div>
+        </div>
+      </div>
+
+      {/* Visual panel */}
+      <div className="relative hidden overflow-hidden bg-muted lg:block">
+        <Image
+          src="/images/auth-bg.png"
+          alt="RestoMind Visuals"
+          className="absolute inset-0 h-full w-full object-cover transition-all duration-700 ease-out dark:brightness-[0.45]"
+          width={1920}
+          height={1080}
+          priority
+        />
+        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-neutral-950/85 via-neutral-950/40 to-transparent p-12 text-white">
+          <div className="max-w-md space-y-3 rounded-2xl border border-white/10 bg-neutral-950/20 p-6 shadow-lg backdrop-blur-xs">
+            <h2 className="font-heading text-3xl font-extrabold tracking-wide">
+              RestoMind
+            </h2>
+            <p className="text-md leading-relaxed text-neutral-200">
+              {t("imageTagline")}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

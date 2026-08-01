@@ -246,3 +246,47 @@ export async function resetPasswordAction(
     return { success: false, error: "Network Error", message: "Unable to connect to the server." }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Setup Account (Partner manager setup after approval)
+// ---------------------------------------------------------------------------
+
+export async function setupAccountAction(payload: {
+  token: string
+  password: string
+}): Promise<ActionResult> {
+  try {
+    const response = await fetch(`${API_URL}/auth/setup-account`, {
+      method: "POST",
+      headers: buildHeaders(),
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    })
+
+    const body = (await response.json().catch(() => ({}))) as BackendResponseBody
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: "Setup Failed",
+        message: extractApiMessage(body, "Account setup failed"),
+      }
+    }
+
+    return {
+      success: true,
+      message: extractApiMessage(
+        body,
+        "Account password setup completed successfully. You can now log in."
+      ),
+    }
+  } catch (error) {
+    console.error("[setupAccountAction]", error)
+    return {
+      success: false,
+      error: "Network Error",
+      message: "Unable to connect to the server.",
+    }
+  }
+}
+

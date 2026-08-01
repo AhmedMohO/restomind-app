@@ -718,7 +718,16 @@
     "resetPasswordTitle": "تعيين كلمة مرور جديدة",
     "resetPasswordDescription": "أدخل كلمة المرور الجديدة أدناه.",
     "resetPasswordButton": "إعادة تعيين كلمة المرور",
-    "resetPasswordSuccess": "تم إعادة تعيين كلمة المرور بنجاح!"
+    "resetPasswordSuccess": "تم إعادة تعيين كلمة المرور بنجاح!",
+    "setupAccountTitle": "تفعيل حسابك",
+    "setupAccountDescription": "أنشئ كلمة المرور الخاصة بك لتفعيل حساب مدير المطعم.",
+    "setupAccountButton": "إكمال الإعداد وتسجيل الدخول",
+    "setupAccountSubmitting": "جارٍ إكمال الإعداد...",
+    "invalidSetupTokenTitle": "رابط الإعداد غير صالح",
+    "invalidSetupTokenDescription": "رابط إعداد الحساب لا يحتوي على رمز أمان صالح. يرجى التحقق من الرابط المرسل في بريد القبول أو التواصل مع الدعم الفني.",
+    "missingTokenError": "رمز الإعداد مفقود أو غير صالح. يرجى التحقق من الرابط.",
+    "setupAccountSuccess": "تم إعداد كلمة المرور وتفعيل الحساب بنجاح. جارٍ التحويل لصفحة الدخول...",
+    "setupAccountError": "فشل إعداد الحساب."
   },
   "About": {
     "badge": "قصتنا ورؤيتنا",
@@ -877,8 +886,12 @@
     "typeCafe": "مقهى وكافيه",
     "typeCatering": "مطبخ وتجهيزات غذائية",
     "typeSupermarket": "سوبر ماركت ومواد غذائية",
-    "ownerName": "اسم المسئول / صاحب العمل",
-    "ownerNamePlaceholder": "مثال: أحمد محمود",
+    "ownerFirstName": "الاسم الأول للمسئول",
+    "ownerFirstNamePlaceholder": "مثال: أحمد",
+    "ownerLastName": "اسم العائلة للمسئول",
+    "ownerLastNamePlaceholder": "مثال: محمود",
+    "firstNameMin": "الاسم الأول يجب أن يكون 3 أحرف على الأقل",
+    "lastNameMin": "اسم العائلة يجب أن يكون 3 أحرف على الأقل",
     "email": "البريد الإلكتروني التجاري",
     "emailPlaceholder": "مثال: partner@restaurant.com",
     "phone": "رقم الهاتف / واتساب",
@@ -915,8 +928,20 @@
     "validationMin3": "يجب أن يكون 3 أحرف على الأقل",
     "validationInvalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
     "validationInvalidPhone": "يرجى إدخال رقم هاتف صحيح",
-    "whatHappensNext": "الخطوة القادمة؟"
+    "whatHappensNext": "الخطوة القادمة؟",
+    "applyTabTitle": "تقديم طلب جديد",
+    "statusTabTitle": "متابعة حالة الطلب",
+    "checkStatusBadge": "متابعة الحالة",
+    "checkStatusTitle": "متابعة حالة طلب الشراكة",
+    "checkStatusDesc": "أدخل الرقم المرجعي والبريد الإلكتروني لمتابعة حالة الطلب.",
+    "checkStatusBtn": "استعلام عن الحالة",
+    "checkingStatus": "جاري الاستعلام...",
+    "fillAllFields": "يرجى إدخال الرقم المرجعي والبريد الإلكتروني.",
+    "statusFetchSuccess": "تم استرجاع حالة الطلب بنجاح.",
+    "statusFetchError": "لم يتم العثور على الطلب أو البريد غير مطابق."
   },
+
+
   "Common": {
     "cancel": "إلغاء",
     "save": "حفظ",

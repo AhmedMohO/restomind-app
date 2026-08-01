@@ -14,10 +14,16 @@ export const partnerStep1Schema = z.object({
 })
 
 export const partnerStep2Schema = z.object({
-  ownerName: z
+  ownerFirstName: z
     .string()
     .trim()
-    .min(1, { message: "validationRequired" }),
+    .min(1, { message: "validationRequired" })
+    .min(3, { message: "firstNameMin" }),
+  ownerLastName: z
+    .string()
+    .trim()
+    .min(1, { message: "validationRequired" })
+    .min(3, { message: "lastNameMin" }),
   email: z
     .email({ message: "validationInvalidEmail" })
     .trim()

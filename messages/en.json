@@ -714,7 +714,16 @@
     "resetPasswordTitle": "Set new password",
     "resetPasswordDescription": "Enter your new password below.",
     "resetPasswordButton": "Reset Password",
-    "resetPasswordSuccess": "Password reset successfully!"
+    "resetPasswordSuccess": "Password reset successfully!",
+    "setupAccountTitle": "Activate Your Account",
+    "setupAccountDescription": "Set your password to activate your restaurant manager account.",
+    "setupAccountButton": "Complete Setup & Login",
+    "setupAccountSubmitting": "Completing Setup...",
+    "invalidSetupTokenTitle": "Invalid Setup Link",
+    "invalidSetupTokenDescription": "This account setup link is missing a valid security token. Please check the link provided in your approval email or contact support.",
+    "missingTokenError": "Setup token is missing or invalid. Please check your setup link.",
+    "setupAccountSuccess": "Account password setup completed successfully. Redirecting to login...",
+    "setupAccountError": "Account setup failed."
   },
   "About": {
     "badge": "Our Story & Vision",
@@ -873,8 +882,12 @@
     "typeCafe": "Cafe & Coffee Shop",
     "typeCatering": "Catering & Commercial Kitchen",
     "typeSupermarket": "Supermarket & Grocery",
-    "ownerName": "Contact Person / Owner Name",
-    "ownerNamePlaceholder": "e.g. Ahmed Mahmoud",
+    "ownerFirstName": "Owner First Name",
+    "ownerFirstNamePlaceholder": "e.g. Ahmed",
+    "ownerLastName": "Owner Last Name",
+    "ownerLastNamePlaceholder": "e.g. Mahmoud",
+    "firstNameMin": "First name must be at least 3 characters",
+    "lastNameMin": "Last name must be at least 3 characters",
     "email": "Business Email Address",
     "emailPlaceholder": "e.g. partner@restaurant.com",
     "phone": "Phone / WhatsApp Number",
@@ -911,8 +924,20 @@
     "validationMin3": "Must be at least 3 characters",
     "validationInvalidEmail": "Please enter a valid email address",
     "validationInvalidPhone": "Please enter a valid phone number",
-    "whatHappensNext": "What next?"
+    "whatHappensNext": "What next?",
+    "applyTabTitle": "Submit Application",
+    "statusTabTitle": "Check Status",
+    "checkStatusBadge": "Check Status",
+    "checkStatusTitle": "Track Application Status",
+    "checkStatusDesc": "Enter your Application Reference ID and business email address to check your application's current progress.",
+    "checkStatusBtn": "Check Status",
+    "checkingStatus": "Checking Status...",
+    "fillAllFields": "Please enter both Application ID and Email.",
+    "statusFetchSuccess": "Application status retrieved successfully.",
+    "statusFetchError": "Application not found or email does not match."
   },
+
+
   "Common": {
     "cancel": "Cancel",
     "save": "Save",

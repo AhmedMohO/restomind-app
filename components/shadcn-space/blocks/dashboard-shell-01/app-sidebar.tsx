@@ -20,6 +20,7 @@ import {
   CalendarClock,
   Carrot,
   ChefHat,
+  FileText,
   FolderTree,
   Package,
   Percent,
@@ -167,6 +168,12 @@ function useDashboardNav(): NavItem[] {
       roles: ["admin", "manager"],
     },
     {
+      title: t("partnershipApplications"),
+      icon: FileText,
+      href: "/dashboard/partnership-applications",
+      roles: ["admin"],
+    },
+    {
       title: t("orders"),
       icon: ShoppingBag,
       href: "/dashboard/orders",
@@ -184,6 +191,7 @@ function useDashboardNav(): NavItem[] {
       href: "/dashboard/imports",
       roles: ["admin", "manager"],
     },
+
 
     // Section 2: AI & Intelligence
     { label: t("aiIntelligence"), isSection: true },

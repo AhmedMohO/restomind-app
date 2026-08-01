@@ -31,7 +31,8 @@
     "productionPlan": "Production Plan",
     "recommendations": "Recommendations",
     "waste": "Waste & Surplus",
-    "imports": "Data Imports"
+    "imports": "Data Imports",
+    "partnershipApplications": "Partnership Applications"
   },
   "restaurant": {
     "pageTitle": "Restaurant Profile",
@@ -1034,5 +1035,25 @@
     "cancel": "Cancel",
     "close": "Close",
     "saving": "Saving..."
+  },
+  "partnershipApplications": {
+    "title": "Partnership Applications",
+    "subtitle": "Manage restaurant & bakery partner requests, review business profiles, and approve accounts.",
+    "searchLabel": "Search applications",
+    "searchPlaceholder": "Search by business, owner, email...",
+    "statusFilter": "Status",
+    "colBusiness": "Business / Type",
+    "colOwner": "Owner Contact",
+    "colLocation": "Location",
+    "colStatus": "Status",
+    "colDate": "Submitted",
+    "colActions": "Actions",
+    "fetchError": "Failed to load partnership applications.",
+    "noApplications": "No partnership applications found.",
+    "reviewSuccess": "Application marked as Under Review.",
+    "approveSuccess": "Application approved! Manager account created and setup email sent.",
+    "rejectSuccess": "Application rejected.",
+    "resendSuccess": "Approval setup email resent.",
+    "notFound": "Partnership application not found."
   }
 }

@@ -68,3 +68,20 @@ export const resetPasswordSchema = z
   })
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
+
+// ---------------------------------------------------------------------------
+// Setup account
+// ---------------------------------------------------------------------------
+
+export const setupAccountSchema = z
+  .object({
+    password: z.string().min(6),
+    confirmPassword: z.string().min(6),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "passwordsMismatch",
+    path: ["confirmPassword"],
+  })
+
+export type SetupAccountInput = z.infer<typeof setupAccountSchema>
+
