@@ -18,7 +18,6 @@ import { useRouter } from "@/i18n/routing"
 import { Loader2 } from "lucide-react"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import type { UserRole } from "@/features/auth/auth"
-import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 
 interface DashboardAuthGuardProps {
   children: React.ReactNode
@@ -53,13 +52,11 @@ export function DashboardAuthGuard({
   // Show loading spinner while hydrating or while we haven't confirmed access
   if (!isHydrated || !isAuthenticated || !hasRequiredRole) {
     return (
-      <AppSidebar>
-        <main className="flex-1 p-4 sm:p-6 min-w-0 w-full">
-          <div className="flex h-64 w-full items-center justify-center">
-            <Loader2 className="size-8 animate-spin text-primary" />
-          </div>
-        </main>
-      </AppSidebar>
+      <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
+        <div className="flex h-64 w-full items-center justify-center">
+          <Loader2 className="size-8 animate-spin text-primary" />
+        </div>
+      </main>
     )
   }
 

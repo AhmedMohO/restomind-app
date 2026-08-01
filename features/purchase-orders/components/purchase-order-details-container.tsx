@@ -118,7 +118,11 @@ export function PurchaseOrderDetailsContainer({ id }: { id: string }) {
         <p className="text-sm font-medium text-muted-foreground">
           {t("detailFetchError")}
         </p>
-        <Button variant="outline" onClick={() => refetch()} className="rounded-xl">
+        <Button
+          variant="outline"
+          onClick={() => refetch()}
+          className="rounded-xl"
+        >
           {t("retry")}
         </Button>
       </div>
@@ -130,11 +134,14 @@ export function PurchaseOrderDetailsContainer({ id }: { id: string }) {
   const totalCost = calculateOrderTotal(po)
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="space-y-6">
       {/* Header Navigation & Quick Actions */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <BackButton href="/dashboard/purchase-orders" aria-label={t("backToList")} />
+          <BackButton
+            href="/dashboard/purchase-orders"
+            aria-label={t("backToList")}
+          />
           <div>
             <div className="flex items-center gap-3">
               <h1 className="font-mono text-2xl font-bold tracking-tight text-primary">
@@ -195,7 +202,9 @@ export function PurchaseOrderDetailsContainer({ id }: { id: string }) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
-            <p className="text-base font-bold text-foreground">{supplier.name}</p>
+            <p className="text-base font-bold text-foreground">
+              {supplier.name}
+            </p>
             {supplier.phone && (
               <p className="text-xs text-muted-foreground">{supplier.phone}</p>
             )}
@@ -214,7 +223,9 @@ export function PurchaseOrderDetailsContainer({ id }: { id: string }) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
-            <p className="text-base font-bold text-foreground">{creator.name}</p>
+            <p className="text-base font-bold text-foreground">
+              {creator.name}
+            </p>
             {creator.email && (
               <p className="text-xs text-muted-foreground">{creator.email}</p>
             )}
@@ -250,20 +261,28 @@ export function PurchaseOrderDetailsContainer({ id }: { id: string }) {
       {/* Items Breakdown Table */}
       <Card className="rounded-2xl border-border bg-card shadow-2xs">
         <CardHeader>
-          <CardTitle className="text-base font-bold">{t("itemsList")}</CardTitle>
+          <CardTitle className="text-base font-bold">
+            {t("itemsList")}
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader className="bg-card">
               <TableRow>
-                <TableHead className="text-start">{t("colIngredient")}</TableHead>
+                <TableHead className="text-start">
+                  {t("colIngredient")}
+                </TableHead>
                 <TableHead className="text-center">{t("colQtyUnit")}</TableHead>
-                <TableHead className="px-4 text-end">{t("colUnitCost")}</TableHead>
-                <TableHead className="px-4 text-end">{t("colLineTotal")}</TableHead>
+                <TableHead className="px-4 text-end">
+                  {t("colUnitCost")}
+                </TableHead>
+                <TableHead className="px-4 text-end">
+                  {t("colLineTotal")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {po.items.map((item, index) => {
+              {po.items.map((item, index: number) => {
                 const ing = getIngredientDetails(item.ingredientId)
                 const lineTotal = item.quantity * item.unitCost
 
@@ -280,7 +299,9 @@ export function PurchaseOrderDetailsContainer({ id }: { id: string }) {
                       </div>
                     </TableCell>
                     <TableCell className="text-center font-medium">
-                      {item.quantity} {t(`unit_${item.unit}` as Parameters<typeof t>[0]) || item.unit}
+                      {item.quantity}{" "}
+                      {t(`unit_${item.unit}` as Parameters<typeof t>[0]) ||
+                        item.unit}
                     </TableCell>
                     <TableCell className="px-4 text-end font-medium">
                       {formatCurrency(item.unitCost, locale)}

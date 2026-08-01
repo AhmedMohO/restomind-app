@@ -1,6 +1,5 @@
 "use client"
 
-import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { DashboardOrdersTable } from "@/features/orders/components/dashboard-orders-table"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 import { useAuth } from "@/features/auth/hooks/useAuth"
@@ -12,11 +11,9 @@ function OrdersPageContent() {
   const { role } = useAuth()
 
   return (
-    <AppSidebar>
-      <main className="flex-1 p-4 sm:p-6 min-w-0 w-full">
-        <DashboardOrdersTable role={role as UserRole} />
-      </main>
-    </AppSidebar>
+    <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
+      <DashboardOrdersTable role={role as UserRole} />
+    </main>
   )
 }
 

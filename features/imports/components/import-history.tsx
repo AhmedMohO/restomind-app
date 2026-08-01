@@ -6,6 +6,7 @@ import { History, Loader2, RefreshCw } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -176,47 +177,58 @@ export function ImportHistory() {
         <h2 className="font-heading text-lg font-semibold text-foreground">
           {t("history.title")}
         </h2>
-        <div className="flex flex-wrap gap-2">
-          <Select
-            value={importType}
-            onValueChange={(v) => {
-              if (!v) return
-              setImportType(v as ImportType | "all")
-              setPage(1)
-            }}
-          >
-            <SelectTrigger className="w-44">
-              <SelectValue placeholder={t("history.typeFilter")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t("history.typeFilter")}</SelectItem>
-              {IMPORT_TYPES.map((it) => (
-                <SelectItem key={it} value={it}>
-                  {t(`types.${it}.title`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={status}
-            onValueChange={(v) => {
-              if (!v) return
-              setStatus(v as ImportJobStatus | "all")
-              setPage(1)
-            }}
-          >
-            <SelectTrigger className="w-44">
-              <SelectValue placeholder={t("history.statusFilter")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t("history.statusFilter")}</SelectItem>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {t(`status.${s}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="import-type-filter" className="text-xs font-semibold text-muted-foreground">
+              {t("history.typeFilter")}
+            </Label>
+            <Select
+              value={importType}
+              onValueChange={(v) => {
+                if (!v) return
+                setImportType(v as ImportType | "all")
+                setPage(1)
+              }}
+            >
+              <SelectTrigger id="import-type-filter" className="w-44">
+                <SelectValue placeholder={t("history.typeFilter")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t("history.typeFilter")}</SelectItem>
+                {IMPORT_TYPES.map((it) => (
+                  <SelectItem key={it} value={it}>
+                    {t(`types.${it}.title`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="import-status-filter" className="text-xs font-semibold text-muted-foreground">
+              {t("history.statusFilter")}
+            </Label>
+            <Select
+              value={status}
+              onValueChange={(v) => {
+                if (!v) return
+                setStatus(v as ImportJobStatus | "all")
+                setPage(1)
+              }}
+            >
+              <SelectTrigger id="import-status-filter" className="w-44">
+                <SelectValue placeholder={t("history.statusFilter")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t("history.statusFilter")}</SelectItem>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {t(`status.${s}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 

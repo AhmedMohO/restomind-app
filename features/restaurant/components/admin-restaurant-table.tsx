@@ -101,7 +101,7 @@ export function AdminRestaurantTable() {
       {/* Filter and search bar */}
       <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         <div className="relative w-full max-w-full flex-1 sm:max-w-sm">
-          <Search className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -175,80 +175,80 @@ export function AdminRestaurantTable() {
                             {restaurant.name?.[0]?.toUpperCase() ?? "R"}
                           </div>
                         )}
-                      <div className="flex min-w-0 flex-col">
-                        <span className="max-w-[160px] truncate font-semibold text-foreground sm:max-w-xs">
-                          {restaurant.name}
-                        </span>
-                        {restaurant.phone && (
-                          <span
-                            dir="ltr"
-                            className="w-min text-start text-xs text-muted-foreground"
-                          >
-                            {restaurant.phone}
+                        <div className="flex min-w-0 flex-col">
+                          <span className="max-w-[160px] truncate font-semibold text-foreground sm:max-w-xs">
+                            {restaurant.name}
                           </span>
-                        )}
+                          {restaurant.phone && (
+                            <span
+                              dir="ltr"
+                              className="w-min text-start text-xs text-muted-foreground"
+                            >
+                              {restaurant.phone}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
+                    </TableCell>
 
-                  <TableCell
-                    className="max-w-[140px] truncate text-xs text-muted-foreground sm:max-w-[200px]"
-                    title={formatOwner(restaurant.ownerUserId)}
-                  >
-                    {formatOwner(restaurant.ownerUserId)}
-                  </TableCell>
+                    <TableCell
+                      className="max-w-[140px] truncate text-xs text-muted-foreground sm:max-w-[200px]"
+                      title={formatOwner(restaurant.ownerUserId)}
+                    >
+                      {formatOwner(restaurant.ownerUserId)}
+                    </TableCell>
 
-                  <TableCell className="max-w-[120px] truncate text-xs sm:max-w-[180px]">
-                    {restaurant.address?.city && restaurant.address?.country
-                      ? `${restaurant.address?.city ?? ""}, ${restaurant.address?.country ?? ""}`
-                      : "—"}
-                  </TableCell>
+                    <TableCell className="max-w-[120px] truncate text-xs sm:max-w-[180px]">
+                      {restaurant.address?.city && restaurant.address?.country
+                        ? `${restaurant.address?.city ?? ""}, ${restaurant.address?.country ?? ""}`
+                        : "—"}
+                    </TableCell>
 
-                  <TableCell className="shrink-0">
-                    <RestaurantStatusBadge isActive={restaurant.isActive} />
-                  </TableCell>
+                    <TableCell className="shrink-0">
+                      <RestaurantStatusBadge isActive={restaurant.isActive} />
+                    </TableCell>
 
-                  <TableCell className="shrink-0">
-                    <div className="flex shrink-0 items-center justify-start gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(
-                            `/dashboard/restaurants/${restaurant._id}/edit`
-                          )
-                        }}
-                        className="size-8 rounded-lg"
-                        title="Edit Restaurant"
-                      >
-                        <Edit2 className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDeleteTarget({
-                            id: restaurant._id,
-                            name: restaurant.name,
-                          })
-                        }}
-                        disabled={deletingId === restaurant._id}
-                        className="size-8 rounded-lg text-destructive hover:text-destructive"
-                        title="Delete Restaurant"
-                      >
-                        {deletingId === restaurant._id ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="size-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
+                    <TableCell className="shrink-0">
+                      <div className="flex shrink-0 items-center justify-start gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            router.push(
+                              `/dashboard/restaurants/${restaurant._id}/edit`
+                            )
+                          }}
+                          className="size-8 rounded-lg"
+                          title="Edit Restaurant"
+                        >
+                          <Edit2 className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setDeleteTarget({
+                              id: restaurant._id,
+                              name: restaurant.name,
+                            })
+                          }}
+                          disabled={deletingId === restaurant._id}
+                          className="size-8 rounded-lg text-destructive hover:text-destructive"
+                          title="Delete Restaurant"
+                        >
+                          {deletingId === restaurant._id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="size-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         )}

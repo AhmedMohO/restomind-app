@@ -45,6 +45,7 @@ export interface PaginatedSelectFetchResult<T = unknown> {
 }
 
 export interface PaginatedSelectProps<T = unknown> {
+  id?: string
   value?: string
   selectedOption?: PaginatedSelectOption<T>
   onValueChange: (
@@ -68,6 +69,7 @@ export interface PaginatedSelectProps<T = unknown> {
 }
 
 export function PaginatedSelect<T = unknown>({
+  id,
   value,
   selectedOption,
   onValueChange,
@@ -100,6 +102,15 @@ export function PaginatedSelect<T = unknown>({
     return () => clearTimeout(timer)
   }, [search])
 
+  // Reset page when popover opens/closes
+  React.useEffect(() => {
+    if (!open) {
+      setSearch("")
+      setDebouncedSearch("")
+      setPage(1)
+    }
+  }, [open])
+
   // Fetch paginated options
   const { data, isLoading, isFetching } = useQuery<
     PaginatedSelectFetchResult<T>
@@ -129,8 +140,6 @@ export function PaginatedSelect<T = unknown>({
     (cachedOption?.value === value ? cachedOption : null) ??
     (selectedOption?.value === value ? selectedOption : null)
 
-
-
   const handleSelect = (option: PaginatedSelectOption<T>) => {
     if (value === option.value) {
       onValueChange("", undefined)
@@ -147,7 +156,7 @@ export function PaginatedSelect<T = unknown>({
       <PopoverTrigger
         disabled={disabled}
         className={cn(
-          "flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-input bg-card px-3 py-2 text-sm shadow-xs transition-colors hover:bg-accent/40 focus:ring-1 focus:ring-ring focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-9 w-full items-center justify-between gap-2 rounded-xl border border-input px-3 py-2 text-sm transition-colors focus:ring-1 focus:ring-ring focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
       >
@@ -200,7 +209,7 @@ export function PaginatedSelect<T = unknown>({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={searchPlaceholder}
-            className="h-9 rounded-lg border-none pe-8 ps-9 text-xs focus-visible:ring-0"
+            className="h-9 rounded-lg border-none ps-9 pe-8 text-xs focus-visible:ring-0"
           />
           {search && (
             <button

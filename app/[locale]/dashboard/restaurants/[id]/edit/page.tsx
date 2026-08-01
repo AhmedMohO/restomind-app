@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 
-import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { BackButton } from "@/components/ui/back-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -54,54 +53,50 @@ function EditRestaurantPageContent({
   }
 
   return (
-    <AppSidebar>
-      <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
-        <div className="flex flex-col gap-6">
-          {/* Header */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <BackButton href="/dashboard/restaurants" />
-              <div className="min-w-0">
-                <h1 className="truncate font-heading text-2xl font-bold">
-                  {t("editRestaurant")}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("adminSubtitle")}
-                </p>
-              </div>
+    <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <BackButton href="/dashboard/restaurants" />
+            <div className="min-w-0">
+              <h1 className="truncate font-heading text-2xl font-bold">
+                {t("editRestaurant")}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {t("adminSubtitle")}
+              </p>
             </div>
           </div>
-
-          {isLoading ? (
-            <div className="flex h-64 w-full items-center justify-center">
-              <Loader2 className="size-8 animate-spin text-primary" />
-            </div>
-          ) : isError || !restaurant ? (
-            <Card className="rounded-2xl p-8 text-center">
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {t("fetchError")}
-                </p>
-                <Button
-                  variant="outline"
-                  render={<Link href="/dashboard/restaurants" />}
-                  className="mt-4 rounded-xl"
-                >
-                  {t("backToList")}
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <RestaurantForm
-              mode="edit"
-              restaurant={restaurant}
-              onSubmit={handleSubmit}
-              isPending={updateMutation.isPending}
-            />
-          )}
         </div>
-      </main>
-    </AppSidebar>
+
+        {isLoading ? (
+          <div className="flex h-64 w-full items-center justify-center">
+            <Loader2 className="size-8 animate-spin text-primary" />
+          </div>
+        ) : isError || !restaurant ? (
+          <Card className="rounded-2xl p-8 text-center">
+            <CardContent>
+              <p className="text-sm text-muted-foreground">{t("fetchError")}</p>
+              <Button
+                variant="outline"
+                render={<Link href="/dashboard/restaurants" />}
+                className="mt-4 rounded-xl"
+              >
+                {t("backToList")}
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <RestaurantForm
+            mode="edit"
+            restaurant={restaurant}
+            onSubmit={handleSubmit}
+            isPending={updateMutation.isPending}
+          />
+        )}
+      </div>
+    </main>
   )
 }
 

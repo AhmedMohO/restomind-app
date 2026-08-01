@@ -40,7 +40,12 @@ import {
   ApiSalesTransaction,
 } from "@/features/sales/api/type"
 import { useSalesList, useSalesSummary } from "@/features/sales/hooks/use-sales"
-import { formatCurrency, formatDate, formatNumber, roundPrice } from "@/lib/utils"
+import {
+  formatCurrency,
+  formatDate,
+  formatNumber,
+  roundPrice,
+} from "@/lib/utils"
 import { SalesSummaryCards } from "./sales-summary-cards"
 
 const ALL_SOURCES = "all"
@@ -185,7 +190,9 @@ export function SalesContainer() {
       {/* Filter bar */}
       <div className="grid gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold">{t("startDate")}</Label>
+          <Label htmlFor="sales-start-date" className="text-xs font-semibold">
+            {t("startDate")}
+          </Label>
           <DatePicker
             value={startDate}
             onChange={(value) => setStartDate(value ?? "")}
@@ -197,7 +204,9 @@ export function SalesContainer() {
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold">{t("endDate")}</Label>
+          <Label htmlFor="sales-end-date" className="text-xs font-semibold">
+            {t("endDate")}
+          </Label>
           <DatePicker
             value={endDate}
             onChange={(value) => setEndDate(value ?? "")}
@@ -209,14 +218,22 @@ export function SalesContainer() {
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold">{t("source")}</Label>
+          <Label
+            htmlFor="sales-source-filter"
+            className="text-xs font-semibold"
+          >
+            {t("source")}
+          </Label>
           <Select
             value={source || ALL_SOURCES}
             onValueChange={(value) =>
               setSource(value === ALL_SOURCES ? "" : (value as SalesSource))
             }
           >
-            <SelectTrigger className="h-9 w-full rounded-xl text-xs">
+            <SelectTrigger
+              id="sales-source-filter"
+              className="w-full rounded-xl text-xs"
+            >
               <SelectValue>{sourceLabel}</SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -231,8 +248,14 @@ export function SalesContainer() {
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold">{t("product")}</Label>
+          <Label
+            htmlFor="sales-product-filter"
+            className="text-xs font-semibold"
+          >
+            {t("product")}
+          </Label>
           <PaginatedProductSelect
+            id="sales-product-filter"
             value={productId}
             onValueChange={setProductId}
             placeholder={t("allProducts")}
@@ -242,8 +265,14 @@ export function SalesContainer() {
 
         {isAdmin && (
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">{t("restaurant")}</Label>
+            <Label
+              htmlFor="sales-restaurant-filter"
+              className="text-xs font-semibold"
+            >
+              {t("restaurant")}
+            </Label>
             <PaginatedRestaurantSelect
+              id="sales-restaurant-filter"
               value={restaurantId}
               onValueChange={(value) => {
                 setRestaurantId(value)

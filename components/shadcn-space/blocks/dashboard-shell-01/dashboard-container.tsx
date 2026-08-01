@@ -39,7 +39,7 @@ export function DashboardContainer() {
   const currentTopProducts = activeQuery.data?.topProducts ?? []
   const currentTopCategories = activeQuery.data?.topCategories ?? []
   const currentTopRestaurants = isRoleAdmin
-    ? adminQuery.data?.topRestaurants ?? []
+    ? (adminQuery.data?.topRestaurants ?? [])
     : []
   const currentFulfillmentMethods = activeQuery.data?.fulfillmentMethods ?? []
   const restaurantName = isRoleManager
@@ -129,4 +129,3 @@ export function DashboardContainer() {
     </div>
   )
 }
-

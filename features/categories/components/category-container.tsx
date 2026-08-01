@@ -35,7 +35,8 @@ export function CategoryContainer() {
   const [limit, setLimit] = React.useState(10)
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-  const [editingCategory, setEditingCategory] = React.useState<ApiCategory | null>(null)
+  const [editingCategory, setEditingCategory] =
+    React.useState<ApiCategory | null>(null)
 
   const [deletingId, setDeletingId] = React.useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = React.useState<{
@@ -74,7 +75,10 @@ export function CategoryContainer() {
     setIsDialogOpen(true)
   }
 
-  const handleOpenDeleteDialog = (category: ApiCategory, e: React.MouseEvent) => {
+  const handleOpenDeleteDialog = (
+    category: ApiCategory,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation()
     setDeleteTarget({
       id: category._id,
@@ -119,7 +123,7 @@ export function CategoryContainer() {
       {/* Filter and search bar */}
       <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         <div className="relative w-full max-w-full flex-1 sm:max-w-sm">
-          <Search className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -155,18 +159,24 @@ export function CategoryContainer() {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-start">{t("colCategory")}</TableHead>
-                <TableHead className="text-start">{t("colDescription")}</TableHead>
-                <TableHead className="text-start w-[100px]">{t("colActions")}</TableHead>
+                <TableHead className="text-start">
+                  {t("colDescription")}
+                </TableHead>
+                <TableHead className="w-[100px] text-start">
+                  {t("colActions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {categories.map((category) => {
+              {categories.map((category: ApiCategory) => {
                 const isDeletingThis = deletingId === category._id
 
                 return (
                   <TableRow
                     key={category._id}
-                    onClick={() => router.push(`/dashboard/categories/${category._id}`)}
+                    onClick={() =>
+                      router.push(`/dashboard/categories/${category._id}`)
+                    }
                     className="cursor-pointer"
                   >
                     <TableCell>
@@ -196,7 +206,10 @@ export function CategoryContainer() {
                       {category.description || "-"}
                     </TableCell>
 
-                    <TableCell className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <TableCell
+                      className="shrink-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex shrink-0 items-center justify-start gap-1">
                         <Button
                           variant="ghost"

@@ -17,6 +17,7 @@ import type {
 import { useProductById } from "@/features/products/hooks/use-products"
 
 interface PaginatedProductSelectProps {
+  id?: string
   value?: string
   onValueChange: (value: string, product?: ApiProduct) => void
   disabled?: boolean
@@ -32,6 +33,7 @@ interface PaginatedProductSelectProps {
  * selection is not on the current page.
  */
 export function PaginatedProductSelect({
+  id,
   value,
   onValueChange,
   disabled = false,
@@ -86,6 +88,7 @@ export function PaginatedProductSelect({
 
   return (
     <PaginatedSelect<ApiProduct>
+      id={id}
       value={value}
       onValueChange={(val, option) => onValueChange(val, option?.data)}
       fetchData={fetchProducts}

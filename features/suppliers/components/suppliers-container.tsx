@@ -63,10 +63,7 @@ export function SuppliersContainer() {
   })
 
   const items = data?.items
-  const suppliers: ApiSupplier[] = React.useMemo(
-    () => items ?? [],
-    [items]
-  )
+  const suppliers: ApiSupplier[] = React.useMemo(() => items ?? [], [items])
   const total = data?.total ?? 0
   const totalPages = data?.totalPages ?? 1
   const isFiltered = Boolean(debouncedSearch)

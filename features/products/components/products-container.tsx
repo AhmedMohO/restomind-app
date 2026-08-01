@@ -305,11 +305,15 @@ export function ProductsContainer() {
 
               <div className="flex-1 space-y-4 overflow-y-auto p-5">
                 <div className="space-y-2.5 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
-                  <Label className="flex items-center gap-2 text-xs font-semibold">
+                  <Label
+                    htmlFor="product-category-filter"
+                    className="flex items-center gap-2 text-xs font-semibold"
+                  >
                     <Utensils className="size-3.5 text-primary" />
                     <span>{t("category")}</span>
                   </Label>
                   <PaginatedCategorySelect
+                    id="product-category-filter"
                     value={category}
                     onValueChange={(value) => {
                       setCategory(value)
@@ -319,9 +323,12 @@ export function ProductsContainer() {
                   />
                 </div>
 
-                <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
-                  <div className="space-y-1.5">
-                    <Label className="flex items-center gap-1.5 text-xs font-semibold">
+                <div className="flex flex-wrap gap-4 space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
+                  <div className="m-0 flex-1">
+                    <Label
+                      htmlFor="product-sort-filter"
+                      className="flex items-center gap-1.5 text-xs font-semibold"
+                    >
                       <ArrowUpDown className="size-3.5 text-primary" />
                       <span>{t("sort")}</span>
                     </Label>
@@ -332,7 +339,10 @@ export function ProductsContainer() {
                         setPage(1)
                       }}
                     >
-                      <SelectTrigger className="h-9 w-full rounded-xl text-xs">
+                      <SelectTrigger
+                        id="product-sort-filter"
+                        className="h-9 w-full rounded-xl text-xs"
+                      >
                         <SelectValue>
                           {sortOptions.find((opt) => opt.value === sort)?.label}
                         </SelectValue>
@@ -347,8 +357,11 @@ export function ProductsContainer() {
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="flex items-center gap-1.5 text-xs font-semibold">
+                  <div className="m-0 flex-1">
+                    <Label
+                      htmlFor="product-order-filter"
+                      className="flex items-center gap-1.5 text-xs font-semibold"
+                    >
                       <ArrowUpDown className="size-3.5 text-primary" />
                       <span>{t("order")}</span>
                     </Label>
@@ -359,7 +372,10 @@ export function ProductsContainer() {
                         setPage(1)
                       }}
                     >
-                      <SelectTrigger className="h-9 w-full rounded-xl text-xs">
+                      <SelectTrigger
+                        id="product-order-filter"
+                        className="w-full rounded-xl text-xs"
+                      >
                         <SelectValue>
                           {order === "desc" ? t("descending") : t("ascending")}
                         </SelectValue>
@@ -374,11 +390,15 @@ export function ProductsContainer() {
 
                 {isAdmin && (
                   <div className="space-y-2.5 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
-                    <Label className="flex items-center gap-2 text-xs font-semibold">
+                    <Label
+                      htmlFor="product-restaurant-filter"
+                      className="flex items-center gap-2 text-xs font-semibold"
+                    >
                       <Store className="size-3.5 text-primary" />
                       <span>{t("restaurant")}</span>
                     </Label>
                     <PaginatedRestaurantSelect
+                      id="product-restaurant-filter"
                       value={restaurantId}
                       onValueChange={(value) => {
                         setRestaurantId(value)
@@ -389,11 +409,15 @@ export function ProductsContainer() {
                 )}
 
                 <div className="space-y-2.5 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
-                  <Label className="flex items-center gap-2 text-xs font-semibold">
+                  <Label
+                    htmlFor="product-tag-filter"
+                    className="flex items-center gap-2 text-xs font-semibold"
+                  >
                     <Tag className="size-3.5 text-primary" />
                     <span>{t("tag")}</span>
                   </Label>
                   <Input
+                    id="product-tag-filter"
                     value={tag}
                     onChange={(event) => {
                       setTag(event.target.value)

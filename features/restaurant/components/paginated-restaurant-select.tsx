@@ -6,9 +6,11 @@ import { useTranslations } from "next-intl"
 import {
   PaginatedSelect,
   type PaginatedSelectFetchParams,
+  type PaginatedSelectFetchResult,
   type PaginatedSelectOption,
 } from "@/components/ui/paginated-select"
 import { clientFetch } from "@/lib/api/fetch-client"
+import { buildQueryString } from "@/lib/api/utils"
 import type { PaginatedRestaurants, Restaurant } from "@/features/restaurant/types"
 
 type RestaurantsResponse =
@@ -22,6 +24,7 @@ type RestaurantsResponse =
     }
 
 interface PaginatedRestaurantSelectProps {
+  id?: string
   value?: string
   onValueChange: (value: string, restaurant?: Restaurant) => void
   disabled?: boolean
@@ -30,6 +33,7 @@ interface PaginatedRestaurantSelectProps {
 }
 
 export function PaginatedRestaurantSelect({
+  id,
   value,
   onValueChange,
   disabled = false,
@@ -92,31 +96,29 @@ export function PaginatedRestaurantSelect({
     return { restaurants: [], totalPages: 1, total: 0 }
   }
 
-  const fetchRestaurants = async ({
-    page,
-    limit,
-    search,
-  }: PaginatedSelectFetchParams) => {
-    const searchParams = new URLSearchParams()
-    searchParams.set("page", String(page))
-    searchParams.set("limit", String(limit))
-    if (search) searchParams.set("search", search)
-
-    const qs = searchParams.toString() ? `?${searchParams.toString()}` : ""
+  const fetchRestaurants = async (
+    params: PaginatedSelectFetchParams
+  ): Promise<PaginatedSelectFetchResult<Restaurant>> => {
+    const qs = buildQueryString({
+      page: params.page,
+      limit: params.limit,
+      search: params.search || undefined,
+    })
     const res = await clientFetch<RestaurantsResponse>(`/restaurants${qs}`)
 
-    const { restaurants, totalPages, total } = normalizeRestaurantsResponse(res)
+    const { restaurants, totalPages, total } =
+      normalizeRestaurantsResponse(res)
+
     const options: PaginatedSelectOption<Restaurant>[] = restaurants.map(
-      (restaurant) => ({
-        value: restaurant._id,
-        label: restaurant.name,
-        subLabel: [
-          restaurant.address?.city,
-          restaurant.address?.country,
-        ].filter(Boolean).join(", "),
-        badge: restaurant.isActive ? t("activeRestaurant") : t("inactiveRestaurant"),
-        icon: <Store className="size-3.5" />,
-        data: restaurant,
+      (rest) => ({
+        value: rest._id,
+        label: rest.name,
+        subLabel: [rest.address?.city, rest.address?.country]
+          .filter(Boolean)
+          .join(" • "),
+        badge: rest.isActive ? undefined : "inactive",
+        icon: <Store className="size-4" />,
+        data: rest,
       })
     )
 

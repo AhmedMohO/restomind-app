@@ -1,6 +1,5 @@
 import { setRequestLocale } from "next-intl/server"
 
-import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 import { PredictionsDashboard } from "@/features/predictions/components/predictions-dashboard"
 
@@ -21,11 +20,9 @@ export default async function DashboardPredictionsPage({
 
   return (
     <DashboardAuthGuard roles={["manager"]}>
-      <AppSidebar>
-        <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
-          <PredictionsDashboard />
-        </main>
-      </AppSidebar>
+      <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
+        <PredictionsDashboard />
+      </main>
     </DashboardAuthGuard>
   )
 }

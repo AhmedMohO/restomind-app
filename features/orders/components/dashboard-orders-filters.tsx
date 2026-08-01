@@ -170,7 +170,7 @@ export function DashboardOrdersFilters({
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                  <Label htmlFor="order-status-filter" className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                     <Tag className="size-3.5 text-primary" />
                     <span>{t("statusFilter")}</span>
                   </Label>
@@ -193,7 +193,7 @@ export function DashboardOrdersFilters({
                     )
                   }
                 >
-                  <SelectTrigger className="h-9 w-full rounded-xl border-input bg-background text-xs">
+                  <SelectTrigger id="order-status-filter" className="h-9 w-full rounded-xl border-input bg-background text-xs">
                     <SelectValue>
                       {filters.status ? (
                         <span className="inline-flex items-center gap-2 font-medium">
@@ -236,7 +236,7 @@ export function DashboardOrdersFilters({
               </div>
 
               <div className="space-y-1.5">
-                <Label className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                <Label htmlFor="order-sort-filter" className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                   <ArrowUpDown className="size-3.5 text-primary" />
                   <span>{t("sortOrder")}</span>
                 </Label>
@@ -246,7 +246,7 @@ export function DashboardOrdersFilters({
                     onChange("sortOrder", value as "asc" | "desc")
                   }
                 >
-                  <SelectTrigger className="h-9 w-full rounded-xl border-input bg-background text-xs">
+                  <SelectTrigger id="order-sort-filter" className="h-9 w-full rounded-xl border-input bg-background text-xs">
                     <SelectValue>
                       <span className="inline-flex items-center gap-2 font-medium">
                         <ArrowUpDown className="size-3.5 text-primary" />
@@ -271,7 +271,7 @@ export function DashboardOrdersFilters({
           {showRestaurantFilter && (
             <FilterSection className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                <Label htmlFor="order-restaurant-filter" className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Store className="size-3.5 text-primary" />
                   <span>{t("restaurant")}</span>
                 </Label>
@@ -286,6 +286,7 @@ export function DashboardOrdersFilters({
                 )}
               </div>
               <PaginatedRestaurantSelect
+                id="order-restaurant-filter"
                 value={filters.restaurantId}
                 onValueChange={(value) => onChange("restaurantId", value)}
               />
@@ -300,7 +301,7 @@ export function DashboardOrdersFilters({
             </Label>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-medium text-muted-foreground">
+                <Label htmlFor="order-delivery-filter" className="text-[11px] font-medium text-muted-foreground">
                   {t("deliveryMethod")}
                 </Label>
                 <Select
@@ -312,7 +313,7 @@ export function DashboardOrdersFilters({
                     )
                   }
                 >
-                  <SelectTrigger className="h-9 w-full rounded-xl border-input bg-background text-xs">
+                  <SelectTrigger id="order-delivery-filter" className="h-9 w-full rounded-xl border-input bg-background text-xs">
                     <SelectValue>
                       {filters.deliveryMethod ? (
                         <span className="inline-flex items-center gap-1.5 font-medium">
@@ -361,7 +362,7 @@ export function DashboardOrdersFilters({
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-medium text-muted-foreground">
+                <Label htmlFor="order-payment-filter" className="text-[11px] font-medium text-muted-foreground">
                   {t("paymentMethod")}
                 </Label>
                 <Select
@@ -373,7 +374,7 @@ export function DashboardOrdersFilters({
                     )
                   }
                 >
-                  <SelectTrigger className="h-9 w-full rounded-xl border-input bg-background text-xs">
+                  <SelectTrigger id="order-payment-filter" className="h-9 w-full rounded-xl border-input bg-background text-xs">
                     <SelectValue>
                       {filters.paymentMethod ? (
                         <span className="inline-flex items-center gap-1.5 font-medium">
@@ -433,7 +434,7 @@ export function DashboardOrdersFilters({
             </Label>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-medium text-muted-foreground">
+                <Label htmlFor="order-start-date-filter" className="text-[11px] font-medium text-muted-foreground">
                   {t("startDate")}
                 </Label>
                 <DatePicker
@@ -443,7 +444,7 @@ export function DashboardOrdersFilters({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-medium text-muted-foreground">
+                <Label htmlFor="order-end-date-filter" className="text-[11px] font-medium text-muted-foreground">
                   {t("endDate")}
                 </Label>
                 <DatePicker
@@ -496,10 +497,11 @@ export function DashboardOrdersFilters({
               />
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1 text-center">
-                  <Label className="text-[11px] font-medium text-muted-foreground">
+                  <Label htmlFor="order-min-price-filter" className="text-[11px] font-medium text-muted-foreground">
                     {t("minTotal")}
                   </Label>
                   <Input
+                    id="order-min-price-filter"
                     type="number"
                     min={TOTAL_PRICE_MIN}
                     max={filters.totalPriceRange[1]}
@@ -514,10 +516,11 @@ export function DashboardOrdersFilters({
                   />
                 </div>
                 <div className="space-y-1 text-center">
-                  <Label className="text-[11px] font-medium text-muted-foreground">
+                  <Label htmlFor="order-max-price-filter" className="text-[11px] font-medium text-muted-foreground">
                     {t("maxTotal")}
                   </Label>
                   <Input
+                    id="order-max-price-filter"
                     type="number"
                     min={filters.totalPriceRange[0]}
                     max={TOTAL_PRICE_MAX}

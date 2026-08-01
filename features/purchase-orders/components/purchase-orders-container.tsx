@@ -330,7 +330,10 @@ export function PurchaseOrdersContainer() {
               <div className="flex-1 space-y-4 overflow-y-auto p-5">
                 {/* Status Filter */}
                 <div className="space-y-2.5 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
-                  <Label className="flex items-center gap-2 text-xs font-semibold">
+                  <Label
+                    htmlFor="po-status-filter"
+                    className="flex items-center gap-2 text-xs font-semibold"
+                  >
                     <Clock className="size-3.5 text-primary" />
                     <span>{t("status")}</span>
                   </Label>
@@ -343,7 +346,10 @@ export function PurchaseOrdersContainer() {
                       setPage(1)
                     }}
                   >
-                    <SelectTrigger className="h-9 w-full rounded-xl text-xs">
+                    <SelectTrigger
+                      id="po-status-filter"
+                      className="h-9 w-full rounded-xl text-xs"
+                    >
                       <SelectValue placeholder={t("allStatuses")}>
                         {status
                           ? getStatusConfig(status, t).label
@@ -366,11 +372,15 @@ export function PurchaseOrdersContainer() {
 
                 {/* Supplier Filter */}
                 <div className="space-y-2.5 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
-                  <Label className="flex items-center gap-2 text-xs font-semibold">
+                  <Label
+                    htmlFor="po-supplier-filter"
+                    className="flex items-center gap-2 text-xs font-semibold"
+                  >
                     <Truck className="size-3.5 text-primary" />
                     <span>{t("supplier")}</span>
                   </Label>
                   <PaginatedSupplierSelect
+                    id="po-supplier-filter"
                     value={supplierId}
                     onValueChange={(val) => {
                       setSupplierId(val)

@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -378,81 +379,101 @@ export function InventoryContainer() {
           </TabsList>
 
           {/* Controls & Filters */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-end gap-2">
             {/* Search Input */}
             {activeTab === "batches" && (
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder={t("searchPlaceholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-10 rounded-xl ps-9 text-xs"
-                />
+              <div className="flex flex-col gap-1.5 w-full sm:w-64">
+                <Label htmlFor="inventory-search-input" className="text-xs font-semibold text-muted-foreground">
+                  {t("searchPlaceholder")}
+                </Label>
+                <div className="relative">
+                  <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="inventory-search-input"
+                    placeholder={t("searchPlaceholder")}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-10 rounded-xl ps-9 text-xs"
+                  />
+                </div>
               </div>
             )}
 
             {/* Ingredient Filter */}
-            <Select
-              value={selectedIngredientFilter}
-              onValueChange={(val) => {
-                if (val) setSelectedIngredientFilter(val)
-              }}
-            >
-              <SelectTrigger className="h-10 w-[180px] rounded-xl text-xs">
-                <SelectValue placeholder={t("filterAllIngredients")}>
-                  {selectedIngredientFilter === "all"
-                    ? t("filterAllIngredients")
-                    : ingredients.find(
-                        (ing) => ing._id === selectedIngredientFilter
-                      )?.name || t("filterAllIngredients")}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filterAllIngredients")}</SelectItem>
-                {ingredients.map((ing) => (
-                  <SelectItem key={ing._id} value={ing._id}>
-                    {ing.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Extra filter for transactions tab */}
-            {activeTab === "transactions" && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="inventory-ingredient-filter" className="text-xs font-semibold text-muted-foreground">
+                {t("filterAllIngredients")}
+              </Label>
               <Select
-                value={selectedTypeFilter}
+                value={selectedIngredientFilter}
                 onValueChange={(val) => {
-                  if (val) setSelectedTypeFilter(val)
+                  if (val) setSelectedIngredientFilter(val)
                 }}
               >
-                <SelectTrigger className="h-10 w-[160px] rounded-xl text-xs">
-                  <SelectValue placeholder={t("filterAllTypes")} />
+                <SelectTrigger id="inventory-ingredient-filter" className="h-10 w-[180px] rounded-xl text-xs">
+                  <SelectValue placeholder={t("filterAllIngredients")}>
+                    {selectedIngredientFilter === "all"
+                      ? t("filterAllIngredients")
+                      : ingredients.find(
+                          (ing) => ing._id === selectedIngredientFilter
+                        )?.name || t("filterAllIngredients")}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("filterAllTypes")}</SelectItem>
-                  {Object.values(StockTransactionTypeEnum).map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {t(`type_${type}`)}
+                  <SelectItem value="all">{t("filterAllIngredients")}</SelectItem>
+                  {ingredients.map((ing) => (
+                    <SelectItem key={ing._id} value={ing._id}>
+                      {ing.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Extra filter for transactions tab */}
+            {activeTab === "transactions" && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="inventory-type-filter" className="text-xs font-semibold text-muted-foreground">
+                  {t("filterAllTypes")}
+                </Label>
+                <Select
+                  value={selectedTypeFilter}
+                  onValueChange={(val) => {
+                    if (val) setSelectedTypeFilter(val)
+                  }}
+                >
+                  <SelectTrigger id="inventory-type-filter" className="h-10 w-[160px] rounded-xl text-xs">
+                    <SelectValue placeholder={t("filterAllTypes")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("filterAllTypes")}</SelectItem>
+                    {Object.values(StockTransactionTypeEnum).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {t(`type_${type}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
 
             {/* Extra filter for waste tab */}
             {activeTab === "waste" && (
-              <Select
-                value={selectedReasonFilter}
-                onValueChange={(val) => {
-                  if (val) setSelectedReasonFilter(val)
-                }}
-              >
-                <SelectTrigger className="h-10 w-[160px] rounded-xl text-xs">
-                  <SelectValue placeholder={t("filterAllReasons")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filterAllReasons")}</SelectItem>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="inventory-reason-filter" className="text-xs font-semibold text-muted-foreground">
+                  {t("filterAllReasons")}
+                </Label>
+                <Select
+                  value={selectedReasonFilter}
+                  onValueChange={(val) => {
+                    if (val) setSelectedReasonFilter(val)
+                  }}
+                >
+                  <SelectTrigger id="inventory-reason-filter" className="h-10 w-[160px] rounded-xl text-xs">
+                    <SelectValue placeholder={t("filterAllReasons")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("filterAllReasons")}</SelectItem>
                   {Object.values(WasteReasonEnum).map((r) => (
                     <SelectItem key={r} value={r}>
                       {t(`reason_${r}`)}
@@ -460,9 +481,10 @@ export function InventoryContainer() {
                   ))}
                 </SelectContent>
               </Select>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+      </div>
 
         {/* --- Tab 1: Batches --- */}
         <TabsContent value="batches" className="m-0">

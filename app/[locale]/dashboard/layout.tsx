@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import ProtectedRoute from "@/features/auth/components/ProtectedRoute"
 import { routing } from "@/i18n/routing"
 import { setRequestLocale } from "next-intl/server"
+import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -32,7 +33,7 @@ export default async function DashboardLayout({
   return (
     <Suspense>
       <ProtectedRoute locale={safeLocale} route={`/${locale}/dashboard`}>
-        {children}
+        <AppSidebar>{children}</AppSidebar>
       </ProtectedRoute>
     </Suspense>
   )

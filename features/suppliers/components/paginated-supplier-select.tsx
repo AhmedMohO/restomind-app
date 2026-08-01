@@ -13,6 +13,7 @@ import { buildQueryString } from "@/lib/api/utils"
 import type { ApiSupplier, PaginatedSuppliers } from "../types"
 
 interface PaginatedSupplierSelectProps {
+  id?: string
   value?: string
   onValueChange: (value: string, supplier?: ApiSupplier) => void
   disabled?: boolean
@@ -23,6 +24,7 @@ interface PaginatedSupplierSelectProps {
 }
 
 export function PaginatedSupplierSelect({
+  id,
   value,
   onValueChange,
   disabled = false,
@@ -67,6 +69,7 @@ export function PaginatedSupplierSelect({
 
   return (
     <PaginatedSelect<ApiSupplier>
+      id={id}
       value={value}
       onValueChange={(val, option) => onValueChange(val, option?.data)}
       fetchData={fetchSuppliers}

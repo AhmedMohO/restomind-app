@@ -1,6 +1,5 @@
 "use client"
 
-import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { DashboardProfileContainer } from "@/features/profile/components/dashboard-profile-container"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
@@ -10,11 +9,9 @@ import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
  */
 function ProfilePageContent() {
   return (
-    <AppSidebar>
-      <main className="flex-1 p-6">
-        <DashboardProfileContainer />
-      </main>
-    </AppSidebar>
+    <main className="flex-1 p-6">
+      <DashboardProfileContainer />
+    </main>
   )
 }
 

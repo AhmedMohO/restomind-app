@@ -17,6 +17,7 @@ import type {
 import { useCategoryById } from "@/features/categories/hooks/use-categories"
 
 interface PaginatedCategorySelectProps {
+  id?: string
   value?: string
   onValueChange: (value: string, category?: ApiCategory) => void
   disabled?: boolean
@@ -26,6 +27,7 @@ interface PaginatedCategorySelectProps {
 }
 
 export function PaginatedCategorySelect({
+  id,
   value,
   onValueChange,
   disabled = false,
@@ -71,28 +73,21 @@ export function PaginatedCategorySelect({
       (cat) => ({
         value: cat._id,
         label: cat.name,
-        subLabel: cat.description
-          ? cat.description.length > 40
-            ? `${cat.description.slice(0, 40)}...`
-            : cat.description
-          : undefined,
+        subLabel: cat.description || undefined,
         icon: <FolderTree className="size-3.5" />,
         data: cat,
       })
     )
 
     if (
+      value &&
       singleCategory &&
-      !options.some((opt) => opt.value === singleCategory._id)
+      !options.some((opt) => opt.value === value)
     ) {
       options.unshift({
         value: singleCategory._id,
         label: singleCategory.name,
-        subLabel: singleCategory.description
-          ? singleCategory.description.length > 40
-            ? `${singleCategory.description.slice(0, 40)}...`
-            : singleCategory.description
-          : undefined,
+        subLabel: singleCategory.description || undefined,
         icon: <FolderTree className="size-3.5" />,
         data: singleCategory,
       })
@@ -107,6 +102,7 @@ export function PaginatedCategorySelect({
 
   return (
     <PaginatedSelect<ApiCategory>
+      id={id}
       value={value}
       onValueChange={(val, option) => onValueChange(val, option?.data)}
       fetchData={fetchCategories}

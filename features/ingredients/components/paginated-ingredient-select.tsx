@@ -18,6 +18,7 @@ import type {
 import { useIngredientById } from "@/features/ingredients/hooks/use-ingredients"
 
 interface PaginatedIngredientSelectProps {
+  id?: string
   value?: string
   onValueChange: (value: string, ingredient?: ApiIngredient) => void
   disabled?: boolean
@@ -35,6 +36,7 @@ interface PaginatedIngredientSelectProps {
  * empty trigger for a valid selection.
  */
 export function PaginatedIngredientSelect({
+  id,
   value,
   onValueChange,
   disabled = false,
@@ -96,6 +98,7 @@ export function PaginatedIngredientSelect({
 
   return (
     <PaginatedSelect<ApiIngredient>
+      id={id}
       value={value}
       selectedOption={selectedOption}
       onValueChange={(val, option) => onValueChange(val, option?.data)}

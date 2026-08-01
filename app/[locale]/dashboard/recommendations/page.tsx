@@ -1,6 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server"
 
-import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 import { RecommendationList } from "@/features/recommendations/components/recommendation-list"
 import { ScanSurplusPanel } from "@/features/recommendations/components/scan-surplus-panel"
@@ -21,12 +20,10 @@ export default async function DashboardRecommendationsPage({
 
   return (
     <DashboardAuthGuard roles={["manager"]}>
-      <AppSidebar>
-        <main className="w-full min-w-0 flex-1 space-y-6 p-4 sm:p-6">
-          <ScanSurplusPanel title={t("title")} />
-          <RecommendationList />
-        </main>
-      </AppSidebar>
+      <main className="w-full min-w-0 flex-1 space-y-6 p-4 sm:p-6">
+        <ScanSurplusPanel title={t("title")} />
+        <RecommendationList />
+      </main>
     </DashboardAuthGuard>
   )
 }

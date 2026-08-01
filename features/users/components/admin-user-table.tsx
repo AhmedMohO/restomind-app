@@ -42,7 +42,9 @@ export function AdminUserTable() {
 
   const [search, setSearch] = React.useState("")
   const [debouncedSearch, setDebouncedSearch] = React.useState("")
-  const [roleFilter, setRoleFilter] = React.useState<string>(isManager ? "staff" : "all")
+  const [roleFilter, setRoleFilter] = React.useState<string>(
+    isManager ? "staff" : "all"
+  )
   const [page, setPage] = React.useState(1)
   const [limit, setLimit] = React.useState(10)
 
@@ -68,7 +70,11 @@ export function AdminUserTable() {
     return () => clearTimeout(timer)
   }, [search])
 
-  const activeRole = isManager ? "staff" : (roleFilter !== "all" ? roleFilter : undefined)
+  const activeRole = isManager
+    ? "staff"
+    : roleFilter !== "all"
+      ? roleFilter
+      : undefined
 
   const { data, isLoading, isError, refetch } = useUsersList({
     page,
@@ -124,19 +130,31 @@ export function AdminUserTable() {
 
       {/* Filter and search bar */}
       <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-        <div className="relative w-full max-w-full flex-1 sm:max-w-sm">
-          <Search className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className="rounded-xl ps-9"
-          />
+        <div className="flex w-full max-w-full flex-1 flex-col gap-1.5 sm:max-w-sm">
+          <Label
+            htmlFor="admin-user-search"
+            className="text-xs font-semibold text-muted-foreground"
+          >
+            {t("searchPlaceholder")}
+          </Label>
+          <div className="relative">
+            <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="admin-user-search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className="rounded-xl ps-9"
+            />
+          </div>
         </div>
 
         {!isManager && (
-          <div className="flex items-center gap-2">
-            <Label htmlFor="admin-role-filter" className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="admin-role-filter"
+              className="text-xs font-semibold whitespace-nowrap text-muted-foreground"
+            >
               {t("role")}:
             </Label>
             <Select
@@ -146,7 +164,11 @@ export function AdminUserTable() {
                 setPage(1)
               }}
             >
-              <SelectTrigger id="admin-role-filter" aria-label={t("role")} className="w-[150px] rounded-xl">
+              <SelectTrigger
+                id="admin-role-filter"
+                aria-label={t("role")}
+                className="w-[150px] rounded-xl"
+              >
                 <SelectValue placeholder={t("roleAll")} />
               </SelectTrigger>
               <SelectContent>

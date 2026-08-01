@@ -1,6 +1,5 @@
 import { setRequestLocale } from "next-intl/server"
 
-import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 import { WasteSummaryCards } from "@/features/waste/components/waste-summary-cards"
 import { RiskBreakdownChart } from "@/features/waste/components/risk-breakdown-chart"
@@ -23,13 +22,11 @@ export default async function DashboardWastePage({
 
   return (
     <DashboardAuthGuard roles={["manager"]}>
-      <AppSidebar>
-        <main className="w-full min-w-0 flex-1 space-y-6 p-4 sm:p-6">
-          <WasteSummaryCards />
-          <RiskBreakdownChart />
-          <WasteTable />
-        </main>
-      </AppSidebar>
+      <main className="w-full min-w-0 flex-1 space-y-6 p-4 sm:p-6">
+        <WasteSummaryCards />
+        <RiskBreakdownChart />
+        <WasteTable />
+      </main>
     </DashboardAuthGuard>
   )
 }

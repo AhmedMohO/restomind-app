@@ -1,6 +1,5 @@
 import { setRequestLocale } from "next-intl/server"
 
-import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 import { PlanTable } from "@/features/production-plan/components/plan-table"
 
@@ -19,11 +18,9 @@ export default async function DashboardProductionPlanPage({
 
   return (
     <DashboardAuthGuard roles={["manager"]}>
-      <AppSidebar>
-        <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
-          <PlanTable />
-        </main>
-      </AppSidebar>
+      <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
+        <PlanTable />
+      </main>
     </DashboardAuthGuard>
   )
 }

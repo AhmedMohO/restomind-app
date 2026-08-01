@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
-import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
 import { BackButton } from "@/components/ui/back-button"
 import { RestaurantForm } from "@/features/restaurant/components/restaurant-form"
 import { useCreateRestaurant } from "@/features/restaurant/hooks/use-restaurant"
@@ -19,10 +18,7 @@ function NewRestaurantPageContent() {
 
   const createMutation = useCreateRestaurant()
 
-  const handleSubmit = async (
-    formData: FormData,
-    ownerUserId?: string
-  ) => {
+  const handleSubmit = async (formData: FormData, ownerUserId?: string) => {
     if (!ownerUserId) {
       toast.error("Please select a restaurant owner / manager")
       return
@@ -40,33 +36,31 @@ function NewRestaurantPageContent() {
   }
 
   return (
-    <AppSidebar>
-      <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
-        <div className="flex flex-col gap-6">
-          {/* Header */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <BackButton href="/dashboard/restaurants" />
-              <div className="min-w-0">
-                <h1 className="truncate font-heading text-2xl font-bold">
-                  {t("createRestaurant")}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("adminSubtitle")}
-                </p>
-              </div>
+    <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <BackButton href="/dashboard/restaurants" />
+            <div className="min-w-0">
+              <h1 className="truncate font-heading text-2xl font-bold">
+                {t("createRestaurant")}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {t("adminSubtitle")}
+              </p>
             </div>
           </div>
-
-          <RestaurantForm
-            key={formKey}
-            mode="create"
-            onSubmit={handleSubmit}
-            isPending={createMutation.isPending}
-          />
         </div>
-      </main>
-    </AppSidebar>
+
+        <RestaurantForm
+          key={formKey}
+          mode="create"
+          onSubmit={handleSubmit}
+          isPending={createMutation.isPending}
+        />
+      </div>
+    </main>
   )
 }
 

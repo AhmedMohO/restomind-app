@@ -34,7 +34,6 @@ import { Link } from "@/i18n/routing"
 import { useTableControls } from "@/hooks/use-table-controls"
 import { formatQty } from "@/lib/charts/format"
 import { RISK_COLORS, type RiskLevel } from "@/lib/charts/palette"
-import { SourceBadge } from "@/components/ai/source-badge"
 import {
   resolveIngredient,
   resolvePrediction,
@@ -100,7 +99,10 @@ export function WasteTable() {
           {t("table.title")}
         </h2>
         <div className="flex items-center gap-2">
-          <Label htmlFor="waste-risk-filter" className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+          <Label
+            htmlFor="waste-risk-filter"
+            className="text-xs font-semibold whitespace-nowrap text-muted-foreground"
+          >
             {t("table.riskFilter")}:
           </Label>
           <Select
@@ -111,7 +113,11 @@ export function WasteTable() {
               setPage(1)
             }}
           >
-            <SelectTrigger id="waste-risk-filter" aria-label={t("table.riskFilter")} className="w-44">
+            <SelectTrigger
+              id="waste-risk-filter"
+              aria-label={t("table.riskFilter")}
+              className="w-44"
+            >
               <SelectValue placeholder={t("table.riskFilter")} />
             </SelectTrigger>
             <SelectContent>
@@ -189,14 +195,6 @@ export function WasteTable() {
                     <TableCell className="text-start">
                       {prediction ? (
                         <div className="flex flex-wrap items-center gap-1.5">
-                          {/* `SourceBadge` renders a base-ui `<Tooltip>` whose
-                              trigger is a real `<button>` — nesting it inside
-                              this `Button`-as-`<a>` would put a `<button>`
-                              inside an `<a>`, which the HTML content model
-                              disallows (two Tab stops for one row link, a
-                              confused screen-reader announcement). Keeping it
-                              as a sibling, not a descendant, is why this is a
-                              `<div>` wrapper and not the link itself. */}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -219,7 +217,6 @@ export function WasteTable() {
                               {formatQty(prediction.predictedOrders, locale)}
                             </span>
                           </Button>
-                          <SourceBadge source={prediction.source} />
                         </div>
                       ) : (
                         <span className="text-xs text-muted-foreground italic">
