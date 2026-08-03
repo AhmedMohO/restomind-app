@@ -909,6 +909,8 @@
     "notesPlaceholder": "Tell us more about your fresh daily items, opening hours, or special requirements...",
     "submitButton": "Submit Partner Application",
     "submitting": "Submitting Application...",
+    "continue": "Continue",
+    "back": "Back",
     "successTitle": "Application Submitted Successfully!",
     "successSubtitle": "Thank you for applying to RestoMind! Your application has been received and is currently under review by our onboarding team.",
     "reviewStep1": "1. Data Verification",
@@ -934,6 +936,7 @@
     "checkingStatus": "Checking Status...",
     "fillAllFields": "Please enter both Application ID and Email.",
     "statusFetchSuccess": "Application status retrieved successfully.",
+    "underReview": "Under Review",
     "statusFetchError": "Application not found or email does not match."
   },
 

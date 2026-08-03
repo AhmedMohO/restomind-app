@@ -1,14 +1,13 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { parsePhoneNumberFromString } from "libphonenumber-js"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import {
-  partnerApplicationSchema,
-  type PartnerApplicationInput,
-} from "@/schemas/partner"
+import { type PartnerApplicationInput } from "@/schemas/partner"
 import { Link } from "@/i18n/routing"
 import {
   Card,
@@ -23,7 +22,6 @@ import { PhoneInput } from "@/components/ui/phone-input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-
 import {
   Select,
   SelectContent,
@@ -50,59 +48,123 @@ import {
   Check,
   Search,
   FileEdit,
+  Loader2,
 } from "lucide-react"
 
 import { useSubmitPartnershipApplication } from "../hooks/use-partnership"
 import { PartnershipStatusCheck } from "./PartnershipStatusCheck"
 
-const INITIAL_FORM: PartnerApplicationInput = {
-  restaurantName: "",
-  businessType: "",
-  ownerFirstName: "",
-  ownerLastName: "",
-  email: "",
-  phone: "",
-  city: "",
-  district: "",
-  commercialReg: "",
-  socialLink: "",
-  notes: "",
-}
-
-const STORAGE_KEY = "restomind_partner_app_state"
-
-// Which registered field names live on which step. Used to decide whether a
-// step has been "attempted" (Continue/Submit clicked) so we know it's safe
-// to surface its errors.
-const STEP_FIELDS: Record<number, (keyof PartnerApplicationInput)[]> = {
-  1: ["restaurantName", "businessType"],
-  2: ["ownerFirstName", "ownerLastName", "email", "phone"],
-  3: ["city", "district", "socialLink", "notes"],
-}
-
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 export default function PartnerApplicationForm() {
   const t = useTranslations("PartnerApplication")
 
   const [activeTab, setActiveTab] = useState<"apply" | "status">("apply")
   const [step, setStep] = useState<number>(1)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [referenceId, setReferenceId] = useState("")
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  // Tracks which steps the user has actually tried to advance past (Continue
-  // or final Submit). Errors for a step only render once it's been attempted
-  // OR the specific field has been touched — this is what stops Step 3's
-  // "required" messages from showing up before the user ever lands there.
-  const [stepAttempted, setStepAttempted] = useState<Record<number, boolean>>(
-    {}
-  )
 
   const submitMutation = useSubmitPartnershipApplication()
 
+  // ---------------------------------------------------------------------------
+  // Build Zod schemas with translated messages so zodResolver puts the final
+  // human-readable string directly into errors[name].message.
+  // fieldError can then render msg as-is without calling t() again.
+  // ---------------------------------------------------------------------------
+  const step1Schema = useMemo(
+    () =>
+      z.object({
+        restaurantName: z
+          .string()
+          .trim()
+          .min(1, { message: t("validationRequired") })
+          .min(3, { message: t("validationMin3") }),
+        businessType: z
+          .string()
+          .trim()
+          .min(1, { message: t("validationRequired") }),
+      }),
+    [t]
+  )
+
+  const step2Schema = useMemo(
+    () =>
+      z.object({
+        ownerFirstName: z
+          .string()
+          .trim()
+          .min(1, { message: t("validationRequired") })
+          .min(3, { message: t("firstNameMin") }),
+        ownerLastName: z
+          .string()
+          .trim()
+          .min(1, { message: t("validationRequired") })
+          .min(3, { message: t("lastNameMin") }),
+        email: z
+          .string()
+          .trim()
+          .min(1, { message: t("validationRequired") })
+          .email({ message: t("validationInvalidEmail") }),
+        phone: z
+          .string()
+          .trim()
+          .min(1, { message: t("validationRequired") })
+          .refine(
+            (val) => {
+              if (!val || val.trim() === "") return false
+              const parsed = parsePhoneNumberFromString(val)
+              return parsed ? parsed.isValid() : false
+            },
+            { message: t("validationInvalidPhone") }
+          ),
+      }),
+    [t]
+  )
+
+  const step3Schema = useMemo(
+    () =>
+      z.object({
+        city: z
+          .string()
+          .trim()
+          .min(1, { message: t("validationRequired") }),
+        district: z
+          .string()
+          .trim()
+          .min(1, { message: t("validationRequired") }),
+        commercialReg: z.string().optional(),
+        socialLink: z.string().optional(),
+        notes: z.string().optional(),
+      }),
+    [t]
+  )
+
+  const fullSchema = useMemo(
+    () => step1Schema.merge(step2Schema).merge(step3Schema),
+    [step1Schema, step2Schema, step3Schema]
+  )
+
+  const stepSchemas = useMemo(
+    () => ({ 1: step1Schema, 2: step2Schema, 3: step3Schema }) as const,
+    [step1Schema, step2Schema, step3Schema]
+  )
+
   const form = useForm<PartnerApplicationInput>({
-    resolver: zodResolver(partnerApplicationSchema),
-    defaultValues: INITIAL_FORM,
+    resolver: zodResolver(fullSchema),
+    defaultValues: {
+      restaurantName: "",
+      businessType: "",
+      ownerFirstName: "",
+      ownerLastName: "",
+      email: "",
+      phone: "",
+      city: "",
+      district: "",
+      commercialReg: "",
+      socialLink: "",
+      notes: "",
+    },
     mode: "onTouched",
   })
 
@@ -111,96 +173,26 @@ export default function PartnerApplicationForm() {
     handleSubmit,
     setValue,
     trigger,
-    reset,
-    formState: { errors, touchedFields },
+    formState: { errors, isSubmitting, touchedFields },
   } = form
 
   const formData = useWatch({ control: form.control })
 
-  // Restore step and form state from localStorage on page refresh
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY)
-        if (saved) {
-          const parsed = JSON.parse(saved)
-          if (
-            typeof parsed.step === "number" &&
-            parsed.step >= 1 &&
-            parsed.step <= 3
-          ) {
-            setStep(parsed.step)
-          }
-          if (parsed.formData) {
-            reset(parsed.formData)
-          }
-          if (parsed.isSubmitted) {
-            setIsSubmitted(parsed.isSubmitted)
-          }
-          if (parsed.referenceId) {
-            setReferenceId(parsed.referenceId)
-          }
-        }
-      } catch {
-        // ignore parse errors
-      } finally {
-        setIsLoaded(true)
-      }
-    }, 0)
+  const handleNext = useCallback(async () => {
+    const schema = stepSchemas[step as keyof typeof stepSchemas]
+    const fieldsToValidate = Object.keys(
+      schema.shape
+    ) as (keyof PartnerApplicationInput)[]
 
-    return () => clearTimeout(timer)
-  }, [reset])
+    const valid = await trigger(fieldsToValidate)
+    if (valid) setStep((prev) => prev + 1)
+  }, [step, stepSchemas, trigger])
 
-  // Save current step and form state to localStorage (only while in progress)
-  useEffect(() => {
-    if (!isLoaded || isSubmitted) return
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ step, formData, isSubmitted, referenceId })
-      )
-    } catch {
-      // ignore storage errors
-    }
-  }, [step, formData, isSubmitted, referenceId, isLoaded])
-
-  // Small helper: is it OK to show an error for this field right now?
-  // Either the user touched it directly, or they tried to leave/submit the
-  // step it belongs to (Continue/Submit was clicked at least once).
-  const canShowError = (field: keyof PartnerApplicationInput) => {
-    if (touchedFields[field]) return true
-    const owningStep = Object.entries(STEP_FIELDS).find(([, fields]) =>
-      fields.includes(field)
-    )?.[0]
-    return owningStep ? !!stepAttempted[Number(owningStep)] : false
-  }
-
-  const markStepAttempted = (s: number) =>
-    setStepAttempted((prev) => (prev[s] ? prev : { ...prev, [s]: true }))
-
-  const handleNext = async () => {
-    // Mark first so an invalid attempt still reveals its own errors.
-    markStepAttempted(step)
-
-    let isValid = false
-    if (step === 1) {
-      isValid = await trigger(STEP_FIELDS[1])
-    } else if (step === 2) {
-      isValid = await trigger(STEP_FIELDS[2])
-    }
-    if (isValid) {
-      setStep((prev) => prev + 1)
-    }
-  }
-
-  const handleBack = () => {
-    if (step > 1) {
-      setStep((prev) => prev - 1)
-    }
-  }
+  const handleBack = useCallback(() => {
+    setStep((prev) => Math.max(1, prev - 1))
+  }, [])
 
   const onSubmit = async (data: PartnerApplicationInput) => {
-    setIsSubmitting(true)
     try {
       const res = await submitMutation.mutateAsync({
         businessName: data.restaurantName,
@@ -218,17 +210,9 @@ export default function PartnerApplicationForm() {
 
       const app = res?.application
       setReferenceId(
-        app?._id ||
-          `RM-PARTNER-${Math.floor(100000 + Math.random() * 900000)}`
+        app?._id || `RM-PARTNER-${Math.floor(100000 + Math.random() * 900000)}`
       )
       setIsSubmitted(true)
-
-      // Clear local storage upon submission completion
-      try {
-        localStorage.removeItem(STORAGE_KEY)
-      } catch {
-        // ignore
-      }
 
       toast.success(
         res?.message || "Partnership application submitted successfully."
@@ -240,54 +224,64 @@ export default function PartnerApplicationForm() {
           ? err.message
           : "Failed to submit application. Please try again."
       )
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
-  // Wrap RHF's handleSubmit so a failed final submit also marks step 3 as
-  // "attempted" — otherwise a submit with empty step-3 fields wouldn't show
-  // any error at all (since those fields were never touched or trigger()'d).
-  const onFormSubmit = handleSubmit(onSubmit, () => {
-    markStepAttempted(3)
-  })
+  // zodResolver puts the final Zod `.message` string directly into
+  // errors[name].message — no translation call needed here.
+  // We suppress errors for fields the user hasn't touched yet AND where no
+  // submit has been attempted — this prevents step 3 fields (city, district)
+  // from showing errors as soon as the user arrives, because the full-schema
+  // resolver pre-populates their error state during step 2's trigger() call.
+  const fieldError = (name: keyof PartnerApplicationInput) => {
+    const msg = errors[name]?.message
+    if (!msg) return null
+    if (!touchedFields[name] && !isSubmitted) return null
+    return (
+      <p role="alert" className="mt-1 text-xs font-medium text-red-500">
+        {msg}
+      </p>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      {/* Top Mode Switcher: Apply vs Check Status */}
+      {/* Top Mode Switcher */}
       <div className="mx-auto flex max-w-md items-center justify-center rounded-2xl bg-stone-200/60 p-1.5 dark:bg-neutral-800">
         <button
           type="button"
           onClick={() => setActiveTab("apply")}
           className={cn(
-            "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold transition-all",
+            "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all sm:text-sm",
             activeTab === "apply"
               ? "bg-white text-[#7C4A27] shadow-sm dark:bg-neutral-900 dark:text-[#E68A49]"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
           <FileEdit className="size-4" />
-          <span>{t("applyTabTitle") || "Submit Application"}</span>
+          <span>{t("applyTabTitle")}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("status")}
           className={cn(
-            "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold transition-all",
+            "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all sm:text-sm",
             activeTab === "status"
               ? "bg-white text-[#7C4A27] shadow-sm dark:bg-neutral-900 dark:text-[#E68A49]"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
           <Search className="size-4" />
-          <span>{t("statusTabTitle") || "Check Status"}</span>
+          <span>{t("statusTabTitle")}</span>
         </button>
       </div>
 
+      {/* ------------------------------------------------------------------ */}
       {activeTab === "status" ? (
         <PartnershipStatusCheck />
       ) : isSubmitted ? (
+        /* ---- SUCCESS SCREEN ---- */
         <Card className="mx-auto w-full max-w-3xl rounded-3xl border border-stone-200/80 bg-white p-6 text-center shadow-xl sm:p-10 dark:border-neutral-800 dark:bg-neutral-900">
           <CardContent className="space-y-8 p-0">
             <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
@@ -300,7 +294,7 @@ export default function PartnerApplicationForm() {
                 className="rounded-full border-emerald-600/20 bg-emerald-500/10 px-4 py-1 text-xs font-bold tracking-wider text-emerald-700 uppercase dark:bg-emerald-500/20 dark:text-emerald-400"
               >
                 <Sparkles className="me-1.5 inline size-3.5" />
-                <span>Under Review</span>
+                <span>{t("underReview")}</span>
               </Badge>
 
               <h2 className="font-serif text-3xl font-bold text-[#2B1B15] dark:text-stone-100">
@@ -311,7 +305,7 @@ export default function PartnerApplicationForm() {
               </p>
             </div>
 
-            {/* Reference ID Box */}
+            {/* Reference ID */}
             <div className="inline-flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#7C4A27]/30 bg-[#7C4A27]/5 px-6 py-4 dark:border-[#C2733C]/30 dark:bg-[#C2733C]/10">
               <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">
                 {t("refIdLabel")}
@@ -321,7 +315,7 @@ export default function PartnerApplicationForm() {
               </span>
             </div>
 
-            {/* 3 Step Review Process Roadmap */}
+            {/* What happens next */}
             <div className="space-y-4 text-left rtl:text-right">
               <h4 className="font-serif text-base font-bold text-[#2B1B15] dark:text-stone-200">
                 {t("whatHappensNext")}
@@ -359,15 +353,15 @@ export default function PartnerApplicationForm() {
               </div>
             </div>
 
-            {/* Action buttons */}
+            {/* Actions */}
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setActiveTab("status")}
-                className="h-auto rounded-full px-6 py-3 text-sm font-semibold gap-2"
+                className="h-auto gap-2 rounded-full px-6 py-3 text-sm font-semibold"
               >
                 <Search className="size-4" />
-                <span>{t("checkStatusBtn") || "Check Status"}</span>
+                <span>{t("checkStatusBtn")}</span>
               </Button>
               <Link
                 href="/offers"
@@ -383,29 +377,35 @@ export default function PartnerApplicationForm() {
           </CardContent>
         </Card>
       ) : (
+        /* ---- MULTI-STEP FORM ---- */
         <Card className="mx-auto w-full max-w-3xl rounded-3xl border border-[#ECE6DB] bg-white p-6 shadow-xl md:p-10 dark:border-neutral-800 dark:bg-neutral-900">
           <CardContent className="space-y-8 p-0">
-            {/* Stepper Progress Bar */}
+            {/* Stepper */}
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs font-bold tracking-wider text-muted-foreground uppercase">
                 <span
-                  className={step >= 1 ? "text-[#7C4A27] dark:text-[#E68A49]" : ""}
+                  className={
+                    step >= 1 ? "text-[#7C4A27] dark:text-[#E68A49]" : ""
+                  }
                 >
                   1. {t("step1Title")}
                 </span>
                 <span
-                  className={step >= 2 ? "text-[#7C4A27] dark:text-[#E68A49]" : ""}
+                  className={
+                    step >= 2 ? "text-[#7C4A27] dark:text-[#E68A49]" : ""
+                  }
                 >
                   2. {t("step2Title")}
                 </span>
                 <span
-                  className={step >= 3 ? "text-[#7C4A27] dark:text-[#E68A49]" : ""}
+                  className={
+                    step >= 3 ? "text-[#7C4A27] dark:text-[#E68A49]" : ""
+                  }
                 >
                   3. {t("step3Title")}
                 </span>
               </div>
 
-              {/* Progress Bar */}
               <div className="h-2 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-neutral-800">
                 <div
                   className="h-full bg-gradient-to-r from-[#7C4A27] to-[#C2733C] transition-all duration-500 ease-out"
@@ -414,8 +414,11 @@ export default function PartnerApplicationForm() {
               </div>
             </div>
 
-            <form onSubmit={onFormSubmit} className="space-y-6">
-              {/* STEP 1: Business Profile */}
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="space-y-6"
+            >
+              {/* ---- STEP 1: Business Profile ---- */}
               {step === 1 && (
                 <div className="space-y-6">
                   <div className="border-b border-stone-200/80 pb-4 dark:border-neutral-800">
@@ -437,21 +440,17 @@ export default function PartnerApplicationForm() {
                       type="text"
                       {...register("restaurantName")}
                       placeholder={t("restaurantNamePlaceholder")}
-                      className="h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50"
-                    />
-                    {errors.restaurantName?.message &&
-                      canShowError("restaurantName") && (
-                        <p className="text-xs font-medium text-red-500">
-                          {t(
-                            errors.restaurantName.message as Parameters<
-                              typeof t
-                            >[0]
-                          )}
-                        </p>
+                      aria-invalid={!!errors.restaurantName}
+                      className={cn(
+                        "h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50",
+                        errors.restaurantName &&
+                          "border-red-500 focus-visible:ring-red-500 dark:border-red-500"
                       )}
+                    />
+                    {fieldError("restaurantName")}
                   </div>
 
-                  {/* Business Type with shadcn Select */}
+                  {/* Business Type */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <Building2 className="size-4 text-[#7C4A27] dark:text-[#E68A49]" />
@@ -461,18 +460,31 @@ export default function PartnerApplicationForm() {
                       value={formData?.businessType || ""}
                       onValueChange={(val) => {
                         if (val) {
-                          setValue("businessType", val, { shouldValidate: true })
+                          setValue("businessType", val, {
+                            shouldValidate: true,
+                            shouldTouch: true,
+                          })
                         }
                       }}
                     >
-                      <SelectTrigger className="h-12 w-full rounded-xl border border-stone-200 bg-stone-50/50 px-3.5 text-sm text-stone-900 dark:border-neutral-700 dark:bg-neutral-800/50 dark:text-stone-100">
+                      <SelectTrigger
+                        aria-invalid={!!errors.businessType}
+                        className={cn(
+                          "h-12 w-full rounded-xl border bg-stone-50/50 px-3.5 text-sm text-stone-900 dark:bg-neutral-800/50 dark:text-stone-100",
+                          errors.businessType
+                            ? "border-red-500 focus:ring-red-500 dark:border-red-500"
+                            : "border-stone-200 dark:border-neutral-700"
+                        )}
+                      >
                         <SelectValue placeholder={t("selectBusinessType")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="restaurant">
                           {t("typeRestaurant")}
                         </SelectItem>
-                        <SelectItem value="bakery">{t("typeBakery")}</SelectItem>
+                        <SelectItem value="bakery">
+                          {t("typeBakery")}
+                        </SelectItem>
                         <SelectItem value="cafe">{t("typeCafe")}</SelectItem>
                         <SelectItem value="catering">
                           {t("typeCatering")}
@@ -482,21 +494,12 @@ export default function PartnerApplicationForm() {
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    {errors.businessType?.message &&
-                      canShowError("businessType") && (
-                        <p className="text-xs font-medium text-red-500">
-                          {t(
-                            errors.businessType.message as Parameters<
-                              typeof t
-                            >[0]
-                          )}
-                        </p>
-                      )}
+                    {fieldError("businessType")}
                   </div>
                 </div>
               )}
 
-              {/* STEP 2: Contact Info */}
+              {/* ---- STEP 2: Contact Info ---- */}
               {step === 2 && (
                 <div className="space-y-6">
                   <div className="border-b border-stone-200/80 pb-4 dark:border-neutral-800">
@@ -519,18 +522,14 @@ export default function PartnerApplicationForm() {
                         type="text"
                         {...register("ownerFirstName")}
                         placeholder={t("ownerFirstNamePlaceholder")}
-                        className="h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50"
-                      />
-                      {errors.ownerFirstName?.message &&
-                        canShowError("ownerFirstName") && (
-                          <p className="text-xs font-medium text-red-500">
-                            {t(
-                              errors.ownerFirstName.message as Parameters<
-                                typeof t
-                              >[0]
-                            )}
-                          </p>
+                        aria-invalid={!!errors.ownerFirstName}
+                        className={cn(
+                          "h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50",
+                          errors.ownerFirstName &&
+                            "border-red-500 focus-visible:ring-red-500 dark:border-red-500"
                         )}
+                      />
+                      {fieldError("ownerFirstName")}
                     </div>
 
                     <div className="space-y-2">
@@ -542,18 +541,14 @@ export default function PartnerApplicationForm() {
                         type="text"
                         {...register("ownerLastName")}
                         placeholder={t("ownerLastNamePlaceholder")}
-                        className="h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50"
-                      />
-                      {errors.ownerLastName?.message &&
-                        canShowError("ownerLastName") && (
-                          <p className="text-xs font-medium text-red-500">
-                            {t(
-                              errors.ownerLastName.message as Parameters<
-                                typeof t
-                              >[0]
-                            )}
-                          </p>
+                        aria-invalid={!!errors.ownerLastName}
+                        className={cn(
+                          "h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50",
+                          errors.ownerLastName &&
+                            "border-red-500 focus-visible:ring-red-500 dark:border-red-500"
                         )}
+                      />
+                      {fieldError("ownerLastName")}
                     </div>
                   </div>
 
@@ -568,13 +563,14 @@ export default function PartnerApplicationForm() {
                         type="email"
                         {...register("email")}
                         placeholder={t("emailPlaceholder")}
-                        className="h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50"
+                        aria-invalid={!!errors.email}
+                        className={cn(
+                          "h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50",
+                          errors.email &&
+                            "border-red-500 focus-visible:ring-red-500 dark:border-red-500"
+                        )}
                       />
-                      {errors.email?.message && canShowError("email") && (
-                        <p className="text-xs font-medium text-red-500">
-                          {t(errors.email.message as Parameters<typeof t>[0])}
-                        </p>
-                      )}
+                      {fieldError("email")}
                     </div>
 
                     <div className="space-y-2">
@@ -586,21 +582,24 @@ export default function PartnerApplicationForm() {
                         name="phone"
                         value={formData?.phone || ""}
                         onValueChange={(val) => {
-                          setValue("phone", val, { shouldValidate: true })
+                          setValue("phone", val, {
+                            shouldValidate: true,
+                            shouldTouch: true,
+                          })
                         }}
                         placeholder={t("phonePlaceholder")}
-                        className="h-12 rounded-xl border-stone-200 bg-stone-50/50 text-sm dark:border-neutral-700 dark:bg-neutral-800/50"
                         aria-invalid={!!errors.phone}
+                        className={cn(
+                          "h-12 rounded-xl border-stone-200 bg-stone-50/50 text-sm dark:border-neutral-700 dark:bg-neutral-800/50",
+                          errors.phone &&
+                            "border-red-500 focus-visible:ring-red-500 dark:border-red-500"
+                        )}
                       />
-                      {errors.phone?.message && canShowError("phone") && (
-                        <p className="text-xs font-medium text-red-500">
-                          {t(errors.phone.message as Parameters<typeof t>[0])}
-                        </p>
-                      )}
+                      {fieldError("phone")}
                     </div>
                   </div>
 
-                  {/* Commercial Registration / Tax ID */}
+                  {/* Commercial Registration */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <FileText className="size-4 text-[#7C4A27] dark:text-[#E68A49]" />
@@ -616,7 +615,7 @@ export default function PartnerApplicationForm() {
                 </div>
               )}
 
-              {/* STEP 3: Operations & Location */}
+              {/* ---- STEP 3: Operations & Location ---- */}
               {step === 3 && (
                 <div className="space-y-6">
                   <div className="border-b border-stone-200/80 pb-4 dark:border-neutral-800">
@@ -639,13 +638,14 @@ export default function PartnerApplicationForm() {
                         type="text"
                         {...register("city")}
                         placeholder={t("cityPlaceholder")}
-                        className="h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50"
+                        aria-invalid={!!errors.city}
+                        className={cn(
+                          "h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50",
+                          errors.city &&
+                            "border-red-500 focus-visible:ring-red-500 dark:border-red-500"
+                        )}
                       />
-                      {errors.city?.message && canShowError("city") && (
-                        <p className="text-xs font-medium text-red-500">
-                          {t(errors.city.message as Parameters<typeof t>[0])}
-                        </p>
-                      )}
+                      {fieldError("city")}
                     </div>
 
                     <div className="space-y-2">
@@ -657,19 +657,18 @@ export default function PartnerApplicationForm() {
                         type="text"
                         {...register("district")}
                         placeholder={t("districtPlaceholder")}
-                        className="h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50"
+                        aria-invalid={!!errors.district}
+                        className={cn(
+                          "h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50",
+                          errors.district &&
+                            "border-red-500 focus-visible:ring-red-500 dark:border-red-500"
+                        )}
                       />
-                      {errors.district?.message && canShowError("district") && (
-                        <p className="text-xs font-medium text-red-500">
-                          {t(
-                            errors.district.message as Parameters<typeof t>[0]
-                          )}
-                        </p>
-                      )}
+                      {fieldError("district")}
                     </div>
                   </div>
 
-                  {/* Social Link */}
+                  {/* Social / Website Link */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <Globe className="size-4 text-[#7C4A27] dark:text-[#E68A49]" />
@@ -681,14 +680,7 @@ export default function PartnerApplicationForm() {
                       placeholder={t("socialLinkPlaceholder")}
                       className="h-12 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50"
                     />
-                    {errors.socialLink?.message &&
-                      canShowError("socialLink") && (
-                        <p className="text-xs font-medium text-red-500">
-                          {t(
-                            errors.socialLink.message as Parameters<typeof t>[0]
-                          )}
-                        </p>
-                      )}
+                    {fieldError("socialLink")}
                   </div>
 
                   {/* Notes */}
@@ -707,17 +699,18 @@ export default function PartnerApplicationForm() {
                 </div>
               )}
 
-              {/* Bottom Actions */}
+              {/* Bottom navigation */}
               <div className="flex items-center justify-between border-t border-stone-200/80 pt-6 dark:border-neutral-800">
                 {step > 1 ? (
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleBack}
+                    disabled={isSubmitting}
                     className="h-auto rounded-xl px-5 py-3 text-sm font-semibold"
                   >
                     <ArrowLeft className="size-4 rtl:rotate-180" />
-                    <span>Back</span>
+                    <span>{t("back")}</span>
                   </Button>
                 ) : (
                   <div />
@@ -729,17 +722,21 @@ export default function PartnerApplicationForm() {
                     onClick={handleNext}
                     className="h-auto rounded-xl bg-[#7C4A27] px-6 py-3 text-sm font-semibold text-white hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
                   >
-                    <span>Continue</span>
+                    <span>{t("continue")}</span>
                     <ArrowRight className="size-4 rtl:rotate-180" />
                   </Button>
                 ) : (
                   <Button
-                    type="submit"
+                    type="button"
+                    onClick={handleSubmit(onSubmit)}
                     disabled={isSubmitting}
                     className="h-auto rounded-xl bg-emerald-600 px-7 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-70 dark:bg-emerald-600 dark:hover:bg-emerald-500"
                   >
                     {isSubmitting ? (
-                      <span>{t("submitting")}</span>
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        <span>{t("submitting")}</span>
+                      </>
                     ) : (
                       <>
                         <span>{t("submitButton")}</span>
