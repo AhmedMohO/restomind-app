@@ -37,7 +37,7 @@ function joinRestaurantNames(names: string[]): string {
 }
 
 function restaurantNamesOf(group: ApiOrderGroup): string[] {
-  return group.orders.map((order) => order.restaurant.name)
+  return group.orders.map((order) => order.restaurant?.name ?? "")
 }
 
 export function groupToDashboardRow(group: ApiOrderGroup): DashboardOrderRow {
@@ -66,7 +66,7 @@ export function subOrderToDashboardRow(
     customerName: order.fullName || userFullName(order.user) || "-",
     customerContact:
       order.emailAddress || order.phoneNumber || userContact(order.user) || "-",
-    restaurantName: order.restaurant.name || "-",
+    restaurantName: order.restaurant?.name || "-",
     finalTotalPrice: order.finalTotalPrice,
     totalQuantity: order.totalQuantity,
     deliveryMethod: order.deliveryMethod,

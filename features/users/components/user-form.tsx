@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { useTranslations } from "next-intl"
-import { Loader2, Save, User } from "lucide-react"
+import { Mail, ShieldCheck, Loader2, Save, User, Briefcase, Store } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +17,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { DatePicker } from "@/components/ui/date-picker"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -29,16 +30,22 @@ import { useZodResolver } from "@/lib/zod-locale"
 import { Link } from "@/i18n/routing"
 
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
+import { PaginatedRestaurantSelect } from "@/features/restaurant/components/paginated-restaurant-select"
 
 export interface UserFormValues {
   firstName: string
   lastName: string
   email: string
-  password: string
+  password?: string
   phone: string
   role: "admin" | "manager" | "customer" | "staff"
-  gender: "male" | "female"
-  DOB: string
+  restaurantId?: string | null
+  gender?: "male" | "female"
+  DOB?: string
+  employeeCode?: string
+  department?: string
+  hireDate?: string
+  notes?: string
 }
 
 export interface UserFormProps {
@@ -69,8 +76,12 @@ export function UserForm({
     password: defaultValues?.password ?? "",
     phone: defaultValues?.phone ?? "",
     role: isManager ? "staff" : (defaultValues?.role ?? "customer"),
+    restaurantId: defaultValues?.restaurantId ?? null,
     gender: defaultValues?.gender ?? "male",
     DOB: defaultValues?.DOB ?? "",
+    employeeCode: defaultValues?.employeeCode ?? "",
+    department: defaultValues?.department ?? "",
+    notes: defaultValues?.notes ?? "",
   }
 
   const {
@@ -94,8 +105,12 @@ export function UserForm({
         password: defaultValues.password ?? "",
         phone: defaultValues.phone ?? "",
         role: isManager ? "staff" : (defaultValues.role ?? "customer"),
+        restaurantId: defaultValues.restaurantId ?? null,
         gender: defaultValues.gender,
         DOB: defaultValues.DOB,
+        employeeCode: defaultValues.employeeCode ?? "",
+        department: defaultValues.department ?? "",
+        notes: defaultValues.notes ?? "",
       })
     } else if (isManager) {
       setValue("role", "staff")
@@ -103,9 +118,12 @@ export function UserForm({
   }, [defaultValues, isManager, reset, setValue])
 
   const selectedRole = useWatch({ control, name: "role" }) ?? (isManager ? "staff" : "customer")
+  const selectedRestaurantId = useWatch({ control, name: "restaurantId" })
   const selectedPhone = useWatch({ control, name: "phone" })
   const selectedGender = useWatch({ control, name: "gender" }) ?? ""
   const selectedDOB = useWatch({ control, name: "DOB" }) ?? undefined
+
+  const isStaffTarget = selectedRole === "staff"
 
   const handleFormSubmit = handleSubmit(async (values) => {
     await onSubmit(values)
@@ -113,6 +131,22 @@ export function UserForm({
 
   return (
     <form onSubmit={handleFormSubmit} className="flex flex-col gap-6">
+      {/* Invitation banner for staff creation */}
+      {mode === "create" && isStaffTarget && (
+        <div className="flex items-start gap-3 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-800 dark:text-blue-200">
+          <Mail className="size-5 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
+          <div className="space-y-1">
+            <p className="font-semibold">
+              {t("staffInviteNoticeTitle") || "Account Setup Email Will Be Sent"}
+            </p>
+            <p className="text-xs text-blue-700/90 dark:text-blue-300/90">
+              {t("staffInviteNoticeDesc") ||
+                "No password is required. The staff member will receive an email invitation with a secure link to activate their account and set their password."}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Personal Details */}
       <Card className="rounded-2xl">
         <CardHeader>
@@ -185,7 +219,7 @@ export function UserForm({
             </Field>
           </div>
 
-          {mode === "create" && (
+          {mode === "create" && !isStaffTarget && (
             <Field data-invalid={!!errors.password}>
               <FieldLabel>{t("password")}</FieldLabel>
               <Input
@@ -204,7 +238,7 @@ export function UserForm({
               <FieldLabel>{t("gender")}</FieldLabel>
               <Select
                 value={selectedGender}
-                onValueChange={(val) => setValue("gender", val!)}
+                onValueChange={(val) => setValue("gender", val as "male" | "female")}
                 disabled={isPending}
               >
                 <SelectTrigger className="w-full rounded-xl">
@@ -238,11 +272,63 @@ export function UserForm({
         </CardContent>
       </Card>
 
+      {/* Staff Employment Metadata Section */}
+      {(isStaffTarget || isManager) && (
+        <Card className="rounded-2xl border-primary/20 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-heading text-lg">
+              <Briefcase className="size-5 text-primary" />
+              <span>{t("sectionStaffDetails") || "Staff Employment Details"}</span>
+            </CardTitle>
+            <CardDescription>
+              {t("sectionStaffDetailsDesc") ||
+                "Configure staff employee code, assigned operational department, and notes"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <Field data-invalid={!!errors.employeeCode}>
+                <FieldLabel>{t("employeeCode") || "Employee Code"}</FieldLabel>
+                <Input
+                  {...register("employeeCode")}
+                  placeholder={t("employeeCodePlaceholder") || "e.g. EMP-101"}
+                  disabled={isPending}
+                />
+                <FieldError errors={[errors.employeeCode]} />
+              </Field>
+
+              <Field data-invalid={!!errors.department}>
+                <FieldLabel>{t("department") || "Department"}</FieldLabel>
+                <Input
+                  {...register("department")}
+                  placeholder={t("departmentPlaceholder") || "e.g. Kitchen / Prep"}
+                  disabled={isPending}
+                />
+                <FieldError errors={[errors.department]} />
+              </Field>
+            </div>
+
+            <Field data-invalid={!!errors.notes}>
+              <FieldLabel>{t("notes") || "Notes / Duties"}</FieldLabel>
+              <Textarea
+                {...register("notes")}
+                placeholder={t("notesPlaceholder") || "Night shift prep lead..."}
+                disabled={isPending}
+                rows={3}
+                className="rounded-xl"
+              />
+              <FieldError errors={[errors.notes]} />
+            </Field>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Role & Permissions */}
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="font-heading text-lg">
-            {t("sectionRole")}
+          <CardTitle className="flex items-center gap-2 font-heading text-lg">
+            <ShieldCheck className="size-5 text-primary" />
+            <span>{t("sectionRole")}</span>
           </CardTitle>
           <CardDescription>{t("sectionRoleDesc")}</CardDescription>
         </CardHeader>
@@ -277,6 +363,25 @@ export function UserForm({
             </Select>
             <FieldError errors={[errors.role]} />
           </Field>
+
+          {/* Restaurant Assignment for Admin creating/editing Staff or Manager */}
+          {!isManager && (isStaffTarget || selectedRole === "manager") && (
+            <Field data-invalid={!!errors.restaurantId}>
+              <FieldLabel>{t("restaurant") || "Assigned Restaurant"}</FieldLabel>
+              <PaginatedRestaurantSelect
+                id="restaurantId"
+                value={selectedRestaurantId ?? ""}
+                onValueChange={(val) => {
+                  setValue("restaurantId", val || null, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  })
+                }}
+                disabled={isPending}
+              />
+              <FieldError errors={[errors.restaurantId]} />
+            </Field>
+          )}
         </CardContent>
       </Card>
 
@@ -306,7 +411,11 @@ export function UserForm({
             <>
               <Save className="size-4" />
               <span>
-                {mode === "create" ? t("createUser") : t("saveChanges")}
+                {mode === "create"
+                  ? isStaffTarget
+                    ? t("addStaff") || "Send Staff Invitation"
+                    : t("createUser")
+                  : t("saveChanges")}
               </span>
             </>
           )}
@@ -315,3 +424,4 @@ export function UserForm({
     </form>
   )
 }
+

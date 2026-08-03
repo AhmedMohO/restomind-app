@@ -10,10 +10,12 @@ import {
   jsonSuccess,
   readJsonBody,
   requireAuth,
+  requireAnyRole,
 } from "@/lib/api/route-helpers"
 import { ingredientUpdateSchema } from "@/schemas/ingredient"
 
 const INGREDIENT_ROLE = "manager" as const
+const INGREDIENT_READ_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(
   _request: Request,
@@ -21,7 +23,7 @@ export async function GET(
 ) {
   await connection()
 
-  const authError = await requireAuth(INGREDIENT_ROLE)
+  const authError = await requireAnyRole(INGREDIENT_READ_ROLES)
   if (authError) return authError
 
   const { id } = await params

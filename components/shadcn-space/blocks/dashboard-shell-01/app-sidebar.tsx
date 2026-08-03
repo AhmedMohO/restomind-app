@@ -211,7 +211,7 @@ function useDashboardNav(): NavItem[] {
       title: t("productionPlan"),
       icon: CalendarClock,
       href: "/dashboard/production-plan",
-      roles: ["manager"],
+      roles: [ "manager", "staff"],
     },
     {
       title: t("waste"),
@@ -238,7 +238,7 @@ function useDashboardNav(): NavItem[] {
       title: t("offers"),
       icon: Percent,
       href: "/dashboard/offers",
-      roles: ["manager", "staff"],
+      roles: ["admin", "manager", "staff"],
     },
     {
       title: t("recipes"),
@@ -246,33 +246,34 @@ function useDashboardNav(): NavItem[] {
       href: "/dashboard/recipes",
       roles: ["manager"],
     },
-
+// RV&E
     // Section 4: Inventory & Supply
     { label: t("inventoryOps"), isSection: true },
     {
       title: t("inventory"),
       icon: Boxes,
       href: "/dashboard/inventory",
-      roles: ["manager"],
+      roles: [ "manager", "staff"],
     },
     {
       title: t("ingredients"),
       icon: Carrot,
       href: "/dashboard/ingredients",
-      roles: ["manager"],
+      roles: [ "manager", "staff" ],
     },
     {
       title: t("purchaseOrders"),
       icon: Truck,
       href: "/dashboard/purchase-orders",
-      roles: ["manager"],
+      roles: [ "manager", "staff"],
     },
     {
       title: t("suppliers"),
       icon: Building2,
       href: "/dashboard/suppliers",
-      roles: ["manager"],
+      roles: ["manager", "staff"],
     },
+
 
     // Section 6: Settings
     { label: t("settings"), isSection: true },

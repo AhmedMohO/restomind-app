@@ -139,7 +139,7 @@ export default function Navbar() {
                     </DropdownMenuLabel>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <HasRole roles={["admin", "manager"]}>
+                  <HasRole roles={["admin", "manager", "staff"]}>
                     <DropdownMenuItem
                       onClick={() => router.push("/dashboard")}
                       className="cursor-pointer gap-2 py-2"

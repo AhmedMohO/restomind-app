@@ -32,8 +32,12 @@ function NewUserPageContent() {
         password: values.password!,
         phone: values.phone,
         role: isManager ? "staff" : values.role,
+        restaurantId: values.restaurantId || undefined,
         gender: values.gender!,
         DOB: values.DOB!,
+        employeeCode: values.employeeCode || undefined,
+        department: values.department || undefined,
+        notes: values.notes || undefined,
       })
       toast.success(t("createSuccess"))
       setFormKey((k) => k + 1)

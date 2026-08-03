@@ -12,6 +12,12 @@ export interface ApiUser {
   gender?: "male" | "female"
   phone: string
   isEmailVerified: boolean
+  isActive?: boolean
+  employmentStatus?: "active" | "inactive" | "terminated"
+  employeeCode?: string
+  department?: string
+  hireDate?: string
+  notes?: string
   DOB?: string
   image?: ApiImage
   restaurantId?: string
@@ -32,6 +38,8 @@ export interface GetUsersParams {
   limit?: number
   search?: string
   role?: string
+  isActive?: boolean
+  employmentStatus?: string
   sort?: string
   order?: "asc" | "desc"
 }
@@ -40,12 +48,16 @@ export interface CreateUserPayload {
   firstName: string
   lastName: string
   email: string
-  password: string
+  password?: string
   phone: string
   role?: "admin" | "customer" | "manager" | "staff"
   restaurantId?: string
-  gender: "male" | "female"
-  DOB: string
+  gender?: "male" | "female"
+  DOB?: string
+  employeeCode?: string
+  department?: string
+  hireDate?: string
+  notes?: string
 }
 
 export interface UpdateUserPayload {
@@ -56,4 +68,11 @@ export interface UpdateUserPayload {
   DOB?: string
   role?: "admin" | "customer" | "manager" | "staff"
   restaurantId?: string
+  employeeCode?: string
+  department?: string
+  hireDate?: string
+  notes?: string
+  isActive?: boolean
+  employmentStatus?: "active" | "inactive" | "terminated"
 }
+

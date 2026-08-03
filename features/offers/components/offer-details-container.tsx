@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useLocale, useTranslations } from "next-intl"
 import { toast } from "sonner"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import {
   Ban,
   Calendar,
@@ -79,6 +80,8 @@ function getStatusBadgeVariant(
 export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
   const locale = useLocale()
   const t = useTranslations("Dashboard.offers")
+  const { hasRole } = useAuth()
+  const isManager = hasRole("manager")
 
   const { data: offer, isLoading, isError, refetch } = useOfferById(offerId)
   const cancelMutation = useCancelOffer()
@@ -170,7 +173,7 @@ export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          {offer.status !== "cancelled" && offer.status !== "expired" && (
+          {isManager && offer.status !== "cancelled" && offer.status !== "expired" && (
             <Button
               nativeButton={false}
               render={<Link href={`/dashboard/offers/${offer._id}/edit`} />}
@@ -181,7 +184,8 @@ export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
               <span>{t("edit")}</span>
             </Button>
           )}
-          {offer.status !== "cancelled" &&
+          {isManager &&
+            offer.status !== "cancelled" &&
             offer.status !== "expired" &&
             new Date(offer.endDate) > new Date() && (
               <Button

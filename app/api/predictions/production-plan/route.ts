@@ -19,7 +19,7 @@ export const maxDuration = 45
 export async function GET(request: Request) {
   await connection()
 
-  const auth = await requireSessionUser(["manager"])
+  const auth = await requireSessionUser(["admin", "manager", "staff"])
   if (!auth.ok) return auth.response
 
   const { searchParams } = new URL(request.url)

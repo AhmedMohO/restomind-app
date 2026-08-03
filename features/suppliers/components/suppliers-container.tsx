@@ -37,9 +37,11 @@ import type { ApiSupplier } from "../types"
 import { useSuppliersList } from "../hooks/use-suppliers"
 import { SupplierDetailsDialog } from "./supplier-details-dialog"
 import { SupplierFormDialog } from "./supplier-form-dialog"
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
 
 export function SuppliersContainer() {
   const t = useTranslations("Dashboard.suppliers")
+  const isStaff = useAuthStore((s) => s.user?.role === "staff")
 
   const { page, setPage, resetPage, limit, setLimit } = useTableControls()
 
@@ -102,10 +104,12 @@ export function SuppliersContainer() {
           </p>
         </div>
 
-        <Button onClick={() => setIsFormOpen(true)} className="shrink-0 gap-2">
-          <Plus className="size-4" />
-          {t("addSupplierButton")}
-        </Button>
+        {!isStaff && (
+          <Button onClick={() => setIsFormOpen(true)} className="shrink-0 gap-2">
+            <Plus className="size-4" />
+            {t("addSupplierButton")}
+          </Button>
+        )}
       </div>
 
       {/* Metrics / Summary Cards */}
@@ -303,25 +307,26 @@ export function SuppliersContainer() {
                     {supplier.createdAt ? formatDate(supplier.createdAt) : "—"}
                   </TableCell>
 
-                  {/* Direct Action Button */}
-                  <TableCell
-                    className="text-right"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10 hover:text-primary"
-                      render={
-                        <Link
-                          href={`/dashboard/purchase-orders/new?supplierId=${supplier._id}`}
-                        >
-                          <Truck className="size-3.5" />
-                          <span>{t("actions.createPo")}</span>
-                        </Link>
-                      }
-                    />
-                  </TableCell>
+                  {!isStaff && (
+                    <TableCell
+                      className="text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10 hover:text-primary"
+                        render={
+                          <Link
+                            href={`/dashboard/purchase-orders/new?supplierId=${supplier._id}`}
+                          >
+                            <Truck className="size-3.5" />
+                            <span>{t("actions.createPo")}</span>
+                          </Link>
+                        }
+                      />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

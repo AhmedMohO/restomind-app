@@ -6,10 +6,12 @@ import {
   jsonSuccess,
   readJsonBody,
   requireAuth,
+  requireAnyRole,
 } from "@/lib/api/route-helpers"
 import { ingredientFormSchema } from "@/schemas/ingredient"
 
-/** Ingredient inventory is a manager-only, restaurant-scoped resource. */
+/** Ingredient writes are manager-only; reads allow admin/manager/staff. */
+const INGREDIENT_READ_ROLES = ["admin", "manager", "staff"] as const
 const INGREDIENT_ROLE = "manager" as const
 
 const DEFAULT_LIMIT = 10
@@ -26,7 +28,7 @@ function toPositiveInt(value: string | null, fallback: number, max?: number): nu
 export async function GET(request: Request) {
   await connection()
 
-  const authError = await requireAuth(INGREDIENT_ROLE)
+  const authError = await requireAnyRole(INGREDIENT_READ_ROLES)
   if (authError) return authError
 
   const { searchParams } = new URL(request.url)

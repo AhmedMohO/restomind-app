@@ -8,11 +8,12 @@ import {
 } from "@/lib/api/route-helpers"
 
 const MANAGER_ROLES = ["manager", "admin"] as const
+const SUPPLIER_READ_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(request: Request) {
   await connection()
 
-  const authError = await requireAnyRole([...MANAGER_ROLES])
+  const authError = await requireAnyRole([...SUPPLIER_READ_ROLES])
   if (authError) return authError
 
   const { searchParams } = new URL(request.url)

@@ -11,12 +11,12 @@ import {
   requireAnyRole,
 } from "@/lib/api/route-helpers"
 
-const MANAGER_ROLES = ["manager", "admin"] as const
+const INVENTORY_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(request: Request) {
   await connection()
 
-  const authError = await requireAnyRole(MANAGER_ROLES)
+  const authError = await requireAnyRole(INVENTORY_ROLES)
   if (authError) return authError
 
   const { searchParams } = new URL(request.url)
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   await connection()
 
-  const authError = await requireAnyRole(MANAGER_ROLES)
+  const authError = await requireAnyRole(INVENTORY_ROLES)
   if (authError) return authError
 
   try {

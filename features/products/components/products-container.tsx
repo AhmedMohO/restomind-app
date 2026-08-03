@@ -95,6 +95,7 @@ export function ProductsContainer() {
   const t = useTranslations("Dashboard.products")
   const role = useAuthStore((state) => state.user?.role)
   const isAdmin = role === "admin"
+  const isStaff = role === "staff"
 
   const sortOptions = [
     { value: "createdAt", label: t("sortCreatedDate") },
@@ -245,14 +246,16 @@ export function ProductsContainer() {
           <p className="text-sm text-muted-foreground">{t("adminSubtitle")}</p>
         </div>
 
-        <Button
-          nativeButton={false}
-          render={<Link href="/dashboard/products/new" />}
-          className="gap-2 rounded-xl"
-        >
-          <Plus className="size-4" />
-          <span>{t("addProduct")}</span>
-        </Button>
+        {!isStaff && (
+          <Button
+            nativeButton={false}
+            render={<Link href="/dashboard/products/new" />}
+            className="gap-2 rounded-xl"
+          >
+            <Plus className="size-4" />
+            <span>{t("addProduct")}</span>
+          </Button>
+        )}
       </div>
 
       {/* Unified Control Bar with adequate margin */}
@@ -692,23 +695,27 @@ export function ProductsContainer() {
                             <Eye className="size-4" />
                             <span>{t("viewDetails")}</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            render={
-                              <Link
-                                href={`/dashboard/products/${product._id}/edit`}
-                              />
-                            }
-                          >
-                            <Pencil className="size-4" />
-                            <span>{t("edit")}</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => setDeleteTarget(product)}
-                          >
-                            <Trash2 className="size-4" />
-                            <span>{t("delete")}</span>
-                          </DropdownMenuItem>
+                          {!isStaff && (
+                            <DropdownMenuItem
+                              render={
+                                <Link
+                                  href={`/dashboard/products/${product._id}/edit`}
+                                />
+                              }
+                            >
+                              <Pencil className="size-4" />
+                              <span>{t("edit")}</span>
+                            </DropdownMenuItem>
+                          )}
+                          {!isStaff && (
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => setDeleteTarget(product)}
+                            >
+                              <Trash2 className="size-4" />
+                              <span>{t("delete")}</span>
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

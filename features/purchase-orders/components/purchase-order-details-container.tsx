@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react"
 
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
 import { BackButton } from "@/components/ui/back-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -44,6 +45,7 @@ import {
 export function PurchaseOrderDetailsContainer({ id }: { id: string }) {
   const locale = useLocale()
   const t = useTranslations("Dashboard.purchaseOrders")
+  const isStaff = useAuthStore((s) => s.user?.role === "staff")
 
   const { data: po, isLoading, isError, refetch } = usePurchaseOrderById(id)
   const receiveMutation = useReceivePurchaseOrder()
@@ -156,7 +158,7 @@ export function PurchaseOrderDetailsContainer({ id }: { id: string }) {
         </div>
 
         {/* Action buttons */}
-        {po.status !== "received" && po.status !== "cancelled" && (
+        {!isStaff && po.status !== "received" && po.status !== "cancelled" && (
           <div className="flex items-center gap-2">
             {po.status === "draft" && (
               <Button

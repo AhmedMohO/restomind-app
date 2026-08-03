@@ -8,6 +8,7 @@ import {
 } from "@/lib/api/route-helpers"
 
 const PRODUCT_ROLES = ["admin", "manager", "staff"] as const
+const PRODUCT_WRITE_ROLES = ["admin", "manager"] as const
 
 export async function GET(request: Request) {
   await connection()
@@ -45,7 +46,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   await connection()
 
-  const authError = await requireAnyRole([...PRODUCT_ROLES])
+  const authError = await requireAnyRole(PRODUCT_WRITE_ROLES)
   if (authError) return authError
 
   try {

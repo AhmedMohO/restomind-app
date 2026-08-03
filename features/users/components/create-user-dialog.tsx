@@ -88,8 +88,8 @@ export function CreateUserDialog({
         password: values.password,
         phone: values.phone,
         role: values.role,
-        gender: values.gender,
-        DOB: values.DOB,
+        gender: values.gender ?? undefined,
+        DOB: values.DOB ?? undefined,
       })
       toast.success(t("userCreatedSuccess"))
       if (onUserCreated && newUser) {

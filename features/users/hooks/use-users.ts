@@ -7,6 +7,8 @@ export interface GetUsersQueryKeyParams {
   limit?: number
   search?: string
   role?: string
+  isActive?: boolean
+  employmentStatus?: string
 }
 
 export const USERS_QUERY_KEY = ["users"] as const
@@ -21,6 +23,8 @@ export function useUsersList(params: GetUsersQueryKeyParams = {}) {
       if (params.limit) searchParams.set("limit", String(params.limit))
       if (params.search) searchParams.set("search", params.search)
       if (params.role) searchParams.set("role", params.role)
+      if (params.isActive !== undefined) searchParams.set("isActive", String(params.isActive))
+      if (params.employmentStatus) searchParams.set("employmentStatus", params.employmentStatus)
 
       const qs = searchParams.toString() ? `?${searchParams.toString()}` : ""
       const res = await clientFetch<unknown>(`/users${qs}`)
@@ -123,6 +127,49 @@ export function useUpdateUser() {
   })
 }
 
+export function useUpdateUserStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const res = await clientFetch<{ _id: string; isActive: boolean; employmentStatus?: string }>(
+        `/users/${id}/status`,
+        {
+          method: "PATCH",
+          body: { isActive },
+        }
+      )
+      return res
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: ["user", variables.id] })
+    },
+  })
+}
+
+export function useResendSetupEmail() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await clientFetch<{ message: string }>(`/users/${id}/resend-setup-email`, {
+        method: "POST",
+      })
+      return res
+    },
+  })
+}
+
+export function useResetUserPassword() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await clientFetch<{ message: string }>(`/users/${id}/reset-password`, {
+        method: "POST",
+      })
+      return res
+    },
+  })
+}
+
 export function useDeleteUser() {
   const queryClient = useQueryClient()
 
@@ -140,4 +187,5 @@ export function useDeleteUser() {
     },
   })
 }
+
 

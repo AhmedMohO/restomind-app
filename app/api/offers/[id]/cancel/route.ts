@@ -4,10 +4,10 @@ import { cancelOffer } from "@/features/offers/api"
 import {
   handleServerError,
   jsonSuccess,
-  requireAnyRole,
+  requireAuth,
 } from "@/lib/api/route-helpers"
 
-const OFFER_ROLES = ["manager", "staff"] as const
+const OFFER_WRITE_ROLE = "manager" as const
 
 export async function PATCH(
   _request: Request,
@@ -15,7 +15,7 @@ export async function PATCH(
 ) {
   await connection()
 
-  const authError = await requireAnyRole([...OFFER_ROLES])
+  const authError = await requireAuth(OFFER_WRITE_ROLE)
   if (authError) return authError
 
   const { id } = await params

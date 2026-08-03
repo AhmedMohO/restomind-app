@@ -10,7 +10,7 @@ export default function NewInventoryBatchesPage() {
   const t = useTranslations("Dashboard.inventory")
 
   return (
-    <DashboardAuthGuard roles={["admin", "manager"]}>
+    <DashboardAuthGuard roles={["admin", "manager", "staff"]}>
       <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
         <div className="mx-auto max-w-6xl space-y-6">
           {/* Header */}

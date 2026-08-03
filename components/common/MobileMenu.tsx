@@ -127,7 +127,7 @@ export default function MobileMenu() {
               />
             </SignedIn>
 
-            <HasRole roles={["admin", "manager"]}>
+            <HasRole roles={["admin", "manager", "staff"]}>
               <SheetClose
                 nativeButton={false}
                 render={

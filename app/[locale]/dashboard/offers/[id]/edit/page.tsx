@@ -13,7 +13,7 @@ export default function EditOfferPage({
   const { id } = use(params)
 
   return (
-    <DashboardAuthGuard roles={["manager", "staff"]}>
+    <DashboardAuthGuard roles={["manager"]}>
       <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
         <OfferFormPage offerId={id} />
       </main>

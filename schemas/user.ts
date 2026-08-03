@@ -18,12 +18,16 @@ export const createUserSchema = z.object({
     .min(3, { message: "lastNameMin" })
     .max(20, { message: "lastNameMax" }),
   email: z.email({ message: "invalidEmail" }),
-  password: z.string().min(6, { message: "passwordMin" }),
+  password: z.string().min(6, { message: "passwordMin" }).optional().or(z.literal("")),
   phone: egyptianPhoneSchema,
   role: userRoleEnum,
   restaurantId: z.string().optional().nullable(),
-  gender: userGenderEnum,
-  DOB: z.string().min(1, { message: "required" }),
+  gender: userGenderEnum.optional().nullable(),
+  DOB: z.string().optional().nullable(),
+  employeeCode: z.string().optional().nullable(),
+  department: z.string().optional().nullable(),
+  hireDate: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
 })
 
 export const updateUserSchema = z.object({
@@ -40,7 +44,14 @@ export const updateUserSchema = z.object({
   restaurantId: z.string().optional().nullable(),
   gender: userGenderEnum.optional().nullable(),
   DOB: z.string().optional().nullable(),
+  employeeCode: z.string().optional().nullable(),
+  department: z.string().optional().nullable(),
+  hireDate: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  isActive: z.boolean().optional(),
+  employmentStatus: z.enum(["active", "inactive", "terminated"]).optional(),
 })
+
 
 export type CreateUserInput = z.infer<typeof createUserSchema>
 export type UpdateUserInput = z.infer<typeof updateUserSchema>

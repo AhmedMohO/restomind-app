@@ -140,7 +140,7 @@ export async function getDashboardChildOrder(
   if (isAdmin(user)) return data
 
   const restaurantId = ownRestaurantId(user)
-  if (data.restaurant._id !== restaurantId) {
+  if (data.restaurant?._id && data.restaurant._id !== restaurantId) {
     throw new AuthorizationError("This order does not belong to your restaurant")
   }
 

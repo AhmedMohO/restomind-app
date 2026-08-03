@@ -43,6 +43,7 @@ import {
   useIngredientsList,
 } from "@/features/ingredients/hooks/use-ingredients"
 import { IngredientFormDialog } from "./ingredient-form-dialog"
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
 
 /** Formats a stock threshold; 0 means "no threshold configured". */
 function formatThreshold(value: number | undefined, unitLabel: string): string {
@@ -52,6 +53,7 @@ function formatThreshold(value: number | undefined, unitLabel: string): string {
 
 export function IngredientsContainer() {
   const t = useTranslations("Dashboard.ingredients")
+  const isStaff = useAuthStore((s) => s.user?.role === "staff")
 
   const { page, setPage, resetPage, limit, setLimit } = useTableControls()
 
@@ -154,10 +156,12 @@ export function IngredientsContainer() {
           )}
         </div>
 
-        <Button onClick={openCreate} className="shrink-0 gap-2 rounded-xl">
-          <Plus className="size-4" />
-          <span>{t("addIngredient")}</span>
-        </Button>
+        {!isStaff && (
+          <Button onClick={openCreate} className="shrink-0 gap-2 rounded-xl">
+            <Plus className="size-4" />
+            <span>{t("addIngredient")}</span>
+          </Button>
+        )}
       </div>
 
       <div className="max-h-[70vh] w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-card shadow-2xs">
@@ -253,19 +257,23 @@ export function IngredientsContainer() {
                           }
                         />
                         <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem
-                            onClick={() => openEdit(ingredient)}
-                          >
-                            <Pencil className="size-4" />
-                            <span>{t("edit")}</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => setDeleteTarget(ingredient)}
-                          >
-                            <Trash2 className="size-4" />
-                            <span>{t("delete")}</span>
-                          </DropdownMenuItem>
+                          {!isStaff && (
+                            <DropdownMenuItem
+                              onClick={() => openEdit(ingredient)}
+                            >
+                              <Pencil className="size-4" />
+                              <span>{t("edit")}</span>
+                            </DropdownMenuItem>
+                          )}
+                          {!isStaff && (
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => setDeleteTarget(ingredient)}
+                            >
+                              <Trash2 className="size-4" />
+                              <span>{t("delete")}</span>
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

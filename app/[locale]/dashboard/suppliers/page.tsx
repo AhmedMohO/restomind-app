@@ -5,7 +5,7 @@ import { SuppliersContainer } from "@/features/suppliers/components/suppliers-co
 
 export default function DashboardSuppliersPage() {
   return (
-    <DashboardAuthGuard roles={["manager"]}>
+    <DashboardAuthGuard roles={["manager", "staff"]}>
       <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
         <SuppliersContainer />
       </main>

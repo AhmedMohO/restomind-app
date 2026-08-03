@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useLocale, useTranslations } from "next-intl"
 import { toast } from "sonner"
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
 import {
   Clock,
   Eye,
@@ -67,6 +68,7 @@ export function PurchaseOrdersContainer() {
   const router = useRouter()
   const locale = useLocale()
   const t = useTranslations("Dashboard.purchaseOrders")
+  const isStaff = useAuthStore((s) => s.user?.role === "staff")
 
   const [page, setPage] = React.useState(1)
   const [limit, setLimit] = React.useState(10)
@@ -269,14 +271,16 @@ export function PurchaseOrdersContainer() {
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
-        <Button
-          nativeButton={false}
-          render={<Link href="/dashboard/purchase-orders/new" />}
-          className="gap-2 rounded-xl"
-        >
-          <Plus className="size-4" />
-          <span>{t("addPO")}</span>
-        </Button>
+        {!isStaff && (
+          <Button
+            nativeButton={false}
+            render={<Link href="/dashboard/purchase-orders/new" />}
+            className="gap-2 rounded-xl"
+          >
+            <Plus className="size-4" />
+            <span>{t("addPO")}</span>
+          </Button>
+        )}
       </div>
 
       {/* Control Bar */}

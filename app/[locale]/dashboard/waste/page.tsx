@@ -21,7 +21,7 @@ export default async function DashboardWastePage({
   setRequestLocale(locale)
 
   return (
-    <DashboardAuthGuard roles={["manager"]}>
+    <DashboardAuthGuard roles={["manager", "staff"]}>
       <main className="w-full min-w-0 flex-1 space-y-6 p-4 sm:p-6">
         <WasteSummaryCards />
         <RiskBreakdownChart />

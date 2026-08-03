@@ -49,8 +49,12 @@ function EditUserPageContent({
           lastName: values.lastName,
           phone: values.phone || undefined,
           role: isManager ? "staff" : values.role,
+          restaurantId: values.restaurantId || undefined,
           gender: values.gender || undefined,
           DOB: values.DOB || undefined,
+          employeeCode: values.employeeCode || undefined,
+          department: values.department || undefined,
+          notes: values.notes || undefined,
         },
       })
       toast.success(t("updateSuccess"))
@@ -68,8 +72,15 @@ function EditUserPageContent({
         email: user.email ?? "",
         phone: user.phone ?? "",
         role: user.role ?? "customer",
+        restaurantId:
+          typeof user.restaurantId === "string"
+            ? user.restaurantId
+            : (user.restaurantId as { _id?: string })?._id ?? undefined,
         gender: user.gender ?? undefined,
         DOB: user.DOB ?? undefined,
+        employeeCode: user.employeeCode ?? "",
+        department: user.department ?? "",
+        notes: user.notes ?? "",
       }
     : undefined
 

@@ -12,7 +12,7 @@ export default function PurchaseOrderDetailsPage({
   const { id } = use(params)
 
   return (
-    <DashboardAuthGuard roles={["admin", "manager"]}>
+    <DashboardAuthGuard roles={["admin", "manager", "staff"]}>
       <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
         <PurchaseOrderDetailsContainer id={id} />
       </main>

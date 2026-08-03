@@ -81,11 +81,14 @@ import {
 } from "@/features/offers/utils"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { getErrorMessage } from "@/lib/api/utils"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 
 export function OffersContainer() {
   const router = useRouter()
   const locale = useLocale()
   const t = useTranslations("Dashboard.offers")
+  const { hasRole } = useAuth()
+  const isManager = hasRole("manager")
 
   const [page, setPage] = React.useState(1)
   const [limit, setLimit] = React.useState(10)
@@ -254,14 +257,16 @@ export function OffersContainer() {
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
-        <Button
-          nativeButton={false}
-          render={<Link href="/dashboard/offers/new" />}
-          className="gap-2 rounded-xl"
-        >
-          <Plus className="size-4" />
-          <span>{t("addOffer")}</span>
-        </Button>
+        {isManager && (
+          <Button
+            nativeButton={false}
+            render={<Link href="/dashboard/offers/new" />}
+            className="gap-2 rounded-xl"
+          >
+            <Plus className="size-4" />
+            <span>{t("addOffer")}</span>
+          </Button>
+        )}
       </div>
 
       {/* Control Bar */}
@@ -712,7 +717,8 @@ export function OffersContainer() {
                             <Eye className="size-4" />
                             <span>{t("viewDetails")}</span>
                           </DropdownMenuItem>
-                          {offer.status !== "cancelled" &&
+                          {isManager &&
+                            offer.status !== "cancelled" &&
                             offer.status !== "expired" && (
                               <DropdownMenuItem
                                 render={
@@ -726,7 +732,8 @@ export function OffersContainer() {
                                 <span>{t("edit")}</span>
                               </DropdownMenuItem>
                             )}
-                          {offer.status !== "cancelled" &&
+                          {isManager &&
+                            offer.status !== "cancelled" &&
                             offer.status !== "expired" &&
                             new Date(offer.endDate) > new Date() && (
                               <DropdownMenuItem
