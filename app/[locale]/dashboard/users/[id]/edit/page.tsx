@@ -72,10 +72,7 @@ function EditUserPageContent({
         email: user.email ?? "",
         phone: user.phone ?? "",
         role: user.role ?? "customer",
-        restaurantId:
-          typeof user.restaurantId === "string"
-            ? user.restaurantId
-            : (user.restaurantId as { _id?: string })?._id ?? undefined,
+        restaurantId: user.restaurantId,
         gender: user.gender ?? undefined,
         DOB: user.DOB ?? undefined,
         employeeCode: user.employeeCode ?? "",

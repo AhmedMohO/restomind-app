@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Link } from "@/i18n/routing"
-import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star } from "lucide-react"
+import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star, Loader2 } from "lucide-react"
 import type { ApiOffer } from "@/features/offers/api/type"
 import { useActiveOffers } from "@/features/offers/hooks"
 import { useCart } from "@/hooks/use-cart"
@@ -24,6 +24,8 @@ export default function ProductDetails({
   const { addToCart, toggleWishlist, wishlist } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false)
   const { data: similarRes } = useActiveOffers({
     limit: 10,
     category: product.category?._id,
@@ -64,11 +66,25 @@ export default function ProductDetails({
     setQuantity(quantity + 1)
   }
 
+  const handleToggleWishlist = async () => {
+    setIsTogglingWishlist(true)
+    try {
+      await toggleWishlist(rawProduct._id)
+    } finally {
+      setIsTogglingWishlist(false)
+    }
+  }
+
   const handleAddToCart = async () => {
-    const success = await addToCart(rawProduct, quantity)
-    if (success) {
-      setAdded(true)
-      setTimeout(() => setAdded(false), 1500)
+    setIsAddingToCart(true)
+    try {
+      const success = await addToCart(rawProduct, quantity)
+      if (success) {
+        setAdded(true)
+        setTimeout(() => setAdded(false), 1500)
+      }
+    } finally {
+      setIsAddingToCart(false)
     }
   }
 
@@ -108,19 +124,24 @@ export default function ProductDetails({
                 </Badge>
               </div>
               <button
-                onClick={() => toggleWishlist(rawProduct._id)}
+                onClick={handleToggleWishlist}
+                disabled={isTogglingWishlist}
                 className={cn(
-                  "rounded-full border border-[#ECE6DB] p-2.5 transition-colors hover:bg-[#FAF7F2] dark:border-neutral-800 dark:hover:bg-neutral-800",
+                  "rounded-full border border-[#ECE6DB] p-2.5 transition-colors hover:bg-[#FAF7F2] disabled:pointer-events-none disabled:opacity-75 dark:border-neutral-800 dark:hover:bg-neutral-800",
                   isFavorite
                     ? "border-[#7C4A27] bg-[#FAF2ED] text-red-500 dark:bg-red-950/20"
                     : "text-muted-foreground"
                 )}
                 title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
               >
-                <Heart
-                  size={20}
-                  className={isFavorite ? "fill-current text-red-500" : ""}
-                />
+                {isTogglingWishlist ? (
+                  <Loader2 size={20} className="animate-spin text-red-500" />
+                ) : (
+                  <Heart
+                    size={20}
+                    className={isFavorite ? "fill-current text-red-500" : ""}
+                  />
+                )}
               </button>
             </div>
 
@@ -194,17 +215,21 @@ export default function ProductDetails({
             {/* Add to cart brown button */}
             <button
               onClick={handleAddToCart}
-              disabled={!product.isAvailable}
+              disabled={!product.isAvailable || isAddingToCart}
               className={cn(
-                "flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-3 font-sans text-sm font-semibold shadow-sm transition-all active:translate-y-px",
+                "flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-3 font-sans text-sm font-semibold shadow-sm transition-all active:translate-y-px disabled:pointer-events-none disabled:opacity-75",
                 product.isAvailable
                   ? added
                     ? "bg-[#529E66] text-white hover:bg-[#438353]"
-                    : "bg-[#7C4A27] text-white hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
+                    : "bg-[#7C4A27] text-[#FFFFFF] hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
                   : "cursor-not-allowed bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
               )}
             >
-              <ShoppingCart size={16} />
+              {isAddingToCart ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <ShoppingCart size={16} />
+              )}
               <span>
                 {added
                   ? t("addedToCart")

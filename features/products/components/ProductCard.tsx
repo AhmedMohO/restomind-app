@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Link, useRouter } from "@/i18n/routing"
-import { Plus, Heart, Star } from "lucide-react"
+import { Plus, Heart, Star, Loader2 } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn, formatCurrency } from "@/lib/utils"
@@ -20,6 +20,8 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const { isAuthenticated } = useAuth()
   const router = useRouter()
   const [added, setAdded] = useState(false)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false)
   const t = useTranslations("Offers")
 
   if (!rawProduct) return null
@@ -39,17 +41,33 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
       return
     }
 
-    const success = await addToCart(rawProduct, 1)
-    if (success) {
-      setAdded(true)
-      setTimeout(() => setAdded(false), 1500)
+    setIsAddingToCart(true)
+    try {
+      const success = await addToCart(rawProduct, 1)
+      if (success) {
+        setAdded(true)
+        setTimeout(() => setAdded(false), 1500)
+      }
+    } finally {
+      setIsAddingToCart(false)
     }
   }
 
-  const handleToggleWishlist = (e: React.MouseEvent) => {
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    toggleWishlist(rawProduct._id)
+
+    if (!isAuthenticated) {
+      router.push("/login")
+      return
+    }
+
+    setIsTogglingWishlist(true)
+    try {
+      await toggleWishlist(rawProduct._id)
+    } finally {
+      setIsTogglingWishlist(false)
+    }
   }
 
   const detailSlug = product.slug
@@ -83,18 +101,23 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
           {/* Wishlist Toggle Button */}
           <button
             onClick={handleToggleWishlist}
+            disabled={isTogglingWishlist}
             className={cn(
-              "absolute end-3 top-3 z-20 cursor-pointer rounded-full border bg-white/95 p-2 shadow-sm backdrop-blur-xs transition-all hover:scale-105 active:scale-95 dark:border-neutral-800 dark:bg-neutral-900/95",
+              "absolute end-3 top-3 z-20 cursor-pointer rounded-full border bg-white/95 p-2 shadow-sm backdrop-blur-xs transition-all hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:opacity-75 dark:border-neutral-800 dark:bg-neutral-900/95",
               isFavorite
                 ? "border-rose-100 text-rose-500 hover:bg-rose-50 dark:border-rose-950 dark:hover:bg-rose-950/20"
                 : "dark:hover:bg-neutral-850 border-[#ECE6DB] text-muted-foreground hover:bg-neutral-50 dark:border-neutral-800"
             )}
             title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
           >
-            <Heart
-              size={14}
-              className={isFavorite ? "fill-current text-rose-500" : ""}
-            />
+            {isTogglingWishlist ? (
+              <Loader2 size={14} className="animate-spin text-rose-500" />
+            ) : (
+              <Heart
+                size={14}
+                className={isFavorite ? "fill-current text-rose-500" : ""}
+              />
+            )}
           </button>
         </div>
 
@@ -147,9 +170,9 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
       <div className="p-4 pt-3">
         <button
           onClick={handleAddToCart}
-          disabled={!product.isAvailable}
+          disabled={!product.isAvailable || isAddingToCart}
           className={cn(
-            "flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full py-2.5 font-sans text-sm font-semibold shadow-sm transition-all active:translate-y-px",
+            "flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full py-2.5 font-sans text-sm font-semibold shadow-sm transition-all active:translate-y-px disabled:pointer-events-none disabled:opacity-75",
             product.isAvailable
               ? added
                 ? "bg-[#529E66] text-white hover:bg-[#438353]"
@@ -157,7 +180,11 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
               : "cursor-not-allowed bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
           )}
         >
-          <Plus size={16} />
+          {isAddingToCart ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Plus size={16} />
+          )}
           <span>{added ? t("added") : t("addToCart")}</span>
         </button>
       </div>
