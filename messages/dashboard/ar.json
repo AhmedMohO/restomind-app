@@ -33,8 +33,7 @@
     "waste": "الهدر والمتبقي",
     "imports": "استيراد البيانات",
     "partnershipApplications": "طلبات الشراكة",
-    "refunds": "المستردات",
-    "billing": "الفوترة"
+    "refunds": "المستردات"
   },
   "restaurant": {
     "pageTitle": "إدارة المطعم",
@@ -1107,6 +1106,134 @@
     "trialEndsToday": "تنتهي فترتك التجريبية المجانية اليوم",
     "choosePlan": "اختر خطة",
     "graceWarning": "اشتراكك متأخر. ستظل عروضك متاحة لمدة {days} أيام أخرى.",
-    "payNow": "ادفع الآن"
+    "payNow": "ادفع الآن",
+    "result": {
+      "successTitle": "تم الدفع بنجاح!",
+      "successBody": "تم تفعيل اشتراكك بنجاح. جميع الميزات والأدوات متاحة الآن لمطعمك.",
+      "pendingTitle": "الدفع قيد المعالجة",
+      "pendingBody": "نحن نقوم بمعالجة عملية الدفع. سيتم تحديث حالة اشتراكك تلقائيًا بمجرد التأكيد.",
+      "failedTitle": "فشلت عملية الدفع",
+      "failedBody": "تعذر معالجة عملية الدفع الخاصة بك. يرجى المحاولة مرة أخرى أو استخدام طريقة دفع أخرى.",
+      "amountPaid": "المبلغ المدفوع",
+      "transactionId": "رقم المعاملة",
+      "orderId": "مرجع الطلب",
+      "paymentMethod": "طريقة الدفع",
+      "status": "الحالة",
+      "approved": "مقبول",
+      "pending": "قيد المعالجة",
+      "declined": "مرفوض",
+      "cardEnding": "{type} ينتهي بـ {pan}",
+      "goToDashboard": "الذهاب إلى لوحة التحكم",
+      "manageBilling": "إدارة الفوترة",
+      "tryAgain": "إعادة المحاولة"
+    },
+    "activeTitle": "اشتراكك نشط",
+    "activeSubtitle": "جدّد مبكرًا لإضافة شهر آخر، أو غيّر الخطة إذا تجاوزت قائمتك حدّها.",
+    "currentPlan": "أنت على خطة {tier}",
+    "currentTrial": "أنت في فترة تجريبية مجانية بحدود {tier}",
+    "paidUntil": "مدفوع حتى {date}",
+    "freeUntil": "مجاني حتى {date}",
+    "yourPlan": "خطتك",
+    "renewCta": "جدّد مقابل {amount} جنيه",
+    "startsAfterTrial": "يبدأ شهرك المدفوع في {date} عند انتهاء فترتك التجريبية — لن تفقد أيًا من أيامك المجانية.",
+    "startsAfterPeriod": "يبدأ شهرك التالي في {date} عند انتهاء الشهر الذي دفعت مقابله بالفعل.",
+    "renewalCountdown": "باقي {days} يوم في شهرك الحالي",
+    "renewalDueToday": "يتجدد اشتراكك اليوم",
+    "renewNow": "جدّد"
+  },
+  "refunds": {
+    "title": "طلبات الاسترداد",
+    "subtitle": "متابعة ومراجعة ومعالجة طلبات استرداد الأموال للعملاء عبر بوابات الدفع والقنوات النقدية",
+    "badgePending": "{count} يتطلب إجراء",
+    "metrics": {
+      "totalRefunds": "إجمالي الطلبات",
+      "awaitingReview": "بانتظار القرار",
+      "needsManual": "يتطلب دفع يدوي",
+      "totalAmount": "إجمالي المستردات (جنيه)",
+      "manualNotice": "رفضته بوابة الدفع. يلزم السداد كاش."
+    },
+    "filters": {
+      "searchPlaceholder": "البحث بالسبب، معرف الاسترداد، معرف المعاملة...",
+      "statusAll": "جميع الحالات",
+      "statusAttention": "تتطلب إجراء",
+      "statusRequested": "بانتظار المراجعة",
+      "statusApproved": "تمت الموافقة",
+      "statusProcessing": "جارِ المعالجة",
+      "statusSucceeded": "تم الاسترداد",
+      "statusRejected": "مرفوض",
+      "statusFailed": "فشل الاسترداد",
+      "statusManualRequired": "دفع يدوي مطلوب",
+      "settlementAll": "جميع الطرق",
+      "settlementGateway": "بوابة الدفع",
+      "settlementOffline": "نقدي / مباشر",
+      "clearFilters": "إعادة ضبط التصفية"
+    },
+    "statusLabels": {
+      "requested": "بانتظار المراجعة",
+      "approved": "تمت الموافقة",
+      "processing": "جارِ المعالجة",
+      "succeeded": "تم الاسترداد",
+      "rejected": "مرفوض",
+      "failed": "فشل الاسترداد",
+      "manual_required": "يتطلب دفع يدوي"
+    },
+    "table": {
+      "status": "الحالة",
+      "amount": "المبلغ",
+      "scope": "نطاق الاسترداد",
+      "reason": "السبب / سجل البوابة",
+      "date": "تاريخ الطلب",
+      "actions": "الإجراءات",
+      "viewDetails": "التفاصيل",
+      "wholeOrder": "الطلب بالكامل",
+      "singleResto": "مطعم واحد",
+      "itemsCount": "{count} صنف",
+      "offlineCash": "كاش",
+      "onlineGateway": "بوابة"
+    },
+    "details": {
+      "title": "تفاصيل طلب الاسترداد",
+      "subtitle": "معلومات المعاملة والمراجعة الكاملة",
+      "refundId": "معرف الاسترداد",
+      "orderGroupId": "معرف مجموعة الطلب",
+      "paymentId": "معرف معاملة الدفع",
+      "settlementMethod": "طريقة السداد",
+      "initiatedBy": "مُقدّم الطلب",
+      "reviewedBy": "مُراجع الطلب",
+      "reviewedAt": "تاريخ المراجعة",
+      "completedAt": "تاريخ الاكتمال",
+      "rejectionReason": "سبب الرفض",
+      "gatewayError": "رسالة / سجل بوابة الدفع",
+      "close": "إغلاق",
+      "copy": "نسخ المعرف",
+      "copied": "تم النسخ!"
+    },
+    "actions": {
+      "approve": "موافقة",
+      "reject": "رفض",
+      "approving": "جارِ الموافقة...",
+      "rejecting": "جارِ الرفض...",
+      "approveTitle": "الموافقة على طلب الاسترداد؟",
+      "approveDesc": "سيتم اعتماد رد المبلغ للعميل عبر بوابة الدفع أو تسجيل السداد النقدي.",
+      "rejectTitle": "رفض طلب الاسترداد",
+      "rejectDesc": "لن يتم رد المبلغ للعميل. يرجى اختيار أو كتابة سبب واضح لتسجيله.",
+      "rejectionPlaceholder": "توضيح سبب رفض هذا الطلب...",
+      "quickReasonsTitle": "أسباب رفض سريعة:",
+      "quickReasons": {
+        "reason1": "تم تجهيز الطلب واستلامه حسب الطلب",
+        "reason2": "تجاوزت مهلة سياسة الاسترداد",
+        "reason3": "طلب استرداد مكرر أو غير صالح",
+        "reason4": "تم تسليم الأصناف بحالة جيدة"
+      },
+      "cancel": "إلغاء",
+      "confirmReject": "تأكيد الرفض",
+      "confirmApprove": "تأكيد الموافقة"
+    },
+    "empty": {
+      "title": "لا توجد طلبات استرداد",
+      "description": "لم يتم تقديم أي طلبات استرداد بعد.",
+      "noMatch": "لا توجد طلبات استرداد تطابق كلمة البحث أو الحالة المحددة.",
+      "resetFilters": "إعادة ضبط التصفية"
+    }
   }
 }

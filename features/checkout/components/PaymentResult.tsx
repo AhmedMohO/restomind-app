@@ -8,6 +8,7 @@ import { CheckCircle2, Clock, Loader2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { fetchOrderGroupStatusAction } from "@/features/orders/actions"
 import { reconcilePaymentAction } from "@/features/payments/actions"
+import { useCart } from "@/hooks/use-cart"
 
 /** How often to re-ask the server, and for how long before giving up. */
 const POLL_INTERVAL_MS = 2000
@@ -34,6 +35,8 @@ export default function PaymentResult({
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>("confirming")
   const startedAt = useRef(Date.now())
+  const nudged = useRef(false)
+  const { refreshCart } = useCart()
 
   const poll = useCallback(async () => {
     if (!groupId) {
@@ -52,18 +55,37 @@ export default function PaymentResult({
       return
     }
 
-    setPhase(status === "Payment Failed" ? "failed" : "paid")
-  }, [groupId])
+    if (status === "Payment Failed") {
+      setPhase("failed")
+      return
+    }
+
+    // The cart is emptied server-side by the payment fulfiller, but this page
+    // loads before that happens — the provider fetched the cart while the
+    // payment was still settling, so it holds items that no longer exist.
+    // Without this the customer sees a full basket for the order they just
+    // bought, and the counter only clears on a hard refresh.
+    setPhase("paid")
+    void refreshCart()
+  }, [groupId, refreshCart])
 
   useEffect(() => {
+    // Stop once the answer is in. Polling a settled order forever would also
+    // re-fetch the cart every two seconds for as long as the tab stayed open.
+    if (phase !== "confirming") return
+
     // Nudge the server to settle this payment now rather than waiting for a
     // callback that may be slow, then fall back to polling either way.
-    void reconcilePaymentAction(paymobOrderId).then(poll)
+    if (!nudged.current) {
+      nudged.current = true
+      void reconcilePaymentAction(paymobOrderId).then(poll)
+    }
+
     const id = setInterval(() => {
       void poll()
     }, POLL_INTERVAL_MS)
     return () => clearInterval(id)
-  }, [poll, paymobOrderId])
+  }, [poll, paymobOrderId, phase])
 
   const content = {
     confirming: {

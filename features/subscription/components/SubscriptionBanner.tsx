@@ -13,6 +13,9 @@ import { daysUntil, type MySubscription } from "../api/type"
  * sells nothing. Grace renders as a real banner, because at that point money
  * is genuinely overdue.
  */
+/** How early to start reminding a paying merchant that renewal is manual. */
+const RENEWAL_NOTICE_DAYS = 7
+
 export default async function SubscriptionBanner({
   subscription,
   locale,
@@ -20,7 +23,7 @@ export default async function SubscriptionBanner({
   subscription: MySubscription
   locale: string
 }) {
-  const t = await getTranslations({ locale, namespace: "billing" })
+  const t = await getTranslations({ locale, namespace: "Dashboard.billing" })
 
   if (subscription.state === "trial") {
     const days = daysUntil(subscription.trialEndsAt)
@@ -47,6 +50,34 @@ export default async function SubscriptionBanner({
           className="font-medium underline underline-offset-4"
         >
           {t("choosePlan")}
+        </Link>
+      </div>
+    )
+  }
+
+  // Billing is not in the sidebar, so this is how an active merchant reaches
+  // it — and only in the week when it matters. Renewal is manual, so nothing
+  // else would remind them before their offers went dark.
+  if (subscription.state === "active") {
+    const days = daysUntil(subscription.currentPeriodEnd)
+    if (days === null || days > RENEWAL_NOTICE_DAYS) return null
+
+    return (
+      <div
+        role="status"
+        className="flex items-center justify-between gap-3 border-b bg-muted/40 px-4 py-2 text-sm text-muted-foreground"
+      >
+        <span className="flex items-center gap-2">
+          <Clock className="size-4 shrink-0" aria-hidden />
+          {days <= 0
+            ? t("renewalDueToday")
+            : t("renewalCountdown", { days })}
+        </span>
+        <Link
+          href={`/${locale}/dashboard/billing`}
+          className="font-medium underline underline-offset-4"
+        >
+          {t("renewNow")}
         </Link>
       </div>
     )

@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { useTranslations } from "next-intl"
-import { Check, CreditCard, Loader2, ShieldCheck, Wallet } from "lucide-react"
+import { useFormatter, useTranslations } from "next-intl"
+import { CreditCard, Loader2, ShieldCheck, Wallet } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -35,13 +35,38 @@ const METHOD_ICON: Record<PaymentMethod, typeof CreditCard> = {
  * fear of having lost work.
  */
 export default function BillingWall({ subscription, methods }: Props) {
-  const t = useTranslations("billing")
+  const t = useTranslations("Dashboard.billing")
+  // Default to what they already pay for, so the obvious action on this screen
+  // is renewing the same plan rather than accidentally switching tier.
   const [selectedTier, setSelectedTier] = useState<TierName>(
-    () => recommendedTier(subscription)
+    () => subscription.tier ?? recommendedTier(subscription)
   )
   const [method, setMethod] = useState<PaymentMethod>(methods[0] ?? "card")
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const format = useFormatter()
+
+  const effectiveTier =
+    subscription.state === "trial" ? TRIAL_TIER : subscription.tier
+  const currentPlan =
+    subscription.state === "trial" || subscription.state === "active"
+      ? subscription.tiers.find((tier) => tier.name === effectiveTier)
+      : undefined
+
+  const activeUntil = formatDate(
+    format,
+    subscription.state === "trial"
+      ? subscription.trialEndsAt
+      : subscription.currentPeriodEnd
+  )
+
+  // A month bought now may not start today. Saying so is the whole answer to
+  // "if I pay during my free trial, do I lose the rest of it?" — the merchant
+  // should never have to find out by watching the date change.
+  const startsOn = formatDate(format, subscription.nextPeriodStart)
+  const startsLater =
+    startsOn !== null &&
+    new Date(subscription.nextPeriodStart).getTime() - Date.now() > 60_000
 
   function handlePay() {
     setError(null)
@@ -56,148 +81,170 @@ export default function BillingWall({ subscription, methods }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:py-14">
-      <header className="mb-8 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+    <div className="mx-auto w-full max-w-5xl space-y-10 px-4 py-8 sm:py-12">
+      <header className="text-center">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           {subscription.state === "expired"
             ? t("expiredTitle")
-            : t("unpaidTitle")}
+            : subscription.state === "active"
+              ? t("activeTitle")
+              : t("unpaidTitle")}
         </h1>
-        <p className="text-muted-foreground mx-auto mt-2 max-w-xl text-sm sm:text-base">
-          {t("subtitle")}
+        <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed font-medium text-muted-foreground sm:text-lg">
+          {subscription.state === "active" ? t("activeSubtitle") : t("subtitle")}
         </p>
       </header>
 
-      <Steps current={1} />
+      {/* What the merchant already has. Without this the screen reads as a
+          demand for money to someone who has already paid, which is how a
+          second, unintended purchase gets made. */}
+      {currentPlan && (
+        <section className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border bg-muted/40 px-5 py-4 text-center shadow-xs">
+          <span className="text-base font-semibold text-foreground">
+            {subscription.state === "trial"
+              ? t("currentTrial", { tier: currentPlan.label })
+              : t("currentPlan", { tier: currentPlan.label })}
+          </span>
+          {activeUntil && (
+            <span className="text-sm font-medium text-muted-foreground">
+              {subscription.state === "trial"
+                ? t("freeUntil", { date: activeUntil })
+                : t("paidUntil", { date: activeUntil })}
+            </span>
+          )}
+        </section>
+      )}
 
-      {/* Step 1 — choose a plan */}
-      <section aria-labelledby="plans-heading" className="mt-8">
-        <h2 id="plans-heading" className="sr-only">
-          {t("stepPlan")}
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-3">
+      {/* Step 1 — Choose a plan */}
+      <section aria-labelledby="plans-heading" className="space-y-4">
+        <div className="flex items-center gap-3 border-b pb-3">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-xs">
+            1
+          </span>
+          <div>
+            <h2
+              id="plans-heading"
+              className="text-xl font-bold tracking-tight text-foreground sm:text-2xl"
+            >
+              {t("stepPlan")}
+            </h2>
+            <p className="text-xs font-medium text-muted-foreground sm:text-sm">
+              {t("productCount", { count: subscription.productCount })}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-5 pt-2 sm:grid-cols-3">
           {subscription.tiers.map((tier) => (
             <TierCard
               key={tier.name}
               tier={tier}
               selected={tier.name === selectedTier}
-              recommended={tier.name === recommendedTier(subscription)}
+              recommended={
+                !subscription.tier &&
+                tier.name === recommendedTier(subscription)
+              }
+              current={tier.name === subscription.tier}
               onSelect={() => setSelectedTier(tier.name)}
               t={t}
             />
           ))}
         </div>
-        <p className="text-muted-foreground mt-3 text-center text-xs">
-          {t("productCount", { count: subscription.productCount })}
-        </p>
       </section>
 
-      {/* Step 2 — pay */}
-      <section aria-labelledby="pay-heading" className="mt-10">
-        <h2 id="pay-heading" className="mb-3 text-sm font-medium">
-          {t("stepPay")}
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {methods.map((m) => {
-            const Icon = METHOD_ICON[m]
-            return (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMethod(m)}
-                aria-pressed={method === m}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm transition",
-                  "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
-                  method === m
-                    ? "border-primary bg-primary/5 text-foreground"
-                    : "border-border text-muted-foreground hover:border-foreground/30"
-                )}
-              >
-                <Icon className="size-4" aria-hidden />
-                {t(`method.${m}`)}
-              </button>
-            )
-          })}
+      {/* Step 2 — Pay securely */}
+      <section
+        aria-labelledby="pay-heading"
+        className="space-y-5 rounded-2xl border bg-card/60 p-6 shadow-xs sm:p-8"
+      >
+        <div className="flex items-center gap-3 border-b pb-3">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-xs">
+            2
+          </span>
+          <h2
+            id="pay-heading"
+            className="text-xl font-bold tracking-tight text-foreground sm:text-2xl"
+          >
+            {t("stepPay")}
+          </h2>
         </div>
 
-        {error && (
-          <p role="alert" className="text-destructive mt-3 text-sm">
-            {error}
-          </p>
-        )}
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-3">
+            {methods.map((m) => {
+              const Icon = METHOD_ICON[m]
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMethod(m)}
+                  aria-pressed={method === m}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-2.5 rounded-xl border-2 px-5 py-3 text-base font-medium shadow-xs transition-all",
+                    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                    method === m
+                      ? "border-primary bg-primary/10 font-semibold text-primary"
+                      : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                  )}
+                >
+                  <Icon className="size-5" aria-hidden />
+                  {t(`method.${m}`)}
+                </button>
+              )
+            })}
+          </div>
 
-        <Button
-          size="lg"
-          className="mt-5 w-full sm:w-auto"
-          onClick={handlePay}
-          disabled={isPending}
-        >
-          {isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          {isPending
-            ? t("redirecting")
-            : t("payCta", {
-                amount: priceOf(subscription, selectedTier),
-              })}
-        </Button>
+          {error && (
+            <p role="alert" className="text-base font-medium text-destructive">
+              {error}
+            </p>
+          )}
+
+          <div>
+            <Button
+              size="lg"
+              className="w-full rounded-xl px-8 py-6 text-base font-semibold shadow-md transition-all hover:scale-[1.01] sm:w-auto"
+              onClick={handlePay}
+              disabled={isPending}
+            >
+              {isPending && (
+                <Loader2 className="me-2 size-5 animate-spin" aria-hidden />
+              )}
+              {isPending
+                ? t("redirecting")
+                : t(
+                    selectedTier === subscription.tier ? "renewCta" : "payCta",
+                    { amount: priceOf(subscription, selectedTier) }
+                  )}
+            </Button>
+
+            {startsLater && (
+              <p className="mt-3 text-sm font-medium text-muted-foreground">
+                {subscription.state === "trial"
+                  ? t("startsAfterTrial", { date: startsOn })
+                  : t("startsAfterPeriod", { date: startsOn })}
+              </p>
+            )}
+          </div>
+        </div>
       </section>
 
-      {/* The reassurance. Permanent, not a toast — losing work is the fear. */}
-      <div className="bg-muted/40 mt-10 flex items-start gap-3 rounded-lg border p-4">
+      {/* Reassurance banner */}
+      <section className="flex items-start gap-4 rounded-2xl border bg-emerald-500/5 p-5 shadow-xs sm:p-6 dark:bg-emerald-950/20">
         <ShieldCheck
-          className="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-500"
+          className="mt-0.5 size-6 shrink-0 text-emerald-600 dark:text-emerald-500"
           aria-hidden
         />
         <div>
-          <p className="text-sm font-medium">{t("safeTitle")}</p>
-          <p className="text-muted-foreground mt-0.5 text-sm">
+          <p className="text-base font-bold text-foreground sm:text-lg">
+            {t("safeTitle")}
+          </p>
+          <p className="mt-1 text-sm leading-relaxed font-normal text-muted-foreground sm:text-base">
             {t("safeBody")}
           </p>
         </div>
-      </div>
+      </section>
     </div>
-  )
-}
-
-function Steps({ current }: { current: 1 | 2 | 3 }) {
-  const t = useTranslations("billing")
-  const labels = [t("stepPlan"), t("stepPay"), t("stepDone")]
-  return (
-    <ol className="flex items-center justify-center gap-2 sm:gap-4">
-      {labels.map((label, index) => {
-        const step = index + 1
-        const done = step < current
-        const active = step === current
-        return (
-          <li key={label} className="flex items-center gap-2 sm:gap-4">
-            <span className="flex items-center gap-2">
-              <span
-                className={cn(
-                  "flex size-6 items-center justify-center rounded-full text-xs font-medium",
-                  active && "bg-primary text-primary-foreground",
-                  done && "bg-emerald-600 text-white",
-                  !active && !done && "bg-muted text-muted-foreground"
-                )}
-                aria-hidden
-              >
-                {done ? <Check className="size-3.5" /> : step}
-              </span>
-              <span
-                className={cn(
-                  "text-xs sm:text-sm",
-                  active ? "font-medium" : "text-muted-foreground"
-                )}
-              >
-                {label}
-              </span>
-            </span>
-            {step < labels.length && (
-              <span className="bg-border h-px w-4 sm:w-10" aria-hidden />
-            )}
-          </li>
-        )
-      })}
-    </ol>
   )
 }
 
@@ -205,12 +252,14 @@ function TierCard({
   tier,
   selected,
   recommended,
+  current,
   onSelect,
   t,
 }: {
   tier: TierOption
   selected: boolean
   recommended: boolean
+  current: boolean
   onSelect: () => void
   t: ReturnType<typeof useTranslations>
 }) {
@@ -227,45 +276,70 @@ function TierCard({
         }
       }}
       className={cn(
-        "focus-visible:ring-ring cursor-pointer transition focus-visible:ring-2 focus-visible:outline-none",
-        selected ? "border-primary ring-primary/20 ring-2" : "hover:border-foreground/20"
+        "cursor-pointer rounded-2xl p-5 shadow-xs transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        selected
+          ? "border-primary bg-primary/[0.03] shadow-md ring-2 ring-primary/20"
+          : "hover:border-foreground/30 hover:shadow-sm"
       )}
     >
-      <CardHeader className="pb-2">
+      <CardHeader className="p-0 pb-3">
         <div className="flex items-center justify-between gap-2">
-          <span className="font-medium">{tier.label}</span>
-          {recommended && (
-            <Badge variant="secondary" className="text-[11px]">
-              {t("recommended")}
+          <span className="text-lg font-bold text-foreground">
+            {tier.label}
+          </span>
+          {current ? (
+            <Badge
+              variant="secondary"
+              className="border-emerald-600/20 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold tracking-wider text-emerald-700 uppercase dark:text-emerald-400"
+            >
+              {t("yourPlan")}
             </Badge>
+          ) : (
+            recommended && (
+              <Badge
+                variant="secondary"
+                className="border-primary/20 bg-primary/15 px-2.5 py-0.5 text-xs font-semibold tracking-wider text-primary uppercase"
+              >
+                {t("recommended")}
+              </Badge>
+            )
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-1.5">
-        <p className="text-2xl font-semibold tabular-nums">
+      <CardContent className="space-y-2 p-0">
+        <p className="text-3xl font-extrabold tracking-tight text-foreground tabular-nums sm:text-4xl">
           {tier.priceEGP.toLocaleString()}
-          <span className="text-muted-foreground ms-1 text-sm font-normal">
+          <span className="ms-1.5 text-base font-normal text-muted-foreground">
             {t("perMonth")}
           </span>
         </p>
-        {/* VAT broken out — the invoice must never surprise the merchant. */}
-        <p className="text-muted-foreground text-xs tabular-nums">
-          {t("vatBreakdown", {
-            net: tier.netEGP.toFixed(2),
-            vat: tier.vatEGP.toFixed(2),
-          })}
-        </p>
-        <p className="pt-1 text-sm">
+
+        <p className="pt-2 text-base font-medium text-foreground/90">
           {tier.productCap === null
             ? t("unlimitedProducts")
             : t("upToProducts", { cap: tier.productCap.toLocaleString() })}
         </p>
         {!tier.fitsCurrentCatalogue && (
-          <p className="text-destructive text-xs">{t("tooSmall")}</p>
+          <p className="text-sm font-semibold text-destructive">
+            {t("tooSmall")}
+          </p>
         )}
       </CardContent>
     </Card>
   )
+}
+
+/** Mirrors TRIAL_TIER on the backend: a trial runs at Plus capacity. */
+const TRIAL_TIER: TierName = "plus"
+
+function formatDate(
+  format: ReturnType<typeof useFormatter>,
+  iso: string | null
+): string | null {
+  if (!iso) return null
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return null
+  return format.dateTime(date, { day: "numeric", month: "long" })
 }
 
 /** The smallest tier that actually fits the current catalogue. */

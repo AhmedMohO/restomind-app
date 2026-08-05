@@ -25,6 +25,13 @@ export interface MySubscription {
   tier: TierName | null
   trialEndsAt: string | null
   currentPeriodEnd: string | null
+  /**
+   * When a month bought right now would begin. Computed by the same backend
+   * rule that writes the period, so the screen cannot promise a date the
+   * ledger will contradict: buying during a trial starts after the trial,
+   * renewing early starts after the current month.
+   */
+  nextPeriodStart: string
   productCount: number
   /** null means unlimited. */
   productCap: number | null

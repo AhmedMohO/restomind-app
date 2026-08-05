@@ -187,12 +187,10 @@ function useDashboardNav(): NavItem[] {
       href: "/dashboard/refunds",
       roles: ["admin", "manager", "staff"],
     },
-    {
-      title: t("billing"),
-      icon: CreditCard,
-      href: "/dashboard/billing",
-      roles: ["admin", "manager", "staff"],
-    },
+    // Billing is deliberately absent. It is not day-to-day work, and the
+    // paths that matter already lead there: the subscription banner, the
+    // paywall, and the trial countdown. A permanent "pay" item in the nav of
+    // a merchant who has already paid only invites a second purchase.
     {
       title: t("users"),
       icon: Users,
@@ -302,13 +300,21 @@ function useDashboardNav(): NavItem[] {
   return filterNavByRole(rawNav, role, isHydrated)
 }
 
-const AppSidebar = ({ children }: { children: React.ReactNode }) => {
+interface AppSidebarProps {
+  children: React.ReactNode
+  needsSubscription?: boolean
+}
+
+const AppSidebar = ({
+  children,
+  needsSubscription = false,
+}: AppSidebarProps) => {
   const navData = useDashboardNav()
   const locale = useLocale()
   const isEN = locale === "en"
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={!needsSubscription}>
       <Sidebar side={isEN ? "left" : "right"} className="bg-background px-0">
         <div className="flex h-full flex-col gap-4 bg-background py-4">
           {/* ---------------- Header ---------------- */}

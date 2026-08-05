@@ -33,8 +33,7 @@
     "waste": "Waste & Surplus",
     "imports": "Data Imports",
     "partnershipApplications": "Partnership Applications",
-    "refunds": "Refunds",
-    "billing": "Billing"
+    "refunds": "Refunds"
   },
   "restaurant": {
     "pageTitle": "Restaurant Profile",
@@ -1107,6 +1106,134 @@
     "trialEndsToday": "Your free trial ends today",
     "choosePlan": "Choose a plan",
     "graceWarning": "Your subscription is overdue. Your offers stay live for {days} more days.",
-    "payNow": "Pay now"
+    "payNow": "Pay now",
+    "result": {
+      "successTitle": "Payment Successful!",
+      "successBody": "Your subscription has been activated successfully. All features and tools are now unlocked for your restaurant.",
+      "pendingTitle": "Payment Pending",
+      "pendingBody": "We are processing your payment. Your subscription status will update automatically once confirmed.",
+      "failedTitle": "Payment Failed",
+      "failedBody": "We could not process your payment. Please try again or use a different payment method.",
+      "amountPaid": "Amount Paid",
+      "transactionId": "Transaction ID",
+      "orderId": "Order Reference",
+      "paymentMethod": "Payment Method",
+      "status": "Status",
+      "approved": "Approved",
+      "pending": "Pending",
+      "declined": "Declined",
+      "cardEnding": "{type} ending in {pan}",
+      "goToDashboard": "Go to Dashboard",
+      "manageBilling": "Manage Billing",
+      "tryAgain": "Try Again"
+    },
+    "activeTitle": "Your subscription is active",
+    "activeSubtitle": "Renew early to add another month, or switch plan if your menu has outgrown its limit.",
+    "currentPlan": "You are on the {tier} plan",
+    "currentTrial": "You are on a free trial with {tier} limits",
+    "paidUntil": "Paid until {date}",
+    "freeUntil": "Free until {date}",
+    "yourPlan": "Your plan",
+    "renewCta": "Renew for {amount} EGP",
+    "startsAfterTrial": "Your paid month starts {date}, when your free trial ends — none of your free days are lost.",
+    "startsAfterPeriod": "Your next month starts {date}, when the month you have already paid for ends.",
+    "renewalCountdown": "{days} days left in your current month",
+    "renewalDueToday": "Your subscription renews today",
+    "renewNow": "Renew"
+  },
+  "refunds": {
+    "title": "Refund Requests",
+    "subtitle": "Monitor, review, and process customer refund requests across payment gateways and offline channels",
+    "badgePending": "{count} Action Required",
+    "metrics": {
+      "totalRefunds": "Total Refunds",
+      "awaitingReview": "Awaiting Review",
+      "needsManual": "Needs Manual Payout",
+      "totalAmount": "Total Value (EGP)",
+      "manualNotice": "Gateway refused. Cash payout required."
+    },
+    "filters": {
+      "searchPlaceholder": "Search by reason, refund ID, payment ID, or group ID...",
+      "statusAll": "All Statuses",
+      "statusAttention": "Needs Attention",
+      "statusRequested": "Awaiting Review",
+      "statusApproved": "Approved",
+      "statusProcessing": "Processing",
+      "statusSucceeded": "Refunded",
+      "statusRejected": "Rejected",
+      "statusFailed": "Failed",
+      "statusManualRequired": "Manual Payout Needed",
+      "settlementAll": "All Methods",
+      "settlementGateway": "Gateway",
+      "settlementOffline": "Cash / Offline",
+      "clearFilters": "Clear Filters"
+    },
+    "statusLabels": {
+      "requested": "Awaiting Review",
+      "approved": "Approved",
+      "processing": "Processing",
+      "succeeded": "Refunded",
+      "rejected": "Rejected",
+      "failed": "Failed",
+      "manual_required": "Needs Manual Payout"
+    },
+    "table": {
+      "status": "Status",
+      "amount": "Amount",
+      "scope": "Refund Scope",
+      "reason": "Reason / Gateway Log",
+      "date": "Requested Date",
+      "actions": "Actions",
+      "viewDetails": "Details",
+      "wholeOrder": "Whole Order",
+      "singleResto": "Single Restaurant",
+      "itemsCount": "{count} Item(s)",
+      "offlineCash": "Cash",
+      "onlineGateway": "Gateway"
+    },
+    "details": {
+      "title": "Refund Request Details",
+      "subtitle": "Complete transaction and review information",
+      "refundId": "Refund ID",
+      "orderGroupId": "Order Group ID",
+      "paymentId": "Payment Transaction ID",
+      "settlementMethod": "Settlement Method",
+      "initiatedBy": "Initiated By",
+      "reviewedBy": "Reviewed By",
+      "reviewedAt": "Reviewed At",
+      "completedAt": "Completed At",
+      "rejectionReason": "Rejection Reason",
+      "gatewayError": "Gateway Message / Log",
+      "close": "Close",
+      "copy": "Copy ID",
+      "copied": "Copied!"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "approving": "Approving...",
+      "rejecting": "Rejecting...",
+      "approveTitle": "Approve Refund Request?",
+      "approveDesc": "This will approve refunding the customer via payment gateway or record offline payout approval.",
+      "rejectTitle": "Reject Refund Request",
+      "rejectDesc": "The customer will not be refunded. Please select or enter a reason for the record.",
+      "rejectionPlaceholder": "Explain why this request is rejected...",
+      "quickReasonsTitle": "Quick Rejection Reasons:",
+      "quickReasons": {
+        "reason1": "Order was prepared and collected as requested",
+        "reason2": "Exceeded refund window policy",
+        "reason3": "Duplicate or invalid refund request",
+        "reason4": "Items delivered in good condition"
+      },
+      "cancel": "Cancel",
+      "confirmReject": "Reject Request",
+      "confirmApprove": "Approve Refund"
+    },
+    "empty": {
+      "title": "No Refund Requests",
+      "description": "No refund requests have been submitted yet.",
+      "noMatch": "No refund requests match your current search or status filter.",
+      "resetFilters": "Reset Filters"
+    }
   }
 }
