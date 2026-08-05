@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import CheckoutFlow from "@/features/checkout/CheckoutFlow"
 import { getAlternates } from "@/lib/seo/metadata"
 import { getProfileApi, type UserAddress } from "@/features/profile/api/profile"
+import { getPaymentMethods } from "@/features/subscription/api"
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -39,10 +40,16 @@ export default async function CheckoutPage({ params }: Props) {
     // Fall back to empty defaults; the user can still fill the form / add an address.
   }
 
+  // Resolved server-side so the picker never offers a method that is not
+  // actually configured on the Paymob account. Failing to an empty list
+  // degrades to Cash on Delivery rather than breaking checkout entirely.
+  const enabledOnlineMethods = await getPaymentMethods().catch(() => [])
+
   return (
     <CheckoutFlow
       initialAddresses={addresses}
       customer={{ fullName, email, phone }}
+      enabledOnlineMethods={enabledOnlineMethods}
     />
   )
 }

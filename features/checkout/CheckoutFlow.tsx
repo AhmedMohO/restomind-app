@@ -40,9 +40,18 @@ interface CheckoutFlowProps {
     email: string
     phone: string
   }
+  /**
+   * Online methods actually enabled on the Paymob account, resolved server-side.
+   * Empty means card-and-wallet are unconfigured and only COD is offered.
+   */
+  enabledOnlineMethods?: ("card" | "wallet")[]
 }
 
-export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlowProps) {
+export default function CheckoutFlow({
+  initialAddresses,
+  customer,
+  enabledOnlineMethods = [],
+}: CheckoutFlowProps) {
   const t = useTranslations("Checkout")
   const router = useRouter()
   const { resetCart } = useCart()
@@ -99,16 +108,31 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
 
     setIsPlacingOrder(true)
     // "Store Pickup" must omit the address entirely (docs §9.1).
+    const apiPaymentMethod =
+      paymentMethod === "card"
+        ? "Card"
+        : paymentMethod === "wallet"
+          ? "Wallet"
+          : "Cash on Delivery"
+
     const res = await createOrderAction({
       deliveryMethod: isHomeDelivery ? "Home Delivery" : "Store Pickup",
       ...(isHomeDelivery && selectedAddressId
         ? { deliveryAddress: { addressId: selectedAddressId } }
         : {}),
       ...(specialNotes ? { specialNotes } : {}),
-      paymentMethod: "Cash on Delivery",
+      paymentMethod: apiPaymentMethod,
     })
 
     if (res.success) {
+      // Online payment: the order exists but is only RESERVED. The cart is
+      // deliberately NOT cleared here — the backend clears it when Paymob
+      // confirms, so a failed payment does not also lose the customer's cart.
+      if (res.checkoutUrl) {
+        window.location.href = res.checkoutUrl
+        return
+      }
+
       resetCart()
       router.push("/checkout/confirmed")
       setIsPlacingOrder(false)
@@ -173,6 +197,7 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
                   paymentMethod={paymentMethod}
                   deliveryFee={deliveryFee}
                   isPlacingOrder={isPlacingOrder}
+                  enabledOnlineMethods={enabledOnlineMethods}
                   onPaymentMethodChange={setPaymentMethod}
                   onPlaceOrder={handlePlaceOrder}
                   onBack={() => goBack(2)}

@@ -20,7 +20,7 @@ export type OverallOrderStatus =
 export type DeliveryMethod = "Home Delivery" | "Store Pickup"
 
 /** Payment methods returned by the API (only COD can be submitted today). */
-export type PaymentMethod = "Cash on Delivery" | "Credit / Debit Card"
+export type PaymentMethod = "Cash on Delivery" | "Card" | "Wallet"
 
 export interface ApiDeliveryAddress {
   addressId?: string
@@ -117,7 +117,7 @@ export interface CreateOrderPayload {
   deliveryMethod: DeliveryMethod
   deliveryAddress?: CreateOrderAddress
   specialNotes?: string
-  paymentMethod: Extract<PaymentMethod, "Cash on Delivery">
+  paymentMethod: PaymentMethod
   /** Persist a raw address to the customer's saved addresses. */
   saveAddress?: boolean
 }

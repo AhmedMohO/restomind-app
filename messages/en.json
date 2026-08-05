@@ -199,7 +199,23 @@
     "errorPhone": "Enter a valid phone number (min 8 digits)",
     "errorEmail": "Enter a valid email address",
     "errorAddress": "Address must be at least 5 characters",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "mobileWallet": "Mobile wallet",
+    "mobileWalletDesc": "Pay with Vodafone Cash or another mobile wallet",
+    "redirectNotice": "You'll be taken to Paymob's secure payment page to complete your order. Your cart is kept safe until the payment goes through.",
+    "payNow": "Pay now",
+    "redirecting": "Taking you to secure checkout…",
+    "confirmingTitle": "Confirming your payment",
+    "confirmingBody": "This usually takes a few seconds. Please don't close this page.",
+    "paidTitle": "Payment received",
+    "paidBody": "Your order is confirmed and the restaurant has been notified.",
+    "failedTitle": "Payment didn't go through",
+    "failedBody": "No money was taken. Your cart is exactly as you left it, so you can try again whenever you're ready.",
+    "pendingTitle": "Still confirming",
+    "pendingBody": "Your payment is taking longer than usual to confirm. We're checking with the bank and your order will update automatically — no need to pay again.",
+    "viewOrders": "View my orders",
+    "tryAgain": "Try again",
+    "backToOffers": "Browse offers"
   },
   "OrderSummary": {
     "title": "Order Summary",
@@ -365,7 +381,11 @@
       "fallback_naive": "The AI service was unreachable. Estimated from last week's sales.",
       "fallback_yesterday": "The AI service was unreachable. Copied from yesterday's plan."
     },
-    "confidence": { "high": "High", "medium": "Medium", "low": "Low" },
+    "confidence": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
     "degraded": {
       "title": "AI service unavailable",
       "body": "Showing estimates instead of model forecasts. Numbers may be less accurate.",
@@ -376,7 +396,11 @@
       "learning": "Learning",
       "cold_start": "No data yet"
     },
-    "risk": { "low": "Low risk", "medium": "Medium risk", "high": "High risk" },
+    "risk": {
+      "low": "Low risk",
+      "medium": "Medium risk",
+      "high": "High risk"
+    },
     "tableView": "View as table",
     "chartView": "View as chart"
   },
@@ -939,8 +963,6 @@
     "underReview": "Under Review",
     "statusFetchError": "Application not found or email does not match."
   },
-
-
   "Common": {
     "cancel": "Cancel",
     "save": "Save",
