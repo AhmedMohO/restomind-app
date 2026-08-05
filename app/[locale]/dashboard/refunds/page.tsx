@@ -4,9 +4,10 @@ import { setRequestLocale } from "next-intl/server"
 import RefundsTable from "@/features/refunds/components/RefundsTable"
 import { getRefunds } from "@/features/refunds/api"
 import { routing } from "@/i18n/routing"
+import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
 
 export const metadata: Metadata = {
-  title: "Refunds",
+  title: "Refunds | RestoMind",
   robots: { index: false, follow: false },
 }
 
@@ -21,26 +22,15 @@ export default async function RefundsPage({
     : routing.defaultLocale
   setRequestLocale(safeLocale)
 
-  // Called directly rather than through the server action: actions are for
-  // client-triggered mutations, and invoking one during render breaks
-  // prerendering when it reaches for cookies().
   const refunds = await getRefunds()
     .then((res) => res.data ?? [])
     .catch(() => [])
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Refunds</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Requests awaiting your decision appear first. Refunds marked{" "}
-          <span className="font-medium">Needs manual payout</span> were refused
-          by the payment gateway and must be settled with the customer
-          directly.
-        </p>
-      </header>
-
-      <RefundsTable refunds={refunds} />
-    </div>
+    <DashboardAuthGuard roles={["admin", "manager", "staff"]}>
+      <main className="w-full min-w-0 flex-1 p-4 sm:p-6">
+        <RefundsTable refunds={refunds} />
+      </main>
+    </DashboardAuthGuard>
   )
 }
