@@ -1078,5 +1078,33 @@
     "rejectSuccess": "Application rejected.",
     "resendSuccess": "Approval setup email resent.",
     "notFound": "Partnership application not found."
+  },
+  "billing": {
+    "unpaidTitle": "Choose a plan to unlock your dashboard",
+    "expiredTitle": "Your subscription has ended",
+    "subtitle": "Pick the plan that fits your menu. It takes about a minute, and everything you've built is waiting for you.",
+    "stepPlan": "Choose your plan",
+    "stepPay": "Pay securely",
+    "stepDone": "Back to your dashboard",
+    "recommended": "Recommended",
+    "perMonth": "EGP / month",
+    "vatBreakdown": "{net} net + {vat} VAT (14%)",
+    "upToProducts": "Up to {cap} products",
+    "unlimitedProducts": "Unlimited products",
+    "tooSmall": "Too small for your current menu",
+    "productCount": "You currently have {count} products.",
+    "method": {
+      "card": "Card",
+      "wallet": "Mobile wallet"
+    },
+    "payCta": "Pay {amount} EGP and continue",
+    "redirecting": "Taking you to secure checkout…",
+    "safeTitle": "Nothing has been lost",
+    "safeBody": "Your products, offers, sales history and analytics are all safe and waiting. Paying restores everything instantly.",
+    "trialCountdown": "{days} days left in your free trial",
+    "trialEndsToday": "Your free trial ends today",
+    "choosePlan": "Choose a plan",
+    "graceWarning": "Your subscription is overdue. Your offers stay live for {days} more days.",
+    "payNow": "Pay now"
   }
 }

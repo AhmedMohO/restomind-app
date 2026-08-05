@@ -1,0 +1,48 @@
+export type SubscriptionState =
+  | "trial"
+  | "active"
+  | "grace"
+  | "expired"
+  | "unpaid"
+
+export type TierName = "basic" | "plus" | "scale"
+
+export interface TierOption {
+  name: TierName
+  label: string
+  /** null means unlimited. */
+  productCap: number | null
+  /** VAT-inclusive monthly price in EGP. */
+  priceEGP: number
+  netEGP: number
+  vatEGP: number
+  /** True when the restaurant's current catalogue fits inside this tier. */
+  fitsCurrentCatalogue: boolean
+}
+
+export interface MySubscription {
+  state: SubscriptionState
+  tier: TierName | null
+  trialEndsAt: string | null
+  currentPeriodEnd: string | null
+  productCount: number
+  /** null means unlimited. */
+  productCap: number | null
+  tiers: TierOption[]
+}
+
+export type PaymentMethod = "card" | "wallet"
+
+/** States in which the dashboard is fully usable. Mirrors the backend. */
+export function hasDashboardAccess(state: SubscriptionState): boolean {
+  return state === "trial" || state === "active" || state === "grace"
+}
+
+/** Whole days from now until an ISO date, on calendar-day boundaries. */
+export function daysUntil(iso: string | null): number | null {
+  if (!iso) return null
+  const target = new Date(iso)
+  if (Number.isNaN(target.getTime())) return null
+  const msPerDay = 86_400_000
+  return Math.ceil((target.getTime() - Date.now()) / msPerDay)
+}

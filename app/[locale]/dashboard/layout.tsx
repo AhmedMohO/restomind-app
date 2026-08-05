@@ -4,6 +4,7 @@ import ProtectedRoute from "@/features/auth/components/ProtectedRoute"
 import { routing } from "@/i18n/routing"
 import { setRequestLocale } from "next-intl/server"
 import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
+import SubscriptionGate from "@/features/subscription/components/SubscriptionGate"
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -33,7 +34,11 @@ export default async function DashboardLayout({
   return (
     <Suspense>
       <ProtectedRoute locale={safeLocale} route={`/${locale}/dashboard`}>
-        <AppSidebar>{children}</AppSidebar>
+        <AppSidebar>
+          {/* Resolved once here, so every dashboard page — present and
+              future — is covered without per-page work. */}
+          <SubscriptionGate locale={safeLocale}>{children}</SubscriptionGate>
+        </AppSidebar>
       </ProtectedRoute>
     </Suspense>
   )
