@@ -26,6 +26,8 @@ import {
   Percent,
   Receipt,
   ShoppingBag,
+  Undo2,
+  CreditCard,
   Sparkles,
   Store,
   Settings,
@@ -177,6 +179,18 @@ function useDashboardNav(): NavItem[] {
       title: t("orders"),
       icon: ShoppingBag,
       href: "/dashboard/orders",
+      roles: ["admin", "manager", "staff"],
+    },
+    {
+      title: t("refunds"),
+      icon: Undo2,
+      href: "/dashboard/refunds",
+      roles: ["admin", "manager", "staff"],
+    },
+    {
+      title: t("billing"),
+      icon: CreditCard,
+      href: "/dashboard/billing",
       roles: ["admin", "manager", "staff"],
     },
     {

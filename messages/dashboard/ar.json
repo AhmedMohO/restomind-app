@@ -32,7 +32,9 @@
     "recommendations": "التوصيات",
     "waste": "الهدر والمتبقي",
     "imports": "استيراد البيانات",
-    "partnershipApplications": "طلبات الشراكة"
+    "partnershipApplications": "طلبات الشراكة",
+    "refunds": "المستردات",
+    "billing": "الفوترة"
   },
   "restaurant": {
     "pageTitle": "إدارة المطعم",

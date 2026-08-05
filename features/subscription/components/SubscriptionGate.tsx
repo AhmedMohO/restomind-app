@@ -20,8 +20,15 @@ import SubscriptionBanner from "./SubscriptionBanner"
  *    undelivered orders in flight. Locking fulfilment would strand customers
  *    who already handed over money — the wrong party to punish. Offer
  *    suspension already stops new orders arriving.
+ *  - /dashboard/refunds, for the same reason: a customer's right to their
+ *    money back is not conditional on the merchant paying their own invoice.
+ *    This mirrors the backend, where the refund routes use plain @Auth.
  */
-const ALWAYS_ALLOWED = ["/dashboard/billing", "/dashboard/orders"]
+const ALWAYS_ALLOWED = [
+  "/dashboard/billing",
+  "/dashboard/orders",
+  "/dashboard/refunds",
+]
 
 export default async function SubscriptionGate({
   children,

@@ -32,7 +32,9 @@
     "recommendations": "Recommendations",
     "waste": "Waste & Surplus",
     "imports": "Data Imports",
-    "partnershipApplications": "Partnership Applications"
+    "partnershipApplications": "Partnership Applications",
+    "refunds": "Refunds",
+    "billing": "Billing"
   },
   "restaurant": {
     "pageTitle": "Restaurant Profile",
