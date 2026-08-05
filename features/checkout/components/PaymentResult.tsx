@@ -7,6 +7,7 @@ import { CheckCircle2, Clock, Loader2, XCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { fetchOrderGroupStatusAction } from "@/features/orders/actions"
+import { reconcilePaymentAction } from "@/features/payments/actions"
 
 /** How often to re-ask the server, and for how long before giving up. */
 const POLL_INTERVAL_MS = 2000
@@ -22,7 +23,13 @@ type Phase = "confirming" | "paid" | "failed" | "timeout"
  * truth is the order status on our own server, which is set by the
  * HMAC-verified webhook.
  */
-export default function PaymentResult({ groupId }: { groupId: string | null }) {
+export default function PaymentResult({
+  groupId,
+  paymobOrderId,
+}: {
+  groupId: string | null
+  paymobOrderId: string | null
+}) {
   const t = useTranslations("Checkout")
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>("confirming")
@@ -49,12 +56,14 @@ export default function PaymentResult({ groupId }: { groupId: string | null }) {
   }, [groupId])
 
   useEffect(() => {
-    void poll()
+    // Nudge the server to settle this payment now rather than waiting for a
+    // callback that may be slow, then fall back to polling either way.
+    void reconcilePaymentAction(paymobOrderId).then(poll)
     const id = setInterval(() => {
       void poll()
     }, POLL_INTERVAL_MS)
     return () => clearInterval(id)
-  }, [poll])
+  }, [poll, paymobOrderId])
 
   const content = {
     confirming: {
