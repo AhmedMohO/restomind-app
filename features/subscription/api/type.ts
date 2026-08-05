@@ -18,6 +18,12 @@ export interface TierOption {
   vatEGP: number
   /** True when the restaurant's current catalogue fits inside this tier. */
   fitsCurrentCatalogue: boolean
+  /**
+   * False while the merchant already holds this much capacity, paid or on
+   * trial. Mirrors the backend guard exactly, so the screen never offers a
+   * button the next request would reject with 409.
+   */
+  purchasable: boolean
 }
 
 export interface MySubscription {
@@ -32,6 +38,12 @@ export interface MySubscription {
    * renewing early starts after the current month.
    */
   nextPeriodStart: string
+  /**
+   * When the plans they already hold become buyable again, or null when
+   * nothing is blocked. Renewal is meant to happen at the end of a period,
+   * not stacked on top of one.
+   */
+  renewableFrom: string | null
   productCount: number
   /** null means unlimited. */
   productCap: number | null

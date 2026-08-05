@@ -13,8 +13,8 @@ import { daysUntil, type MySubscription } from "../api/type"
  * sells nothing. Grace renders as a real banner, because at that point money
  * is genuinely overdue.
  */
-/** How early to start reminding a paying merchant that renewal is manual. */
-const RENEWAL_NOTICE_DAYS = 7
+/** How early to warn a paying merchant that their month is nearly up. */
+const RENEWAL_NOTICE_DAYS = 3
 
 export default async function SubscriptionBanner({
   subscription,
@@ -55,9 +55,9 @@ export default async function SubscriptionBanner({
     )
   }
 
-  // Billing is not in the sidebar, so this is how an active merchant reaches
-  // it — and only in the week when it matters. Renewal is manual, so nothing
-  // else would remind them before their offers went dark.
+  // A heads-up only, with nothing to click: renewal does not open until the
+  // month actually ends, so offering a Renew link here would send them to a
+  // disabled button. The grace banner below is the renewal window.
   if (subscription.state === "active") {
     const days = daysUntil(subscription.currentPeriodEnd)
     if (days === null || days > RENEWAL_NOTICE_DAYS) return null
@@ -65,20 +65,12 @@ export default async function SubscriptionBanner({
     return (
       <div
         role="status"
-        className="flex items-center justify-between gap-3 border-b bg-muted/40 px-4 py-2 text-sm text-muted-foreground"
+        className="flex items-center gap-2 border-b bg-muted/40 px-4 py-2 text-sm text-muted-foreground"
       >
-        <span className="flex items-center gap-2">
-          <Clock className="size-4 shrink-0" aria-hidden />
-          {days <= 0
-            ? t("renewalDueToday")
-            : t("renewalCountdown", { days })}
-        </span>
-        <Link
-          href={`/${locale}/dashboard/billing`}
-          className="font-medium underline underline-offset-4"
-        >
-          {t("renewNow")}
-        </Link>
+        <Clock className="size-4 shrink-0" aria-hidden />
+        {days <= 0
+          ? t("renewalDueToday")
+          : t("renewalCountdown", { days })}
       </div>
     )
   }

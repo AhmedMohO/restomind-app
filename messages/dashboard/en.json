@@ -1137,9 +1137,13 @@
     "renewCta": "Renew for {amount} EGP",
     "startsAfterTrial": "Your paid month starts {date}, when your free trial ends — none of your free days are lost.",
     "startsAfterPeriod": "Your next month starts {date}, when the month you have already paid for ends.",
-    "renewalCountdown": "{days} days left in your current month",
-    "renewalDueToday": "Your subscription renews today",
-    "renewNow": "Renew"
+    "renewalCountdown": "{days} days left in your current month — renewal opens when it ends",
+    "renewalDueToday": "Your current month ends today — you can renew from tomorrow",
+    "renewNow": "Renew",
+    "availableFrom": "Available from {date}",
+    "renewFrom": "Renew from {date}",
+    "lockedDuringTrial": "Your free trial already covers this. You can buy it from {date}, when the trial ends.",
+    "lockedUntilRenewal": "You have already paid for this until {date}. Renewal opens then."
   },
   "refunds": {
     "title": "Refund Requests",

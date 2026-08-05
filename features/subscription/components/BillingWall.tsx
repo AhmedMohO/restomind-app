@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useFormatter, useTranslations } from "next-intl"
-import { CreditCard, Loader2, ShieldCheck, Wallet } from "lucide-react"
+import { CreditCard, Loader2, Lock, ShieldCheck, Wallet } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,10 +36,10 @@ const METHOD_ICON: Record<PaymentMethod, typeof CreditCard> = {
  */
 export default function BillingWall({ subscription, methods }: Props) {
   const t = useTranslations("Dashboard.billing")
-  // Default to what they already pay for, so the obvious action on this screen
-  // is renewing the same plan rather than accidentally switching tier.
+  // Default to something they can actually buy. While a plan is still running
+  // that is the next tier up; once it lapses it is the plan they already had.
   const [selectedTier, setSelectedTier] = useState<TierName>(
-    () => subscription.tier ?? recommendedTier(subscription)
+    () => defaultTier(subscription)
   )
   const [method, setMethod] = useState<PaymentMethod>(methods[0] ?? "card")
   const [error, setError] = useState<string | null>(null)
@@ -67,6 +67,12 @@ export default function BillingWall({ subscription, methods }: Props) {
   const startsLater =
     startsOn !== null &&
     new Date(subscription.nextPeriodStart).getTime() - Date.now() > 60_000
+
+  const renewableOn = formatDate(format, subscription.renewableFrom)
+  const selected = subscription.tiers.find(
+    (tier) => tier.name === selectedTier
+  )
+  const canBuySelected = selected?.purchasable ?? false
 
   function handlePay() {
     setError(null)
@@ -145,7 +151,8 @@ export default function BillingWall({ subscription, methods }: Props) {
                 tier.name === recommendedTier(subscription)
               }
               current={tier.name === subscription.tier}
-              onSelect={() => setSelectedTier(tier.name)}
+              lockedUntil={tier.purchasable ? null : renewableOn}
+              onSelect={() => tier.purchasable && setSelectedTier(tier.name)}
               t={t}
             />
           ))}
@@ -205,7 +212,7 @@ export default function BillingWall({ subscription, methods }: Props) {
               size="lg"
               className="w-full rounded-xl px-8 py-6 text-base font-semibold shadow-md transition-all hover:scale-[1.01] sm:w-auto"
               onClick={handlePay}
-              disabled={isPending}
+              disabled={isPending || !canBuySelected}
             >
               {isPending && (
                 <Loader2 className="me-2 size-5 animate-spin" aria-hidden />
@@ -218,7 +225,17 @@ export default function BillingWall({ subscription, methods }: Props) {
                   )}
             </Button>
 
-            {startsLater && (
+            {/* Why the button is dead, said plainly. An unexplained disabled
+                button reads as a broken page, not as a deliberate rule. */}
+            {!canBuySelected && renewableOn && (
+              <p className="mt-3 text-sm font-medium text-muted-foreground">
+                {subscription.state === "trial"
+                  ? t("lockedDuringTrial", { date: renewableOn })
+                  : t("lockedUntilRenewal", { date: renewableOn })}
+              </p>
+            )}
+
+            {canBuySelected && startsLater && (
               <p className="mt-3 text-sm font-medium text-muted-foreground">
                 {subscription.state === "trial"
                   ? t("startsAfterTrial", { date: startsOn })
@@ -253,6 +270,7 @@ function TierCard({
   selected,
   recommended,
   current,
+  lockedUntil,
   onSelect,
   t,
 }: {
@@ -260,14 +278,19 @@ function TierCard({
   selected: boolean
   recommended: boolean
   current: boolean
+  /** Non-null when this tier cannot be bought yet; the date it opens. */
+  lockedUntil: string | null
   onSelect: () => void
   t: ReturnType<typeof useTranslations>
 }) {
+  const locked = lockedUntil !== null
+
   return (
     <Card
       role="radio"
       aria-checked={selected}
-      tabIndex={0}
+      aria-disabled={locked}
+      tabIndex={locked ? -1 : 0}
       onClick={onSelect}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -276,10 +299,12 @@ function TierCard({
         }
       }}
       className={cn(
-        "cursor-pointer rounded-2xl p-5 shadow-xs transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        selected
-          ? "border-primary bg-primary/[0.03] shadow-md ring-2 ring-primary/20"
-          : "hover:border-foreground/30 hover:shadow-sm"
+        "rounded-2xl p-5 shadow-xs transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        locked
+          ? "cursor-not-allowed opacity-60"
+          : "cursor-pointer hover:border-foreground/30 hover:shadow-sm",
+        selected &&
+          "border-primary bg-primary/[0.03] shadow-md ring-2 ring-primary/20"
       )}
     >
       <CardHeader className="p-0 pb-3">
@@ -324,6 +349,14 @@ function TierCard({
             {t("tooSmall")}
           </p>
         )}
+        {locked && (
+          <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+            <Lock className="size-3.5 shrink-0" aria-hidden />
+            {current
+              ? t("renewFrom", { date: lockedUntil })
+              : t("availableFrom", { date: lockedUntil })}
+          </p>
+        )}
       </CardContent>
     </Card>
   )
@@ -340,6 +373,18 @@ function formatDate(
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return null
   return format.dateTime(date, { day: "numeric", month: "long" })
+}
+
+/** The first tier the merchant is actually allowed to buy today. */
+function defaultTier(subscription: MySubscription): TierName {
+  const buyable = subscription.tiers.filter((tier) => tier.purchasable)
+  const preferred = buyable.find((tier) => tier.name === subscription.tier)
+  return (
+    preferred?.name ??
+    buyable.find((tier) => tier.fitsCurrentCatalogue)?.name ??
+    buyable[0]?.name ??
+    recommendedTier(subscription)
+  )
 }
 
 /** The smallest tier that actually fits the current catalogue. */
