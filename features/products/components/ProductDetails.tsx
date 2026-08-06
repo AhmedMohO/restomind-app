@@ -6,6 +6,7 @@ import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star, Loader2 } from "luci
 import type { ApiOffer } from "@/features/offers/api/type"
 import { useActiveOffers } from "@/features/offers/hooks"
 import { useCart } from "@/hooks/use-cart"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn } from "@/lib/utils"
 import ProductCarousel from "@/components/common/ProductCarousel"
 import { useTranslations } from "next-intl"
@@ -22,6 +23,8 @@ export default function ProductDetails({
   const t = useTranslations("Offers")
   const product = rawProduct.productId
   const { addToCart, toggleWishlist, wishlist } = useCart()
+  const { user, hasAnyRole } = useAuth()
+  const isManagementRole = Boolean(user && hasAnyRole(["admin", "staff", "manager"]))
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -123,26 +126,28 @@ export default function ProductDetails({
                   {t("discountBadge", { percent: discountPercentage })}
                 </Badge>
               </div>
-              <button
-                onClick={handleToggleWishlist}
-                disabled={isTogglingWishlist}
-                className={cn(
-                  "rounded-full border border-[#ECE6DB] p-2.5 transition-colors hover:bg-[#FAF7F2] disabled:pointer-events-none disabled:opacity-75 dark:border-neutral-800 dark:hover:bg-neutral-800",
-                  isFavorite
-                    ? "border-[#7C4A27] bg-[#FAF2ED] text-red-500 dark:bg-red-950/20"
-                    : "text-muted-foreground"
-                )}
-                title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
-              >
-                {isTogglingWishlist ? (
-                  <Loader2 size={20} className="animate-spin text-red-500" />
-                ) : (
-                  <Heart
-                    size={20}
-                    className={isFavorite ? "fill-current text-red-500" : ""}
-                  />
-                )}
-              </button>
+              {!isManagementRole && (
+                <button
+                  onClick={handleToggleWishlist}
+                  disabled={isTogglingWishlist}
+                  className={cn(
+                    "rounded-full border border-[#ECE6DB] p-2.5 transition-colors hover:bg-[#FAF7F2] disabled:pointer-events-none disabled:opacity-75 dark:border-neutral-800 dark:hover:bg-neutral-800",
+                    isFavorite
+                      ? "border-[#7C4A27] bg-[#FAF2ED] text-red-500 dark:bg-red-950/20"
+                      : "text-muted-foreground"
+                  )}
+                  title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
+                >
+                  {isTogglingWishlist ? (
+                    <Loader2 size={20} className="animate-spin text-red-500" />
+                  ) : (
+                    <Heart
+                      size={20}
+                      className={isFavorite ? "fill-current text-red-500" : ""}
+                    />
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Title */}
@@ -190,55 +195,57 @@ export default function ProductDetails({
           </div>
 
           {/* Action Row: Quantity Selector & Add to cart button */}
-          <div className="flex flex-col gap-4 border-t border-[#ECE6DB] pt-4 sm:flex-row dark:border-neutral-800">
-            {/* Quantity control */}
-            <div className="flex min-w-[120px] items-center justify-between rounded-full border border-[#ECE6DB] bg-white px-2 py-1.5 sm:w-fit dark:border-neutral-800 dark:bg-neutral-900">
+          {!isManagementRole && (
+            <div className="flex flex-col gap-4 border-t border-[#ECE6DB] pt-4 sm:flex-row dark:border-neutral-800">
+              {/* Quantity control */}
+              <div className="flex min-w-[120px] items-center justify-between rounded-full border border-[#ECE6DB] bg-white px-2 py-1.5 sm:w-fit dark:border-neutral-800 dark:bg-neutral-900">
+                <button
+                  onClick={handleDecrement}
+                  disabled={!product.isAvailable}
+                  className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] disabled:opacity-50 dark:hover:bg-neutral-800"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="px-4 text-sm font-bold text-[#2B1B15] dark:text-neutral-200">
+                  {quantity}
+                </span>
+                <button
+                  onClick={handleIncrement}
+                  disabled={!product.isAvailable}
+                  className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] disabled:opacity-50 dark:hover:bg-neutral-800"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+
+              {/* Add to cart brown button */}
               <button
-                onClick={handleDecrement}
-                disabled={!product.isAvailable}
-                className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] disabled:opacity-50 dark:hover:bg-neutral-800"
+                onClick={handleAddToCart}
+                disabled={!product.isAvailable || isAddingToCart}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-3 font-sans text-sm font-semibold shadow-sm transition-all active:translate-y-px disabled:pointer-events-none disabled:opacity-75",
+                  product.isAvailable
+                    ? added
+                      ? "bg-[#529E66] text-white hover:bg-[#438353]"
+                      : "bg-[#7C4A27] text-[#FFFFFF] hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
+                    : "cursor-not-allowed bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
+                )}
               >
-                <Minus size={14} />
-              </button>
-              <span className="px-4 text-sm font-bold text-[#2B1B15] dark:text-neutral-200">
-                {quantity}
-              </span>
-              <button
-                onClick={handleIncrement}
-                disabled={!product.isAvailable}
-                className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-[#FAF7F2] disabled:opacity-50 dark:hover:bg-neutral-800"
-              >
-                <Plus size={14} />
+                {isAddingToCart ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <ShoppingCart size={16} />
+                )}
+                <span>
+                  {added
+                    ? t("addedToCart")
+                    : t("addToCartPrice", {
+                        price: (activePrice * quantity).toLocaleString(),
+                      })}
+                </span>
               </button>
             </div>
-
-            {/* Add to cart brown button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={!product.isAvailable || isAddingToCart}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-3 font-sans text-sm font-semibold shadow-sm transition-all active:translate-y-px disabled:pointer-events-none disabled:opacity-75",
-                product.isAvailable
-                  ? added
-                    ? "bg-[#529E66] text-white hover:bg-[#438353]"
-                    : "bg-[#7C4A27] text-[#FFFFFF] hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
-                  : "cursor-not-allowed bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
-              )}
-            >
-              {isAddingToCart ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <ShoppingCart size={16} />
-              )}
-              <span>
-                {added
-                  ? t("addedToCart")
-                  : t("addToCartPrice", {
-                      price: (activePrice * quantity).toLocaleString(),
-                    })}
-              </span>
-            </button>
-          </div>
+          )}
         </div>
       </div>
 

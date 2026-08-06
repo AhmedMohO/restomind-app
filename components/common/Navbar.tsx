@@ -11,6 +11,7 @@ import CartSheet from "@/components/common/CartSheet"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
 import { SignedIn, SignedOut, HasRole } from "@/features/auth/components/Guards"
 import { logoutAction } from "@/features/auth/actions/login"
@@ -28,27 +29,36 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useProfile } from "@/features/profile/hooks/use-profile"
 
+const navLinks = [
+  { key: "home", href: "/" },
+  { key: "offers", href: "/offers", roles: ["customer"] },
+  { key: "orders", href: "/orders", roles: ["customer"] },
+  { key: "favourites", href: "/favourites", roles: ["customer"] },
+  { key: "about", href: "/about", roles: ["customer"] },
+] as const
+
 export default function Navbar() {
   const t = useTranslations("Navbar")
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
 
-  const user = useAuthStore((s) => s.user)
+  const { user, hasAnyRole } = useAuth()
   const setUser = useAuthStore((s) => s.setUser)
   const { data: profileUser } = useProfile()
   const avatarUrl = profileUser?.image?.secure_url
 
+  const isManagementRole = Boolean(user && hasAnyRole(["admin", "staff", "manager"]))
+
+  const filteredNavLinks = navLinks.filter((link) => {
+    if (isManagementRole && (link.key === "orders" || link.key === "favourites")) {
+      return false
+    }
+    return true
+  })
+
   const isLandingPage =
     pathname === "/" || pathname === "/en" || pathname === "/ar"
-
-  const navLinks = [
-    { key: "home", href: "/" },
-    { key: "offers", href: "/offers" },
-    { key: "orders", href: "/orders" },
-    { key: "favourites", href: "/favourites" },
-    { key: "about", href: "/about" },
-  ] as const
 
   async function handleLogout() {
     await logoutAction()
@@ -72,7 +82,7 @@ export default function Navbar() {
         {/* Left: Navigation links (hidden on mobile, visible on desktop) */}
         <div className="hidden lg:flex lg:justify-start">
           <nav className="flex items-center gap-1 rounded-full border border-border/40 bg-background/50 p-1.5 backdrop-blur-md">
-            {navLinks.map((link) => (
+            {filteredNavLinks.map((link) => (
               <ActLink
                 key={link.key}
                 href={link.href}
@@ -113,7 +123,11 @@ export default function Navbar() {
                       className="flex items-center gap-2 rounded-full border-border/60 bg-background/80 px-3 py-1.5 shadow-xs backdrop-blur-sm transition-all hover:bg-accent"
                     >
                       <Avatar size="sm">
-                        <AvatarImage src={avatarUrl} alt={user?.firstName} className="object-cover" />
+                        <AvatarImage
+                          src={avatarUrl}
+                          alt={user?.firstName}
+                          className="object-cover"
+                        />
                         <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                           {userInitials || <User className="size-3.5" />}
                         </AvatarFallback>
@@ -155,20 +169,24 @@ export default function Navbar() {
                     <User className="size-4 text-muted-foreground" />
                     <span>{t("profile")}</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => router.push("/orders")}
-                    className="cursor-pointer gap-2 py-2"
-                  >
-                    <ShoppingBag className="size-4 text-muted-foreground" />
-                    <span>{t("orders")}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => router.push("/favourites")}
-                    className="cursor-pointer gap-2 py-2"
-                  >
-                    <Heart className="size-4 text-muted-foreground" />
-                    <span>{t("favourites")}</span>
-                  </DropdownMenuItem>
+                  {!isManagementRole && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => router.push("/orders")}
+                        className="cursor-pointer gap-2 py-2"
+                      >
+                        <ShoppingBag className="size-4 text-muted-foreground" />
+                        <span>{t("orders")}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => router.push("/favourites")}
+                        className="cursor-pointer gap-2 py-2"
+                      >
+                        <Heart className="size-4 text-muted-foreground" />
+                        <span>{t("favourites")}</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleLogout}
@@ -206,7 +224,7 @@ export default function Navbar() {
           {/* System Utilities */}
           <div className="flex items-center gap-1.5 border-l border-border/40 pl-3 rtl:border-r rtl:border-l-0 rtl:pr-3 rtl:pl-0 dark:border-stone-800">
             <ThemeToggle />
-            <CartSheet />
+            {!isManagementRole && <CartSheet />}
             <LangToggle />
           </div>
 

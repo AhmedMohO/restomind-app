@@ -6,6 +6,7 @@ import { Link, useRouter } from "@/i18n/routing"
 import ActLink from "@/components/common/ActLink"
 import LangToggle from "@/components/common/LangToggle"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
 import { SignedIn, SignedOut, HasRole } from "@/features/auth/components/Guards"
 import { logoutAction } from "@/features/auth/actions/login"
@@ -25,8 +26,10 @@ export default function MobileMenu() {
   const router = useRouter()
   const queryClient = useQueryClient()
 
-  const user = useAuthStore((s) => s.user)
+  const { user, hasAnyRole } = useAuth()
   const setUser = useAuthStore((s) => s.setUser)
+
+  const isManagementRole = Boolean(user && hasAnyRole(["admin", "staff", "manager"]))
 
   const links = [
     { key: "home", href: "/" },
@@ -35,6 +38,13 @@ export default function MobileMenu() {
     { key: "favourites", href: "/favourites" },
     { key: "about", href: "/about" },
   ] as const
+
+  const filteredLinks = links.filter((link) => {
+    if (isManagementRole && (link.key === "orders" || link.key === "favourites")) {
+      return false
+    }
+    return true
+  })
 
   async function handleLogout() {
     await logoutAction()
@@ -93,7 +103,7 @@ export default function MobileMenu() {
 
         <div className="flex flex-col gap-6">
           <nav className="flex flex-col gap-2">
-            {links.map((link) => (
+            {filteredLinks.map((link) => (
               <SheetClose
                 key={link.key}
                 nativeButton={false}
