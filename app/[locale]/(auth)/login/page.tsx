@@ -7,6 +7,8 @@ import LangToggle from "@/components/common/LangToggle"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { getAlternates } from "@/lib/seo/metadata"
 
+import { PartnerAuthCallout } from "@/components/partner-auth-callout"
+
 type Props = {
   params: Promise<{ locale: string }>
 }
@@ -53,9 +55,10 @@ export default async function LoginPage({ params }: Props) {
         </div>
 
         {/* Form container */}
-        <div className="flex flex-1 items-center justify-center py-10">
+        <div className="flex flex-1 flex-col items-center justify-center py-8">
           <div className="w-full max-w-sm rounded-2xl border border-border/40 bg-card p-6 shadow-xs md:p-8">
             <LoginForm />
+            <PartnerAuthCallout variant="card" />
           </div>
         </div>
       </div>
