@@ -12,8 +12,14 @@ export interface TierOption {
   label: string
   /** null means unlimited. */
   productCap: number | null
-  /** VAT-inclusive monthly price in EGP. */
+  /** VAT-inclusive monthly price in EGP — what this merchant actually pays. */
   priceEGP: number
+  /**
+   * The price without the early-bird seat, for showing the saving. Null when
+   * the merchant is not on early-bird pricing, so there is nothing to compare
+   * against and nothing to strike through.
+   */
+  standardPriceEGP: number | null
   netEGP: number
   vatEGP: number
   /** True when the restaurant's current catalogue fits inside this tier. */
@@ -28,6 +34,12 @@ export interface TierOption {
 
 export interface MySubscription {
   state: SubscriptionState
+  /**
+   * Whether early-bird pricing is being applied right now. False when the
+   * merchant holds no seat, and also when the platform switch has been turned
+   * off — in which case they keep the seat but renew at the standard price.
+   */
+  earlyBird: boolean
   tier: TierName | null
   trialEndsAt: string | null
   currentPeriodEnd: string | null

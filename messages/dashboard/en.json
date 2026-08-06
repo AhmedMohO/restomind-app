@@ -33,7 +33,8 @@
     "waste": "Waste & Surplus",
     "imports": "Data Imports",
     "partnershipApplications": "Partnership Applications",
-    "refunds": "Refunds"
+    "refunds": "Refunds",
+    "platformSettings": "Platform Settings"
   },
   "restaurant": {
     "pageTitle": "Restaurant Profile",
@@ -1155,7 +1156,8 @@
     "availableFrom": "Available from {date}",
     "renewFrom": "Renew from {date}",
     "lockedDuringTrial": "Your free trial already covers this. You can buy it from {date}, when the trial ends.",
-    "lockedUntilRenewal": "You have already paid for this until {date}. Renewal opens then."
+    "lockedUntilRenewal": "You have already paid for this until {date}. Renewal opens then.",
+    "earlyBirdPrice": "Early-bird price"
   },
   "refunds": {
     "title": "Refund Requests",
@@ -1251,5 +1253,31 @@
       "noMatch": "No refund requests match your current search or status filter.",
       "resetFilters": "Reset Filters"
     }
+  },
+  "systemSettings": {
+    "title": "Platform Settings",
+    "subtitle": "Switches that take effect immediately, for every merchant onboarded from now on.",
+    "save": "Save",
+    "saved": "Setting saved",
+    "retry": "Try again",
+    "loadFailed": "Could not load platform settings",
+    "loadFailedHint": "The settings service did not answer. Nothing has been changed.",
+    "invalidNumber": "Enter a whole number between {min} and {max}.",
+    "trialTitle": "Free trial for new merchants",
+    "trialDescription": "Applies to merchants who complete onboarding from now on. Trials already granted keep their end date.",
+    "trialToggle": "Give new merchants a free trial",
+    "trialToggleHint": "Turned off, a newly onboarded merchant lands on the billing screen and must subscribe before using the dashboard. You can still grant a trial to an individual merchant.",
+    "trialDays": "Trial length (days)",
+    "trialDaysHint": "Only affects trials granted from now on — nobody's current trial moves.",
+    "earlyBirdTitle": "Early-bird pricing",
+    "earlyBirdDescription": "Discounted rates for the first merchants to join: 200 instead of 300 EGP on Basic, 400 instead of 600 on Plus, 1,000 instead of 1,500 on Scale.",
+    "earlyBirdToggle": "Early-bird pricing active",
+    "earlyBirdToggleHint": "Turned off, no new merchant claims a seat and existing early birds renew at the standard price. The month they have already paid for is not affected.",
+    "earlyBirdCap": "Seats available",
+    "earlyBirdCapHint": "How many merchants claim the discount automatically as they onboard.",
+    "seatsClaimed": "{claimed} of {cap} seats claimed",
+    "seatsLeft": "{left} left",
+    "seatsGone": "All seats are taken. New merchants now pay the standard price.",
+    "grantHint": "To grant or withdraw the early-bird price for one specific merchant, open that restaurant and use the early-bird control there. Manual grants are included in the count above."
   }
 }

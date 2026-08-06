@@ -333,11 +333,23 @@ function TierCard({
       </CardHeader>
       <CardContent className="space-y-2 p-0">
         <p className="text-3xl font-extrabold tracking-tight text-foreground tabular-nums sm:text-4xl">
+          {/* The standard price, struck through, only when this merchant is
+              actually being charged less than it. */}
+          {tier.standardPriceEGP !== null && (
+            <span className="me-2 text-xl font-semibold text-muted-foreground line-through sm:text-2xl">
+              {tier.standardPriceEGP.toLocaleString()}
+            </span>
+          )}
           {tier.priceEGP.toLocaleString()}
           <span className="ms-1.5 text-base font-normal text-muted-foreground">
             {t("perMonth")}
           </span>
         </p>
+        {tier.standardPriceEGP !== null && (
+          <p className="text-sm font-semibold text-primary">
+            {t("earlyBirdPrice")}
+          </p>
+        )}
 
         <p className="pt-2 text-base font-medium text-foreground/90">
           {tier.productCap === null

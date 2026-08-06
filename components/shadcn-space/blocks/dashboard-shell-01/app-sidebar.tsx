@@ -26,6 +26,7 @@ import {
   Percent,
   Receipt,
   ShoppingBag,
+  SlidersHorizontal,
   Undo2,
   CreditCard,
   Sparkles,
@@ -173,6 +174,12 @@ function useDashboardNav(): NavItem[] {
       title: t("partnershipApplications"),
       icon: FileText,
       href: "/dashboard/partnership-applications",
+      roles: ["admin"],
+    },
+    {
+      title: t("platformSettings"),
+      icon: SlidersHorizontal,
+      href: "/dashboard/admin/settings",
       roles: ["admin"],
     },
     {
