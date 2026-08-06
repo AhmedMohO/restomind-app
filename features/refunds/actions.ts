@@ -49,7 +49,7 @@ export async function createRefundAction(
 
 export async function reviewRefundAction(
   refundId: string,
-  decision: "approve" | "reject",
+  decision: "approve" | "reject" | "settle",
   rejectionReason?: string
 ): Promise<RefundActionResult> {
   try {

@@ -222,7 +222,19 @@
     "dob": "تاريخ الميلاد",
     "reset": "إعادة ضبط",
     "saveChanges": "حفظ التغييرات",
-    "saving": "جارٍ الحفظ..."
+    "saving": "جارٍ الحفظ...",
+    "subscriptionTitle": "تفاصيل الاشتراك والباقتين",
+    "subscriptionDesc": "نظرة عامة على اشتراك مطعمك الحالي وحالته وتاريخ التجديد.",
+    "currentPlan": "الباقة الحالية",
+    "status": "الحالة",
+    "renewalDate": "تاريخ التجديد",
+    "trialEndsAt": "انتهاء التجربة",
+    "daysRemaining": "متبقي {days} يوم",
+    "manageBilling": "إدارة الباقة والفوترة",
+    "noSubscription": "لا تتوفر تفاصيل اشتراك نشطة حالياً.",
+    "productUsage": "استخدام المنتجات",
+    "productsUsed": "{count} من أصل {cap} منتج",
+    "unlimitedProducts": "{count} منتج (غير محدود)"
   },
   "users": {
     "adminTitle": "إدارة المستخدمين",

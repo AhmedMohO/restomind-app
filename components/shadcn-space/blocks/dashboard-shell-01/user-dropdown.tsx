@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Loader2, Settings, LogOut } from "lucide-react";
+import { Loader2, Settings, LogOut, CreditCard } from "lucide-react";
 
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { logoutAction } from "@/features/auth/actions/login";
@@ -104,7 +104,7 @@ const UserDropdown = ({
 
           <DropdownMenuSeparator />
 
-          {/* Account Settings */}
+          {/* Account & Billing */}
           <DropdownMenuGroup>
             <DropdownMenuItem
               className={itemClass}
@@ -114,6 +114,15 @@ const UserDropdown = ({
             >
               <Settings size={20} />
               <span>{t("accountSettings")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className={itemClass}
+              render={
+                <Link href={`/${locale}/dashboard/billing`} />
+              }
+            >
+              <CreditCard size={20} />
+              <span>Billing & Subscription</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
 

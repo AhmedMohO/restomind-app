@@ -31,7 +31,7 @@ export async function createRefund(
 /** PATCH /orders/refunds/:refundId/review — approve or reject a request. */
 export async function reviewRefund(
   refundId: string,
-  decision: "approve" | "reject",
+  decision: "approve" | "reject" | "settle",
   rejectionReason?: string
 ): Promise<{ message: string; status?: string }> {
   const response = await apiClient(`/orders/refunds/${refundId}/review`, {

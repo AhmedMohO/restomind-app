@@ -222,7 +222,19 @@
     "dob": "Date of Birth",
     "reset": "Reset",
     "saveChanges": "Save Changes",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "subscriptionTitle": "Subscription & Plan Details",
+    "subscriptionDesc": "Overview of your current restaurant subscription plan, status, and renewal date.",
+    "currentPlan": "Current Plan",
+    "status": "Status",
+    "renewalDate": "Renewal Date",
+    "trialEndsAt": "Trial Expiry",
+    "daysRemaining": "{days} days remaining",
+    "manageBilling": "Manage Plan & Billing",
+    "noSubscription": "No active subscription details available.",
+    "productUsage": "Catalogue Usage",
+    "productsUsed": "{count} of {cap} products",
+    "unlimitedProducts": "{count} products (Unlimited)"
   },
   "users": {
     "adminTitle": "Users Management",
