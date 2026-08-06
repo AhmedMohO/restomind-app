@@ -5,14 +5,15 @@ export type SubscriptionState =
   | "expired"
   | "unpaid"
 
-export type TierName = "basic" | "plus" | "scale"
+import type { BillingInterval } from "@/features/plans/api/type"
 
-export interface TierOption {
-  name: TierName
-  label: string
-  /** null means unlimited. */
-  productCap: number | null
-  /** VAT-inclusive monthly price in EGP — what this merchant actually pays. */
+export type { BillingInterval }
+
+/** A plan slug. Open-ended now that plans are admin-managed. */
+export type PlanSlug = string
+
+export interface IntervalOption {
+  /** VAT-inclusive price in EGP — what this merchant actually pays. */
   priceEGP: number
   /**
    * The price without the early-bird seat, for showing the saving. Null when
@@ -22,14 +23,34 @@ export interface TierOption {
   standardPriceEGP: number | null
   netEGP: number
   vatEGP: number
-  /** True when the restaurant's current catalogue fits inside this tier. */
-  fitsCurrentCatalogue: boolean
+  /** The per-month equivalent, so intervals can be compared like for like. */
+  perMonthEGP: number
   /**
-   * False while the merchant already holds this much capacity, paid or on
-   * trial. Mirrors the backend guard exactly, so the screen never offers a
-   * button the next request would reject with 409.
+   * Saving against paying monthly. Null when monthly is not sold, so there is
+   * no baseline to claim a saving against.
+   */
+  savingPercent: number | null
+  /**
+   * False while the merchant already holds this much capacity on this or a
+   * longer commitment. Mirrors the backend guard exactly, so the screen never
+   * offers a button the next request would reject with 409.
    */
   purchasable: boolean
+  /** Why it is locked, with the date it frees up. Null when purchasable. */
+  blockedReason: string | null
+}
+
+export interface PlanOption {
+  slug: PlanSlug
+  label: string
+  /** null means unlimited. */
+  productCap: number | null
+  /** The plan this merchant is currently on. */
+  isCurrent: boolean
+  /** True when the restaurant's current catalogue fits inside this plan. */
+  fitsCurrentCatalogue: boolean
+  /** null for an interval this plan does not sell. */
+  intervals: Record<BillingInterval, IntervalOption | null>
 }
 
 export interface MySubscription {
@@ -40,7 +61,15 @@ export interface MySubscription {
    * off — in which case they keep the seat but renew at the standard price.
    */
   earlyBird: boolean
-  tier: TierName | null
+  /** The plan slug currently held, or null. */
+  tier: PlanSlug | null
+  /** The commitment length currently held, or null on a trial. */
+  interval: BillingInterval | null
+  /**
+   * The label of the plan they hold, snapshotted at purchase — so an archived
+   * or renamed plan still displays as what they actually bought.
+   */
+  planLabel: string | null
   trialEndsAt: string | null
   currentPeriodEnd: string | null
   /**
@@ -59,7 +88,7 @@ export interface MySubscription {
   productCount: number
   /** null means unlimited. */
   productCap: number | null
-  tiers: TierOption[]
+  plans: PlanOption[]
 }
 
 export type PaymentMethod = "card" | "wallet"

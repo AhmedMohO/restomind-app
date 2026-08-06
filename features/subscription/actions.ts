@@ -4,9 +4,10 @@ import {
   getMySubscription,
   getPaymentMethods,
   startSubscriptionCheckout,
+  type BillingInterval,
   type MySubscription,
   type PaymentMethod,
-  type TierName,
+  type PlanSlug,
 } from "./api"
 
 /**
@@ -18,11 +19,12 @@ import {
  * is the one user who must never hit a blank screen.
  */
 export async function startCheckoutAction(
-  tier: TierName,
+  tier: PlanSlug,
+  interval: BillingInterval,
   method: PaymentMethod
 ): Promise<{ checkoutUrl: string } | { error: string }> {
   try {
-    return await startSubscriptionCheckout(tier, method)
+    return await startSubscriptionCheckout(tier, interval, method)
   } catch (error) {
     console.error("[startCheckoutAction]", error)
     return {
