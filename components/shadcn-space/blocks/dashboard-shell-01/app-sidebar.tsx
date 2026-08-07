@@ -22,6 +22,7 @@ import {
   ChefHat,
   FileText,
   FolderTree,
+  Layers,
   Package,
   Percent,
   Receipt,
@@ -174,6 +175,12 @@ function useDashboardNav(): NavItem[] {
       title: t("partnershipApplications"),
       icon: FileText,
       href: "/dashboard/partnership-applications",
+      roles: ["admin"],
+    },
+    {
+      title: t("subscriptionPlans"),
+      icon: Layers,
+      href: "/dashboard/admin/plans",
       roles: ["admin"],
     },
     {
