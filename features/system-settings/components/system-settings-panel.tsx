@@ -49,6 +49,7 @@ function NumberSetting({
   value,
   min,
   max,
+  step = 1,
   disabled,
   saving,
   onCommit,
@@ -60,6 +61,8 @@ function NumberSetting({
   value: number
   min: number
   max?: number
+  /** Anything below 1 permits decimals — the early-bird rate needs 33.3333. */
+  step?: number
   disabled?: boolean
   saving: boolean
   onCommit: (next: number) => void
@@ -71,7 +74,8 @@ function NumberSetting({
   const parsed = Number(draft)
   const valid =
     draft.trim() !== "" &&
-    Number.isInteger(parsed) &&
+    Number.isFinite(parsed) &&
+    (step >= 1 ? Number.isInteger(parsed) : true) &&
     parsed >= min &&
     (max === undefined || parsed <= max)
   const dirty = valid && parsed !== value
@@ -101,9 +105,10 @@ function NumberSetting({
             <Input
               id={id}
               type="number"
-              inputMode="numeric"
+              inputMode={step >= 1 ? "numeric" : "decimal"}
               min={min}
               max={max}
+              step={step}
               value={draft}
               disabled={disabled || saving}
               onChange={(event) => setDraft(event.target.value)}
@@ -446,6 +451,25 @@ export function SystemSettingsPanel() {
               saving={pendingKey === "earlyBirdCap"}
               onCommit={(next) => save({ earlyBirdCap: next }, "earlyBirdCap")}
               icon={Sparkles}
+            />
+
+            <NumberSetting
+              key={`earlyBirdDiscountPercent-${settings.earlyBirdDiscountPercent}`}
+              id="earlyBirdDiscountPercent"
+              label={t("earlyBirdDiscount")}
+              hint={t("earlyBirdDiscountHint")}
+              value={settings.earlyBirdDiscountPercent}
+              min={0}
+              max={100}
+              step={0.0001}
+              saving={pendingKey === "earlyBirdDiscountPercent"}
+              onCommit={(next) =>
+                save(
+                  { earlyBirdDiscountPercent: next },
+                  "earlyBirdDiscountPercent"
+                )
+              }
+              icon={Ticket}
             />
 
             {/* Grant Hint Callout */}

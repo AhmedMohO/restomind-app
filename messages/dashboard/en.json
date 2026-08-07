@@ -1293,7 +1293,9 @@
     "seatsClaimed": "{claimed} of {cap} seats claimed",
     "seatsLeft": "{left} left",
     "seatsGone": "All seats are taken. New merchants now pay the standard price.",
-    "grantHint": "To grant or withdraw the early-bird price for one specific merchant, open that restaurant and use the early-bird control there. Manual grants are included in the count above."
+    "grantHint": "To grant or withdraw the early-bird price for one specific merchant, open that restaurant and use the early-bird control there. Manual grants are included in the count above.",
+    "earlyBirdDiscount": "Early-bird discount",
+    "earlyBirdDiscountHint": "Percent off, applied to every plan and every billing interval. 33.3333 reproduces the original early-bird prices exactly."
   },
   "plans": {
     "title": "Subscription Plans",

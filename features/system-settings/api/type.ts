@@ -14,6 +14,12 @@ export interface SystemSettings {
    */
   earlyBirdEnabled: boolean
   earlyBirdCap: number
+  /**
+   * Applied to every plan and every billing interval. 33.3333 reproduces the
+   * original per-tier early-bird prices exactly; 33.33 does not — it lands the
+   * Scale yearly price 1 EGP high.
+   */
+  earlyBirdDiscountPercent: number
   /** Seats held, however they were granted — automatically or by an admin. */
   earlyBirdClaimed: number
   earlyBirdSeatsLeft: number
@@ -27,5 +33,6 @@ export type SystemSettingsUpdate = Partial<
     | "trialDurationDays"
     | "earlyBirdEnabled"
     | "earlyBirdCap"
+    | "earlyBirdDiscountPercent"
   >
 >
