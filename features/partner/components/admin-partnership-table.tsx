@@ -219,15 +219,15 @@ export function AdminPartnershipTable() {
               aria-label="Filter status"
               className="w-[160px] rounded-xl"
             >
-              <SelectValue placeholder="All Statuses" />
+              <SelectValue placeholder={t("allStatuses")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="PENDING">Pending</SelectItem>
-              <SelectItem value="UNDER_REVIEW">Under Review</SelectItem>
-              <SelectItem value="APPROVED">Approved</SelectItem>
-              <SelectItem value="REJECTED">Rejected</SelectItem>
-              <SelectItem value="ONBOARDED">Onboarded</SelectItem>
+              <SelectItem value="all">{t("allStatuses")}</SelectItem>
+              <SelectItem value="PENDING">{t("statuses.pending")}</SelectItem>
+              <SelectItem value="UNDER_REVIEW">{t("statuses.underReview")}</SelectItem>
+              <SelectItem value="APPROVED">{t("statuses.approved")}</SelectItem>
+              <SelectItem value="REJECTED">{t("statuses.rejected")}</SelectItem>
+              <SelectItem value="ONBOARDED">{t("statuses.onboarded")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -242,20 +242,20 @@ export function AdminPartnershipTable() {
         ) : isError ? (
           <div className="flex h-64 flex-col items-center justify-center gap-3 p-6 text-center">
             <p className="text-sm text-muted-foreground">
-              {t("fetchError") || "Failed to load partnership applications."}
+              {t("fetchError")}
             </p>
             <Button
               variant="outline"
               onClick={() => refetch()}
               className="rounded-xl"
             >
-              Retry
+              {t("retry")}
             </Button>
           </div>
         ) : items.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center p-6 text-center">
             <p className="text-sm text-muted-foreground">
-              {t("noApplications") || "No partnership applications found."}
+              {t("noApplications")}
             </p>
           </div>
         ) : (
@@ -263,22 +263,22 @@ export function AdminPartnershipTable() {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-start">
-                  {t("colBusiness") || "Business / Type"}
+                  {t("colBusiness")}
                 </TableHead>
                 <TableHead className="text-start">
-                  {t("colOwner") || "Owner Contact"}
+                  {t("colOwner")}
                 </TableHead>
                 <TableHead className="text-start">
-                  {t("colLocation") || "Location"}
+                  {t("colLocation")}
                 </TableHead>
                 <TableHead className="text-start">
-                  {t("colStatus") || "Status"}
+                  {t("colStatus")}
                 </TableHead>
                 <TableHead className="text-start">
-                  {t("colDate") || "Submitted"}
+                  {t("colDate")}
                 </TableHead>
                 <TableHead className="text-end">
-                  {t("colActions") || "Actions"}
+                  {t("colActions")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -349,7 +349,7 @@ export function AdminPartnershipTable() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuGroup>
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t("colActions")}</DropdownMenuLabel>
                             <DropdownMenuItem
                               onClick={() =>
                                 router.push(
@@ -358,7 +358,7 @@ export function AdminPartnershipTable() {
                               }
                             >
                               <Eye className="size-4 me-2" />
-                              <span>View Details</span>
+                              <span>{t("viewDetails")}</span>
                             </DropdownMenuItem>
 
                             {app.status === "PENDING" && (
@@ -366,7 +366,7 @@ export function AdminPartnershipTable() {
                                 onClick={() => handleMarkReview(app._id)}
                               >
                                 <Clock className="size-4 me-2 text-blue-600" />
-                                <span>Mark Under Review</span>
+                                <span>{t("markUnderReview")}</span>
                               </DropdownMenuItem>
                             )}
 
@@ -379,14 +379,14 @@ export function AdminPartnershipTable() {
                                   className="text-emerald-600 focus:text-emerald-600"
                                 >
                                   <CheckCircle className="size-4 me-2" />
-                                  <span>Approve Application</span>
+                                  <span>{t("approveApplication")}</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => setRejectTarget(app)}
                                   className="text-destructive focus:text-destructive"
                                 >
                                   <XCircle className="size-4 me-2" />
-                                  <span>Reject Application</span>
+                                  <span>{t("reject")}</span>
                                 </DropdownMenuItem>
                               </>
                             )}
@@ -398,7 +398,7 @@ export function AdminPartnershipTable() {
                                   onClick={() => handleResendEmail(app._id)}
                                 >
                                   <Mail className="size-4 me-2 text-purple-600" />
-                                  <span>Resend Setup Email</span>
+                                  <span>{t("resendSetupEmail")}</span>
                                 </DropdownMenuItem>
                               </>
                             )}
@@ -433,14 +433,17 @@ export function AdminPartnershipTable() {
         onOpenChange={(open) => {
           if (!open) setApproveTarget(null)
         }}
-        title="Approve Partnership Application?"
+        title={t("approveModalTitle")}
         description={
           approveTarget
-            ? `Are you sure you want to approve "${approveTarget.businessName}"? This will create a Restaurant Manager user account and email an activation setup link to ${approveTarget.email}.`
-            : "Approve application?"
+            ? t("approveModalDesc", {
+                name: approveTarget.businessName,
+                email: approveTarget.email,
+              })
+            : ""
         }
-        confirmText="Approve & Send Setup Link"
-        cancelText="Cancel"
+        confirmText={t("approveModalConfirm")}
+        cancelText={t("cancel")}
         variant="default"
         onConfirm={handleApproveConfirm}
       />
@@ -457,22 +460,27 @@ export function AdminPartnershipTable() {
       >
         <DialogContent className="rounded-2xl max-w-md">
           <DialogHeader>
-            <DialogTitle>Reject Partnership Application</DialogTitle>
+            <DialogTitle>{t("rejectModalTitle")}</DialogTitle>
             <DialogDescription>
-              Provide a clear reason for rejecting &quot;{rejectTarget?.businessName}&quot;. This reason will be emailed to the applicant.
+              {rejectTarget
+                ? t("rejectModalDesc", {
+                    name: rejectTarget.businessName,
+                    email: rejectTarget.email,
+                  })
+                : ""}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2 py-2">
             <Label htmlFor="reject-reason" className="text-xs font-semibold">
-              Rejection Reason *
+              {t("rejectionReasonLabel")}
             </Label>
             <Textarea
               id="reject-reason"
               rows={4}
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="e.g. Incomplete business documentation or location outside active service zones."
+              placeholder={t("rejectionReasonPlaceholder")}
               className="rounded-xl text-sm"
             />
           </div>
@@ -486,7 +494,7 @@ export function AdminPartnershipTable() {
               }}
               className="rounded-xl"
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -497,7 +505,7 @@ export function AdminPartnershipTable() {
               {rejectMutation.isPending && (
                 <Loader2 className="size-4 animate-spin" />
               )}
-              <span>Reject Application</span>
+              <span>{t("reject")}</span>
             </Button>
           </DialogFooter>
         </DialogContent>

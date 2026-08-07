@@ -1,4 +1,5 @@
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Clock, Eye, CheckCircle, XCircle, ShieldCheck } from "lucide-react"
@@ -13,6 +14,8 @@ export function PartnershipStatusBadge({
   status,
   className,
 }: PartnershipStatusBadgeProps) {
+  const t = useTranslations("Dashboard.partnershipApplications.statuses")
+
   switch (status) {
     case "PENDING":
       return (
@@ -24,7 +27,7 @@ export function PartnershipStatusBadge({
           )}
         >
           <Clock className="size-3" />
-          <span>Pending</span>
+          <span>{t("pending")}</span>
         </Badge>
       )
     case "UNDER_REVIEW":
@@ -37,7 +40,7 @@ export function PartnershipStatusBadge({
           )}
         >
           <Eye className="size-3" />
-          <span>Under Review</span>
+          <span>{t("underReview")}</span>
         </Badge>
       )
     case "APPROVED":
@@ -50,7 +53,7 @@ export function PartnershipStatusBadge({
           )}
         >
           <CheckCircle className="size-3" />
-          <span>Approved</span>
+          <span>{t("approved")}</span>
         </Badge>
       )
     case "REJECTED":
@@ -63,7 +66,7 @@ export function PartnershipStatusBadge({
           )}
         >
           <XCircle className="size-3" />
-          <span>Rejected</span>
+          <span>{t("rejected")}</span>
         </Badge>
       )
     case "ONBOARDED":
@@ -76,7 +79,7 @@ export function PartnershipStatusBadge({
           )}
         >
           <ShieldCheck className="size-3" />
-          <span>Onboarded</span>
+          <span>{t("onboarded")}</span>
         </Badge>
       )
     default:

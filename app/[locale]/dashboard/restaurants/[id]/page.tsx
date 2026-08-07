@@ -14,6 +14,7 @@ import { Link } from "@/i18n/routing"
 import Image from "next/image"
 import { formatOwner } from "@/features/restaurant/utils/utils"
 import { DashboardAuthGuard } from "@/components/dashboard-auth-guard"
+import { AdminRestaurantModels } from "@/features/restaurant/components/admin-restaurant-models"
 
 function ViewRestaurantPageContent({
   params,
@@ -155,6 +156,12 @@ function ViewRestaurantPageContent({
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {restaurant && (
+          <div className="mt-2">
+            <AdminRestaurantModels restaurantId={id} />
+          </div>
         )}
       </div>
     </main>

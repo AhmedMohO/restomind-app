@@ -1,10 +1,25 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
+import Link from "next/link"
 import { useForm, Controller, useWatch } from "react-hook-form"
-import { Upload, Trash2, Info, Loader2 } from "lucide-react"
+import {
+  Upload,
+  Trash2,
+  Info,
+  Loader2,
+  CreditCard,
+  Calendar,
+  Sparkles,
+  ArrowUpRight,
+  Package,
+  ShieldCheck,
+  CheckCircle2,
+} from "lucide-react"
 import { toast } from "sonner"
+import { useMySubscription } from "@/features/subscription/hooks/use-subscription"
+import { daysUntil } from "@/features/subscription/api/type"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,8 +53,11 @@ interface DashboardProfileContainerProps {
 export function DashboardProfileContainer({
   initialUser,
 }: DashboardProfileContainerProps) {
+  const locale = useLocale()
   const t = useTranslations("Dashboard.account")
   const tVal = useTranslations("Validation")
+
+  const { data: subscription, isLoading: isSubLoading } = useMySubscription()
 
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   // Fetch / sync user data using TanStack Query
@@ -437,6 +455,142 @@ export function DashboardProfileContainer({
                 )}
               </div>
             </div>
+          </div>
+
+          <Separator className="bg-border/60" />
+
+          {/* ---------------- Section 3: Subscription & Plan ---------------- */}
+          <div className="space-y-4">
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+              <div>
+                <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                  {t("subscriptionTitle")}
+                </h3>
+                <p className="mt-0.5 text-xs font-normal text-muted-foreground/90 sm:text-sm">
+                  {t("subscriptionDesc")}
+                </p>
+              </div>
+
+              <Link href={`/${locale}/dashboard/billing`}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-2 rounded-xl border-primary/20 bg-primary/5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 hover:text-primary"
+                >
+                  <CreditCard className="size-4" />
+                  <span>{t("manageBilling")}</span>
+                  <ArrowUpRight className="size-3.5" />
+                </Button>
+              </Link>
+            </div>
+
+            {isSubLoading ? (
+              <div className="flex h-24 items-center justify-center rounded-xl border border-border/50 bg-muted/20">
+                <Loader2 className="size-5 animate-spin text-primary" />
+              </div>
+            ) : subscription ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {/* Current Tier & Status */}
+                <div className="rounded-xl border border-border/60 bg-background/60 p-4 transition-all hover:border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("currentPlan")}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold capitalize ${
+                        subscription.state === "active"
+                          ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : subscription.state === "trial"
+                            ? "border border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400"
+                            : subscription.state === "grace"
+                              ? "border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                              : "border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                      }`}
+                    >
+                      {subscription.state}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Sparkles className="size-4 text-primary" />
+                    <span className="text-lg font-bold capitalize text-foreground">
+                      {subscription.tier ? `${subscription.tier} tier` : "Free Trial"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Renewal / Expiry Date */}
+                <div className="rounded-xl border border-border/60 bg-background/60 p-4 transition-all hover:border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {subscription.state === "trial"
+                        ? t("trialEndsAt")
+                        : t("renewalDate")}
+                    </span>
+                    {(() => {
+                      const dateStr =
+                        subscription.state === "trial"
+                          ? subscription.trialEndsAt
+                          : subscription.currentPeriodEnd
+                      const days = daysUntil(dateStr)
+                      if (days === null) return null
+                      return (
+                        <span className="text-[10px] font-semibold text-primary">
+                          {t("daysRemaining", { days: Math.max(0, days) })}
+                        </span>
+                      )
+                    })()}
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Calendar className="size-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold text-foreground">
+                      {(() => {
+                        const dateStr =
+                          subscription.state === "trial"
+                            ? subscription.trialEndsAt
+                            : subscription.currentPeriodEnd
+                        if (!dateStr) return "—"
+                        try {
+                          return new Date(dateStr).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        } catch {
+                          return dateStr
+                        }
+                      })()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Product Usage */}
+                <div className="rounded-xl border border-border/60 bg-background/60 p-4 transition-all hover:border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("productUsage")}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Package className="size-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold text-foreground">
+                      {subscription.productCap !== null
+                        ? t("productsUsed", {
+                            count: subscription.productCount,
+                            cap: subscription.productCap,
+                          })
+                        : t("unlimitedProducts", {
+                            count: subscription.productCount,
+                          })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-border/50 bg-muted/20 p-4 text-center text-xs text-muted-foreground">
+                {t("noSubscription")}
+              </div>
+            )}
           </div>
 
           <Separator className="bg-border/60" />

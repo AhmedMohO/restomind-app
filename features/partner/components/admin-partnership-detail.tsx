@@ -77,12 +77,12 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-muted-foreground">
-          {t("notFound") || "Partnership application not found."}
+          {t("notFound")}
         </p>
         <div className="flex items-center gap-2">
           <BackButton href="/dashboard/partnership-applications" />
           <Button variant="outline" onClick={() => refetch()} className="rounded-xl">
-            Retry
+            {t("retry")}
           </Button>
         </div>
       </div>
@@ -94,21 +94,18 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
   const handleMarkReview = async () => {
     try {
       await markReviewMutation.mutateAsync(application._id)
-      toast.success(t("reviewSuccess") || "Application marked as Under Review.")
+      toast.success(t("reviewSuccess"))
     } catch (err) {
-      toast.error(getErrorMessage(err, "Failed to update status."))
+      toast.error(getErrorMessage(err, t("updateStatusError")))
     }
   }
 
   const handleApproveConfirm = async () => {
     try {
       await approveMutation.mutateAsync(application._id)
-      toast.success(
-        t("approveSuccess") ||
-          "Application approved! Manager account created and setup email sent."
-      )
+      toast.success(t("approveSuccess"))
     } catch (err) {
-      toast.error(getErrorMessage(err, "Failed to approve application."))
+      toast.error(getErrorMessage(err, t("approveError")))
     } finally {
       setApproveOpen(false)
     }
@@ -116,7 +113,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
 
   const handleRejectConfirm = async () => {
     if (!rejectionReason.trim()) {
-      toast.error("Please provide a rejection reason.")
+      toast.error(t("provideRejectReason"))
       return
     }
     try {
@@ -124,9 +121,9 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
         id: application._id,
         reason: rejectionReason.trim(),
       })
-      toast.success(t("rejectSuccess") || "Application rejected.")
+      toast.success(t("rejectSuccess"))
     } catch (err) {
-      toast.error(getErrorMessage(err, "Failed to reject application."))
+      toast.error(getErrorMessage(err, t("rejectError")))
     } finally {
       setRejectOpen(false)
       setRejectionReason("")
@@ -136,9 +133,9 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
   const handleResendEmail = async () => {
     try {
       await resendEmailMutation.mutateAsync(application._id)
-      toast.success(t("resendSuccess") || "Approval setup email resent.")
+      toast.success(t("resendSuccess"))
     } catch (err) {
-      toast.error(getErrorMessage(err, "Failed to resend email."))
+      toast.error(getErrorMessage(err, t("resendError")))
     }
   }
 
@@ -175,7 +172,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               ) : (
                 <Clock className="size-4" />
               )}
-              <span>Mark Under Review</span>
+              <span>{t("markUnderReview")}</span>
             </Button>
           )}
 
@@ -188,14 +185,14 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
                 className="rounded-xl gap-2 text-destructive border-destructive/20 hover:bg-destructive/10"
               >
                 <XCircle className="size-4" />
-                <span>Reject</span>
+                <span>{t("reject")}</span>
               </Button>
               <Button
                 onClick={() => setApproveOpen(true)}
                 className="rounded-xl gap-2 bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
               >
                 <CheckCircle className="size-4" />
-                <span>Approve Application</span>
+                <span>{t("approveApplication")}</span>
               </Button>
             </>
           )}
@@ -212,7 +209,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               ) : (
                 <Mail className="size-4" />
               )}
-              <span>Resend Setup Email</span>
+              <span>{t("resendSetupEmail")}</span>
             </Button>
           )}
         </div>
@@ -225,23 +222,23 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-bold">
               <Building className="size-4 text-primary" />
-              <span>Business Profile</span>
+              <span>{t("businessProfile")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex justify-between border-b border-border/60 pb-2">
-              <span className="text-muted-foreground">Business Name</span>
+              <span className="text-muted-foreground">{t("businessName")}</span>
               <span className="font-semibold">{application.businessName}</span>
             </div>
             <div className="flex justify-between border-b border-border/60 pb-2">
-              <span className="text-muted-foreground">Business Type</span>
+              <span className="text-muted-foreground">{t("businessType")}</span>
               <span className="capitalize font-medium">{application.businessType}</span>
             </div>
             {application.commercialRegistration && (
               <div className="flex justify-between border-b border-border/60 pb-2">
                 <span className="text-muted-foreground flex items-center gap-1">
                   <FileText className="size-3.5" />
-                  Commercial Reg
+                  {t("commercialReg")}
                 </span>
                 <span className="font-mono text-xs">{application.commercialRegistration}</span>
               </div>
@@ -250,7 +247,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               <div className="flex justify-between border-b border-border/60 pb-2">
                 <span className="text-muted-foreground flex items-center gap-1">
                   <Globe className="size-3.5" />
-                  Social / Website
+                  {t("website")}
                 </span>
                 <a
                   href={application.website}
@@ -266,7 +263,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               <div className="space-y-1 pt-1">
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <MessageSquare className="size-3.5" />
-                  Notes & Special Requests
+                  {t("notes")}
                 </span>
                 <p className="text-xs rounded-xl bg-muted/50 p-2.5 leading-relaxed text-foreground">
                   {application.notes}
@@ -281,32 +278,32 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-bold">
               <User className="size-4 text-primary" />
-              <span>Owner & Contact Details</span>
+              <span>{t("ownerDetails")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex justify-between border-b border-border/60 pb-2">
-              <span className="text-muted-foreground">Owner Name</span>
+              <span className="text-muted-foreground">{t("ownerName")}</span>
               <span className="font-semibold">{ownerFullName}</span>
             </div>
             <div className="flex justify-between border-b border-border/60 pb-2">
               <span className="text-muted-foreground flex items-center gap-1">
                 <Mail className="size-3.5" />
-                Email
+                {t("email")}
               </span>
               <span className="font-medium">{application.email}</span>
             </div>
             <div className="flex justify-between border-b border-border/60 pb-2">
               <span className="text-muted-foreground flex items-center gap-1">
                 <Phone className="size-3.5" />
-                Phone Number
+                {t("phone")}
               </span>
               <span dir="ltr" className="font-mono text-xs">{application.phone}</span>
             </div>
             <div className="flex justify-between border-b border-border/60 pb-2">
               <span className="text-muted-foreground flex items-center gap-1">
                 <MapPin className="size-3.5" />
-                City & District
+                {t("cityDistrict")}
               </span>
               <span>
                 {application.city}
@@ -315,7 +312,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
             </div>
             {application.street && (
               <div className="flex justify-between border-b border-border/60 pb-2">
-                <span className="text-muted-foreground">Street</span>
+                <span className="text-muted-foreground">{t("street")}</span>
                 <span>{application.street}</span>
               </div>
             )}
@@ -327,14 +324,14 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-bold">
               <ShieldCheck className="size-4 text-primary" />
-              <span>Review Audit & Linked Resources</span>
+              <span>{t("reviewAudit")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
             <div className="rounded-xl border border-border p-3 space-y-1 bg-muted/30">
               <span className="text-muted-foreground flex items-center gap-1">
                 <Calendar className="size-3.5" />
-                Submitted At
+                {t("submittedAt")}
               </span>
               <span className="font-semibold text-foreground">
                 {application.createdAt
@@ -346,35 +343,35 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
             <div className="rounded-xl border border-border p-3 space-y-1 bg-muted/30">
               <span className="text-muted-foreground flex items-center gap-1">
                 <Clock className="size-3.5" />
-                Reviewed By
+                {t("reviewedBy")}
               </span>
               <span className="font-semibold text-foreground">
                 {application.reviewedBy
                   ? `${application.reviewedBy.firstName || ""} ${
                       application.reviewedBy.lastName || ""
                     }`.trim() || application.reviewedBy.email
-                  : "Not reviewed yet"}
+                  : t("notReviewedYet")}
               </span>
             </div>
 
             <div className="rounded-xl border border-border p-3 space-y-1 bg-muted/30">
               <span className="text-muted-foreground flex items-center gap-1">
                 <CheckCircle className="size-3.5" />
-                Approved By
+                {t("approvedBy")}
               </span>
               <span className="font-semibold text-foreground">
                 {application.approvedBy
                   ? `${application.approvedBy.firstName || ""} ${
                       application.approvedBy.lastName || ""
                     }`.trim() || application.approvedBy.email
-                  : "Not approved yet"}
+                  : t("notApprovedYet")}
               </span>
             </div>
 
             <div className="rounded-xl border border-border p-3 space-y-1 bg-muted/30">
               <span className="text-muted-foreground flex items-center gap-1">
                 <Store className="size-3.5" />
-                Created Restaurant ID
+                {t("createdRestaurantId")}
               </span>
               <span className="font-mono truncate font-semibold text-foreground">
                 {application.restaurantId
@@ -392,10 +389,13 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
       <ConfirmDialog
         open={approveOpen}
         onOpenChange={setApproveOpen}
-        title="Approve Partnership Application?"
-        description={`Are you sure you want to approve "${application.businessName}"? This will automatically create a Manager User and Restaurant entity in the system and email an activation setup link to ${application.email}.`}
-        confirmText="Approve & Send Setup Link"
-        cancelText="Cancel"
+        title={t("approveModalTitle")}
+        description={t("approveModalDesc", {
+          name: application.businessName,
+          email: application.email,
+        })}
+        confirmText={t("approveModalConfirm")}
+        cancelText={t("cancel")}
         variant="default"
         onConfirm={handleApproveConfirm}
       />
@@ -404,22 +404,25 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent className="rounded-2xl max-w-md">
           <DialogHeader>
-            <DialogTitle>Reject Application</DialogTitle>
+            <DialogTitle>{t("rejectModalTitle")}</DialogTitle>
             <DialogDescription>
-              Provide a reason for rejecting &quot;{application.businessName}&quot;. This reason will be emailed to {application.email}.
+              {t("rejectModalDesc", {
+                name: application.businessName,
+                email: application.email,
+              })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2 py-2">
             <Label htmlFor="reject-reason-detail" className="text-xs font-semibold">
-              Rejection Reason *
+              {t("rejectionReasonLabel")}
             </Label>
             <Textarea
               id="reject-reason-detail"
               rows={4}
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Enter rejection reason..."
+              placeholder={t("rejectionReasonPlaceholder")}
               className="rounded-xl text-sm"
             />
           </div>
@@ -433,7 +436,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               }}
               className="rounded-xl"
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -444,7 +447,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               {rejectMutation.isPending && (
                 <Loader2 className="size-4 animate-spin" />
               )}
-              <span>Reject Application</span>
+              <span>{t("reject")}</span>
             </Button>
           </DialogFooter>
         </DialogContent>

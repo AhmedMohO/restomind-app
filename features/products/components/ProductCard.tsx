@@ -17,7 +17,8 @@ interface ProductCardProps {
 export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const locale = useLocale()
   const { addToCart, toggleWishlist, wishlist } = useCart()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user, hasAnyRole } = useAuth()
+  const isManagementRole = Boolean(user && hasAnyRole(["admin", "staff", "manager"]))
   const router = useRouter()
   const [added, setAdded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -99,26 +100,28 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
             )}
           </div>
           {/* Wishlist Toggle Button */}
-          <button
-            onClick={handleToggleWishlist}
-            disabled={isTogglingWishlist}
-            className={cn(
-              "absolute end-3 top-3 z-20 cursor-pointer rounded-full border bg-white/95 p-2 shadow-sm backdrop-blur-xs transition-all hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:opacity-75 dark:border-neutral-800 dark:bg-neutral-900/95",
-              isFavorite
-                ? "border-rose-100 text-rose-500 hover:bg-rose-50 dark:border-rose-950 dark:hover:bg-rose-950/20"
-                : "dark:hover:bg-neutral-850 border-[#ECE6DB] text-muted-foreground hover:bg-neutral-50 dark:border-neutral-800"
-            )}
-            title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
-          >
-            {isTogglingWishlist ? (
-              <Loader2 size={14} className="animate-spin text-rose-500" />
-            ) : (
-              <Heart
-                size={14}
-                className={isFavorite ? "fill-current text-rose-500" : ""}
-              />
-            )}
-          </button>
+          {!isManagementRole && (
+            <button
+              onClick={handleToggleWishlist}
+              disabled={isTogglingWishlist}
+              className={cn(
+                "absolute end-3 top-3 z-20 cursor-pointer rounded-full border bg-white/95 p-2 shadow-sm backdrop-blur-xs transition-all hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:opacity-75 dark:border-neutral-800 dark:bg-neutral-900/95",
+                isFavorite
+                  ? "border-rose-100 text-rose-500 hover:bg-rose-50 dark:border-rose-950 dark:hover:bg-rose-950/20"
+                  : "dark:hover:bg-neutral-850 border-[#ECE6DB] text-muted-foreground hover:bg-neutral-50 dark:border-neutral-800"
+              )}
+              title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              {isTogglingWishlist ? (
+                <Loader2 size={14} className="animate-spin text-rose-500" />
+              ) : (
+                <Heart
+                  size={14}
+                  className={isFavorite ? "fill-current text-rose-500" : ""}
+                />
+              )}
+            </button>
+          )}
         </div>
 
         {/* Info Area (with padding) */}
@@ -167,27 +170,29 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
       </Link>
 
       {/* Action Button (with padding) */}
-      <div className="p-4 pt-3">
-        <button
-          onClick={handleAddToCart}
-          disabled={!product.isAvailable || isAddingToCart}
-          className={cn(
-            "flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full py-2.5 font-sans text-sm font-semibold shadow-sm transition-all active:translate-y-px disabled:pointer-events-none disabled:opacity-75",
-            product.isAvailable
-              ? added
-                ? "bg-[#529E66] text-white hover:bg-[#438353]"
-                : "bg-[#7C4A27] text-white hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
-              : "cursor-not-allowed bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
-          )}
-        >
-          {isAddingToCart ? (
-            <Loader2 size={16} className="animate-spin" />
-          ) : (
-            <Plus size={16} />
-          )}
-          <span>{added ? t("added") : t("addToCart")}</span>
-        </button>
-      </div>
+      {!isManagementRole && (
+        <div className="p-4 pt-3">
+          <button
+            onClick={handleAddToCart}
+            disabled={!product.isAvailable || isAddingToCart}
+            className={cn(
+              "flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full py-2.5 font-sans text-sm font-semibold shadow-sm transition-all active:translate-y-px disabled:pointer-events-none disabled:opacity-75",
+              product.isAvailable
+                ? added
+                  ? "bg-[#529E66] text-white hover:bg-[#438353]"
+                  : "bg-[#7C4A27] text-white hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
+                : "cursor-not-allowed bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
+            )}
+          >
+            {isAddingToCart ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Plus size={16} />
+            )}
+            <span>{added ? t("added") : t("addToCart")}</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

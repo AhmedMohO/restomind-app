@@ -2,8 +2,9 @@
 
 import Image from "next/image"
 import { useTranslations } from "next-intl"
-import { Plus, Minus, Trash2, ShoppingBag } from "lucide-react"
+import { Plus, Minus, Trash2, ShoppingBag, Store } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
+import { getCartItemRestaurantName } from "@/features/cart/utils"
 import { cn } from "@/lib/utils"
 import { Link } from "@/i18n/routing"
 
@@ -55,6 +56,7 @@ export default function OrderSummary({ deliveryFee }: OrderSummaryProps) {
         {cart.map((item) => {
           const productObj = item.offer.productId
           const itemTitle = productObj?.title || ""
+          const restaurantName = getCartItemRestaurantName(item)
           const itemImage = productObj?.image?.secure_url || "/placeholder.svg"
           const originalPrice =
             item.unitOriginalPrice ?? item.offer.originalPrice ?? 0
@@ -79,9 +81,17 @@ export default function OrderSummary({ deliveryFee }: OrderSummaryProps) {
               {/* Product Info & Controls */}
               <div className="min-w-0 flex-1 space-y-1.5 text-start">
                 <div className="flex items-center justify-between pe-1">
-                  <p className="truncate text-sm font-semibold text-foreground">
-                    {itemTitle}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {itemTitle}
+                    </p>
+                    {restaurantName && (
+                      <p className="truncate text-xs text-muted-foreground flex items-center gap-1 font-medium mt-0.5">
+                        <Store className="size-3 shrink-0 text-primary/80" />
+                        <span className="truncate">{restaurantName}</span>
+                      </p>
+                    )}
+                  </div>
                   <button
                     onClick={() => removeFromCart(item.offer._id)}
                     className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"

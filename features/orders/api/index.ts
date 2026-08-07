@@ -31,12 +31,17 @@ const MY_ORDERS_PAGE_SIZE = 50
  */
 export async function createOrder(
   payload: CreateOrderPayload
-): Promise<{ data: ApiOrderGroup | ApiOrderGroup[] }> {
+): Promise<{ data: ApiOrderGroup | ApiOrderGroup[]; checkoutUrl?: string }> {
   const response = await apiClient("/orders", {
     method: "POST",
     body: JSON.stringify(payload),
   })
-  return parseOrThrow<{ data: ApiOrderGroup | ApiOrderGroup[] }>(response, "createOrder")
+  // `checkoutUrl` is present only for online payment methods — the API omits
+  // it entirely for Cash on Delivery.
+  return parseOrThrow<{
+    data: ApiOrderGroup | ApiOrderGroup[]
+    checkoutUrl?: string
+  }>(response, "createOrder")
 }
 
 /** GET /orders — paginated customer order history (customer only). */

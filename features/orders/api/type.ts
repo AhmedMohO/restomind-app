@@ -1,5 +1,13 @@
 import type { ApiOrderUser } from "./dashboard-types"
 
+/**
+ * Mirrors the API's OrderStatusEnum in full.
+ *
+ * The payment-lifecycle and refund statuses were missing here, so TypeScript
+ * could not warn that the UI had no branch for them — an "Awaiting Payment"
+ * order silently rendered as "Pending" and offered no cancel button. These are
+ * not settable by staff; see STATUS_ORDER in ../status.ts for that list.
+ */
 export type OrderStatus =
   | "Pending"
   | "Confirmed"
@@ -8,6 +16,10 @@ export type OrderStatus =
   | "Out For Delivery"
   | "Delivered"
   | "Cancelled"
+  | "Awaiting Payment"
+  | "Payment Failed"
+  | "Refunded"
+  | "Partially Refunded"
 
 /** Aggregate status shown on a group when its sub-orders don't all match. */
 export type OverallOrderStatus =
@@ -20,7 +32,7 @@ export type OverallOrderStatus =
 export type DeliveryMethod = "Home Delivery" | "Store Pickup"
 
 /** Payment methods returned by the API (only COD can be submitted today). */
-export type PaymentMethod = "Cash on Delivery" | "Credit / Debit Card"
+export type PaymentMethod = "Cash on Delivery" | "Card" | "Wallet"
 
 export interface ApiDeliveryAddress {
   addressId?: string
@@ -117,7 +129,7 @@ export interface CreateOrderPayload {
   deliveryMethod: DeliveryMethod
   deliveryAddress?: CreateOrderAddress
   specialNotes?: string
-  paymentMethod: Extract<PaymentMethod, "Cash on Delivery">
+  paymentMethod: PaymentMethod
   /** Persist a raw address to the customer's saved addresses. */
   saveAddress?: boolean
 }

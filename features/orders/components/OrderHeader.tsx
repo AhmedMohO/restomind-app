@@ -45,10 +45,15 @@ export default function OrderHeader({
         )
       : 0
 
+  // "Awaiting Payment" holds reserved stock against a payment that may never
+  // arrive. The backend already treats it as freely cancellable (nothing was
+  // ever committed); omitting it here left the customer staring at an order he
+  // could neither pay for nor get rid of until the sweeper expired it.
   const isCancellable =
     showCancelButton &&
     (overallStatus === "Pending" ||
-      overallStatus === "Confirmed")
+      overallStatus === "Confirmed" ||
+      overallStatus === "Awaiting Payment")
 
 
   const handleConfirmCancel = async () => {
