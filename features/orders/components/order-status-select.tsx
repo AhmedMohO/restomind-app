@@ -43,7 +43,11 @@ export function OrderStatusSelect({
   return (
     <Select
       value={value}
-      onValueChange={(next) => onChange(next as OrderStatus)}
+      onValueChange={(next) => {
+        if (next && next !== value) {
+          onChange(next as OrderStatus)
+        }
+      }}
       disabled={isControlDisabled}
     >
       <SelectTrigger

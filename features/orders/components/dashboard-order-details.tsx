@@ -46,8 +46,8 @@ export function DashboardOrderDetails({
 
   const handleStatusChange = React.useCallback(
     async (order: ApiGroupSubOrder | ApiChildOrder, status: OrderStatus) => {
+      if (!status || status === order.status) return
       const id = subOrderId(order)
-      if (status === order.status) return
 
       setUpdatingId(id)
       try {

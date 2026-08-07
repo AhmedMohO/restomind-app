@@ -119,6 +119,7 @@ export function useUpdateOrderStatus() {
 
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
+      if (!status) throw new Error("Order status is required")
       const data = await clientFetch<ApiChildOrder>(
         `/orders/${encodeURIComponent(id)}/status`,
         { method: "PATCH", body: { status } }
