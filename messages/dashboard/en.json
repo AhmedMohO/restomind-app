@@ -1612,5 +1612,52 @@
     "typeNewOrder": "New Order Placed",
     "typePartnership": "Partnership Application",
     "typeGeneral": "System Notification"
+  },
+  "assistant": {
+    "title": "RestoMind AI Assistant",
+    "status": "Online · Bedrock active",
+    "open": "Open the AI assistant",
+    "collapse": "Collapse the assistant",
+    "clear": "Start a new conversation",
+    "send": "Send",
+    "placeholder": "Ask about sales, stock, waste…",
+    "empty": "Ask me anything about your restaurant, or pick a suggestion below.",
+    "thinking": "Thinking",
+    "suggestionsHeading": "Please pick one of the following",
+    "suggestions": [
+      "Offers and discounts",
+      "Daily sales analysis",
+      "Waste and spoilage forecast",
+      "New purchase order",
+      "Stock expiring soon"
+    ],
+    "recommendations": {
+      "heading": "Suggested actions",
+      "apply": "Apply now",
+      "previous": "Previous recommendation",
+      "next": "Next recommendation",
+      "goTo": "Go to recommendation {index}",
+      "saving": "Saves ~{amount}",
+      "priority": {
+        "HIGH": "High priority",
+        "MEDIUM": "Medium priority",
+        "LOW": "Low priority"
+      }
+    },
+    "approval": {
+      "title": "Needs your approval before it runs",
+      "approve": "Approve",
+      "reject": "Cancel"
+    },
+    "action": {
+      "executed": "Action completed",
+      "executedNote": "Done — I've applied that for you.",
+      "rejected": "Action cancelled"
+    },
+    "errors": {
+      "send": "Could not reach the assistant",
+      "rateLimited": "Too many requests — give it a moment and try again.",
+      "action": "Could not run the action"
+    }
   }
 }

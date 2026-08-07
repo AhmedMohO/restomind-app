@@ -4,6 +4,7 @@ import ProtectedRoute from "@/features/auth/components/ProtectedRoute"
 import { routing } from "@/i18n/routing"
 import { setRequestLocale } from "next-intl/server"
 import AppSidebar from "@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar"
+import { AssistantWidget } from "@/features/assistant/components/assistant-widget"
 import SubscriptionGate from "@/features/subscription/components/SubscriptionGate"
 import {
   getMySubscription,
@@ -51,6 +52,8 @@ export default async function DashboardLayout({
               future — is covered without per-page work. */}
           <SubscriptionGate locale={safeLocale}>{children}</SubscriptionGate>
         </AppSidebar>
+        {/* Fixed-position, so it floats over every dashboard page. */}
+        <AssistantWidget />
       </ProtectedRoute>
     </Suspense>
   )

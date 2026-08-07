@@ -306,11 +306,6 @@ export function PlansPanel() {
               {t("emptyDescription")}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 pt-4">
-            <code className="rounded-lg border bg-muted px-3 py-1.5 font-mono text-xs text-foreground">
-              npm run seed:subscription-plans -- --apply
-            </code>
-          </CardContent>
         </Card>
       )}
 
