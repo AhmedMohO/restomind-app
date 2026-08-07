@@ -35,7 +35,8 @@
     "partnershipApplications": "Partnership Applications",
     "refunds": "Refunds",
     "platformSettings": "Platform Settings",
-    "subscriptionPlans": "Subscription Plans"
+    "subscriptionPlans": "Subscription Plans",
+    "payouts": "Payouts"
   },
   "restaurant": {
     "pageTitle": "Restaurant Profile",
@@ -134,7 +135,30 @@
     "rowsPerPage": "Rows per page:",
     "backToList": "Back to List",
     "restaurantDetails": "Restaurant Details",
-    "pageOf": "Page {page} of {totalPages}"
+    "pageOf": "Page {page} of {totalPages}",
+    "colCommission": "Commission",
+    "defaultRate": "default",
+    "terms": {
+      "title": "Commission & payout details",
+      "commission": "Commission override (%)",
+      "commissionPlaceholder": "Platform default: {percent}%",
+      "commissionEmpty": "Platform default",
+      "commissionHint": "Leave empty to use the platform default. Applies to future orders only.",
+      "commissionInvalid": "Enter a percentage between 0 and 100.",
+      "payoutDestination": "Payout destination",
+      "method": "Method",
+      "bank": "Bank transfer",
+      "wallet": "Mobile wallet",
+      "accountName": "Account holder name",
+      "iban": "IBAN / account number",
+      "walletNumber": "Wallet number",
+      "bankName": "Bank name",
+      "payoutHint": "Without these details payouts to this merchant are blocked, even when a balance is owed.",
+      "destinationIncomplete": "Both the account holder and the account number are required.",
+      "save": "Save",
+      "saved": "Commercial terms updated.",
+      "saveError": "Could not save these details."
+    }
   },
   "orders": {
     "adminTitle": "Orders Management",
@@ -198,7 +222,8 @@
     "restaurantTitle": "Restaurant Orders",
     "restaurantSubtitle": "View and update your restaurant's orders",
     "completionTitle": "Order completion",
-    "completionSubtitle": "Delivered orders out of the total matching your filters"
+    "completionSubtitle": "Delivered orders out of the total matching your filters",
+    "issueRefund": "Refund"
   },
   "account": {
     "pageTitle": "Account Settings",
@@ -453,7 +478,26 @@
     "justNow": "just now",
     "minsAgo": "{count}m ago",
     "hoursAgo": "{count}h ago",
-    "daysAgo": "{count}d ago"
+    "daysAgo": "{count}d ago",
+    "kpiGmv": "Marketplace Volume (GMV)",
+    "kpiGmvSub": "What customers paid merchants — not RestoMind revenue",
+    "kpiPlatformRevenue": "RestoMind Revenue",
+    "kpiPlatformRevenueSub": "{commission} commission + {subscriptions} subscriptions",
+    "kpiNetAfterCommission": "Your Net After Commission",
+    "kpiNetAfterCommissionSub": "{commission} commission at {rate}% — see Payouts for the payable balance",
+    "kpiRestaurantsSubscribed": "{paid} paying · {trial} on trial",
+    "platformTitle": "Platform Revenue & Obligations",
+    "platformSubtitle": "What RestoMind earns, and what it still owes",
+    "platformCommission": "Commission earned",
+    "platformCommissionHint": "{net} kept · {vat} VAT payable onward",
+    "platformSubscriptions": "Subscription revenue",
+    "platformSubscriptionsHint": "{paid} merchants paying · {trial} on trial",
+    "platformPayoutsPending": "Payouts pending",
+    "platformPayoutsPendingHint": "{count} transfer(s) awaiting confirmation · {completed} settled this period",
+    "platformRefunded": "Refunded to customers",
+    "platformRefundedHint": "{count} refund(s) still open",
+    "platformByPlan": "Subscription revenue by plan",
+    "platformByPlanEmpty": "No subscription payments settled in this period."
   },
   "products": {
     "adminTitle": "Products Management",
@@ -1267,6 +1311,14 @@
       "description": "No refund requests have been submitted yet.",
       "noMatch": "No refund requests match your current search or status filter.",
       "resetFilters": "Reset Filters"
+    },
+    "issue": {
+      "title": "Issue a refund",
+      "description": "Refunds the whole order group back to the customer.",
+      "descriptionWithRef": "Refunds order #{reference} back to the customer, in full.",
+      "reasonPlaceholder": "Why is this being refunded?",
+      "hint": "Only support can issue refunds. The commission on the refunded amount is reversed automatically on the merchant's next statement.",
+      "confirm": "Issue refund"
     }
   },
   "systemSettings": {
@@ -1295,7 +1347,12 @@
     "seatsGone": "All seats are taken. New merchants now pay the standard price.",
     "grantHint": "To grant or withdraw the early-bird price for one specific merchant, open that restaurant and use the early-bird control there. Manual grants are included in the count above.",
     "earlyBirdDiscount": "Early-bird discount",
-    "earlyBirdDiscountHint": "Percent off, applied to every plan and every billing interval. 33.3333 reproduces the original early-bird prices exactly."
+    "earlyBirdDiscountHint": "Percent off, applied to every plan and every billing interval. 33.3333 reproduces the original early-bird prices exactly.",
+    "commissionTitle": "Marketplace Commission",
+    "commissionDescription": "What RestoMind charges on each marketplace order",
+    "commissionRate": "Default commission (%)",
+    "commissionRateHint": "Applied to any restaurant without its own negotiated rate. VAT-inclusive.",
+    "commissionOverrideHint": "Changing this prices orders placed afterwards only — every existing order keeps the rate it was sold under. To set a different rate for one merchant, use the commission action on the Restaurants page."
   },
   "plans": {
     "title": "Subscription Plans",
@@ -1365,5 +1422,107 @@
     "deleted": "Plan deleted successfully",
     "emptyTitle": "No subscription plans yet",
     "emptyDescription": "Merchants cannot subscribe until at least one plan exists. Create your first plan or seed defaults using:"
+  },
+  "payouts": {
+    "title": "Payouts & Earnings",
+    "subtitle": "What you keep after RestoMind's commission, and every transfer we have made to you",
+    "subtitleAdmin": "Read a merchant's balance, settle it, and post corrections",
+    "loadError": "We could not load your statement right now. Please try again.",
+    "period": {
+      "label": "Statement period"
+    },
+    "totals": {
+      "gross": "Collected from customers",
+      "grossHint": "Online orders only — cash on delivery is money you already hold",
+      "commission": "RestoMind commission",
+      "commissionHint": "Deducted from your sales",
+      "commissionRate": "{rate}% effective this period",
+      "vatOf": "incl. {vat} VAT",
+      "net": "Your net payout",
+      "owedByYou": "Owed back to RestoMind",
+      "netHint": "After commission, refunds and adjustments"
+    },
+    "decision": {
+      "pay": "Ready to transfer to you",
+      "collect": "Balance owed back to RestoMind",
+      "carry": "Below the minimum — carried to the next statement",
+      "blocked": "Add your bank details so we can pay you"
+    },
+    "exceptions": {
+      "title": "{count} item(s) need attention",
+      "subtitle": "These are held out of the balance above until they are resolved.",
+      "kind": {
+        "delivered_unpaid": "Delivered, unpaid",
+        "paid_undelivered": "Paid, not delivered",
+        "refund_stuck": "Refund stuck"
+      }
+    },
+    "lines": {
+      "kind": "Movement",
+      "date": "Date",
+      "gross": "Collected",
+      "commission": "Commission",
+      "net": "Your share",
+      "emptyTitle": "Nothing to settle yet",
+      "emptyDescription": "Delivered orders appear here once the 7-day hold has passed.",
+      "kinds": {
+        "sale": "Sale",
+        "refund": "Refund",
+        "adjustment": "Adjustment"
+      }
+    },
+    "history": {
+      "title": "Past payouts",
+      "period": "Period",
+      "amount": "Amount",
+      "status": "Status",
+      "reference": "Reference",
+      "actions": "Actions",
+      "confirm": "Confirm transfer",
+      "emptyTitle": "No payouts yet",
+      "emptyDescription": "Once a statement is settled it is listed here with its bank reference.",
+      "statuses": {
+        "pending": "Pending",
+        "completed": "Paid",
+        "failed": "Failed"
+      },
+      "direction": {
+        "to_merchant": "Paid to you",
+        "from_merchant": "Collected from you"
+      }
+    },
+    "admin": {
+      "selectMerchant": "Merchant",
+      "pickTitle": "Pick a merchant",
+      "pickDescription": "Choose a restaurant to see what it is owed and settle the balance.",
+      "loadError": "We could not load this merchant's statement.",
+      "recordPayout": "Record payout",
+      "recordCollection": "Record collection",
+      "newAdjustment": "New adjustment",
+      "recordPayoutTitle": "Record this transfer",
+      "recordPayoutDesc": "Creates a pending payout. Confirm it separately once the bank transfer lands.",
+      "amountToTransfer": "Amount",
+      "reference": "Bank reference",
+      "referencePlaceholder": "e.g. CIB-TRF-2026-1042",
+      "confirmRecord": "Record as pending",
+      "completeTitle": "Confirm or fail this transfer",
+      "completeDesc": "Only a landed transfer advances the merchant's paid-through date.",
+      "failureReason": "Failure reason",
+      "failureReasonPlaceholder": "e.g. Invalid IBAN",
+      "failureHint": "Filling this in marks the payout failed and returns its orders to the next statement.",
+      "markPaid": "Mark as paid",
+      "markFailed": "Mark as failed",
+      "cancel": "Cancel"
+    },
+    "adjust": {
+      "title": "Merchant adjustment",
+      "description": "A signed correction with no order behind it — a late chargeback, a goodwill credit, or a settlement fix.",
+      "amount": "Amount (EGP)",
+      "amountHint": "Positive credits the merchant, negative debits them. Cannot be dated into a settled period.",
+      "reason": "Reason",
+      "reasonPlaceholder": "e.g. Chargeback on order #4F2A received after payout",
+      "invalidAmount": "Enter a non-zero amount.",
+      "confirm": "Record adjustment"
+    }
   }
 }

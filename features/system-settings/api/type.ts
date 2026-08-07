@@ -23,6 +23,17 @@ export interface SystemSettings {
   /** Seats held, however they were granted — automatically or by an admin. */
   earlyBirdClaimed: number
   earlyBirdSeatsLeft: number
+  /**
+   * Marketplace commission for a restaurant with no negotiated rate of its own.
+   *
+   * A FRACTION, not a percent: 0.05 is 5%. It matches the unit stored on the
+   * restaurant and snapshotted on every order, so the server never converts —
+   * the ×100 happens once, in the input that edits it.
+   *
+   * Changing it prices orders created afterwards. Existing orders keep the rate
+   * they were sold under.
+   */
+  defaultCommissionRate: number
 }
 
 /** Every field optional: flipping one switch sends only that switch. */
@@ -34,5 +45,6 @@ export type SystemSettingsUpdate = Partial<
     | "earlyBirdEnabled"
     | "earlyBirdCap"
     | "earlyBirdDiscountPercent"
+    | "defaultCommissionRate"
   >
 >

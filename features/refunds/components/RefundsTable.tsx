@@ -63,6 +63,13 @@ import { formatDate, formatCurrency } from "@/lib/utils"
 
 interface RefundsTableProps {
   refunds: ApiRefund[]
+  /**
+   * Whether the viewer may act on a refund. Admin only — reviewing is what
+   * moves the money, and the API rejects every other role. A merchant still
+   * sees the list, because refunds against their orders change what they are
+   * paid; they just cannot approve or reject one.
+   */
+  canReview?: boolean
 }
 
 const STATUS_CONFIG: Record<
@@ -117,7 +124,10 @@ const STATUS_CONFIG: Record<
   },
 }
 
-export default function RefundsTable({ refunds }: RefundsTableProps) {
+export default function RefundsTable({
+  refunds,
+  canReview = false,
+}: RefundsTableProps) {
   const t = useTranslations("Dashboard.refunds")
   const locale = useLocale()
 
@@ -659,7 +669,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-end gap-1.5">
-                        {refund.status === "requested" ? (
+                        {canReview && refund.status === "requested" ? (
                           <>
                             <Button
                               size="sm"
@@ -894,7 +904,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
           )}
 
           <DialogFooter className="gap-2">
-            {detailsRefund?.status === "requested" && (
+            {canReview && detailsRefund?.status === "requested" && (
               <>
                 <Button
                   size="sm"

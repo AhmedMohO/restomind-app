@@ -35,7 +35,8 @@
     "partnershipApplications": "طلبات الشراكة",
     "refunds": "المستردات",
     "platformSettings": "إعدادات المنصة",
-    "subscriptionPlans": "خطط الاشتراك"
+    "subscriptionPlans": "خطط الاشتراك",
+    "payouts": "التحويلات"
   },
   "restaurant": {
     "pageTitle": "إدارة المطعم",
@@ -134,7 +135,30 @@
     "rowsPerPage": "عدد الصفوف في الصفحة:",
     "backToList": "العودة للقائمة",
     "restaurantDetails": "تفاصيل المطعم",
-    "pageOf": "الصفحة {page} من {totalPages}"
+    "pageOf": "الصفحة {page} من {totalPages}",
+    "colCommission": "العمولة",
+    "defaultRate": "افتراضية",
+    "terms": {
+      "title": "العمولة وبيانات التحويل",
+      "commission": "نسبة عمولة خاصة (%)",
+      "commissionPlaceholder": "الافتراضي للمنصة: {percent}%",
+      "commissionEmpty": "الافتراضي للمنصة",
+      "commissionHint": "اتركه فارغاً لاستخدام النسبة الافتراضية للمنصة. يسري على الطلبات المستقبلية فقط.",
+      "commissionInvalid": "أدخل نسبة بين 0 و100.",
+      "payoutDestination": "وجهة التحويل",
+      "method": "الوسيلة",
+      "bank": "تحويل بنكي",
+      "wallet": "محفظة إلكترونية",
+      "accountName": "اسم صاحب الحساب",
+      "iban": "الآيبان / رقم الحساب",
+      "walletNumber": "رقم المحفظة",
+      "bankName": "اسم البنك",
+      "payoutHint": "بدون هذه البيانات تُحجب التحويلات لهذا التاجر حتى لو كان له رصيد مستحق.",
+      "destinationIncomplete": "اسم صاحب الحساب ورقم الحساب كلاهما مطلوب.",
+      "save": "حفظ",
+      "saved": "تم تحديث الشروط التجارية.",
+      "saveError": "تعذّر حفظ هذه البيانات."
+    }
   },
   "orders": {
     "adminTitle": "إدارة الطلبات",
@@ -181,7 +205,7 @@
     "colTotal": "الإجمالي",
     "colDelivery": "التوصيل",
     "colCreatedAt": "تاريخ الإنشاء",
-    "colActions": "الإجراءات",
+    "colActions": "إجراءات",
     "viewDetails": "عرض التفاصيل",
     "statusUpdateSuccess": "تم تحديث حالة الطلب بنجاح!",
     "statusUpdateError": "فشل تحديث حالة الطلب",
@@ -198,7 +222,8 @@
     "restaurantTitle": "طلبات المطعم",
     "restaurantSubtitle": "عرض وتحديث طلبات مطعمك",
     "completionTitle": "اكتمال الطلبات",
-    "completionSubtitle": "الطلبات التي تم تسليمها من إجمالي الطلبات المطابقة للفلاتر"
+    "completionSubtitle": "الطلبات التي تم تسليمها من إجمالي الطلبات المطابقة للفلاتر",
+    "issueRefund": "استرداد"
   },
   "account": {
     "pageTitle": "إعدادات الحساب",
@@ -453,7 +478,26 @@
     "justNow": "الآن",
     "minsAgo": "منذ {count} د",
     "hoursAgo": "منذ {count} س",
-    "daysAgo": "منذ {count} يوم"
+    "daysAgo": "منذ {count} يوم",
+    "kpiGmv": "حجم مبيعات السوق (GMV)",
+    "kpiGmvSub": "ما دفعه العملاء للمطاعم — وليس إيراد ريستومايند",
+    "kpiPlatformRevenue": "إيراد ريستومايند",
+    "kpiPlatformRevenueSub": "{commission} عمولة + {subscriptions} اشتراكات",
+    "kpiNetAfterCommission": "صافيك بعد العمولة",
+    "kpiNetAfterCommissionSub": "{commission} عمولة بنسبة {rate}% — راجع التحويلات لمعرفة الرصيد المستحق",
+    "kpiRestaurantsSubscribed": "{paid} مشترك · {trial} في فترة تجريبية",
+    "platformTitle": "إيرادات المنصة والتزاماتها",
+    "platformSubtitle": "ما تكسبه ريستومايند وما لا يزال مستحقاً عليها",
+    "platformCommission": "العمولة المُحققة",
+    "platformCommissionHint": "{net} محتفظ بها · {vat} ضريبة قيمة مضافة مستحقة التوريد",
+    "platformSubscriptions": "إيراد الاشتراكات",
+    "platformSubscriptionsHint": "{paid} مطعم مشترك · {trial} في فترة تجريبية",
+    "platformPayoutsPending": "تحويلات قيد التنفيذ",
+    "platformPayoutsPendingHint": "{count} تحويل بانتظار التأكيد · {completed} تمت تسويتها هذه الفترة",
+    "platformRefunded": "مبالغ مُردّة للعملاء",
+    "platformRefundedHint": "{count} مرتجع لا يزال مفتوحاً",
+    "platformByPlan": "إيراد الاشتراكات حسب الباقة",
+    "platformByPlanEmpty": "لا توجد مدفوعات اشتراك مُسوّاة في هذه الفترة."
   },
   "products": {
     "adminTitle": "إدارة المنتجات",
@@ -1267,6 +1311,14 @@
       "description": "لم يتم تقديم أي طلبات استرداد بعد.",
       "noMatch": "لا توجد طلبات استرداد تطابق كلمة البحث أو الحالة المحددة.",
       "resetFilters": "إعادة ضبط التصفية"
+    },
+    "issue": {
+      "title": "تنفيذ استرداد",
+      "description": "يُعيد قيمة مجموعة الطلب بالكامل إلى العميل.",
+      "descriptionWithRef": "يُعيد قيمة الطلب ‎#{reference} بالكامل إلى العميل.",
+      "reasonPlaceholder": "ما سبب الاسترداد؟",
+      "hint": "الدعم وحده من يستطيع تنفيذ الاسترداد. تُعكس عمولة المبلغ المُسترد تلقائياً في كشف حساب التاجر التالي.",
+      "confirm": "تنفيذ الاسترداد"
     }
   },
   "systemSettings": {
@@ -1295,7 +1347,12 @@
     "seatsGone": "نفدت كل المقاعد. التجار الجدد يدفعون السعر العادي الآن.",
     "grantHint": "لمنح أو سحب سعر المشتركين الأوائل لتاجر بعينه، افتح صفحة المطعم واستخدم عنصر التحكم هناك. المنح اليدوي محسوب ضمن العدد أعلاه.",
     "earlyBirdDiscount": "خصم المشتركين الأوائل",
-    "earlyBirdDiscountHint": "نسبة الخصم، وتُطبَّق على كل خطة وكل فترة فوترة. القيمة 33.3333 تعيد أسعار المشتركين الأوائل الأصلية تمامًا."
+    "earlyBirdDiscountHint": "نسبة الخصم، وتُطبَّق على كل خطة وكل فترة فوترة. القيمة 33.3333 تعيد أسعار المشتركين الأوائل الأصلية تمامًا.",
+    "commissionTitle": "عمولة السوق",
+    "commissionDescription": "ما تتقاضاه ريستومايند على كل طلب في السوق",
+    "commissionRate": "العمولة الافتراضية (%)",
+    "commissionRateHint": "تُطبَّق على أي مطعم بلا نسبة متفق عليها خاصة به. شاملة ضريبة القيمة المضافة.",
+    "commissionOverrideHint": "تغيير هذه النسبة يسري على الطلبات اللاحقة فقط — كل طلب قائم يحتفظ بالنسبة التي بيع بها. لتحديد نسبة مختلفة لمطعم بعينه، استخدم إجراء العمولة في صفحة المطاعم."
   },
   "plans": {
     "title": "خطط الاشتراك",
@@ -1366,5 +1423,107 @@
     "deleted": "تم حذف الخطة بنجاح",
     "emptyTitle": "لا توجد خطط اشتراك حالياً",
     "emptyDescription": "لن تتمكن المطاعم من الاشتراك في المنصة حتى يتم إنشاء خطة واحدة على الأقل. يمكنك إضافة الخطة الأولى أو بذر الخطط الأساسية عبر:"
+  },
+  "payouts": {
+    "title": "التحويلات والأرباح",
+    "subtitle": "ما تحصل عليه بعد عمولة ريستومايند، وكل تحويل قمنا بإرساله إليك",
+    "subtitleAdmin": "اطّلع على رصيد التاجر، وسدّده، وسجّل التسويات",
+    "loadError": "تعذّر تحميل كشف الحساب حالياً. برجاء المحاولة مرة أخرى.",
+    "period": {
+      "label": "فترة الكشف"
+    },
+    "totals": {
+      "gross": "المُحصَّل من العملاء",
+      "grossHint": "الطلبات الإلكترونية فقط — الدفع عند الاستلام أموال بحوزتك بالفعل",
+      "commission": "عمولة ريستومايند",
+      "commissionHint": "مخصومة من مبيعاتك",
+      "commissionRate": "{rate}% فعلياً هذه الفترة",
+      "vatOf": "شاملة {vat} ضريبة قيمة مضافة",
+      "net": "صافي مستحقاتك",
+      "owedByYou": "مستحق لريستومايند",
+      "netHint": "بعد العمولة والمرتجعات والتسويات"
+    },
+    "decision": {
+      "pay": "جاهز للتحويل إليك",
+      "collect": "رصيد مستحق لريستومايند",
+      "carry": "أقل من الحد الأدنى — مُرحَّل للكشف التالي",
+      "blocked": "أضف بياناتك البنكية حتى نتمكن من الدفع"
+    },
+    "exceptions": {
+      "title": "{count} عنصر يحتاج مراجعة",
+      "subtitle": "هذه العناصر مستبعدة من الرصيد أعلاه حتى تُحل.",
+      "kind": {
+        "delivered_unpaid": "تم التسليم دون دفع",
+        "paid_undelivered": "مدفوع دون تسليم",
+        "refund_stuck": "مرتجع متعثر"
+      }
+    },
+    "lines": {
+      "kind": "الحركة",
+      "date": "التاريخ",
+      "gross": "المُحصَّل",
+      "commission": "العمولة",
+      "net": "نصيبك",
+      "emptyTitle": "لا يوجد ما يُسوّى بعد",
+      "emptyDescription": "تظهر الطلبات المُسلَّمة هنا بعد انقضاء مهلة الـ7 أيام.",
+      "kinds": {
+        "sale": "بيع",
+        "refund": "مرتجع",
+        "adjustment": "تسوية"
+      }
+    },
+    "history": {
+      "title": "التحويلات السابقة",
+      "period": "الفترة",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "reference": "المرجع",
+      "actions": "إجراءات",
+      "confirm": "تأكيد التحويل",
+      "emptyTitle": "لا توجد تحويلات بعد",
+      "emptyDescription": "بمجرد تسوية أي كشف يظهر هنا مع مرجعه البنكي.",
+      "statuses": {
+        "pending": "قيد التنفيذ",
+        "completed": "مدفوع",
+        "failed": "فشل"
+      },
+      "direction": {
+        "to_merchant": "مدفوع إليك",
+        "from_merchant": "محصّل منك"
+      }
+    },
+    "admin": {
+      "selectMerchant": "التاجر",
+      "pickTitle": "اختر تاجراً",
+      "pickDescription": "اختر مطعماً لعرض مستحقاته وتسوية الرصيد.",
+      "loadError": "تعذّر تحميل كشف حساب هذا التاجر.",
+      "recordPayout": "تسجيل تحويل",
+      "recordCollection": "تسجيل تحصيل",
+      "newAdjustment": "تسوية جديدة",
+      "recordPayoutTitle": "تسجيل هذا التحويل",
+      "recordPayoutDesc": "يُنشئ تحويلاً قيد التنفيذ. أكّده لاحقاً بعد وصول الحوالة البنكية.",
+      "amountToTransfer": "المبلغ",
+      "reference": "المرجع البنكي",
+      "referencePlaceholder": "مثال: CIB-TRF-2026-1042",
+      "confirmRecord": "تسجيل كقيد التنفيذ",
+      "completeTitle": "تأكيد أو رفض هذا التحويل",
+      "completeDesc": "التحويل الواصل فقط هو ما يُقدّم تاريخ السداد للتاجر.",
+      "failureReason": "سبب الفشل",
+      "failureReasonPlaceholder": "مثال: رقم آيبان غير صحيح",
+      "failureHint": "تعبئة هذا الحقل تُعلّم التحويل كفاشل وتُعيد طلباته إلى الكشف التالي.",
+      "markPaid": "تعليم كمدفوع",
+      "markFailed": "تعليم كفاشل",
+      "cancel": "إلغاء"
+    },
+    "adjust": {
+      "title": "تسوية التاجر",
+      "description": "تصحيح موجب أو سالب بلا طلب خلفه — رد مبلغ متأخر، أو رصيد حسن نية، أو تصحيح تسوية.",
+      "amount": "المبلغ (ج.م)",
+      "amountHint": "الموجب يضيف رصيداً للتاجر والسالب يخصم منه. لا يمكن تأريخها داخل فترة مُسوّاة.",
+      "reason": "السبب",
+      "reasonPlaceholder": "مثال: رد مبلغ على الطلب ‎#4F2A بعد التحويل",
+      "invalidAmount": "أدخل مبلغاً غير صفري.",
+      "confirm": "تسجيل التسوية"
+    }
   }
 }

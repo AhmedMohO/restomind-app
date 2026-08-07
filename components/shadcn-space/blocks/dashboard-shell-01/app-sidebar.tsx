@@ -29,6 +29,7 @@ import {
   ShoppingBag,
   SlidersHorizontal,
   Undo2,
+  Wallet,
   CreditCard,
   Sparkles,
   Store,
@@ -199,6 +200,12 @@ function useDashboardNav(): NavItem[] {
       title: t("refunds"),
       icon: Undo2,
       href: "/dashboard/refunds",
+      roles: ["admin", "manager", "staff"],
+    },
+    {
+      title: t("payouts"),
+      icon: Wallet,
+      href: "/dashboard/payouts",
       roles: ["admin", "manager", "staff"],
     },
     // Billing is deliberately absent. It is not day-to-day work, and the

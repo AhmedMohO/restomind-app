@@ -9,6 +9,7 @@ import {
   Check,
   Info,
   Loader2,
+  Percent,
   RefreshCw,
   SlidersHorizontal,
   Sparkles,
@@ -476,6 +477,60 @@ export function SystemSettingsPanel() {
             <div className="flex items-start gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-muted-foreground dark:border-blue-800/30 dark:bg-blue-950/20">
               <Info className="mt-0.5 size-4 shrink-0 text-blue-600 dark:text-blue-400" />
               <p className="leading-relaxed">{t("grantHint")}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 3: Marketplace Commission */}
+        <Card className="relative overflow-hidden rounded-xl border border-border/60 bg-card/80 shadow-xs backdrop-blur-xs transition-all hover:shadow-sm">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-lg border border-violet-500/20 bg-violet-500/10 text-violet-600 dark:text-violet-400">
+                <Percent className="size-5" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-semibold text-foreground">
+                  {t("commissionTitle")}
+                </CardTitle>
+                <CardDescription className="mt-0.5 text-xs text-muted-foreground">
+                  {t("commissionDescription")}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-5 pt-0">
+            {/*
+              Edited as a percent, stored as a fraction. The ×100 lives here and
+              nowhere else — the API, the restaurant override and every order
+              snapshot all speak fractions.
+
+              `key` re-mounts the input when the saved value changes, matching
+              the other settings, so a rejected save snaps back rather than
+              leaving a number on screen that was never stored.
+            */}
+            <NumberSetting
+              key={`defaultCommissionRate-${settings.defaultCommissionRate}`}
+              id="defaultCommissionRate"
+              label={t("commissionRate")}
+              hint={t("commissionRateHint")}
+              value={Number((settings.defaultCommissionRate * 100).toFixed(4))}
+              min={0}
+              max={100}
+              step={0.01}
+              saving={pendingKey === "defaultCommissionRate"}
+              onCommit={(next) =>
+                save(
+                  { defaultCommissionRate: Number((next / 100).toFixed(6)) },
+                  "defaultCommissionRate"
+                )
+              }
+              icon={Percent}
+            />
+
+            <div className="flex items-start gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-muted-foreground dark:border-blue-800/30 dark:bg-blue-950/20">
+              <Info className="mt-0.5 size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+              <p className="leading-relaxed">{t("commissionOverrideHint")}</p>
             </div>
           </CardContent>
         </Card>

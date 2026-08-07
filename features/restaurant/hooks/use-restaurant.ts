@@ -15,6 +15,7 @@ import { clientFetch, ClientFetchError } from "@/lib/api/fetch-client"
 import type {
   PaginatedRestaurants,
   Restaurant,
+  UpdateRestaurantPayload,
 } from "../types"
 
 export const RESTAURANT_QUERY_KEY = ["restaurant", "me"] as const
@@ -111,11 +112,25 @@ export function useCreateRestaurant() {
   })
 }
 
+/**
+ * Admin PATCH of a restaurant.
+ *
+ * `payload` is FormData when an image is involved and a plain object otherwise.
+ * The commercial-terms dialog uses the object form deliberately: multipart
+ * would flatten `payoutDestination` to a string and `commissionRate` to text,
+ * and the DTO would then be parsing what it should have received typed.
+ */
 export function useAdminUpdateRestaurant() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, payload }: { id: string; payload: FormData }) => {
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: string
+      payload: FormData | UpdateRestaurantPayload
+    }) => {
       const data = await clientFetch<Restaurant>(`/restaurants/${id}`, {
         method: "PATCH",
         body: payload as unknown as Record<string, unknown>,

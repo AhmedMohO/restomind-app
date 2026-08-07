@@ -10,6 +10,7 @@ import { TopCategoriesCard } from "@/features/analytics/components/top-categorie
 import { TopBranchesCard } from "@/features/analytics/components/top-branches-card"
 import { FulfillmentMethodCard } from "@/features/analytics/components/fulfillment-method-card"
 import { QuickAccessGrid } from "@/features/analytics/components/quick-access-grid"
+import { PlatformRevenueCard } from "@/features/analytics/components/platform-revenue-card"
 import {
   useAdminAnalytics,
   useManagerAnalytics,
@@ -90,6 +91,18 @@ export function DashboardContainer() {
         role={isRoleAdmin ? "admin" : "manager"}
         isLoading={isQueryLoading}
       />
+
+      {/*
+        Admin only: the platform's own money. A manager's dashboard has no
+        equivalent because commission and subscription revenue are not theirs
+        to see — their side of it is the payouts statement.
+      */}
+      {isRoleAdmin && (
+        <PlatformRevenueCard
+          platform={adminQuery.data?.kpis?.platform}
+          isLoading={isQueryLoading}
+        />
+      )}
 
       {/* Row 3: 2 Analytics List Cards (Top Products, Top Categories) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
