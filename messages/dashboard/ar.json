@@ -34,6 +34,7 @@
     "waste": "الهدر والمتبقي",
     "imports": "استيراد البيانات",
     "partnershipApplications": "طلبات الشراكة",
+    "notifications": "الإشعارات",
     "refunds": "المستردات",
     "platformSettings": "إعدادات المنصة",
     "subscriptionPlans": "خطط الاشتراك",
@@ -691,7 +692,12 @@
     "updateSuccess": "تم تحديث الوصفة بنجاح.",
     "saveError": "فشل حفظ الوصفة.",
     "fetchError": "فشل تحميل الوصفة.",
-    "productFetchError": "تعذر تحميل تفاصيل المنتج."
+    "productFetchError": "تعذر تحميل تفاصيل المنتج.",
+    "addRecipe": "إضافة وصفة",
+    "addRecipeSubtitle": "اختر منتجاً وحدد مكونات الحصة الخاصة به.",
+    "selectProduct": "المنتج",
+    "selectProductPlaceholder": "اختر منتجاً...",
+    "productRequiredError": "يرجى اختيار منتج."
   },
   "sales": {
     "title": "المبيعات",
@@ -1586,5 +1592,26 @@
       "invalidAmount": "أدخل مبلغاً غير صفري.",
       "confirm": "تسجيل التسوية"
     }
+  },
+  "notifications": {
+    "title": "مركز الإشعارات",
+    "subtitle": "عرض وإدارة تنبيهات النظام وتحديثات الطلبات وطلبات الشراكة.",
+    "newBadge": "{count} جديد",
+    "markAllAsRead": "تحديد الكل كقروء",
+    "viewAll": "عرض جميع الإشعارات",
+    "empty": "لا توجد إشعارات.",
+    "emptyDesc": "أنت متابع لكل جديد! ستظهر الإشعارات الجديدة هنا فور حدوث أي نشاط.",
+    "filterAll": "الكل",
+    "filterUnread": "غير المقروءة فقط",
+    "delete": "حذف",
+    "markRead": "تحديد كقروء",
+    "unreadBadge": "غير مقروء",
+    "fetchError": "فشل تحميل الإشعارات",
+    "markAllReadSuccess": "تم تحديد جميع الإشعارات كقروءة",
+    "markReadSuccess": "تم تحديد الإشعار كقروء",
+    "deleteSuccess": "تم حذف الإشعار",
+    "typeNewOrder": "طلب جديد",
+    "typePartnership": "طلب شراكة جديد",
+    "typeGeneral": "إشعار نظام"
   }
 }

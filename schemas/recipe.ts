@@ -14,19 +14,37 @@ const MAX_QUANTITY_PER_PORTION = 100_000
  * ingredient, because the backend rejects any line whose unit differs from the
  * ingredient's own unit.
  */
+function parseArabicNumber(val: unknown): number {
+  if (typeof val === "number") return val
+  if (typeof val === "string") {
+    const normalized = val
+      .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString())
+      .replace(/,/g, ".")
+      .trim()
+    if (normalized === "") return NaN
+    return Number(normalized)
+  }
+  return NaN
+}
+
 export const recipeIngredientSchema = z.object({
   ingredientId: mongoId,
-  quantityPerPortion: z.coerce
-    .number()
-    .positive({ message: "positiveValue" })
-    .max(MAX_QUANTITY_PER_PORTION),
+  quantityPerPortion: z.preprocess(
+    parseArabicNumber,
+    z.number({ message: "positiveValue" })
+      .positive({ message: "positiveValue" })
+      .max(MAX_QUANTITY_PER_PORTION)
+  ),
   unit: z.enum(INGREDIENT_UNITS),
-  // The backend validates yield as positive and <= 100, so 0 is not allowed.
-  yieldPercentage: z.coerce
-    .number()
-    .positive({ message: "positiveValue" })
-    .max(100)
-    .default(100),
+  yieldPercentage: z.preprocess(
+    (val) => {
+      const parsed = parseArabicNumber(val)
+      return Number.isNaN(parsed) ? 100 : parsed
+    },
+    z.number({ message: "positiveValue" })
+      .positive({ message: "positiveValue" })
+      .max(100)
+  ),
 })
 
 export const recipeFormSchema = z.object({

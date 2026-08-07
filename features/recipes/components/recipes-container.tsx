@@ -3,7 +3,7 @@
 import * as React from "react"
 import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
-import { ChefHat, PackageX, Search, X } from "lucide-react"
+import { ChefHat, PackageX, Plus, Search, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -65,7 +65,7 @@ export function RecipesContainer() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 font-heading text-2xl font-bold tracking-tight">
             <span>{t("title")}</span>
@@ -77,6 +77,13 @@ export function RecipesContainer() {
           </h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
+        <Button
+          render={<Link href="/dashboard/recipes/new" />}
+          className="gap-2 rounded-xl self-start sm:self-auto"
+        >
+          <Plus className="size-4" />
+          <span>{t("addRecipe")}</span>
+        </Button>
       </div>
 
       <div className="relative max-w-full min-w-[200px] sm:max-w-xs">

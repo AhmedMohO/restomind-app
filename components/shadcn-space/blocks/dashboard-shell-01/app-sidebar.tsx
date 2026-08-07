@@ -15,6 +15,7 @@ import { Link } from "@/i18n/routing"
 import { NavMain } from "@/components/shadcn-space/blocks/dashboard-shell-01/nav-main"
 import {
   BarChart3,
+  Bell,
   Boxes,
   Building2,
   CalendarClock,
@@ -222,6 +223,12 @@ function useDashboardNav(): NavItem[] {
       title: t("imports"),
       icon: Upload,
       href: "/dashboard/imports",
+      roles: ["admin", "manager"],
+    },
+    {
+      title: t("notifications"),
+      icon: Bell,
+      href: "/dashboard/notifications",
       roles: ["admin", "manager"],
     },
 

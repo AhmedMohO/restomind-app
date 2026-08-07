@@ -37,7 +37,8 @@
     "refunds": "Refunds",
     "platformSettings": "Platform Settings",
     "subscriptionPlans": "Subscription Plans",
-    "payouts": "Payouts"
+    "payouts": "Payouts",
+    "notifications": "Notifications"
   },
   "restaurant": {
     "pageTitle": "Restaurant Profile",
@@ -691,7 +692,12 @@
     "updateSuccess": "Recipe updated successfully.",
     "saveError": "Failed to save the recipe.",
     "fetchError": "Failed to load the recipe.",
-    "productFetchError": "Product details could not be loaded."
+    "productFetchError": "Product details could not be loaded.",
+    "addRecipe": "Add Recipe",
+    "addRecipeSubtitle": "Select a product and configure its portion ingredients.",
+    "selectProduct": "Product",
+    "selectProductPlaceholder": "Select a product...",
+    "productRequiredError": "Please select a product."
   },
   "sales": {
     "title": "Sales",
@@ -1583,6 +1589,28 @@
       "reasonPlaceholder": "e.g. Chargeback on order #4F2A received after payout",
       "invalidAmount": "Enter a non-zero amount.",
       "confirm": "Record adjustment"
-    }
+    },
+    "notFound": "Partnership application not found."
+  },
+  "notifications": {
+    "title": "Notifications Center",
+    "subtitle": "View and manage system alerts, order updates, and application notices.",
+    "newBadge": "{count} New",
+    "markAllAsRead": "Mark All as Read",
+    "viewAll": "See All Notifications",
+    "empty": "No notifications found.",
+    "emptyDesc": "You're all caught up! New notifications will appear here as activity occurs.",
+    "filterAll": "All",
+    "filterUnread": "Unread Only",
+    "delete": "Delete",
+    "markRead": "Mark as read",
+    "unreadBadge": "Unread",
+    "fetchError": "Failed to load notifications",
+    "markAllReadSuccess": "All notifications marked as read",
+    "markReadSuccess": "Notification marked as read",
+    "deleteSuccess": "Notification deleted",
+    "typeNewOrder": "New Order Placed",
+    "typePartnership": "Partnership Application",
+    "typeGeneral": "System Notification"
   }
 }

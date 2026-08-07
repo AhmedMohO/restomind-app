@@ -35,12 +35,7 @@ export function SiteHeader() {
         <ThemeToggle />
         <NotificationDropdown
           defaultOpen={false}
-          align="center"
-          trigger={
-            <div className="relative cursor-pointer rounded-full p-2 before:absolute before:top-1 before:bottom-0 before:left-1/2 before:z-10 before:h-2 before:w-2 before:rounded-full before:bg-red-500 hover:bg-accent">
-              <BellRing className="size-4" />
-            </div>
-          }
+          align="end"
         />
         <UserDropdown
           defaultOpen={false}
