@@ -653,6 +653,10 @@
       "invalidType": "Only .csv files are accepted.",
       "tooLarge": "This file is larger than 5 MB. Split it into smaller files and import each one separately."
     },
+    "mapper": {
+      "prompt": "Headers not matching?",
+      "open": "Map columns manually"
+    },
     "progress": {
       "uploading": "Uploading",
       "importing": "Importing"

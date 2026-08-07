@@ -176,11 +176,6 @@ function ErrorGroupList({
           {t("errors.downloadCsv")}
         </Button>
       </div>
-      <div className="space-y-2">
-        {groups.map((group) => (
-          <ErrorGroupRow key={group.message} group={group} />
-        ))}
-      </div>
     </div>
   )
 }

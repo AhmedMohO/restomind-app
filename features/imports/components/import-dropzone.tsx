@@ -8,7 +8,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024
+/**
+ * Exported because the optional `CSVImporter` path in `ImportWorkspace`
+ * produces its own `File` and calls `onFileSelected` directly, bypassing
+ * `validateAndEmit` below — it has to enforce the same ceiling rather than
+ * redeclare it.
+ */
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024
 
 export interface ImportDropzoneProps {
   disabled?: boolean
