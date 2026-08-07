@@ -37,12 +37,15 @@ function RichText({ text }: { text: string }) {
   )
 }
 
-function Timestamp({ value }: { value: number }) {
+function Timestamp({ value, isUser }: { value: number; isUser?: boolean }) {
   const locale = useLocale()
   return (
     <time
       dateTime={new Date(value).toISOString()}
-      className="mt-1 block text-[10px] text-muted-foreground"
+      className={cn(
+        "mt-1 block text-[10px]",
+        isUser ? "text-primary-foreground/75" : "text-muted-foreground"
+      )}
     >
       {new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-EG", {
         hour: "numeric",
@@ -88,7 +91,9 @@ function ApprovalCard({
           <div key={key} className="flex gap-2 text-[11px]">
             <dt className="shrink-0 text-muted-foreground">{key}</dt>
             <dd className="truncate font-medium" dir="ltr">
-              {typeof value === "object" ? JSON.stringify(value) : String(value)}
+              {typeof value === "object"
+                ? JSON.stringify(value)
+                : String(value)}
             </dd>
           </div>
         ))}
@@ -161,14 +166,14 @@ export function MessageThread({
           <div
             dir="auto"
             className={cn(
-              "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+              "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed break-words whitespace-pre-wrap",
               m.role === "user"
                 ? "rounded-ee-sm bg-primary text-primary-foreground"
                 : "rounded-es-sm bg-muted text-foreground"
             )}
           >
             <RichText text={m.content} />
-            <Timestamp value={m.timestamp} />
+            <Timestamp value={m.timestamp} isUser={m.role === "user"} />
           </div>
         </motion.div>
       ))}

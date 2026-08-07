@@ -1,6 +1,8 @@
 /** Mirrors `StructuredRecommendation` in the NestJS agentic-RAG service. */
 export interface AssistantRecommendation {
   recommendationId?: string
+  /** `recommendation_actions` row id — links an approval back to its action. */
+  recommendationActionId?: string
   title: string
   description: string
   priority: "HIGH" | "MEDIUM" | "LOW"
@@ -29,6 +31,9 @@ export interface AssistantChatResponse {
   recommendations: AssistantRecommendation[]
   pendingActions: AssistantPendingAction[]
   requiresApproval: boolean
+  /** True when semantic retrieval or the LLM was unavailable for this answer. */
+  degraded?: boolean
+  degradedReason?: string
 }
 
 /** Body of `POST /assistant/approve-action`. */

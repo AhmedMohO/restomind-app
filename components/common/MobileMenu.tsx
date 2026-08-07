@@ -29,7 +29,9 @@ export default function MobileMenu() {
   const { user, hasAnyRole } = useAuth()
   const setUser = useAuthStore((s) => s.setUser)
 
-  const isManagementRole = Boolean(user && hasAnyRole(["admin", "staff", "manager"]))
+  const isManagementRole = Boolean(
+    user && hasAnyRole(["admin", "staff", "manager"])
+  )
 
   const links = [
     { key: "home", href: "/" },
@@ -40,7 +42,10 @@ export default function MobileMenu() {
   ] as const
 
   const filteredLinks = links.filter((link) => {
-    if (isManagementRole && (link.key === "orders" || link.key === "favourites")) {
+    if (
+      isManagementRole &&
+      (link.key === "orders" || link.key === "favourites")
+    ) {
       return false
     }
     return true
@@ -77,9 +82,7 @@ export default function MobileMenu() {
           <SheetTitle className="text-left font-heading text-xl rtl:text-right">
             Menu
           </SheetTitle>
-          <div className="pe-8">
-            <LangToggle />
-          </div>
+          <LangToggle />
         </SheetHeader>
 
         {/* User Card Header when logged in */}

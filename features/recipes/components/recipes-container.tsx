@@ -79,7 +79,8 @@ export function RecipesContainer() {
         </div>
         <Button
           render={<Link href="/dashboard/recipes/new" />}
-          className="gap-2 rounded-xl self-start sm:self-auto"
+          nativeButton={false}
+          className="gap-2 self-start rounded-xl sm:self-auto"
         >
           <Plus className="size-4" />
           <span>{t("addRecipe")}</span>
@@ -200,6 +201,7 @@ export function RecipesContainer() {
                       render={
                         <Link href={`/dashboard/recipes/${product._id}`} />
                       }
+                      nativeButton={false}
                       className="gap-2 rounded-xl text-xs"
                     >
                       <ChefHat className="size-3.5" />

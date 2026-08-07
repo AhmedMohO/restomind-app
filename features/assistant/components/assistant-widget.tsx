@@ -3,11 +3,11 @@
 import { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useTranslations } from "next-intl"
-import { ChevronDown, RotateCcw, Send, Sparkles } from "lucide-react"
+import { ChefHat, ChevronDown, RotateCcw, Send, Sparkles } from "lucide-react"
 
+import { DegradedBanner } from "@/components/ai/degraded-banner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { useAssistantChat } from "@/features/assistant/hooks/use-assistant-chat"
 import { useAssistantStore } from "@/features/assistant/store/use-assistant-store"
@@ -27,6 +27,7 @@ export function AssistantWidget() {
     messages,
     activeRecommendations,
     pendingActions,
+    degradedReason,
     reset,
     resolveAction,
     resolveRecommendation,
@@ -53,9 +54,7 @@ export function AssistantWidget() {
     setApplyingIndex(index)
     approve.mutate(
       {
-        // The chat payload carries `recommendationId` (the Recommendation
-        // doc) but not the recommendation_action row id the backend wants,
-        // so the link is left unset — the run is still audit-logged.
+        recommendationActionId: rec.recommendationActionId,
         toolName: rec.actionPayload.toolName,
         arguments: rec.actionPayload.arguments,
         approved: true,
@@ -80,39 +79,61 @@ export function AssistantWidget() {
 
   return (
     <>
-      {/* Trigger bubble — logical `end` so it flips to the left in Arabic. */}
+      {/* Trigger bubble — half-appeared at the side edge when idle so it never obstructs dashboard elements */}
       <AnimatePresence>
         {!isOpen && (
-          <motion.button
-            type="button"
-            onClick={open}
-            aria-label={t("open")}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.6 }}
-            whileTap={{ scale: 0.94 }}
-            className="fixed bottom-6 end-6 z-50 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 40 }}
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            className="fixed end-0 bottom-8 z-50 flex items-center"
           >
-            <motion.span
-              aria-hidden
-              className="absolute inset-0 rounded-full bg-primary/40"
-              animate={{ scale: [1, 1.25], opacity: [0.5, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-            />
-            <motion.span
-              aria-hidden
-              className="absolute inset-0 rounded-full bg-primary"
-              animate={{ scale: [1, 1.06, 1] }}
-              transition={{ duration: 2.4, repeat: Infinity }}
-            />
-            <Sparkles className="relative size-6" />
-
-            {badgeCount > 0 && (
-              <span className="absolute -top-0.5 -end-0.5 z-10 grid min-w-5 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white tabular-nums">
-                {badgeCount}
+            <motion.button
+              type="button"
+              onClick={open}
+              aria-label={t("open")}
+              whileTap={{ scale: 0.95 }}
+              className={cn(
+                "group relative flex items-center gap-3 rounded-s-full border border-e-0 border-border/80 bg-background/95 py-2 ps-2 pe-4 shadow-2xl backdrop-blur-md transition-all duration-300 ease-out hover:border-primary/50 hover:bg-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                "translate-x-[calc(100%-2rem)] opacity-95 hover:translate-x-0 hover:opacity-100 rtl:-translate-x-[calc(100%-2rem)] rtl:hover:translate-x-0"
+              )}
+            >
+              {/* Pulsing ring AI Chef Icon */}
+              <span className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/30">
+                <motion.span
+                  aria-hidden
+                  className="absolute inset-0 rounded-full bg-primary/40"
+                  animate={{ scale: [1, 1.3], opacity: [0.5, 0] }}
+                  transition={{
+                    duration: 2.2,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                  }}
+                />
+                <ChefHat className="relative size-5 transition-transform duration-300 group-hover:scale-110" />
               </span>
-            )}
-          </motion.button>
+
+              {/* RestoMind AI Branding Label */}
+              <div className="flex flex-col text-start whitespace-nowrap">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-heading text-xs font-bold tracking-tight text-foreground">
+                    RestoMind AI
+                  </span>
+                  <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" />
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  Copilot
+                </span>
+              </div>
+
+              {badgeCount > 0 && (
+                <span className="ms-1 grid min-w-5 place-items-center rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-white tabular-nums shadow-sm">
+                  {badgeCount}
+                </span>
+              )}
+            </motion.button>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -126,17 +147,23 @@ export function AssistantWidget() {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
             onKeyDown={(e) => e.key === "Escape" && close()}
-            className="fixed bottom-6 end-6 z-50 flex max-h-[85vh] w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-3xl border border-border bg-background/95 shadow-2xl backdrop-blur-md sm:w-[400px] lg:w-[450px]"
+            className="fixed end-6 bottom-6 z-50 flex h-[50vh] max-h-[50vh] w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-3xl border border-border bg-background/95 shadow-2xl backdrop-blur-md sm:w-[400px] lg:w-[450px]"
           >
             {/* Header */}
-            <header className="flex shrink-0 items-center gap-2 border-b border-border bg-card/60 px-4 py-3">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-                <Sparkles className="size-4" />
-              </span>
+            <header className="flex shrink-0 items-center gap-2.5 border-b border-border bg-card/80 px-4 py-3 backdrop-blur-sm">
+              <div className="relative flex size-8 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                <ChefHat className="size-4" />
+                <Sparkles className="absolute -end-0.5 -bottom-0.5 size-2.5 text-amber-500" />
+              </div>
               <div className="min-w-0 flex-1">
-                <h2 className="truncate font-heading text-sm font-semibold">
-                  {t("title")}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="truncate font-heading text-sm font-semibold tracking-tight">
+                    {t("title")}
+                  </h2>
+                  <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                    Bedrock AI
+                  </span>
+                </div>
                 <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <span className="size-1.5 rounded-full bg-emerald-500" />
                   {t("status")}
@@ -170,27 +197,31 @@ export function AssistantWidget() {
               onApply={applyRecommendation}
             />
 
-            {/* Thread */}
-            <ScrollArea className="min-h-0 flex-1">
-              <div className="p-4">
-                {messages.length === 0 && !send.isPending ? (
-                  <p
-                    dir="auto"
-                    className="py-6 text-center text-sm text-muted-foreground"
-                  >
-                    {t("empty")}
-                  </p>
-                ) : (
-                  <MessageThread
-                    messages={messages}
-                    pendingActions={pendingActions}
-                    isThinking={send.isPending}
-                    decidingTool={decidingTool}
-                    onDecide={decideAction}
-                  />
-                )}
+            {degradedReason !== null && (
+              <div className="shrink-0 px-4 pt-3">
+                <DegradedBanner reason={degradedReason || undefined} />
               </div>
-            </ScrollArea>
+            )}
+
+            {/* Thread */}
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+              {messages.length === 0 && !send.isPending ? (
+                <p
+                  dir="auto"
+                  className="py-6 text-center text-sm text-muted-foreground"
+                >
+                  {t("empty")}
+                </p>
+              ) : (
+                <MessageThread
+                  messages={messages}
+                  pendingActions={pendingActions}
+                  isThinking={send.isPending}
+                  decidingTool={decidingTool}
+                  onDecide={decideAction}
+                />
+              )}
+            </div>
 
             {/* Quick suggestions — an opener, so they retire once the
                 conversation has started and the thread carries the context. */}

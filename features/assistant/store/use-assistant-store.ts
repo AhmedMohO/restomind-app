@@ -27,6 +27,8 @@ interface AssistantState {
   activeRecommendations: AssistantRecommendation[]
   /** Actions from the most recent reply that still need a human decision. */
   pendingActions: AssistantPendingAction[]
+  /** Set when the most recent reply came back without the full pipeline. */
+  degradedReason: string | null
 
   open: () => void
   close: () => void
@@ -38,6 +40,8 @@ interface AssistantState {
     response: string
     recommendations: AssistantRecommendation[]
     pendingActions: AssistantPendingAction[]
+    degraded?: boolean
+    degradedReason?: string
   }) => void
   /** Drops one pending action once the user has approved or rejected it. */
   resolveAction: (toolName: string) => void
@@ -53,6 +57,7 @@ export const useAssistantStore = create<AssistantState>((set) => ({
   messages: [],
   activeRecommendations: [],
   pendingActions: [],
+  degradedReason: null,
 
   open: () => set({ isOpen: true }),
   close: () => set({ isOpen: false }),
@@ -82,6 +87,11 @@ export const useAssistantStore = create<AssistantState>((set) => ({
       // otherwise let the user approve an action computed from old data.
       activeRecommendations: reply.recommendations ?? [],
       pendingActions: reply.pendingActions ?? [],
+      // Cleared on every reply: the banner must reflect THIS answer, not a
+      // degraded one from three turns ago.
+      degradedReason: reply.degraded
+        ? (reply.degradedReason ?? "")
+        : null,
     })),
 
   resolveAction: (toolName) =>
@@ -102,5 +112,6 @@ export const useAssistantStore = create<AssistantState>((set) => ({
       messages: [],
       activeRecommendations: [],
       pendingActions: [],
+      degradedReason: null,
     }),
 }))
