@@ -1,5 +1,5 @@
 import type React from "react"
-import { Clock, CheckCircle2, ChefHat, Truck, XCircle } from "lucide-react"
+import { Clock, CheckCircle2, ChefHat, CreditCard, RotateCcw, Truck, XCircle } from "lucide-react"
 import type { OrderStatus } from "./api/type"
 
 export interface StatusMeta {
@@ -156,6 +156,43 @@ export function getStatusMeta(status?: OrderStatus | string | null): StatusMeta 
         badgeClass:
           "bg-rose-50 text-rose-800 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60",
         labelKey: "statusCancelled",
+      }
+    // Stock is reserved but no money has arrived. Falling through to the
+    // default rendered this as "Pending", which claims the order is placed —
+    // it isn't, and the customer needs to know he can still walk away.
+    case "awaiting payment":
+      return {
+        Icon: CreditCard,
+        bg: "bg-violet-500 text-white",
+        badgeClass:
+          "bg-violet-50 text-violet-800 border-violet-200/80 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-900/60",
+        labelKey: "statusAwaitingPayment",
+      }
+    case "payment failed":
+      return {
+        Icon: XCircle,
+        bg: "bg-rose-500 text-white",
+        badgeClass:
+          "bg-rose-50 text-rose-800 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60",
+        labelKey: "statusPaymentFailed",
+      }
+    // A refunded order was still delivered. Showing it as "Pending" — which
+    // the default below did — tells the customer his food is on the way.
+    case "refunded":
+      return {
+        Icon: RotateCcw,
+        bg: "bg-slate-500 text-white",
+        badgeClass:
+          "bg-slate-50 text-slate-700 border-slate-200/80 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-700/60",
+        labelKey: "statusRefunded",
+      }
+    case "partially refunded":
+      return {
+        Icon: RotateCcw,
+        bg: "bg-slate-500 text-white",
+        badgeClass:
+          "bg-slate-50 text-slate-700 border-slate-200/80 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-700/60",
+        labelKey: "statusPartiallyRefunded",
       }
     default:
       return {
