@@ -1158,7 +1158,21 @@
     "renewFrom": "التجديد من {date}",
     "lockedDuringTrial": "فترتك التجريبية المجانية تغطي هذه الخطة بالفعل. يمكنك شراؤها من {date} عند انتهاء الفترة التجريبية.",
     "lockedUntilRenewal": "لقد دفعت مقابل هذه الخطة حتى {date}. يفتح التجديد حينها.",
-    "earlyBirdPrice": "سعر المشتركين الأوائل"
+    "earlyBirdPrice": "سعر المشتركين الأوائل",
+    "billingPeriod": "فترة الفوترة",
+    "interval": {
+      "monthly": "شهري",
+      "halfYearly": "٦ أشهر",
+      "yearly": "سنوي"
+    },
+    "per": {
+      "monthly": "/شهريًا",
+      "halfYearly": "/٦ أشهر",
+      "yearly": "/سنويًا"
+    },
+    "perMonthEquivalent": "{amount} جنيه شهريًا",
+    "savePercent": "وفّر {percent}%",
+    "notSoldOnInterval": "غير متاحة على فترة الفوترة هذه"
   },
   "refunds": {
     "title": "طلبات الاسترداد",

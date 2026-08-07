@@ -2,19 +2,18 @@
 
 import { useState, useTransition } from "react"
 import { useFormatter, useTranslations } from "next-intl"
-import { CreditCard, Loader2, Lock, ShieldCheck, Wallet } from "lucide-react"
+import { CreditCard, Loader2, ShieldCheck, Wallet } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import {
+  BILLING_INTERVALS,
+  type BillingInterval,
+} from "@/features/plans/api/type"
 import { startCheckoutAction } from "../actions"
-import type {
-  MySubscription,
-  PaymentMethod,
-  TierName,
-  TierOption,
-} from "../api/type"
+import type { MySubscription, PaymentMethod } from "../api/type"
+import IntervalToggle from "./IntervalToggle"
+import PlanCard from "./PlanCard"
 
 interface Props {
   subscription: MySubscription
@@ -36,21 +35,25 @@ const METHOD_ICON: Record<PaymentMethod, typeof CreditCard> = {
  */
 export default function BillingWall({ subscription, methods }: Props) {
   const t = useTranslations("Dashboard.billing")
-  // Default to something they can actually buy. While a plan is still running
-  // that is the next tier up; once it lapses it is the plan they already had.
-  const [selectedTier, setSelectedTier] = useState<TierName>(
-    () => defaultTier(subscription)
+  // Start on the interval the merchant already holds, so a renewal is one
+  // click. A trial holds none, so it falls back to the shortest on sale.
+  const [interval, setInterval] = useState<BillingInterval>(() =>
+    defaultInterval(subscription)
+  )
+  // Default to something they can actually buy on that interval.
+  const [selectedSlug, setSelectedSlug] = useState<string>(() =>
+    defaultPlan(subscription, defaultInterval(subscription))
   )
   const [method, setMethod] = useState<PaymentMethod>(methods[0] ?? "card")
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const format = useFormatter()
 
-  const effectiveTier =
-    subscription.state === "trial" ? TRIAL_TIER : subscription.tier
+  // The backend already resolves which plan is current, trial included, so
+  // the frontend no longer keeps its own copy of the trial-tier rule.
   const currentPlan =
     subscription.state === "trial" || subscription.state === "active"
-      ? subscription.tiers.find((tier) => tier.name === effectiveTier)
+      ? subscription.plans.find((plan) => plan.isCurrent)
       : undefined
 
   const activeUntil = formatDate(
@@ -69,15 +72,29 @@ export default function BillingWall({ subscription, methods }: Props) {
     new Date(subscription.nextPeriodStart).getTime() - Date.now() > 60_000
 
   const renewableOn = formatDate(format, subscription.renewableFrom)
-  const selected = subscription.tiers.find(
-    (tier) => tier.name === selectedTier
+  const selected = subscription.plans.find(
+    (plan) => plan.slug === selectedSlug
   )
-  const canBuySelected = selected?.purchasable ?? false
+  const selectedOption = selected?.intervals[interval] ?? null
+  const canBuySelected = selectedOption?.purchasable ?? false
+
+  /**
+   * Switching interval can strand the selection: the chosen plan may not sell
+   * the new interval, or may not be purchasable on it. Move to one that is,
+   * rather than leaving a dead Pay button pointing at nothing.
+   */
+  function handleIntervalChange(next: BillingInterval) {
+    setInterval(next)
+    const stillValid = subscription.plans.find(
+      (plan) => plan.slug === selectedSlug
+    )?.intervals[next]?.purchasable
+    if (!stillValid) setSelectedSlug(defaultPlan(subscription, next))
+  }
 
   function handlePay() {
     setError(null)
     startTransition(async () => {
-      const result = await startCheckoutAction(selectedTier, method)
+      const result = await startCheckoutAction(selectedSlug, interval, method)
       if ("error" in result) {
         setError(result.error)
         return
@@ -109,7 +126,11 @@ export default function BillingWall({ subscription, methods }: Props) {
           <span className="text-base font-semibold text-foreground">
             {subscription.state === "trial"
               ? t("currentTrial", { tier: currentPlan.label })
-              : t("currentPlan", { tier: currentPlan.label })}
+              : t("currentPlan", {
+                  // The snapshotted label, so an archived or renamed plan
+                  // still reads as what they actually bought.
+                  tier: subscription.planLabel ?? currentPlan.label,
+                })}
           </span>
           {activeUntil && (
             <span className="text-sm font-medium text-muted-foreground">
@@ -140,19 +161,24 @@ export default function BillingWall({ subscription, methods }: Props) {
           </div>
         </div>
 
+        <IntervalToggle
+          plans={subscription.plans}
+          value={interval}
+          onChange={handleIntervalChange}
+        />
+
         <div className="grid gap-5 pt-2 sm:grid-cols-3">
-          {subscription.tiers.map((tier) => (
-            <TierCard
-              key={tier.name}
-              tier={tier}
-              selected={tier.name === selectedTier}
+          {subscription.plans.map((plan) => (
+            <PlanCard
+              key={plan.slug}
+              plan={plan}
+              interval={interval}
+              selected={plan.slug === selectedSlug}
               recommended={
                 !subscription.tier &&
-                tier.name === recommendedTier(subscription)
+                plan.slug === recommendedPlan(subscription)
               }
-              current={tier.name === subscription.tier}
-              lockedUntil={tier.purchasable ? null : renewableOn}
-              onSelect={() => tier.purchasable && setSelectedTier(tier.name)}
+              onSelect={() => setSelectedSlug(plan.slug)}
               t={t}
             />
           ))}
@@ -220,8 +246,11 @@ export default function BillingWall({ subscription, methods }: Props) {
               {isPending
                 ? t("redirecting")
                 : t(
-                    selectedTier === subscription.tier ? "renewCta" : "payCta",
-                    { amount: priceOf(subscription, selectedTier) }
+                    selectedSlug === subscription.tier ? "renewCta" : "payCta",
+                    {
+                      amount:
+                        selectedOption?.priceEGP.toLocaleString() ?? "",
+                    }
                   )}
             </Button>
 
@@ -265,118 +294,6 @@ export default function BillingWall({ subscription, methods }: Props) {
   )
 }
 
-function TierCard({
-  tier,
-  selected,
-  recommended,
-  current,
-  lockedUntil,
-  onSelect,
-  t,
-}: {
-  tier: TierOption
-  selected: boolean
-  recommended: boolean
-  current: boolean
-  /** Non-null when this tier cannot be bought yet; the date it opens. */
-  lockedUntil: string | null
-  onSelect: () => void
-  t: ReturnType<typeof useTranslations>
-}) {
-  const locked = lockedUntil !== null
-
-  return (
-    <Card
-      role="radio"
-      aria-checked={selected}
-      aria-disabled={locked}
-      tabIndex={locked ? -1 : 0}
-      onClick={onSelect}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault()
-          onSelect()
-        }
-      }}
-      className={cn(
-        "rounded-2xl p-5 shadow-xs transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        locked
-          ? "cursor-not-allowed opacity-60"
-          : "cursor-pointer hover:border-foreground/30 hover:shadow-sm",
-        selected &&
-          "border-primary bg-primary/[0.03] shadow-md ring-2 ring-primary/20"
-      )}
-    >
-      <CardHeader className="p-0 pb-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-lg font-bold text-foreground">
-            {tier.label}
-          </span>
-          {current ? (
-            <Badge
-              variant="secondary"
-              className="border-emerald-600/20 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold tracking-wider text-emerald-700 uppercase dark:text-emerald-400"
-            >
-              {t("yourPlan")}
-            </Badge>
-          ) : (
-            recommended && (
-              <Badge
-                variant="secondary"
-                className="border-primary/20 bg-primary/15 px-2.5 py-0.5 text-xs font-semibold tracking-wider text-primary uppercase"
-              >
-                {t("recommended")}
-              </Badge>
-            )
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-2 p-0">
-        <p className="text-3xl font-extrabold tracking-tight text-foreground tabular-nums sm:text-4xl">
-          {/* The standard price, struck through, only when this merchant is
-              actually being charged less than it. */}
-          {tier.standardPriceEGP !== null && (
-            <span className="me-2 text-xl font-semibold text-muted-foreground line-through sm:text-2xl">
-              {tier.standardPriceEGP.toLocaleString()}
-            </span>
-          )}
-          {tier.priceEGP.toLocaleString()}
-          <span className="ms-1.5 text-base font-normal text-muted-foreground">
-            {t("perMonth")}
-          </span>
-        </p>
-        {tier.standardPriceEGP !== null && (
-          <p className="text-sm font-semibold text-primary">
-            {t("earlyBirdPrice")}
-          </p>
-        )}
-
-        <p className="pt-2 text-base font-medium text-foreground/90">
-          {tier.productCap === null
-            ? t("unlimitedProducts")
-            : t("upToProducts", { cap: tier.productCap.toLocaleString() })}
-        </p>
-        {!tier.fitsCurrentCatalogue && (
-          <p className="text-sm font-semibold text-destructive">
-            {t("tooSmall")}
-          </p>
-        )}
-        {locked && (
-          <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-            <Lock className="size-3.5 shrink-0" aria-hidden />
-            {current
-              ? t("renewFrom", { date: lockedUntil })
-              : t("availableFrom", { date: lockedUntil })}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-/** Mirrors TRIAL_TIER on the backend: a trial runs at Plus capacity. */
-const TRIAL_TIER: TierName = "plus"
-
 function formatDate(
   format: ReturnType<typeof useFormatter>,
   iso: string | null
@@ -387,27 +304,44 @@ function formatDate(
   return format.dateTime(date, { day: "numeric", month: "long" })
 }
 
-/** The first tier the merchant is actually allowed to buy today. */
-function defaultTier(subscription: MySubscription): TierName {
-  const buyable = subscription.tiers.filter((tier) => tier.purchasable)
-  const preferred = buyable.find((tier) => tier.name === subscription.tier)
+/**
+ * The interval to land on.
+ *
+ * The one they already hold, so renewing is a single click. A trial holds
+ * none, so it falls back to the shortest interval actually on sale.
+ */
+function defaultInterval(subscription: MySubscription): BillingInterval {
+  if (subscription.interval) return subscription.interval
+
   return (
-    preferred?.name ??
-    buyable.find((tier) => tier.fitsCurrentCatalogue)?.name ??
-    buyable[0]?.name ??
-    recommendedTier(subscription)
+    BILLING_INTERVALS.find((candidate) =>
+      subscription.plans.some((plan) => plan.intervals[candidate] !== null)
+    ) ?? "monthly"
   )
 }
 
-/** The smallest tier that actually fits the current catalogue. */
-function recommendedTier(subscription: MySubscription): TierName {
+/** The first plan the merchant is actually allowed to buy on `interval`. */
+function defaultPlan(
+  subscription: MySubscription,
+  interval: BillingInterval
+): string {
+  const buyable = subscription.plans.filter(
+    (plan) => plan.intervals[interval]?.purchasable
+  )
+
   return (
-    subscription.tiers.find((tier) => tier.fitsCurrentCatalogue)?.name ??
-    subscription.tiers[subscription.tiers.length - 1]!.name
+    buyable.find((plan) => plan.slug === subscription.tier)?.slug ??
+    buyable.find((plan) => plan.fitsCurrentCatalogue)?.slug ??
+    buyable[0]?.slug ??
+    recommendedPlan(subscription)
   )
 }
 
-function priceOf(subscription: MySubscription, name: TierName): string {
-  const tier = subscription.tiers.find((candidate) => candidate.name === name)
-  return tier ? tier.priceEGP.toLocaleString() : ""
+/** The smallest plan that actually fits the current catalogue. */
+function recommendedPlan(subscription: MySubscription): string {
+  return (
+    subscription.plans.find((plan) => plan.fitsCurrentCatalogue)?.slug ??
+    subscription.plans[subscription.plans.length - 1]?.slug ??
+    ""
+  )
 }

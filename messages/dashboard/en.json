@@ -1158,7 +1158,21 @@
     "renewFrom": "Renew from {date}",
     "lockedDuringTrial": "Your free trial already covers this. You can buy it from {date}, when the trial ends.",
     "lockedUntilRenewal": "You have already paid for this until {date}. Renewal opens then.",
-    "earlyBirdPrice": "Early-bird price"
+    "earlyBirdPrice": "Early-bird price",
+    "billingPeriod": "Billing period",
+    "interval": {
+      "monthly": "Monthly",
+      "halfYearly": "6 Months",
+      "yearly": "Yearly"
+    },
+    "per": {
+      "monthly": "/month",
+      "halfYearly": "/6 months",
+      "yearly": "/year"
+    },
+    "perMonthEquivalent": "{amount} EGP per month",
+    "savePercent": "Save {percent}%",
+    "notSoldOnInterval": "Not available on this billing period"
   },
   "refunds": {
     "title": "Refund Requests",
