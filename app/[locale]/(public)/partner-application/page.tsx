@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { setRequestLocale, getTranslations } from "next-intl/server"
 import type { Metadata } from "next"
 import PartnerApplicationForm from "@/features/partner/components/PartnerApplicationForm"
@@ -51,7 +52,9 @@ export default async function PartnerApplicationPage({ params }: Props) {
 
       {/* Main Form Container */}
       <section className="relative z-20 container mx-auto -mt-10 px-4 sm:px-6 md:px-8">
-        <PartnerApplicationForm />
+        <Suspense fallback={<div className="min-h-[400px] w-full" />}>
+          <PartnerApplicationForm />
+        </Suspense>
       </section>
     </main>
   )

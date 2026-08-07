@@ -9,6 +9,7 @@ export * from "./type"
 /** GET /orders/refunds — refunds visible to the caller's role. */
 export async function getRefunds(): Promise<{ data: ApiRefund[] }> {
   const response = await apiClient("/orders/refunds")
+  console.log("🚀 ~ getRefunds ~ response:", response)
   return parseOrThrow<{ data: ApiRefund[] }>(response, "getRefunds")
 }
 

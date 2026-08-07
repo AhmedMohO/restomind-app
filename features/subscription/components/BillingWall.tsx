@@ -72,9 +72,7 @@ export default function BillingWall({ subscription, methods }: Props) {
     new Date(subscription.nextPeriodStart).getTime() - Date.now() > 60_000
 
   const renewableOn = formatDate(format, subscription.renewableFrom)
-  const selected = subscription.plans.find(
-    (plan) => plan.slug === selectedSlug
-  )
+  const selected = subscription.plans.find((plan) => plan.slug === selectedSlug)
   const selectedOption = selected?.intervals[interval] ?? null
   const canBuySelected = selectedOption?.purchasable ?? false
 
@@ -114,7 +112,9 @@ export default function BillingWall({ subscription, methods }: Props) {
               : t("unpaidTitle")}
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed font-medium text-muted-foreground sm:text-lg">
-          {subscription.state === "active" ? t("activeSubtitle") : t("subtitle")}
+          {subscription.state === "active"
+            ? t("activeSubtitle")
+            : t("subtitle")}
         </p>
       </header>
 
@@ -248,8 +248,7 @@ export default function BillingWall({ subscription, methods }: Props) {
                 : t(
                     selectedSlug === subscription.tier ? "renewCta" : "payCta",
                     {
-                      amount:
-                        selectedOption?.priceEGP.toLocaleString() ?? "",
+                      amount: selectedOption?.priceEGP.toLocaleString() ?? "",
                     }
                   )}
             </Button>
@@ -301,7 +300,11 @@ function formatDate(
   if (!iso) return null
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return null
-  return format.dateTime(date, { day: "numeric", month: "long" })
+  return format.dateTime(date, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
 }
 
 /**

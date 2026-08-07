@@ -72,6 +72,15 @@ interface RefundsTableProps {
   canReview?: boolean
 }
 
+function getIdString(val: unknown): string {
+  if (!val) return ""
+  if (typeof val === "string") return val
+  if (typeof val === "object" && val !== null && "_id" in val) {
+    return String((val as { _id: unknown })._id)
+  }
+  return String(val)
+}
+
 const STATUS_CONFIG: Record<
   RefundStatus,
   {
@@ -209,9 +218,13 @@ export default function RefundsTable({
         if (search.trim()) {
           const q = search.toLowerCase()
           const matchReason = refund.reason?.toLowerCase().includes(q)
-          const matchId = refund._id.toLowerCase().includes(q)
-          const matchGroup = refund.orderGroupId?.toLowerCase().includes(q)
-          const matchPayment = refund.paymentId?.toLowerCase().includes(q)
+          const matchId = getIdString(refund._id).toLowerCase().includes(q)
+          const matchGroup = getIdString(refund.orderGroupId)
+            .toLowerCase()
+            .includes(q)
+          const matchPayment = getIdString(refund.paymentId)
+            .toLowerCase()
+            .includes(q)
           const matchError = refund.gatewayError?.toLowerCase().includes(q)
           if (
             !matchReason &&
@@ -297,15 +310,6 @@ export default function RefundsTable({
                 <h1 className="text-2xl font-bold tracking-tight text-foreground">
                   {t("title")}
                 </h1>
-                {metrics.awaitingCount > 0 && (
-                  <Badge
-                    variant="outline"
-                    className="border-amber-500/30 bg-amber-500/10 text-xs font-semibold text-amber-600 dark:text-amber-400"
-                  >
-                    <span className="me-1.5 inline-block size-2 animate-ping rounded-full bg-amber-500" />
-                    {t("badgePending", { count: metrics.awaitingCount })}
-                  </Badge>
-                )}
               </div>
               <p className="mt-0.5 text-sm text-muted-foreground">
                 {t("subtitle")}
@@ -620,7 +624,7 @@ export default function RefundsTable({
                           {formatCurrency(refund.amountCents / 100, locale)}
                         </span>
                         <span className="font-mono text-[10px] text-muted-foreground">
-                          ID: #{refund._id.slice(-6).toUpperCase()}
+                          ID: #{getIdString(refund._id).slice(-6).toUpperCase()}
                         </span>
                       </div>
                     </TableCell>
@@ -812,13 +816,16 @@ export default function RefundsTable({
                     {t("details.orderGroupId")}:
                   </span>
                   <div className="flex items-center gap-1 font-mono font-medium text-foreground">
-                    <span>{detailsRefund.orderGroupId}</span>
+                    <span>{getIdString(detailsRefund.orderGroupId)}</span>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="size-6 text-muted-foreground hover:text-foreground"
                       onClick={() =>
-                        handleCopy(detailsRefund.orderGroupId, "groupId")
+                        handleCopy(
+                          getIdString(detailsRefund.orderGroupId),
+                          "groupId"
+                        )
                       }
                     >
                       <Copy className="size-3" />
@@ -833,13 +840,16 @@ export default function RefundsTable({
                       {t("details.paymentId")}:
                     </span>
                     <div className="flex items-center gap-1 font-mono font-medium text-foreground">
-                      <span>{detailsRefund.paymentId}</span>
+                      <span>{getIdString(detailsRefund.paymentId)}</span>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="size-6 text-muted-foreground hover:text-foreground"
                         onClick={() =>
-                          handleCopy(detailsRefund.paymentId!, "paymentId")
+                          handleCopy(
+                            getIdString(detailsRefund.paymentId!),
+                            "paymentId"
+                          )
                         }
                       >
                         <Copy className="size-3" />

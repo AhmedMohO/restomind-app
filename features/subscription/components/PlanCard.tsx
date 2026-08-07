@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { Lock } from "lucide-react"
+import { Check, Lock } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -38,6 +38,7 @@ export default function PlanCard({
   const notSold = option === null
   const locked = notSold || !option.purchasable
   const selectable = !locked
+  const isScale = plan.slug === "scale"
 
   return (
     <Card
@@ -54,7 +55,7 @@ export default function PlanCard({
         }
       }}
       className={cn(
-        "rounded-2xl p-5 shadow-xs transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        "flex flex-col justify-between rounded-2xl p-5 shadow-xs transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         locked
           ? "cursor-not-allowed opacity-60"
           : "cursor-pointer hover:border-foreground/30 hover:shadow-sm",
@@ -87,13 +88,13 @@ export default function PlanCard({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-2 p-0">
+      <CardContent className="space-y-4 p-0">
         {notSold ? (
           <p className="text-muted-foreground py-2 text-base font-medium">
             {t("notSoldOnInterval")}
           </p>
         ) : (
-          <>
+          <div>
             <p className="text-3xl font-extrabold tracking-tight text-foreground tabular-nums sm:text-4xl">
               {/* The standard price, struck through, only when this merchant
                   is actually being charged less than it. */}
@@ -108,7 +109,7 @@ export default function PlanCard({
               </span>
             </p>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="mt-1 flex flex-wrap items-center gap-2">
               {/* Per-month equivalent is what makes two intervals comparable;
                   without it a yearly figure just looks more expensive. */}
               {interval !== "monthly" && (
@@ -129,24 +130,73 @@ export default function PlanCard({
             </div>
 
             {option.standardPriceEGP !== null && (
-              <p className="text-sm font-semibold text-primary">
+              <p className="mt-1 text-sm font-semibold text-primary">
                 {t("earlyBirdPrice")}
               </p>
             )}
-          </>
+          </div>
         )}
-
-        <p className="pt-2 text-base font-medium text-foreground/90">
-          {plan.productCap === null
-            ? t("unlimitedProducts")
-            : t("upToProducts", { cap: plan.productCap.toLocaleString() })}
-        </p>
 
         {!plan.fitsCurrentCatalogue && (
           <p className="text-sm font-semibold text-destructive">
             {t("tooSmall")}
           </p>
         )}
+
+        {/* Benefits list section */}
+        <div className="space-y-3 border-t pt-3">
+          <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+            {t("includedFeatures")}
+          </p>
+          <ul className="space-y-2.5 text-sm">
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className="font-semibold text-foreground">
+                {plan.productCap === null
+                  ? t("unlimitedProducts")
+                  : t("upToProducts", { cap: plan.productCap.toLocaleString() })}
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-foreground/90">{t("benefits.aiForecasting")}</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-foreground/90">{t("benefits.surplusOffers")}</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className={cn("text-foreground/90", isScale && "font-semibold text-foreground")}>
+                {isScale ? t("benefits.advancedInventory") : t("benefits.inventoryRecipes")}
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-foreground/90">{t("benefits.orderRefunds")}</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className={cn("text-foreground/90", isScale && "font-semibold text-foreground")}>
+                {isScale ? t("benefits.deepAnalytics") : t("benefits.analytics")}
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-foreground/90">{t("benefits.weeklyPayouts")}</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-foreground/90">{t("benefits.customerGrowth")}</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className={cn("text-foreground/90", isScale && "font-semibold text-primary")}>
+                {isScale ? t("benefits.prioritySupport") : t("benefits.standardSupport")}
+              </span>
+            </li>
+          </ul>
+        </div>
 
         {/* Why the card is dead, said plainly. The backend supplies the
             sentence, including the date it frees up. */}
@@ -160,3 +210,4 @@ export default function PlanCard({
     </Card>
   )
 }
+

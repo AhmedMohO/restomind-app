@@ -12,15 +12,15 @@ export type RefundSettlementMode = "gateway" | "offline"
 export interface ApiRefund {
   _id: string
   paymentId?: string
-  orderGroupId: string
-  orderId?: string
+  orderGroupId: string | { _id: string; [key: string]: unknown }
+  orderId?: string | { _id: string; [key: string]: unknown }
   lineItemIndexes?: number[]
   amountCents: number
   reason: string
   settlementMode: RefundSettlementMode
   status: RefundStatus
-  initiatedBy: string
-  reviewedBy?: string
+  initiatedBy: string | { _id: string; fullName?: string; emailAddress?: string; [key: string]: unknown }
+  reviewedBy?: string | { _id: string; fullName?: string; emailAddress?: string; [key: string]: unknown }
   reviewedAt?: string
   rejectionReason?: string
   gatewayOperation?: "refund" | "void"
