@@ -44,32 +44,9 @@ export type PlanCreate = Pick<
 
 export type PlanUpdate = Partial<Omit<PlanCreate, "slug">>
 
-/** Cents to whole EGP, for display. */
-export function toEGP(cents: number | null): number | null {
-  return cents === null ? null : cents / 100
-}
+export {
+  toEGP,
+  toCents,
+  ladderViolation,
+} from "../utils"
 
-/** Whole EGP to cents, for submission. Prices are never stored as floats. */
-export function toCents(egp: number | null): number | null {
-  return egp === null ? null : Math.round(egp * 100)
-}
-
-/**
- * Mirrors the backend ladder guard so the admin form can warn before
- * submitting. The server rejects a bad ladder regardless — this only saves a
- * round trip.
- */
-export function ladderViolation(prices: PlanPrices): BillingInterval | null {
-  let previousPerMonth = Number.POSITIVE_INFINITY
-
-  for (const interval of BILLING_INTERVALS) {
-    const price = prices[interval]
-    if (price === null) continue
-
-    const perMonth = price / INTERVAL_MONTHS[interval]
-    if (perMonth > previousPerMonth) return interval
-    previousPerMonth = perMonth
-  }
-
-  return null
-}

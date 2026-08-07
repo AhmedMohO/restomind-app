@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query"
 
 import {
   archivePlanAction,
@@ -11,7 +11,7 @@ import type { Plan, PlanCreate, PlanUpdate } from "../api/type"
 
 export const PLANS_QUERY_KEY = ["admin", "plans"] as const
 
-export function usePlans() {
+export function usePlans(): UseQueryResult<Plan[] | null, Error> {
   return useQuery<Plan[] | null>({
     queryKey: PLANS_QUERY_KEY,
     queryFn: fetchPlansAction,

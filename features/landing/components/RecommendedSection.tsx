@@ -6,7 +6,6 @@ export default async function RecommendedSection() {
   const t = await getTranslations("Recommended")
   const res = await fetchRecommendedOffersAction({ limit: 20 })
   const products = res?.items
-  console.log(products)
 
   if (!products) return null
   return (

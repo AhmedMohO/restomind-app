@@ -16,11 +16,9 @@ import {
   Filter,
   Loader2,
   Receipt,
-  RefreshCcw,
   RotateCcw,
   Search,
   ShieldAlert,
-  Sparkles,
   X,
   XCircle,
 } from "lucide-react"
@@ -131,10 +129,14 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
   const [limit, setLimit] = React.useState(10)
 
   // Dialog States
-  const [rejectingRefund, setRejectingRefund] = React.useState<ApiRefund | null>(null)
+  const [rejectingRefund, setRejectingRefund] =
+    React.useState<ApiRefund | null>(null)
   const [rejectionReason, setRejectionReason] = React.useState("")
-  const [approvingRefund, setApprovingRefund] = React.useState<ApiRefund | null>(null)
-  const [detailsRefund, setDetailsRefund] = React.useState<ApiRefund | null>(null)
+  const [approvingRefund, setApprovingRefund] =
+    React.useState<ApiRefund | null>(null)
+  const [detailsRefund, setDetailsRefund] = React.useState<ApiRefund | null>(
+    null
+  )
   const [copiedId, setCopiedId] = React.useState<string | null>(null)
 
   const [pendingId, setPendingId] = React.useState<string | null>(null)
@@ -159,7 +161,9 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
       (r) => r.status === "manual_required" || r.status === "failed"
     ).length
 
-    const succeededCount = refunds.filter((r) => r.status === "succeeded").length
+    const succeededCount = refunds.filter(
+      (r) => r.status === "succeeded"
+    ).length
     const succeededCents = refunds
       .filter((r) => r.status === "succeeded")
       .reduce((acc, r) => acc + (r.amountCents || 0), 0)
@@ -228,7 +232,9 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
     return filteredRefunds.slice(start, start + limit)
   }, [filteredRefunds, page, limit])
 
-  const isFiltered = Boolean(search || statusFilter !== "all" || settlementFilter !== "all")
+  const isFiltered = Boolean(
+    search || statusFilter !== "all" || settlementFilter !== "all"
+  )
 
   function handleReview(
     refund: ApiRefund,
@@ -286,7 +292,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                     variant="outline"
                     className="border-amber-500/30 bg-amber-500/10 text-xs font-semibold text-amber-600 dark:text-amber-400"
                   >
-                    <span className="me-1.5 size-2 rounded-full bg-amber-500 animate-ping inline-block" />
+                    <span className="me-1.5 inline-block size-2 animate-ping rounded-full bg-amber-500" />
                     {t("badgePending", { count: metrics.awaitingCount })}
                   </Badge>
                 )}
@@ -296,18 +302,6 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
               </p>
             </div>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.location.reload()}
-            className="gap-2 rounded-xl border-border hover:bg-accent hover:text-foreground"
-          >
-            <RefreshCcw className="size-4 text-muted-foreground" />
-            <span>{t("filters.clearFilters")}</span>
-          </Button>
         </div>
       </div>
 
@@ -333,7 +327,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
               <Receipt className="size-5" />
             </div>
           </CardContent>
-          <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-primary/40 to-primary/10" />
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary/40 to-primary/10" />
         </Card>
 
         {/* Awaiting Review */}
@@ -358,7 +352,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
               <Clock className="size-5" />
             </div>
           </CardContent>
-          <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 to-amber-300" />
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-500 to-amber-300" />
         </Card>
 
         {/* Needs Manual Payout */}
@@ -383,7 +377,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
               <ShieldAlert className="size-5" />
             </div>
           </CardContent>
-          <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-rose-600 to-rose-400" />
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-rose-600 to-rose-400" />
         </Card>
 
         {/* Total Value Refunded */}
@@ -403,7 +397,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
               <CheckCircle2 className="size-5" />
             </div>
           </CardContent>
-          <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-300" />
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-300" />
         </Card>
       </div>
 
@@ -416,7 +410,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
             placeholder={t("filters.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="ps-9 pe-9 h-9 text-xs rounded-xl bg-background"
+            className="h-9 rounded-xl bg-background ps-9 pe-9 text-xs"
           />
           {search && (
             <Button
@@ -433,35 +427,61 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Status Filter */}
-          <Select value={statusFilter} onValueChange={(val) => val && setStatusFilter(val)}>
-            <SelectTrigger className="h-9 w-[170px] rounded-xl text-xs bg-background">
+          <Select
+            value={statusFilter}
+            onValueChange={(val) => val && setStatusFilter(val)}
+          >
+            <SelectTrigger className="h-9 w-[170px] rounded-xl bg-background text-xs">
               <div className="flex items-center gap-2 truncate">
-                <Filter className="size-3.5 text-muted-foreground shrink-0" />
+                <Filter className="size-3.5 shrink-0 text-muted-foreground" />
                 <SelectValue placeholder={t("filters.statusAll")} />
               </div>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("filters.statusAll")}</SelectItem>
-              <SelectItem value="attention">{t("filters.statusAttention")}</SelectItem>
-              <SelectItem value="requested">{t("filters.statusRequested")}</SelectItem>
-              <SelectItem value="approved">{t("filters.statusApproved")}</SelectItem>
-              <SelectItem value="processing">{t("filters.statusProcessing")}</SelectItem>
-              <SelectItem value="succeeded">{t("filters.statusSucceeded")}</SelectItem>
-              <SelectItem value="manual_required">{t("filters.statusManualRequired")}</SelectItem>
-              <SelectItem value="rejected">{t("filters.statusRejected")}</SelectItem>
-              <SelectItem value="failed">{t("filters.statusFailed")}</SelectItem>
+              <SelectItem value="attention">
+                {t("filters.statusAttention")}
+              </SelectItem>
+              <SelectItem value="requested">
+                {t("filters.statusRequested")}
+              </SelectItem>
+              <SelectItem value="approved">
+                {t("filters.statusApproved")}
+              </SelectItem>
+              <SelectItem value="processing">
+                {t("filters.statusProcessing")}
+              </SelectItem>
+              <SelectItem value="succeeded">
+                {t("filters.statusSucceeded")}
+              </SelectItem>
+              <SelectItem value="manual_required">
+                {t("filters.statusManualRequired")}
+              </SelectItem>
+              <SelectItem value="rejected">
+                {t("filters.statusRejected")}
+              </SelectItem>
+              <SelectItem value="failed">
+                {t("filters.statusFailed")}
+              </SelectItem>
             </SelectContent>
           </Select>
 
           {/* Settlement Filter */}
-          <Select value={settlementFilter} onValueChange={(val) => val && setSettlementFilter(val)}>
-            <SelectTrigger className="h-9 w-[150px] rounded-xl text-xs bg-background">
+          <Select
+            value={settlementFilter}
+            onValueChange={(val) => val && setSettlementFilter(val)}
+          >
+            <SelectTrigger className="h-9 w-[150px] rounded-xl bg-background text-xs">
               <SelectValue placeholder={t("filters.settlementAll")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("filters.settlementAll")}</SelectItem>
-              <SelectItem value="gateway">{t("filters.settlementGateway")}</SelectItem>
-              <SelectItem value="offline">{t("filters.settlementOffline")}</SelectItem>
+              <SelectItem value="gateway">
+                {t("filters.settlementGateway")}
+              </SelectItem>
+              <SelectItem value="offline">
+                {t("filters.settlementOffline")}
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -517,18 +537,31 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead className="w-[180px] font-semibold text-xs">{t("table.status")}</TableHead>
-                <TableHead className="font-semibold text-xs">{t("table.amount")}</TableHead>
-                <TableHead className="font-semibold text-xs">{t("table.scope")}</TableHead>
-                <TableHead className="max-w-[260px] font-semibold text-xs">{t("table.reason")}</TableHead>
-                <TableHead className="font-semibold text-xs">{t("table.date")}</TableHead>
-                <TableHead className="text-end font-semibold text-xs">{t("table.actions")}</TableHead>
+                <TableHead className="w-[180px] text-xs font-semibold">
+                  {t("table.status")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  {t("table.amount")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  {t("table.scope")}
+                </TableHead>
+                <TableHead className="max-w-[260px] text-xs font-semibold">
+                  {t("table.reason")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  {t("table.date")}
+                </TableHead>
+                <TableHead className="text-end text-xs font-semibold">
+                  {t("table.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {paginatedRefunds.map((refund) => {
-                const config = STATUS_CONFIG[refund.status] || STATUS_CONFIG.requested
+                const config =
+                  STATUS_CONFIG[refund.status] || STATUS_CONFIG.requested
                 const IconComponent = config.icon
                 const busy = isPending && pendingId === refund._id
 
@@ -540,17 +573,21 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                   >
                     {/* Status Cell */}
                     <TableCell>
-                      <div className="flex flex-col gap-1 items-start">
+                      <div className="flex flex-col items-start gap-1">
                         <Badge
                           variant="outline"
-                          className={`gap-1.5 py-1 px-2.5 font-semibold text-xs border rounded-xl ${config.badgeClass}`}
+                          className={`gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-semibold ${config.badgeClass}`}
                         >
-                          <IconComponent className={`size-3.5 shrink-0 ${refund.status === "processing" ? "animate-spin" : ""}`} />
-                          <span>{t(`statusLabels.${refund.status}` as any)}</span>
+                          <IconComponent
+                            className={`size-3.5 shrink-0 ${refund.status === "processing" ? "animate-spin" : ""}`}
+                          />
+                          <span>
+                            {t(`statusLabels.${refund.status}` as any)}
+                          </span>
                         </Badge>
 
                         {/* Settlement tag */}
-                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground ps-0.5">
+                        <div className="flex items-center gap-1 ps-0.5 text-[11px] text-muted-foreground">
                           {refund.settlementMode === "offline" ? (
                             <>
                               <Banknote className="size-3 text-amber-600 dark:text-amber-400" />
@@ -569,7 +606,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                     {/* Amount Cell */}
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-bold text-base tabular-nums text-foreground">
+                        <span className="text-base font-bold text-foreground tabular-nums">
                           {formatCurrency(refund.amountCents / 100, locale)}
                         </span>
                         <span className="font-mono text-[10px] text-muted-foreground">
@@ -585,10 +622,12 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                         className="rounded-lg bg-secondary/60 text-[11px] font-medium text-secondary-foreground"
                       >
                         {refund.lineItemIndexes?.length
-                          ? t("table.itemsCount", { count: refund.lineItemIndexes.length })
+                          ? t("table.itemsCount", {
+                              count: refund.lineItemIndexes.length,
+                            })
                           : refund.orderId
-                          ? t("table.singleResto")
-                          : t("table.wholeOrder")}
+                            ? t("table.singleResto")
+                            : t("table.wholeOrder")}
                       </Badge>
                     </TableCell>
 
@@ -599,21 +638,26 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                           {refund.reason || "—"}
                         </p>
                         {refund.gatewayError && (
-                          <div className="mt-1 flex items-start gap-1 rounded-lg bg-rose-500/10 p-1.5 text-[11px] font-medium text-rose-700 dark:text-rose-300 border border-rose-500/20">
+                          <div className="mt-1 flex items-start gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 p-1.5 text-[11px] font-medium text-rose-700 dark:text-rose-300">
                             <AlertTriangle className="mt-0.5 size-3 shrink-0 text-rose-600 dark:text-rose-400" />
-                            <span className="line-clamp-2">{refund.gatewayError}</span>
+                            <span className="line-clamp-2">
+                              {refund.gatewayError}
+                            </span>
                           </div>
                         )}
                       </div>
                     </TableCell>
 
                     {/* Date Cell */}
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                    <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
                       {formatDate(refund.createdAt, locale)}
                     </TableCell>
 
                     {/* Actions Cell */}
-                    <TableCell className="text-end" onClick={(e) => e.stopPropagation()}>
+                    <TableCell
+                      className="text-end"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-end gap-1.5">
                         {refund.status === "requested" ? (
                           <>
@@ -621,7 +665,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                               size="sm"
                               disabled={busy}
                               onClick={() => setApprovingRefund(refund)}
-                              className="h-8 gap-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-xs px-2.5 font-medium"
+                              className="h-8 gap-1.5 rounded-xl bg-emerald-600 px-2.5 text-xs font-medium text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
                             >
                               {busy ? (
                                 <Loader2 className="size-3.5 animate-spin" />
@@ -638,7 +682,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                                 setRejectingRefund(refund)
                                 setRejectionReason("")
                               }}
-                              className="h-8 gap-1.5 rounded-xl text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 hover:text-rose-700 border-rose-500/30 px-2.5 font-medium"
+                              className="h-8 gap-1.5 rounded-xl border-rose-500/30 px-2.5 text-xs font-medium text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-400"
                             >
                               <X className="size-3.5" />
                               <span>{t("actions.reject")}</span>
@@ -681,7 +725,10 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
       )}
 
       {/* Details Dialog */}
-      <Dialog open={Boolean(detailsRefund)} onOpenChange={(open) => !open && setDetailsRefund(null)}>
+      <Dialog
+        open={Boolean(detailsRefund)}
+        onOpenChange={(open) => !open && setDetailsRefund(null)}
+      >
         <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <div className="flex items-center gap-2">
@@ -705,14 +752,16 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
           {detailsRefund && (
             <div className="space-y-4 py-2 text-xs">
               {/* Amount Banner */}
-              <div className="flex items-center justify-between rounded-xl bg-muted/60 p-3.5 border">
+              <div className="flex items-center justify-between rounded-xl border bg-muted/60 p-3.5">
                 <div>
-                  <p className="text-[11px] text-muted-foreground">{t("table.amount")}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {t("table.amount")}
+                  </p>
                   <p className="text-xl font-bold text-foreground">
                     {formatCurrency(detailsRefund.amountCents / 100, locale)}
                   </p>
                 </div>
-                <div className="flex items-center gap-1.5 rounded-lg bg-background px-3 py-1.5 border text-xs font-medium">
+                <div className="flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-medium">
                   {detailsRefund.settlementMode === "offline" ? (
                     <>
                       <Banknote className="size-4 text-amber-500" />
@@ -731,7 +780,9 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
               <div className="space-y-2 rounded-xl border bg-card p-3">
                 {/* Refund ID */}
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("details.refundId")}:</span>
+                  <span className="text-muted-foreground">
+                    {t("details.refundId")}:
+                  </span>
                   <div className="flex items-center gap-1 font-mono font-medium text-foreground">
                     <span>{detailsRefund._id}</span>
                     <Button
@@ -747,14 +798,18 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
 
                 {/* Order Group ID */}
                 <div className="flex items-center justify-between border-t pt-2">
-                  <span className="text-muted-foreground">{t("details.orderGroupId")}:</span>
+                  <span className="text-muted-foreground">
+                    {t("details.orderGroupId")}:
+                  </span>
                   <div className="flex items-center gap-1 font-mono font-medium text-foreground">
                     <span>{detailsRefund.orderGroupId}</span>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="size-6 text-muted-foreground hover:text-foreground"
-                      onClick={() => handleCopy(detailsRefund.orderGroupId, "groupId")}
+                      onClick={() =>
+                        handleCopy(detailsRefund.orderGroupId, "groupId")
+                      }
                     >
                       <Copy className="size-3" />
                     </Button>
@@ -764,14 +819,18 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                 {/* Payment Transaction ID */}
                 {detailsRefund.paymentId && (
                   <div className="flex items-center justify-between border-t pt-2">
-                    <span className="text-muted-foreground">{t("details.paymentId")}:</span>
+                    <span className="text-muted-foreground">
+                      {t("details.paymentId")}:
+                    </span>
                     <div className="flex items-center gap-1 font-mono font-medium text-foreground">
                       <span>{detailsRefund.paymentId}</span>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="size-6 text-muted-foreground hover:text-foreground"
-                        onClick={() => handleCopy(detailsRefund.paymentId!, "paymentId")}
+                        onClick={() =>
+                          handleCopy(detailsRefund.paymentId!, "paymentId")
+                        }
                       >
                         <Copy className="size-3" />
                       </Button>
@@ -782,7 +841,9 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
 
               {/* Reason */}
               <div className="space-y-1">
-                <span className="font-semibold text-foreground">{t("table.reason")}</span>
+                <span className="font-semibold text-foreground">
+                  {t("table.reason")}
+                </span>
                 <p className="rounded-xl border bg-muted/30 p-3 text-foreground/90">
                   {detailsRefund.reason || "—"}
                 </p>
@@ -794,7 +855,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                   <span className="font-semibold text-rose-600 dark:text-rose-400">
                     {t("details.gatewayError")}
                   </span>
-                  <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-rose-700 dark:text-rose-300 font-mono text-[11px]">
+                  <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 font-mono text-[11px] text-rose-700 dark:text-rose-300">
                     {detailsRefund.gatewayError}
                   </div>
                 </div>
@@ -813,14 +874,18 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
               )}
 
               {/* Metadata Timestamps */}
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground border-t pt-3">
+              <div className="grid grid-cols-2 gap-2 border-t pt-3 text-[11px] text-muted-foreground">
                 <div>
-                  <span className="block font-medium text-foreground">{t("table.date")}</span>
+                  <span className="block font-medium text-foreground">
+                    {t("table.date")}
+                  </span>
                   {formatDate(detailsRefund.createdAt, locale)}
                 </div>
                 {detailsRefund.completedAt && (
                   <div>
-                    <span className="block font-medium text-foreground">{t("details.completedAt")}</span>
+                    <span className="block font-medium text-foreground">
+                      {t("details.completedAt")}
+                    </span>
                     {formatDate(detailsRefund.completedAt, locale)}
                   </div>
                 )}
@@ -836,9 +901,9 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                   onClick={() => {
                     setApprovingRefund(detailsRefund)
                   }}
-                  className="bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl"
+                  className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
                 >
-                  <Check className="size-4 me-1.5" />
+                  <Check className="me-1.5 size-4" />
                   {t("actions.approve")}
                 </Button>
                 <Button
@@ -848,14 +913,19 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                     setRejectingRefund(detailsRefund)
                     setRejectionReason("")
                   }}
-                  className="border-rose-500/30 text-rose-600 hover:bg-rose-500/10 rounded-xl"
+                  className="rounded-xl border-rose-500/30 text-rose-600 hover:bg-rose-500/10"
                 >
-                  <X className="size-4 me-1.5" />
+                  <X className="me-1.5 size-4" />
                   {t("actions.reject")}
                 </Button>
               </>
             )}
-            <Button variant="outline" size="sm" onClick={() => setDetailsRefund(null)} className="rounded-xl">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDetailsRefund(null)}
+              className="rounded-xl"
+            >
               {t("details.close")}
             </Button>
           </DialogFooter>
@@ -889,7 +959,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                     key={idx}
                     type="button"
                     onClick={() => setRejectionReason(chip)}
-                    className="rounded-lg border bg-muted/50 px-2.5 py-1 text-[11px] font-medium transition-colors hover:bg-primary/10 hover:border-primary/40 hover:text-primary text-start"
+                    className="rounded-lg border bg-muted/50 px-2.5 py-1 text-start text-[11px] font-medium transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
                   >
                     {chip}
                   </button>
@@ -924,7 +994,7 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
                 rejectingRefund &&
                 handleReview(rejectingRefund, "reject", rejectionReason.trim())
               }
-              className="rounded-xl gap-2"
+              className="gap-2 rounded-xl"
             >
               {isPending && <Loader2 className="size-3.5 animate-spin" />}
               <span>{t("actions.confirmReject")}</span>
@@ -949,16 +1019,20 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
           </DialogHeader>
 
           {approvingRefund && (
-            <div className="rounded-xl border bg-muted/40 p-3.5 text-xs space-y-1.5">
+            <div className="space-y-1.5 rounded-xl border bg-muted/40 p-3.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("table.amount")}:</span>
+                <span className="text-muted-foreground">
+                  {t("table.amount")}:
+                </span>
                 <span className="font-bold text-foreground">
                   {formatCurrency(approvingRefund.amountCents / 100, locale)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("details.settlementMethod")}:</span>
-                <span className="font-semibold capitalize text-foreground">
+                <span className="text-muted-foreground">
+                  {t("details.settlementMethod")}:
+                </span>
+                <span className="font-semibold text-foreground capitalize">
                   {approvingRefund.settlementMode === "offline"
                     ? t("table.offlineCash")
                     : t("table.onlineGateway")}
@@ -979,8 +1053,10 @@ export default function RefundsTable({ refunds }: RefundsTableProps) {
             <Button
               size="sm"
               disabled={isPending}
-              onClick={() => approvingRefund && handleReview(approvingRefund, "approve")}
-              className="bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl gap-2 font-medium"
+              onClick={() =>
+                approvingRefund && handleReview(approvingRefund, "approve")
+              }
+              className="gap-2 rounded-xl bg-emerald-600 font-medium text-white hover:bg-emerald-700"
             >
               {isPending && <Loader2 className="size-3.5 animate-spin" />}
               <span>{t("actions.confirmApprove")}</span>

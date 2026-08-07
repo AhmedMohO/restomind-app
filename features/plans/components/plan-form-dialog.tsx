@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useTranslations } from "next-intl"
-import { AlertTriangle, Loader2 } from "lucide-react"
+import { AlertTriangle, Layers, Loader2, Sparkles } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,44 +19,20 @@ import { Switch } from "@/components/ui/switch"
 
 import {
   BILLING_INTERVALS,
-  ladderViolation,
-  toCents,
+  INTERVAL_MONTHS,
   type BillingInterval,
   type Plan,
   type PlanCreate,
   type PlanPrices,
   type PlanUpdate,
 } from "../api/type"
-
-/** Prices are edited in whole EGP and submitted as cents. */
-type PriceDraft = Record<BillingInterval, string>
-
-const EMPTY_PRICES: PriceDraft = { monthly: "", halfYearly: "", yearly: "" }
-
-function toDraft(prices: PlanPrices): PriceDraft {
-  return {
-    monthly: prices.monthly === null ? "" : String(prices.monthly / 100),
-    halfYearly:
-      prices.halfYearly === null ? "" : String(prices.halfYearly / 100),
-    yearly: prices.yearly === null ? "" : String(prices.yearly / 100),
-  }
-}
-
-/** An empty field means "not sold", which is null — never 0. */
-function draftToPrices(draft: PriceDraft): PlanPrices {
-  const parse = (raw: string) => {
-    const trimmed = raw.trim()
-    if (trimmed === "") return null
-    const value = Number(trimmed)
-    return Number.isFinite(value) && value >= 0 ? toCents(value) : null
-  }
-
-  return {
-    monthly: parse(draft.monthly),
-    halfYearly: parse(draft.halfYearly),
-    yearly: parse(draft.yearly),
-  }
-}
+import {
+  EMPTY_PRICES,
+  draftToPrices,
+  ladderViolation,
+  toDraft,
+  type PriceDraft,
+} from "../utils"
 
 export function PlanFormDialog({
   open,
@@ -74,7 +50,7 @@ export function PlanFormDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         {/*
           Keyed so each opening mounts a fresh form: the fields initialise
           straight from `plan` rather than being reset by an effect, so a
@@ -149,33 +125,47 @@ function PlanForm({
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>{isEdit ? t("editTitle") : t("createTitle")}</DialogTitle>
-        <DialogDescription>
+      <DialogHeader className="gap-1">
+        <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Layers className="size-4" />
+          </div>
+          {isEdit ? t("editTitle") : t("createTitle")}
+        </DialogTitle>
+        <DialogDescription className="text-sm text-muted-foreground">
           {isEdit ? t("editDescription") : t("createDescription")}
         </DialogDescription>
       </DialogHeader>
 
-      <div className="grid gap-4 py-2">
-          <div className="grid gap-2">
-            <Label htmlFor="plan-slug">{t("slug")}</Label>
+      <div className="grid max-h-[calc(100vh-20rem)] gap-5 overflow-y-auto py-3">
+        {/* Slug and Label */}
+        <div className="grid grid-cols-1 gap-4">
+          <div className="grid gap-1.5">
+            <Label htmlFor="plan-slug" className="text-xs font-semibold">
+              {t("slug")}
+            </Label>
             <Input
               id="plan-slug"
               value={slug}
               disabled={isEdit}
               placeholder="enterprise"
+              className="font-mono text-sm"
               onChange={(event) => setSlug(event.target.value)}
             />
-            <p className="text-muted-foreground text-xs">
+            <p className="text-[11px] text-muted-foreground">
               {isEdit ? t("slugLocked") : t("slugHint")}
             </p>
             {!isEdit && slug !== "" && !slugValid && (
-              <p className="text-destructive text-xs">{t("slugInvalid")}</p>
+              <p className="text-[11px] font-medium text-destructive">
+                {t("slugInvalid")}
+              </p>
             )}
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="plan-label">{t("label")}</Label>
+          <div className="grid gap-1.5">
+            <Label htmlFor="plan-label" className="text-xs font-semibold">
+              {t("label")}
+            </Label>
             <Input
               id="plan-label"
               value={label}
@@ -183,9 +173,14 @@ function PlanForm({
               onChange={(event) => setLabel(event.target.value)}
             />
           </div>
+        </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="plan-cap">{t("productCap")}</Label>
+        {/* Product Limit & Sort Order */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="plan-cap" className="text-xs font-semibold">
+              {t("productCap")}
+            </Label>
             <Input
               id="plan-cap"
               type="number"
@@ -194,85 +189,122 @@ function PlanForm({
               placeholder={t("unlimited")}
               onChange={(event) => setCap(event.target.value)}
             />
-            <p className="text-muted-foreground text-xs">{t("capHint")}</p>
           </div>
 
-          <div className="grid gap-2">
-            <Label>{t("pricesEGP")}</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {BILLING_INTERVALS.map((interval) => (
-                <div key={interval} className="grid gap-1">
-                  <Label
-                    htmlFor={`price-${interval}`}
-                    className="text-muted-foreground text-xs font-normal"
-                  >
-                    {t(`interval.${interval}`)}
-                  </Label>
-                  <Input
-                    id={`price-${interval}`}
-                    type="number"
-                    min={0}
-                    value={prices[interval]}
-                    placeholder="—"
-                    onChange={(event) =>
-                      setPrices((previous) => ({
-                        ...previous,
-                        [interval]: event.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-            <p className="text-muted-foreground text-xs">{t("pricesHint")}</p>
-
-            {violation && (
-              <p className="text-destructive flex items-start gap-1.5 text-xs">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-                {t("ladderWarning", { interval: t(`interval.${violation}`) })}
-              </p>
-            )}
-            {nothingPriced && (
-              <p className="text-destructive flex items-start gap-1.5 text-xs">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-                {t("noPriceWarning")}
-              </p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 items-end gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="plan-order">{t("sortOrder")}</Label>
-              <Input
-                id="plan-order"
-                type="number"
-                value={sortOrder}
-                onChange={(event) => setSortOrder(event.target.value)}
-              />
-            </div>
-            <div className="flex items-center justify-between gap-3 rounded-md border p-3">
-              <div className="grid gap-0.5">
-                <Label htmlFor="plan-trial" className="text-sm">
-                  {t("trialPlan")}
-                </Label>
-                <p className="text-muted-foreground text-xs">
-                  {t("trialPlanHint")}
-                </p>
-              </div>
-              <Switch
-                id="plan-trial"
-                checked={isTrialPlan}
-                onCheckedChange={setIsTrialPlan}
-              />
-            </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="plan-order" className="text-xs font-semibold">
+              {t("sortOrder")}
+            </Label>
+            <Input
+              id="plan-order"
+              type="number"
+              value={sortOrder}
+              onChange={(event) => setSortOrder(event.target.value)}
+            />
           </div>
         </div>
 
-      <DialogFooter>
+        {/* Pricing Ladder Section */}
+        <div className="grid gap-3 rounded-xl border border-border/60 bg-muted/20 p-3.5">
+          <div>
+            <Label className="text-xs font-semibold">{t("pricesEGP")}</Label>
+            <p className="text-[11px] text-muted-foreground">
+              {t("pricesHint")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {BILLING_INTERVALS.map((interval) => {
+              const val = prices[interval].trim()
+              const numVal = val !== "" ? Number(val) : null
+              const perMo =
+                numVal !== null && Number.isFinite(numVal) && numVal >= 0
+                  ? Math.round(numVal / INTERVAL_MONTHS[interval])
+                  : null
+
+              return (
+                <div
+                  key={interval}
+                  className="grid gap-1.5 rounded-lg border border-border/50 bg-card p-2.5 shadow-2xs"
+                >
+                  <Label
+                    htmlFor={`price-${interval}`}
+                    className="text-xs font-medium text-foreground"
+                  >
+                    {t(`interval.${interval}`)}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id={`price-${interval}`}
+                      type="number"
+                      min={0}
+                      value={prices[interval]}
+                      placeholder="—"
+                      className="pe-11 font-semibold tabular-nums"
+                      onChange={(event) =>
+                        setPrices((previous) => ({
+                          ...previous,
+                          [interval]: event.target.value,
+                        }))
+                      }
+                    />
+                    <span className="pointer-events-none absolute inset-y-0 end-2.5 flex items-center text-xs text-muted-foreground">
+                      {t("egp")}
+                    </span>
+                  </div>
+                  {perMo !== null && (
+                    <p className="text-[11px] text-muted-foreground tabular-nums">
+                      {t("perMonth", { amount: perMo.toLocaleString() })}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {violation && (
+            <div className="flex items-center gap-2 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <AlertTriangle className="size-4 shrink-0" />
+              <span>
+                {t("ladderWarning", { interval: t(`interval.${violation}`) })}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Trial Plan Toggle Card */}
+        <div
+          className={`flex items-center justify-between gap-3 rounded-xl border p-3.5 transition-colors ${
+            isTrialPlan
+              ? "border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10"
+              : "border-border/60 bg-card"
+          }`}
+        >
+          <div className="grid gap-0.5">
+            <Label
+              htmlFor="plan-trial"
+              className="flex items-center gap-1.5 text-sm font-semibold"
+            >
+              <Sparkles className="size-4 text-amber-500" />
+              {t("trialPlan")}
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              {t("trialPlanHint")}
+            </p>
+          </div>
+          <Switch
+            id="plan-trial"
+            checked={isTrialPlan}
+            onCheckedChange={setIsTrialPlan}
+          />
+        </div>
+      </div>
+
+      <DialogFooter className="gap-2 sm:gap-0">
         <Button variant="outline" onClick={onCancel}>
           {t("cancel")}
         </Button>
-        <Button onClick={submit} disabled={blocked}>
+        <Button onClick={submit} disabled={blocked} className="gap-2">
           {saving && <Loader2 className="size-4 animate-spin" />}
           {isEdit ? t("save") : t("create")}
         </Button>
