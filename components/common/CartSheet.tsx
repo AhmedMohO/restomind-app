@@ -2,10 +2,11 @@
 
 import { useSyncExternalStore } from "react"
 import { useCart } from "@/hooks/use-cart"
+import { getCartItemRestaurantName } from "@/features/cart/utils"
 import { useLocale, useTranslations } from "next-intl"
 import { Link } from "@/i18n/routing"
 import Image from "next/image"
-import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag } from "lucide-react"
+import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -128,6 +129,7 @@ export default function CartSheet() {
               {cart.map((item) => {
                 const productObj = item.offer.productId
                 const itemTitle = productObj?.title || ""
+                const restaurantName = getCartItemRestaurantName(item)
                 const itemImage =
                   productObj?.image?.secure_url || "/placeholder.svg"
                 const originalPrice =
@@ -166,9 +168,15 @@ export default function CartSheet() {
                     </button>
                     {/* Product Details & Quantity controls */}
                     <div className="min-w-0 flex-1 space-y-1.5 text-start">
-                      <h4 className="truncate pe-2 font-serif text-sm font-bold text-[#2B1B15] dark:text-neutral-100">
+                      <h4 className="truncate pe-6 font-serif text-sm font-bold text-[#2B1B15] dark:text-neutral-100">
                         {itemTitle}
                       </h4>
+                      {restaurantName && (
+                        <p className="truncate text-xs text-muted-foreground flex items-center gap-1 font-medium pe-6">
+                          <Store size={12} className="shrink-0 text-primary/80" />
+                          <span className="truncate">{restaurantName}</span>
+                        </p>
+                      )}
                       <div className="flex items-center justify-between self-stretch py-0.5">
                         <div className="flex items-center gap-1.5">
                           <div className="flex items-center rounded-full border border-[#ECE6DB] bg-white px-1 py-0.5 dark:border-neutral-800 dark:bg-neutral-900">

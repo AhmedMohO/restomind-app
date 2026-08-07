@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "@/i18n/routing"
 import { useTranslations } from "next-intl"
 import { AnimatePresence, motion } from "framer-motion"
 import { toast } from "sonner"
 
 import { useCart } from "@/hooks/use-cart"
+import { isSameRestaurantCart } from "@/features/cart/utils"
 import { createOrderAction } from "@/features/orders/actions"
 import { DELIVERY_FEE } from "@/features/checkout/constants"
 import { getErrorMessage } from "@/lib/api/utils"
@@ -40,12 +41,23 @@ interface CheckoutFlowProps {
     email: string
     phone: string
   }
+  /**
+   * Online methods actually enabled on the Paymob account, resolved server-side.
+   * Empty means card-and-wallet are unconfigured and only COD is offered.
+   */
+  enabledOnlineMethods?: ("card" | "wallet")[]
 }
 
-export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlowProps) {
+export default function CheckoutFlow({
+  initialAddresses,
+  customer,
+  enabledOnlineMethods = [],
+}: CheckoutFlowProps) {
   const t = useTranslations("Checkout")
   const router = useRouter()
-  const { resetCart } = useCart()
+  const { cart, resetCart } = useCart()
+
+  const isSingleRestaurant = isSameRestaurantCart(cart)
 
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [direction, setDirection] = useState(1)
@@ -65,6 +77,28 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("home")
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash")
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
+  const [hasReviewedDelivery, setHasReviewedDelivery] = useState(false)
+
+  const cartItemIds = cart.map((i) => i.offer._id).join(",")
+
+  // Reset delivery review state whenever cart contents change
+  useEffect(() => {
+    setHasReviewedDelivery(false)
+  }, [cartItemIds])
+
+  // Guard: Force Home Delivery and return user to Step 2 if cart has multiple restaurants
+  useEffect(() => {
+    if (!isSingleRestaurant) {
+      if (deliveryMethod !== "home") {
+        setDeliveryMethod("home")
+      }
+      if (step === 3 && !hasReviewedDelivery) {
+        setDirection(-1)
+        setStep(2)
+        toast.info(t("multiRestaurantStepNotice"))
+      }
+    }
+  }, [isSingleRestaurant, deliveryMethod, step, hasReviewedDelivery, t])
 
   function goForward(next: 1 | 2 | 3) {
     setDirection(1)
@@ -99,16 +133,31 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
 
     setIsPlacingOrder(true)
     // "Store Pickup" must omit the address entirely (docs §9.1).
+    const apiPaymentMethod =
+      paymentMethod === "card"
+        ? "Card"
+        : paymentMethod === "wallet"
+          ? "Wallet"
+          : "Cash on Delivery"
+
     const res = await createOrderAction({
       deliveryMethod: isHomeDelivery ? "Home Delivery" : "Store Pickup",
       ...(isHomeDelivery && selectedAddressId
         ? { deliveryAddress: { addressId: selectedAddressId } }
         : {}),
       ...(specialNotes ? { specialNotes } : {}),
-      paymentMethod: "Cash on Delivery",
+      paymentMethod: apiPaymentMethod,
     })
 
     if (res.success) {
+      // Online payment: the order exists but is only RESERVED. The cart is
+      // deliberately NOT cleared here — the backend clears it when Paymob
+      // confirms, so a failed payment does not also lose the customer's cart.
+      if (res.checkoutUrl) {
+        window.location.href = res.checkoutUrl
+        return
+      }
+
       resetCart()
       router.push("/checkout/confirmed")
       setIsPlacingOrder(false)
@@ -163,8 +212,12 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
               {step === 2 && (
                 <DeliveryStep
                   deliveryMethod={deliveryMethod}
+                  isSingleRestaurant={isSingleRestaurant}
                   onDeliveryMethodChange={setDeliveryMethod}
-                  onContinue={() => goForward(3)}
+                  onContinue={() => {
+                    setHasReviewedDelivery(true)
+                    goForward(3)
+                  }}
                   onBack={() => goBack(1)}
                 />
               )}
@@ -173,6 +226,7 @@ export default function CheckoutFlow({ initialAddresses, customer }: CheckoutFlo
                   paymentMethod={paymentMethod}
                   deliveryFee={deliveryFee}
                   isPlacingOrder={isPlacingOrder}
+                  enabledOnlineMethods={enabledOnlineMethods}
                   onPaymentMethodChange={setPaymentMethod}
                   onPlaceOrder={handlePlaceOrder}
                   onBack={() => goBack(2)}

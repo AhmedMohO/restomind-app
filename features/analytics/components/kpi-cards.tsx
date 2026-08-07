@@ -95,12 +95,62 @@ export function KpiCards({ summary, role, isLoading = false }: KpiCardsProps) {
 
   const revCurrent = summary.revenue?.current ?? 0
   const ordersCurrent = summary.orders?.current ?? 0
+  const isRoleAdmin = role === "admin"
 
-  const netProfitVal = summary.netProfit ?? Math.round(revCurrent * 0.86)
-  const taxVal = summary.taxDeduction ?? Math.round(revCurrent * 0.14)
   const avgOrderVal =
     summary.avgOrderValue ??
     (ordersCurrent > 0 ? Math.round(revCurrent / ordersCurrent) : 0)
+
+  const platform = isRoleAdmin
+    ? (summary as AdminKpiSummary).platform
+    : undefined
+  const managerSummary = isRoleAdmin
+    ? undefined
+    : (summary as ManagerKpiSummary)
+
+  /**
+   * The third card is the one that differs by role, and deliberately so.
+   *
+   * For an admin it is RestoMind's own revenue — commission plus subscriptions.
+   * It used to be GMV minus 14% "tax", which measured nothing: GMV is the
+   * merchants' money, and the platform never earned or owed a percentage of it.
+   *
+   * For a manager it is their takings after the commission was deducted, which
+   * is the number they actually care about. It is an estimate over the selected
+   * window; the payable balance lives on the payouts statement, where refunds,
+   * adjustments and the settlement hold are applied.
+   */
+  const thirdCard = isRoleAdmin
+    ? {
+        id: "platformRevenue",
+        title: t("kpiPlatformRevenue"),
+        value: formatCurrency(platform?.totalRevenue ?? 0),
+        subtitle: t("kpiPlatformRevenueSub", {
+          commission: formatCurrency(platform?.commission.current ?? 0),
+          subscriptions: formatCurrency(
+            platform?.subscriptionRevenue.current ?? 0
+          ),
+        }),
+        changePercent: platform?.commission.changePercent,
+        icon: TrendingUp,
+        iconBg:
+          "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20",
+      }
+    : {
+        id: "netAfterCommission",
+        title: t("kpiNetAfterCommission"),
+        value: formatCurrency(
+          managerSummary?.netAfterCommission ?? revCurrent
+        ),
+        subtitle: t("kpiNetAfterCommissionSub", {
+          commission: formatCurrency(managerSummary?.commissionCharged ?? 0),
+          rate: formatPercent((managerSummary?.commissionRate ?? 0) * 100),
+        }),
+        changePercent: summary.revenue?.changePercent,
+        icon: TrendingUp,
+        iconBg:
+          "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20",
+      }
 
   const primaryCards = [
     {
@@ -114,23 +164,16 @@ export function KpiCards({ summary, role, isLoading = false }: KpiCardsProps) {
     },
     {
       id: "revenue",
-      title: t("kpiRevenue"),
+      // An admin's "revenue" is GMV — money that belongs to the merchants.
+      // Labelling it as such is the whole point of splitting these apart.
+      title: isRoleAdmin ? t("kpiGmv") : t("kpiRevenue"),
       value: formatCurrency(revCurrent),
-      subtitle: t("kpiRevenueSub"),
+      subtitle: isRoleAdmin ? t("kpiGmvSub") : t("kpiRevenueSub"),
       changePercent: summary.revenue?.changePercent,
       icon: DollarSign,
       iconBg: "bg-primary/10 text-primary border-primary/20",
     },
-    {
-      id: "netProfit",
-      title: t("kpiNetProfit"),
-      value: formatCurrency(netProfitVal),
-      subtitle: `${t("kpiNetProfitSub")} ${formatCurrency(taxVal)}`,
-      changePercent: summary.revenue?.changePercent,
-      icon: TrendingUp,
-      iconBg:
-        "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20",
-    },
+    thirdCard,
     {
       id: "avgOrder",
       title: t("kpiAvgOrder"),
@@ -141,8 +184,6 @@ export function KpiCards({ summary, role, isLoading = false }: KpiCardsProps) {
       iconBg: "bg-primary/10 text-primary border-primary/20",
     },
   ]
-
-  const isRoleAdmin = role === "admin"
 
   const totalUsersVal = summary.totalUsers ?? 0
   const totalRestaurantsVal =
@@ -166,7 +207,14 @@ export function KpiCards({ summary, role, isLoading = false }: KpiCardsProps) {
           id: "restaurants",
           title: t("kpiRestaurants"),
           value: formatNumber(totalRestaurantsVal),
-          subtitle: t("kpiRestaurantsSub"),
+          // The paying/trialling split is the number that decides whether the
+          // restaurant count is revenue or pipeline.
+          subtitle: platform
+            ? t("kpiRestaurantsSubscribed", {
+                paid: formatNumber(platform.paidSubscriptions),
+                trial: formatNumber(platform.trialSubscriptions),
+              })
+            : t("kpiRestaurantsSub"),
           icon: Store,
           iconBg: "bg-muted text-muted-foreground border-border/60",
         },

@@ -2,9 +2,10 @@
 
 import * as React from "react"
 import { useLocale, useTranslations } from "next-intl"
-import { Search, ShoppingBag } from "lucide-react"
+import { RotateCcw, Search, ShoppingBag } from "lucide-react"
 import { useRouter } from "@/i18n/routing"
 
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TablePagination } from "@/components/ui/table-pagination"
 import { TableState } from "@/components/ui/table-state"
@@ -37,6 +38,7 @@ import {
   type OrderFilters,
 } from "@/features/orders/components/dashboard-orders-filters"
 import { OrdersProgressCard } from "@/features/orders/components/orders-progress-card"
+import { IssueRefundDialog } from "@/features/refunds/components/issue-refund-dialog"
 
 interface DashboardOrdersTableProps {
   /** Drives the copy and whether cross-restaurant controls are shown. */
@@ -58,6 +60,11 @@ export function DashboardOrdersTable({ role }: DashboardOrdersTableProps) {
   const isAdmin = role === "admin"
 
   const { page, setPage, resetPage, limit, setLimit } = useTableControls()
+
+  // Admin only: the refund endpoint rejects every other role, so showing the
+  // action to a manager would render a button that always fails.
+  const [refundTarget, setRefundTarget] =
+    React.useState<DashboardOrderRow | null>(null)
   const [search, setSearch] = React.useState("")
   const debouncedSearch = useDebouncedValue(search, 300)
   const [filters, setFilters] = React.useState<OrderFilters>(
@@ -181,6 +188,9 @@ export function DashboardOrdersTable({ role }: DashboardOrdersTableProps) {
                 <TableHead className="text-start">
                   {t("colCreatedAt")}
                 </TableHead>
+                {isAdmin && (
+                  <TableHead className="text-end">{t("colActions")}</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -226,6 +236,22 @@ export function DashboardOrdersTable({ role }: DashboardOrdersTableProps) {
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(order.createdAt, locale)}
                   </TableCell>
+                  {isAdmin && (
+                    <TableCell
+                      className="text-end"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setRefundTarget(order)}
+                        className="h-8 gap-1.5 rounded-xl text-xs"
+                      >
+                        <RotateCcw className="size-3.5" />
+                        <span>{t("issueRefund")}</span>
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -240,6 +266,14 @@ export function DashboardOrdersTable({ role }: DashboardOrdersTableProps) {
         limit={limit}
         onPageChange={setPage}
         onLimitChange={setLimit}
+      />
+
+      <IssueRefundDialog
+        groupId={refundTarget?.id ?? null}
+        reference={refundTarget?.reference}
+        open={Boolean(refundTarget)}
+        onOpenChange={(open) => !open && setRefundTarget(null)}
+        onIssued={() => refetch()}
       />
     </div>
   )

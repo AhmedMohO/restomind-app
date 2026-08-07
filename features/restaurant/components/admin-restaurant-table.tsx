@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { Edit2, Loader2, Plus, Search, Trash2 } from "lucide-react"
+import { Edit2, Loader2, Percent, Plus, Search, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { Link, useRouter } from "@/i18n/routing"
 
@@ -24,7 +24,9 @@ import {
   useRestaurantsList,
 } from "../hooks/use-restaurant"
 import type { Restaurant } from "../types"
+import { CommercialTermsDialog } from "./commercial-terms-dialog"
 import { RestaurantStatusBadge } from "./restaurant-status-badge"
+import { useSystemSettings } from "@/features/system-settings/hooks/use-system-settings"
 import { formatOwner } from "../utils/utils"
 import { getErrorMessage } from "@/lib/api/utils"
 
@@ -41,6 +43,10 @@ export function AdminRestaurantTable() {
     id: string
     name: string
   } | null>(null)
+  const [termsTarget, setTermsTarget] = React.useState<Restaurant | null>(null)
+
+  // Only to show what a merchant with no override actually falls back to.
+  const { data: platformSettings } = useSystemSettings()
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -143,6 +149,9 @@ export function AdminRestaurantTable() {
                 </TableHead>
                 <TableHead className="text-start">{t("colOwner")}</TableHead>
                 <TableHead className="text-start">{t("colLocation")}</TableHead>
+                <TableHead className="text-start">
+                  {t("colCommission")}
+                </TableHead>
                 <TableHead className="text-start">{t("colStatus")}</TableHead>
                 <TableHead className="text-start">{t("colActions")}</TableHead>
               </TableRow>
@@ -204,6 +213,29 @@ export function AdminRestaurantTable() {
                         : "—"}
                     </TableCell>
 
+                    {/*
+                      An overridden rate reads as the merchant's own; an
+                      inherited one is dimmed and marked, so nobody mistakes
+                      the platform default for a negotiated deal.
+                    */}
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {restaurant.commissionRate !== undefined &&
+                      restaurant.commissionRate !== null ? (
+                        <span className="font-semibold tabular-nums">
+                          {Number(
+                            (restaurant.commissionRate * 100).toFixed(2)
+                          )}
+                          %
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {platformSettings
+                            ? `${Number((platformSettings.defaultCommissionRate * 100).toFixed(2))}% · ${t("defaultRate")}`
+                            : "—"}
+                        </span>
+                      )}
+                    </TableCell>
+
                     <TableCell className="shrink-0">
                       <RestaurantStatusBadge isActive={restaurant.isActive} />
                     </TableCell>
@@ -223,6 +255,18 @@ export function AdminRestaurantTable() {
                           title="Edit Restaurant"
                         >
                           <Edit2 className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setTermsTarget(restaurant)
+                          }}
+                          className="size-8 rounded-lg"
+                          title={t("terms.title")}
+                        >
+                          <Percent className="size-4" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -265,6 +309,14 @@ export function AdminRestaurantTable() {
           setLimit(l)
           setPage(1)
         }}
+      />
+
+      {/* Commission + payout destination, admin only */}
+      <CommercialTermsDialog
+        restaurant={termsTarget}
+        open={Boolean(termsTarget)}
+        onOpenChange={(open) => !open && setTermsTarget(null)}
+        platformDefaultRate={platformSettings?.defaultCommissionRate}
       />
 
       {/* Reusable Delete Confirmation Dialog */}

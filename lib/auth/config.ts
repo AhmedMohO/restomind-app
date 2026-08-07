@@ -98,12 +98,18 @@ export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
   "/dashboard/products": ["admin", "manager", "staff"],
   "/dashboard/offers": ["admin", "manager", "staff"],
   "/dashboard/orders": ["admin", "manager", "staff"],
+  "/dashboard/refunds": ["admin", "manager", "staff"],
+  // Staff included deliberately: a merchant whose manager is away still needs
+  // to see what they are owed. The API scopes the statement to the token's
+  // restaurant, so the role decides visibility, never which merchant.
+  "/dashboard/payouts": ["admin", "manager", "staff"],
+  "/dashboard/billing": ["admin", "manager", "staff"],
   "/dashboard/offers/new": ["manager"],
   "/dashboard/products/new": ["admin", "manager"],
   "/dashboard": DASHBOARD_ALLOWED_ROLES,
-  "/orders": [],
-  "/favourites": [],
-  "/checkout": [],
+  "/orders": ["customer"],
+  "/favourites": ["customer"],
+  "/checkout": ["customer"],
 }
 
 /**

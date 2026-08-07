@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -59,8 +60,21 @@ import { PartnershipStatusCheck } from "./PartnershipStatusCheck"
 // ---------------------------------------------------------------------------
 export default function PartnerApplicationForm() {
   const t = useTranslations("PartnerApplication")
+  const searchParams = useSearchParams()
 
-  const [activeTab, setActiveTab] = useState<"apply" | "status">("apply")
+  const [activeTab, setActiveTab] = useState<"apply" | "status">(
+    () => (searchParams.get("tab") === "status" ? "status" : "apply")
+  )
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab")
+    if (tabParam === "status") {
+      setActiveTab("status")
+    } else if (tabParam === "apply") {
+      setActiveTab("apply")
+    }
+  }, [searchParams])
+
   const [step, setStep] = useState<number>(1)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [referenceId, setReferenceId] = useState("")

@@ -23,7 +23,9 @@ export default async function ProtectedLayout({
 
   return (
     <Suspense>
-      <ProtectedRoute locale={locale}>{children}</ProtectedRoute>
+      <ProtectedRoute roles={["customer"]} locale={locale}>
+        {children}
+      </ProtectedRoute>
     </Suspense>
   )
 }

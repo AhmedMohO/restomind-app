@@ -2,16 +2,7 @@
 
 import * as React from "react"
 import { useTranslations } from "next-intl"
-import {
-  Building2,
-  Calendar,
-  Clock,
-  ExternalLink,
-  Mail,
-  Phone,
-  Plus,
-  Truck,
-} from "lucide-react"
+import { Building2, Calendar, Clock, Mail, Phone, Truck } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -31,12 +22,14 @@ interface SupplierDetailsDialogProps {
   supplier: ApiSupplier | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  admin?: boolean
 }
 
 export function SupplierDetailsDialog({
   supplier,
   open,
   onOpenChange,
+  admin = false,
 }: SupplierDetailsDialogProps) {
   const t = useTranslations("Dashboard.suppliers")
   const tCommon = useTranslations("Common")
@@ -72,7 +65,10 @@ export function SupplierDetailsDialog({
               {t("leadTimeBadge", { count: leadTime })}
             </Badge>
 
-            <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-normal text-muted-foreground">
+            <Badge
+              variant="secondary"
+              className="gap-1.5 px-3 py-1 font-normal text-muted-foreground"
+            >
               <Calendar className="size-3.5" />
               {supplier.createdAt
                 ? formatDate(supplier.createdAt)
@@ -81,8 +77,8 @@ export function SupplierDetailsDialog({
           </div>
 
           {/* Contact Details Card */}
-          <div className="rounded-xl border bg-card p-4 space-y-3 shadow-sm">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="space-y-3 rounded-xl border bg-card p-4">
+            <h4 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
               {t("contactSectionTitle")}
             </h4>
 
@@ -101,7 +97,7 @@ export function SupplierDetailsDialog({
                     {supplier.email}
                   </a>
                 ) : (
-                  <span className="italic text-muted-foreground">—</span>
+                  <span className="text-muted-foreground italic">—</span>
                 )}
               </div>
 
@@ -119,30 +115,35 @@ export function SupplierDetailsDialog({
                     {supplier.phone}
                   </a>
                 ) : (
-                  <span className="italic text-muted-foreground">—</span>
+                  <span className="text-muted-foreground italic">—</span>
                 )}
               </div>
             </div>
           </div>
 
           {/* Quick Action Prompt Card */}
-          <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-4">
-            <div className="space-y-0.5">
-              <p className="text-sm font-semibold text-foreground">
-                {t("createPoPromptTitle")}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("createPoPromptSubtitle")}
-              </p>
+          {!admin && (
+            <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <div className="space-y-0.5">
+                <p className="text-sm font-semibold text-foreground">
+                  {t("createPoPromptTitle")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t("createPoPromptSubtitle")}
+                </p>
+              </div>
+              <Link
+                href={`/dashboard/purchase-orders/new?supplierId=${supplier._id}`}
+                className={buttonVariants({
+                  size: "sm",
+                  className: "shrink-0 gap-1.5 rounded-md!",
+                })}
+              >
+                <Truck className="size-4" />
+                {t("createPoButton")}
+              </Link>
             </div>
-            <Link
-              href={`/dashboard/purchase-orders/new?supplierId=${supplier._id}`}
-              className={buttonVariants({ size: "sm", className: "gap-1.5 shrink-0" })}
-            >
-              <Truck className="size-4" />
-              {t("createPoButton")}
-            </Link>
-          </div>
+          )}
         </div>
 
         <DialogFooter>
