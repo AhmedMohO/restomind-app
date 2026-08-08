@@ -4,8 +4,10 @@ import { createBatch, getBatches } from "@/features/inventory/api"
 import {
   handleServerError,
   jsonSuccess,
+  readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
+import { createBatchSchema } from "@/schemas/inventory"
 
 const INVENTORY_ROLES = ["admin", "manager", "staff"] as const
 
@@ -38,9 +40,11 @@ export async function POST(request: Request) {
   const authError = await requireAnyRole(INVENTORY_ROLES)
   if (authError) return authError
 
+  const parsed = await readJsonBody(request, createBatchSchema)
+  if (!parsed.ok) return parsed.response
+
   try {
-    const body = await request.json()
-    const res = await createBatch(body)
+    const res = await createBatch(parsed.data)
     return jsonSuccess(res.data, 201)
   } catch (err) {
     return handleServerError(err, "Failed to create inventory batch")
