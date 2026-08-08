@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -54,8 +54,18 @@ function SetupAccountFormContent({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = form
+
+  useEffect(() => {
+    reset({ password: "", confirmPassword: "" })
+    return () => {
+      reset({ password: "", confirmPassword: "" })
+      setServerError(null)
+      setServerSuccess(null)
+    }
+  }, [reset])
 
   async function onSubmit(data: SetupAccountInput) {
     setServerError(null)
@@ -128,6 +138,7 @@ function SetupAccountFormContent({
       className={cn("flex flex-col gap-6", className)}
       onSubmit={handleSubmit(onSubmit)}
       noValidate
+      autoComplete="off"
       {...props}
     >
       <FieldGroup>

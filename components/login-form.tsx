@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useZodResolver } from "@/lib/zod-locale"
@@ -40,11 +40,19 @@ export function LoginForm({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: useZodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   })
+
+  useEffect(() => {
+    reset({ email: "", password: "" })
+    return () => {
+      reset({ email: "", password: "" })
+    }
+  }, [reset])
 
   async function onSubmit(data: LoginInput) {
     setServerError(null)

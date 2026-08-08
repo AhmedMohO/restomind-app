@@ -63,5 +63,10 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
+  "overrides": {
+    "@importcsv/react": {
+      "zod": "$zod"
+    }
+  },
   "packageManager": "bun@1.2.22"
 }

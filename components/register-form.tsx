@@ -146,7 +146,30 @@ function RegisterFormContent({
   }
 
   useEffect(() => {
-    if (paramStep === "otp" && paramEmail && paramResend && !autoResendRef.current) {
+    return () => {
+      registerForm.reset({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        phone: "",
+      })
+      otpForm.reset({ email: "", otp: "" })
+      setRegisteredEmail("")
+      setRegisteredPassword("")
+      setServerError(null)
+      setServerSuccess(null)
+    }
+  }, [registerForm, otpForm])
+
+  useEffect(() => {
+    if (
+      paramStep === "otp" &&
+      paramEmail &&
+      paramResend &&
+      !autoResendRef.current
+    ) {
       autoResendRef.current = true
       setIsResending(true)
       sendOtpAction(paramEmail, "confirmation")
@@ -377,10 +400,7 @@ function RegisterFormContent({
           {/* Phone */}
           <Field data-invalid={!!errors.phone}>
             <FieldLabel htmlFor="reg-phone">{t("phoneLabel")} </FieldLabel>
-            <PhoneInput
-              id="reg-phone"
-              {...registerForm.register("phone")}
-            />
+            <PhoneInput id="reg-phone" {...registerForm.register("phone")} />
             <FieldError errors={[errors.phone]} />
           </Field>
 
@@ -434,6 +454,7 @@ function RegisterFormContent({
       className={cn("flex flex-col gap-6", className)}
       onSubmit={otpForm.handleSubmit(onOtpSubmit)}
       noValidate
+      autoComplete="off"
     >
       <FieldGroup>
         {/* Heading */}
@@ -555,6 +576,7 @@ function RegisterFormContent({
             <button
               type="button"
               onClick={() => {
+                router.push("/register")
                 setStep("register")
                 setServerError(null)
                 setServerSuccess(null)
