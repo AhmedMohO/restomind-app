@@ -9,7 +9,13 @@ import {
   type UpdateUserPayload,
 } from "@/features/users/api"
 import { ApiError } from "@/lib/auth/errors"
-import { requireAnyRole } from "@/lib/api/route-helpers"
+import {
+  handleServerError,
+  readJsonBody,
+  requireAnyRole,
+  requireSessionUser,
+} from "@/lib/api/route-helpers"
+import { updateUserSchema } from "@/schemas/user"
 
 export async function GET(
   _request: Request,
@@ -49,36 +55,49 @@ export async function PATCH(
 ) {
   await connection()
 
-  const session = await getSession()
-  if (!session.isLoggedIn || !session.user) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 }
-    )
-  }
+  const auth = await requireSessionUser(["admin", "manager"])
+  if (!auth.ok) return auth.response
 
-  const role = session.user.role as UserRole
-  if (role !== "admin" && role !== "manager") {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Forbidden", message: "Admin or manager role required" },
-      { status: 403 }
-    )
+  const parsed = await readJsonBody(request, updateUserSchema)
+  if (!parsed.ok) return parsed.response
+
+  const body = parsed.data
+
+  if (auth.user.role !== "admin") {
+    if (body.role === "admin" || body.role === "manager") {
+      return handleServerError(
+        "Only an admin can assign the admin or manager role",
+        "Only an admin can assign the admin or manager role",
+        403
+      )
+    }
+    body.restaurantId = auth.user.restaurantId ?? null
   }
 
   const { id } = await params
 
-  let body: UpdateUserPayload
-  try {
-    body = (await request.json()) as UpdateUserPayload
-  } catch {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Invalid JSON body" },
-      { status: 400 }
-    )
+  // updateUserSchema allows `null` on several optional fields (for clearing
+  // values on update-style forms); UpdateUserPayload only accepts
+  // `string | undefined` for those same fields. Normalize null -> undefined
+  // here rather than relaxing the schema or casting past the mismatch.
+  const payload: UpdateUserPayload = {
+    firstName: body.firstName,
+    lastName: body.lastName,
+    phone: body.phone,
+    role: body.role,
+    restaurantId: body.restaurantId ?? undefined,
+    gender: body.gender ?? undefined,
+    DOB: body.DOB ?? undefined,
+    employeeCode: body.employeeCode ?? undefined,
+    department: body.department ?? undefined,
+    hireDate: body.hireDate ?? undefined,
+    notes: body.notes ?? undefined,
+    isActive: body.isActive,
+    employmentStatus: body.employmentStatus,
   }
 
   try {
-    const res = await updateUser(id, body)
+    const res = await updateUser(id, payload)
     const userData = (res as Record<string, unknown>)?.data ?? res
     return NextResponse.json<ApiResponse<ApiUser>>(
       { success: true, data: userData as ApiUser },
