@@ -1,21 +1,16 @@
 import { NextResponse, connection } from "next/server"
-import { getSession } from "@/lib/auth/session"
 import type { ApiResponse } from "@/features/auth/auth"
 import {
   getPartnershipApplications,
   type PaginatedPartnershipApplications,
 } from "@/features/partner/api"
+import { requireAdmin } from "@/lib/api/route-helpers"
 
 export async function GET(request: Request) {
   await connection()
 
-  const session = await getSession()
-  if (!session.isLoggedIn || !session.user || session.user.role !== "admin") {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Unauthorized", message: "Admin access required" },
-      { status: 401 }
-    )
-  }
+  const authError = await requireAdmin()
+  if (authError) return authError
 
   const { searchParams } = new URL(request.url)
   const page = searchParams.get("page") ?? undefined
