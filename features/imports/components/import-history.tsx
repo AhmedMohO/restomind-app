@@ -2,8 +2,9 @@
 
 import * as React from "react"
 import { useLocale, useTranslations } from "next-intl"
-import { History, Loader2, RefreshCw } from "lucide-react"
+import { Eye, History, Loader2, RefreshCw } from "lucide-react"
 
+import { Link, useRouter } from "@/i18n/routing"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -90,6 +91,7 @@ function RowsCell({ job }: { job: ImportJob }) {
 function ImportHistoryRow({ job }: { job: ImportJob }) {
   const t = useTranslations("imports")
   const locale = useLocale()
+  const router = useRouter()
 
   const retryMutation = useRetryAiIngest({
     success: t("result.retrySuccess"),
@@ -100,7 +102,10 @@ function ImportHistoryRow({ job }: { job: ImportJob }) {
     job.importType === "sales_history" && job.status === "ai_ingest_failed"
 
   return (
-    <TableRow>
+    <TableRow
+      className="cursor-pointer hover:bg-accent/40"
+      onClick={() => router.push(`/dashboard/imports/${job._id}`)}
+    >
       <TableCell className="text-start">
         <span
           className="block max-w-56 truncate font-medium text-foreground"
@@ -121,22 +126,34 @@ function ImportHistoryRow({ job }: { job: ImportJob }) {
       <TableCell className="text-end text-xs text-muted-foreground">
         <bdi dir="ltr">{formatDateTime(job.createdAt, locale)}</bdi>
       </TableCell>
-      <TableCell className="text-end">
-        {canRetry ? (
+      <TableCell className="text-end" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-end gap-2">
+          {canRetry ? (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={retryMutation.isPending}
+              onClick={() => retryMutation.mutate(job._id)}
+            >
+              {retryMutation.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="size-3.5" />
+              )}
+              {t("result.retryAiIngest")}
+            </Button>
+          ) : null}
           <Button
             size="sm"
-            variant="outline"
-            disabled={retryMutation.isPending}
-            onClick={() => retryMutation.mutate(job._id)}
+            variant="ghost"
+            nativeButton={false}
+            render={<Link href={`/dashboard/imports/${job._id}`} aria-label={t("details.viewDetails")} />}
+            className="size-8 p-0"
+            title={t("details.viewDetails")}
           >
-            {retryMutation.isPending ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <RefreshCw className="size-3.5" />
-            )}
-            {t("result.retryAiIngest")}
+            <Eye className="size-4" />
           </Button>
-        ) : null}
+        </div>
       </TableCell>
     </TableRow>
   )
@@ -191,7 +208,11 @@ export function ImportHistory() {
               }}
             >
               <SelectTrigger id="import-type-filter" className="w-44">
-                <SelectValue placeholder={t("history.typeFilter")} />
+                <SelectValue placeholder={t("history.typeFilter")}>
+                  {importType === ALL
+                    ? t("history.typeFilter")
+                    : t(`types.${importType}.title`)}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={ALL}>{t("history.typeFilter")}</SelectItem>
@@ -217,7 +238,11 @@ export function ImportHistory() {
               }}
             >
               <SelectTrigger id="import-status-filter" className="w-44">
-                <SelectValue placeholder={t("history.statusFilter")} />
+                <SelectValue placeholder={t("history.statusFilter")}>
+                  {status === ALL
+                    ? t("history.statusFilter")
+                    : t(`status.${status}`)}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={ALL}>{t("history.statusFilter")}</SelectItem>

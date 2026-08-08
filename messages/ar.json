@@ -732,6 +732,16 @@
       "ai_ingest_failed": "فشل إدخال الذكاء الاصطناعي",
       "completed": "مكتمل",
       "failed": "فشل"
+    },
+    "details": {
+      "title": "تفاصيل الاستيراد",
+      "failureReason": "سبب فشل الاستيراد",
+      "columnMapping": "مطابقة أعمدة ملف CSV",
+      "columnCsv": "عنوان العمود في CSV",
+      "columnDb": "الحقل المستهدف في قاعدة البيانات",
+      "viewDetails": "عرض التفاصيل",
+      "uploadedBy": "تم الرفع بواسطة",
+      "attempts": "محاولات إدخال الذكاء الاصطناعي"
     }
   },
   "Auth": {

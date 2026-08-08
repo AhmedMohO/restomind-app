@@ -732,6 +732,16 @@
       "ai_ingest_failed": "AI ingest failed",
       "completed": "Completed",
       "failed": "Failed"
+    },
+    "details": {
+      "title": "Import Details",
+      "failureReason": "Import Failure Reason",
+      "columnMapping": "CSV Column Mapping",
+      "columnCsv": "CSV Header",
+      "columnDb": "Target Database Field",
+      "viewDetails": "View details",
+      "uploadedBy": "Uploaded By",
+      "attempts": "AI Ingest Attempts"
     }
   },
   "Auth": {

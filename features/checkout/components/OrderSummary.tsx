@@ -129,7 +129,7 @@ export default function OrderSummary({ deliveryFee }: OrderSummaryProps) {
                   </div>
 
                   {/* Price */}
-                  <div className="shrink-0 text-right">
+                  <div className="shrink-0 text-end">
                     <span className="text-sm font-medium text-foreground">
                       {(discountedPrice * item.quantity).toLocaleString()} EGP
                     </span>

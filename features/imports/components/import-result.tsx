@@ -3,7 +3,6 @@
 import * as React from "react"
 import { useTranslations } from "next-intl"
 import {
-  ChevronDown,
   CircleCheck,
   Download,
   Loader2,
@@ -14,12 +13,6 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { cn } from "@/lib/utils"
 import type {
   ConfirmImportResult,
   ImportRowError,
@@ -45,25 +38,6 @@ export interface ImportResultProps {
   onDismiss: () => void
 }
 
-const PREVIEW_ROW_COUNT = 5
-const MAX_EXPANDED_ROWS = 500
-
-interface ErrorGroup {
-  message: string
-  rows: ImportRowError[]
-}
-
-function groupErrorsByMessage(errors: ImportRowError[]): ErrorGroup[] {
-  const map = new Map<string, ImportRowError[]>()
-  for (const e of errors) {
-    const list = map.get(e.message)
-    if (list) list.push(e)
-    else map.set(e.message, [e])
-  }
-  return Array.from(map.entries())
-    .map(([message, rows]) => ({ message, rows }))
-    .sort((a, b) => b.rows.length - a.rows.length)
-}
 
 function downloadFailedRowsCsv(errors: ImportRowError[], filePrefix: string) {
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`
@@ -84,82 +58,57 @@ function downloadFailedRowsCsv(errors: ImportRowError[], filePrefix: string) {
   URL.revokeObjectURL(url)
 }
 
+interface ErrorGroup {
+  message: string
+  rows: ImportRowError[]
+}
+
+function groupErrorsByMessage(errors: ImportRowError[]): ErrorGroup[] {
+  const map = new Map<string, ImportRowError[]>()
+  for (const e of errors) {
+    const list = map.get(e.message)
+    if (list) list.push(e)
+    else map.set(e.message, [e])
+  }
+  return Array.from(map.entries())
+    .map(([message, rows]) => ({ message, rows }))
+    .sort((a, b) => b.rows.length - a.rows.length)
+}
+
 function ErrorGroupRow({ group }: { group: ErrorGroup }) {
   const t = useTranslations("imports")
-  const [open, setOpen] = React.useState(false)
-
-  const previewRows = group.rows.slice(0, PREVIEW_ROW_COUNT).map((r) => r.row)
-  const remaining = group.rows.length - previewRows.length
-  const expandedRows = group.rows.slice(0, MAX_EXPANDED_ROWS)
-  const isCapped = group.rows.length > MAX_EXPANDED_ROWS
 
   return (
-    <Collapsible
-      open={open}
-      onOpenChange={setOpen}
-      className="rounded-lg border border-border"
-    >
-      <CollapsibleTrigger className="flex min-h-11 w-full items-start justify-between gap-3 p-3 text-start">
-        <span className="space-y-0.5">
-          <span className="block text-xs font-medium text-foreground">
-            {group.message}
-          </span>
-          <span className="block text-[11px] text-muted-foreground">
-            {t("errors.occurrences", { count: group.rows.length })}
-            {" · "}
-            {t("errors.firstRows", {
-              rows: previewRows.map((r) => String(r)).join(", "),
-            })}
-            {remaining > 0
-              ? ` ${t("errors.andMore", { count: remaining })}`
-              : null}
-          </span>
+    <div className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-border bg-card/60 p-3 text-start">
+      <span className="space-y-0.5">
+        <span className="block text-xs font-medium text-foreground">
+          {group.message}
         </span>
-        <span className="flex shrink-0 items-center gap-2">
-          <Badge variant="outline">
-            <bdi dir="ltr">{group.rows.length}</bdi>
-          </Badge>
-          <ChevronDown
-            className={cn(
-              "size-3.5 text-muted-foreground transition-transform",
-              open && "rotate-180"
-            )}
-          />
+        <span className="block text-[11px] text-muted-foreground">
+          {t("errors.occurrences", { count: group.rows.length })}
         </span>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="border-t border-border p-3">
-        <ul className="grid grid-cols-4 gap-1.5 text-[11px] text-muted-foreground tabular-nums sm:grid-cols-8">
-          {expandedRows.map((r, i) => (
-            <li key={i}>
-              <bdi dir="ltr">{r.row}</bdi>
-            </li>
-          ))}
-        </ul>
-        {isCapped ? (
-          <p className="mt-2 text-[11px] text-muted-foreground">
-            {t("errors.capNotice", {
-              cap: MAX_EXPANDED_ROWS,
-              total: group.rows.length,
-            })}
-          </p>
-        ) : null}
-      </CollapsibleContent>
-    </Collapsible>
+      </span>
+      <Badge variant="outline" className="shrink-0">
+        <bdi dir="ltr">{group.rows.length}</bdi>
+      </Badge>
+    </div>
   )
 }
 
-/** The row-error list (brief Step 4): grouped by message, capped, with a CSV export of just the failed rows. */
-function ErrorGroupList({
+/** The row-error section: displays a download button and error message cards when enabled. */
+export function ErrorGroupList({
   errors,
   fileNamePrefix,
+  showCards = true,
 }: {
   errors: ImportRowError[]
   fileNamePrefix: string
+  showCards?: boolean
 }) {
   const t = useTranslations("imports")
-  const groups = React.useMemo(() => groupErrorsByMessage(errors), [errors])
+  const groups = React.useMemo(() => groupErrorsByMessage(errors ?? []), [errors])
 
-  if (groups.length === 0) return null
+  if (!errors || errors.length === 0) return null
 
   return (
     <div className="space-y-3 rounded-xl border border-border bg-card/50 p-4">
@@ -176,6 +125,13 @@ function ErrorGroupList({
           {t("errors.downloadCsv")}
         </Button>
       </div>
+      {showCards && groups.length > 0 ? (
+        <div className="space-y-2">
+          {groups.map((group, idx) => (
+            <ErrorGroupRow key={`${group.message}-${idx}`} group={group} />
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -315,7 +271,7 @@ export function ImportResult({
           </AlertDescription>
         </Alert>
         {data.invalidRows > 0 ? (
-          <ErrorGroupList errors={data.errors} fileNamePrefix={importType} />
+          <ErrorGroupList errors={data.errors} fileNamePrefix={importType} showCards={false} />
         ) : null}
       </div>
     )
@@ -347,7 +303,7 @@ export function ImportResult({
             })}
           </AlertDescription>
         </Alert>
-        <ErrorGroupList errors={data.errors} fileNamePrefix={importType} />
+        <ErrorGroupList errors={data.errors} fileNamePrefix={importType} showCards={false} />
       </div>
     )
   }
@@ -358,11 +314,11 @@ export function ImportResult({
       <Alert variant="destructive">
         <TriangleAlert />
         <AlertTitle>{t("result.failedTitle")}</AlertTitle>
-        <AlertDescription>
-          {t("result.failedBody", { invalid: data.invalidRows })}
+        <AlertDescription className="space-y-1">
+          <p>{data.failureReason ?? t("result.failedBody", { invalid: data.invalidRows })}</p>
         </AlertDescription>
       </Alert>
-      <ErrorGroupList errors={data.errors} fileNamePrefix={importType} />
+      <ErrorGroupList errors={data.errors} fileNamePrefix={importType} showCards={false} />
     </div>
   )
 }

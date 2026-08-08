@@ -33,6 +33,18 @@ export function useImportHistory(params: GetImportJobsParams = {}) {
   })
 }
 
+/** GET /imports/:id — fetch single import job details. */
+export function useImportJob(importJobId: string) {
+  return useQuery<ImportJob>({
+    queryKey: [...IMPORTS_QUERY_KEY, "detail", importJobId],
+    queryFn: async () => {
+      const res = await clientFetch<ImportJob>(`/imports/${importJobId}`)
+      return res!
+    },
+    enabled: Boolean(importJobId),
+  })
+}
+
 export type ImportStage = "idle" | "uploading" | "importing"
 
 /**

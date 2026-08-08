@@ -620,7 +620,7 @@ export function DashboardProfileContainer({
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="mr-2 size-3.5 animate-spin" />
+                    <Loader2 className="me-2 size-3.5 animate-spin" />
                     <span>{t("saving")}</span>
                   </>
                 ) : (

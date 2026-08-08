@@ -358,7 +358,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
                     key={c.code}
                     type="button"
                     className={cn(
-                      "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent hover:text-accent-foreground",
+                      "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-start text-xs transition-colors hover:bg-accent hover:text-accent-foreground",
                       selectedCountry.code === c.code &&
                         "bg-primary/10 font-semibold text-primary"
                     )}

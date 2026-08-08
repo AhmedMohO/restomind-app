@@ -203,7 +203,7 @@ export function SuppliersContainer() {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-1 right-1 size-7 text-muted-foreground hover:text-foreground"
+              className="absolute top-1 end-1 size-7 text-muted-foreground hover:text-foreground"
               onClick={() => handleSearchChange("")}
             >
               <X className="size-4" />
@@ -228,7 +228,7 @@ export function SuppliersContainer() {
                 <TableHead>{t("table.contact")}</TableHead>
                 <TableHead>{t("table.leadTime")}</TableHead>
                 <TableHead>{t("table.created")}</TableHead>
-                <TableHead className="w-[100px] text-right">
+                <TableHead className="w-[100px] text-end">
                   {t("table.actions")}
                 </TableHead>
               </TableRow>
@@ -309,7 +309,7 @@ export function SuppliersContainer() {
 
                   {!isStaff && (
                     <TableCell
-                      className="text-right"
+                      className="text-end"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Button

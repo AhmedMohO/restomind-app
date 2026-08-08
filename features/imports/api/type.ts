@@ -53,6 +53,7 @@ export interface CreateImportResult {
   detectedHeaders: string[]
   suggestedMapping: Record<string, string>
   totalRows: number
+  failureReason?: string
 }
 
 /** `POST /imports/:id/confirm` response body's `data`. */
@@ -65,6 +66,7 @@ export interface ConfirmImportResult {
   errors: ImportRowError[]
   aiIngestLastError?: string
   importedCount: number
+  failureReason?: string
 }
 
 /** The persisted job document, as returned by `GET /imports/:id` and inside `GET /imports` list items. */
@@ -82,6 +84,7 @@ export interface ImportJob {
   errors: ImportRowError[]
   aiIngestAttempts: number
   aiIngestLastError?: string
+  failureReason?: string
   createdAt: string
   updatedAt: string
 }

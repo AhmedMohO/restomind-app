@@ -118,7 +118,11 @@ export function WasteTable() {
               aria-label={t("table.riskFilter")}
               className="w-44"
             >
-              <SelectValue placeholder={t("table.riskFilter")} />
+              <SelectValue placeholder={t("table.riskFilter")}>
+                {riskLevel === ALL_RISK_LEVELS
+                  ? t("table.riskFilter")
+                  : tAi(`risk.${riskLevel}`)}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL_RISK_LEVELS}>

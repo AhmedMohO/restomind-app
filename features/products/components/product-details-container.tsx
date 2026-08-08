@@ -94,7 +94,7 @@ function Stat({
   emphasize?: boolean
 }) {
   return (
-    <div className="flex-1 px-5 py-4 first:pl-0 last:pr-0">
+    <div className="flex-1 px-5 py-4 first:ps-0 last:pe-0">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p
         className={

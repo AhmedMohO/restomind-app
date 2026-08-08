@@ -20,6 +20,7 @@ import QueryProvider from "@/providers/use-query-provider"
 import { AuthProvider } from "@/providers/auth-provider"
 import { NotificationSocketProvider } from "@/providers/notification-socket-provider"
 import { ZodLocaleProvider } from "@/providers/zod-locale-provider"
+import { DirectionProvider } from "@base-ui/react/direction-provider"
 import { organizationJsonLd } from "@/lib/seo/json-ld"
 
 const oxaniumHeading = Oxanium({
@@ -162,26 +163,28 @@ export default async function LocaleLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        <QueryProvider>
-          <AuthProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-            >
-              <TooltipProvider>
-                <SmoothScrollProvider>
-                  <Suspense fallback={null}>
-                    <LocaleMessages>
-                      <ScrollToTop />
-                      {children}
-                    </LocaleMessages>
-                  </Suspense>
-                </SmoothScrollProvider>
-              </TooltipProvider>
-            </ThemeProvider>
-          </AuthProvider>
-        </QueryProvider>
+        <DirectionProvider direction={dir as "rtl" | "ltr"}>
+          <QueryProvider>
+            <AuthProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+              >
+                <TooltipProvider>
+                  <SmoothScrollProvider>
+                    <Suspense fallback={null}>
+                      <LocaleMessages>
+                        <ScrollToTop />
+                        {children}
+                      </LocaleMessages>
+                    </Suspense>
+                  </SmoothScrollProvider>
+                </TooltipProvider>
+              </ThemeProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </DirectionProvider>
       </body>
     </html>
   )

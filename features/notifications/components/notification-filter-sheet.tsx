@@ -162,7 +162,13 @@ export function NotificationFilterSheet({
                 }
               >
                 <SelectTrigger id="notif-read-status" className="h-9 w-full rounded-xl text-xs">
-                  <SelectValue placeholder={isRtl ? "الجميع" : "All Statuses"} />
+                  <SelectValue placeholder={isRtl ? "الجميع" : "All Statuses"}>
+                    {filters.isRead === undefined
+                      ? (isRtl ? "جميع الإشعارات (المقروءة والجديدة)" : "All Notifications")
+                      : filters.isRead
+                      ? (isRtl ? "مقروءة فقط" : "Read Only")
+                      : (isRtl ? "غير مقروءة فقط" : "Unread Only")}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>
@@ -225,7 +231,11 @@ export function NotificationFilterSheet({
                   }
                 >
                   <SelectTrigger id="notif-sort-by" className="h-9 w-full rounded-xl text-xs">
-                    <SelectValue />
+                    <SelectValue>
+                      {filters.sortBy === "readAt"
+                        ? (isRtl ? "تاريخ القراءة (readAt)" : "Read Date")
+                        : (isRtl ? "تاريخ الإرسال (createdAt)" : "Creation Date")}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="createdAt">
@@ -251,7 +261,11 @@ export function NotificationFilterSheet({
                   }
                 >
                   <SelectTrigger id="notif-sort-order" className="h-9 w-full rounded-xl text-xs">
-                    <SelectValue />
+                    <SelectValue>
+                      {filters.order === "asc"
+                        ? (isRtl ? "الأقدم أولاً (Asc)" : "Oldest First")
+                        : (isRtl ? "الأحدث أولاً (Desc)" : "Newest First")}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="desc">

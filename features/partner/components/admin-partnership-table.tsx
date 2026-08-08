@@ -219,7 +219,21 @@ export function AdminPartnershipTable() {
               aria-label="Filter status"
               className="w-[160px] rounded-xl"
             >
-              <SelectValue placeholder={t("allStatuses")} />
+              <SelectValue placeholder={t("allStatuses")}>
+                {statusFilter === "all"
+                  ? t("allStatuses")
+                  : statusFilter === "PENDING"
+                  ? t("statuses.pending")
+                  : statusFilter === "UNDER_REVIEW"
+                  ? t("statuses.underReview")
+                  : statusFilter === "APPROVED"
+                  ? t("statuses.approved")
+                  : statusFilter === "REJECTED"
+                  ? t("statuses.rejected")
+                  : statusFilter === "ONBOARDED"
+                  ? t("statuses.onboarded")
+                  : undefined}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("allStatuses")}</SelectItem>
