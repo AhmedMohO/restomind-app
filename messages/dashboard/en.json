@@ -1642,7 +1642,9 @@
         "HIGH": "High priority",
         "MEDIUM": "Medium priority",
         "LOW": "Low priority"
-      }
+      },
+      "collapse": "Collapse recommendations",
+      "expand": "Expand recommendations"
     },
     "approval": {
       "title": "Needs your approval before it runs",

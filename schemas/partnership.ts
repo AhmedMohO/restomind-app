@@ -20,3 +20,7 @@ export const createPartnershipSchema = z.object({
   taxId: z.string().optional(),
   notes: z.string().optional(),
 })
+
+export const rejectPartnershipSchema = z.object({
+  reason: z.string().min(1, "Rejection reason is required"),
+})

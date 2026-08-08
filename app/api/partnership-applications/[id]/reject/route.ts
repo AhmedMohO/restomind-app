@@ -1,10 +1,15 @@
-import { NextResponse, connection } from "next/server"
-import type { ApiResponse } from "@/features/auth/auth"
+import { connection } from "next/server"
 import {
   rejectPartnershipApplication,
   type PartnershipApplicationItem,
 } from "@/features/partner/api"
-import { requireAdmin } from "@/lib/api/route-helpers"
+import {
+  handleUpstreamError,
+  jsonSuccess,
+  readJsonBody,
+  requireAdmin,
+} from "@/lib/api/route-helpers"
+import { rejectPartnershipSchema } from "@/schemas/partnership"
 
 export async function POST(
   request: Request,
@@ -16,38 +21,16 @@ export async function POST(
   if (authError) return authError
 
   const { id } = await params
-  let body: { reason?: string }
-  try {
-    body = (await request.json()) as { reason?: string }
-  } catch {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Invalid JSON body" },
-      { status: 400 }
-    )
-  }
 
-  if (!body.reason || !body.reason.trim()) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Rejection reason is required" },
-      { status: 400 }
-    )
-  }
+  const parsed = await readJsonBody(request, rejectPartnershipSchema)
+  if (!parsed.ok) return parsed.response
 
   try {
-    const data = await rejectPartnershipApplication(id, body.reason)
-    return NextResponse.json<ApiResponse<PartnershipApplicationItem>>(
-      { success: true, data },
-      { status: 200 }
-    )
+    const data = await rejectPartnershipApplication(id, parsed.data.reason)
+    return jsonSuccess<PartnershipApplicationItem>(data)
   } catch (err) {
     console.error("[api/partnership-applications/[id]/reject] POST failed", err)
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "ACTION_FAILED",
-        message: err instanceof Error ? err.message : "Failed to reject application",
-      },
-      { status: 400 }
-    )
+    return handleUpstreamError(err, "Failed to reject application")
   }
 }
+

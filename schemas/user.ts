@@ -34,13 +34,15 @@ export const updateUserSchema = z.object({
   firstName: z
     .string()
     .min(3, { message: "firstNameMin" })
-    .max(20, { message: "firstNameMax" }),
+    .max(20, { message: "firstNameMax" })
+    .optional(),
   lastName: z
     .string()
     .min(3, { message: "lastNameMin" })
-    .max(20, { message: "lastNameMax" }),
+    .max(20, { message: "lastNameMax" })
+    .optional(),
   phone: optionalEgyptianPhoneSchema,
-  role: userRoleEnum,
+  role: userRoleEnum.optional(),
   restaurantId: z.string().optional().nullable(),
   gender: userGenderEnum.optional().nullable(),
   DOB: z.string().optional().nullable(),

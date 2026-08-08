@@ -84,9 +84,28 @@ export function useAssistantChat() {
     onError: (err: unknown) =>
       toast.error(getErrorMessage(err, t("errors.action"))),
     // An approved tool writes real offers / purchase orders / production
-    // plans. Rather than guess which keys, refetch everything that's live.
+    // plans. Map each known write-tool to the query keys it actually
+    // affects instead of invalidating every active query app-wide.
     onSettled: (_data, _err, vars) => {
-      if (vars.approved) qc.invalidateQueries()
+      if (!vars.approved) return
+
+      const toolQueryKeys: Record<string, string[][]> = {
+        createOffer: [["offers"]],
+        updateProductionPlan: [["production-plan"]],
+        createPurchaseOrder: [["purchase-orders"]],
+      }
+
+      const keys = toolQueryKeys[vars.toolName]
+      if (keys) {
+        keys.forEach((k) => qc.invalidateQueries({ queryKey: k }))
+      } else {
+        // Unknown tool — broad invalidation as a safety net. Log so we
+        // can add the mapping once the tool ships.
+        console.warn(
+          `[assistant] Unmapped tool "${vars.toolName}" — falling back to broad invalidation`
+        )
+        qc.invalidateQueries()
+      }
     },
   })
 

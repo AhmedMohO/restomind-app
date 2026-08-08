@@ -1,9 +1,9 @@
 "use client"
 
-import { useCallback, useEffect } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useCallback } from "react"
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query"
 import { notificationService } from "../services/notification-service"
-import { notificationSocketService } from "../services/socket-service"
+import { useNotificationSocket } from "./useNotificationSocket"
 import type {
   NotificationQuery,
   PaginatedNotifications,
@@ -37,10 +37,18 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
   // off of directly, matching the previous hook's external contract.
   const activeQuery = initialQuery
 
+  // Wire the global socket subscription — only the first mounted instance
+  // actually subscribes; subsequent mounts are no-ops.  This prevents the
+  // double-increment bug where multiple hook instances each bumped the count.
+  useNotificationSocket()
+
   const listQuery = useQuery({
     queryKey: listKey(activeQuery),
     queryFn: () => notificationService.getUserNotifications(activeQuery),
     enabled: autoFetchOnMount,
+    // Keep the previous page's data visible while the next page loads,
+    // preventing an empty-list flash on pagination / filter changes.
+    placeholderData: keepPreviousData,
   })
 
   const unreadCountQuery = useQuery({
@@ -64,12 +72,13 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
         queryKey: listKey(nextQuery),
         queryFn: () => notificationService.getUserNotifications(nextQuery),
       })
-      // Every list refetch previously also refreshed the count; keep that
-      // behavior (filters/pagination don't change the count, but marking
-      // read/deleting elsewhere might have — cheap, deduped by staleTime).
-      await fetchUnreadCount()
+      // Count is only invalidated when an action actually changes it
+      // (mark-as-read, delete, socket notification) — not on every list
+      // refetch.  invalidateQueries bypasses staleTime, so the old
+      // unconditional call here caused the count to refetch on every
+      // pagination / filter click, defeating the 30s staleTime.
     },
-    [activeQuery, queryClient, fetchUnreadCount]
+    [activeQuery, queryClient]
   )
 
   const markAsRead = useCallback(
@@ -138,32 +147,9 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     [queryClient, activeQuery, fetchNotifications]
   )
 
-  // Subscribe to live WebSocket notifications — updates the shared cache
-  // directly so every mounted consumer (dropdown + manager page) sees the
-  // same update without each running its own subscription-driven refetch.
-  useEffect(() => {
-    const unsubscribe = notificationSocketService.subscribe((incoming) => {
-      queryClient.setQueryData<PaginatedNotifications>(listKey(activeQuery), (old) => {
-        if (!old) return old
-        if (old.data.some((item) => item.id === incoming.id)) return old
-        if (activeQuery.type && incoming.type !== activeQuery.type) return old
-        if (activeQuery.isRead === true) return old
-        return {
-          ...old,
-          data: [incoming, ...old.data],
-          pagination: { ...old.pagination, totalItems: old.pagination.totalItems + 1 },
-        }
-      })
-      queryClient.setQueryData<UnreadCountData>(unreadCountKey, (old) => ({
-        count: (old?.count ?? 0) + 1,
-      }))
-    })
-
-    return () => {
-      unsubscribe()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryClient, activeQuery.type, activeQuery.isRead])
+  // Socket subscription is handled globally by useNotificationSocket() above.
+  // It bumps the unread count once and invalidates list queries so each
+  // consumer's useQuery refetches on its own.
 
   return {
     notifications,
