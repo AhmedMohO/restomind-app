@@ -71,7 +71,9 @@ export async function PATCH(
         403
       )
     }
-    body.restaurantId = auth.user.restaurantId ?? null
+    if (body.restaurantId !== undefined) {
+      body.restaurantId = auth.user.restaurantId
+    }
   }
 
   const { id } = await params

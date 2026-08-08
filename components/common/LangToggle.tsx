@@ -13,8 +13,10 @@ export default function LangToggle() {
 
   function toggleLocale() {
     const nextLocale = locale === "en" ? "ar" : "en"
+    const search = typeof window !== "undefined" ? window.location.search : ""
+    const target = search ? `${pathname}${search}` : pathname
     startTransition(() => {
-      router.replace(pathname, { locale: nextLocale })
+      router.replace(target, { locale: nextLocale })
     })
   }
 

@@ -6,7 +6,14 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useZodResolver } from "@/lib/zod-locale"
 import { useTranslations } from "next-intl"
-import { Eye, EyeOff, Loader2, KeyRound, AlertCircle, CheckCircle2 } from "lucide-react"
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  KeyRound,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { setupAccountSchema, type SetupAccountInput } from "@/schemas/auth"
@@ -69,7 +76,8 @@ function SetupAccountFormContent({
     })
 
     if (!result.success) {
-      const msg = result.message || t("setupAccountError") || "Account setup failed."
+      const msg =
+        result.message || t("setupAccountError") || "Account setup failed."
       setServerError(msg)
       toast.error(msg)
       // IMPORTANT: DO NOT REDIRECT ON ERROR!
@@ -90,7 +98,7 @@ function SetupAccountFormContent({
 
   if (!token) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 text-center py-6">
+      <div className="flex flex-col items-center justify-center gap-4 py-6 text-center">
         <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
           <AlertCircle className="size-7" />
         </div>
@@ -98,12 +106,17 @@ function SetupAccountFormContent({
           <h2 className="font-heading text-xl font-bold">
             {t("invalidSetupTokenTitle") || "Invalid Setup Link"}
           </h2>
-          <p className="text-sm text-muted-foreground max-w-sm">
+          <p className="max-w-sm text-sm text-muted-foreground">
             {t("invalidSetupTokenDescription") ||
               "This account setup link is missing a valid security token. Please check the link provided in your approval email or contact support."}
           </p>
         </div>
-        <Button nativeButton={false} render={<Link href="/login" />} variant="outline" className="mt-2 rounded-xl">
+        <Button
+          nativeButton={false}
+          render={<Link href="/login" />}
+          variant="outline"
+          className="mt-2 rounded-xl"
+        >
           {t("backToLogin") || "Back to Login"}
         </Button>
       </div>
@@ -120,7 +133,7 @@ function SetupAccountFormContent({
       <FieldGroup>
         {/* Heading */}
         <div className="flex flex-col items-center gap-2 text-center">
-          <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-1">
+          <div className="mb-1 flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
             <KeyRound className="size-6" />
           </div>
           <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground">
@@ -149,14 +162,16 @@ function SetupAccountFormContent({
             role="alert"
             className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
           >
-            <AlertCircle className="size-4 shrink-0 mt-0.5" />
+            <AlertCircle className="mt-0.5 size-4 shrink-0" />
             <span>{serverError}</span>
           </div>
         )}
 
         {/* Password */}
         <Field data-invalid={!!errors.password}>
-          <FieldLabel htmlFor="setup-password">{t("passwordLabel") || "New Password"}</FieldLabel>
+          <FieldLabel htmlFor="setup-password">
+            {t("passwordLabel") || "New Password"}
+          </FieldLabel>
           <div className="relative">
             <Input
               id="setup-password"
@@ -164,7 +179,7 @@ function SetupAccountFormContent({
               dir="ltr"
               autoComplete="new-password"
               aria-invalid={!!errors.password}
-              className="h-10 px-3 pe-10 text-sm dir-ltr"
+              className="dir-ltr h-10 px-3 pe-10 text-sm"
               {...register("password")}
             />
             <button
@@ -172,7 +187,7 @@ function SetupAccountFormContent({
               tabIndex={-1}
               aria-label={showPassword ? "Hide password" : "Show password"}
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
             >
               {showPassword ? (
                 <EyeOff className="size-4" />
@@ -196,7 +211,7 @@ function SetupAccountFormContent({
               dir="ltr"
               autoComplete="new-password"
               aria-invalid={!!errors.confirmPassword}
-              className="h-10 px-3 pe-10 text-sm dir-ltr"
+              className="dir-ltr h-10 px-3 pe-10 text-sm"
               {...register("confirmPassword")}
             />
             <button
@@ -206,7 +221,7 @@ function SetupAccountFormContent({
                 showConfirm ? "Hide confirm password" : "Show confirm password"
               }
               onClick={() => setShowConfirm((v) => !v)}
-              className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
             >
               {showConfirm ? (
                 <EyeOff className="size-4" />
@@ -228,8 +243,10 @@ function SetupAccountFormContent({
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="size-4 animate-spin me-2" />
-                <span>{t("setupAccountSubmitting") || "Completing Setup..."}</span>
+                <Loader2 className="me-2 size-4 animate-spin" />
+                <span>
+                  {t("setupAccountSubmitting") || "Completing Setup..."}
+                </span>
               </>
             ) : (
               <span>{t("setupAccountButton") || "Complete Setup & Login"}</span>
@@ -241,7 +258,7 @@ function SetupAccountFormContent({
           <div className="text-center text-sm">
             <Link
               href="/login"
-              className="font-semibold text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+              className="font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
               {t("backToLogin") || "Back to Login"}
             </Link>

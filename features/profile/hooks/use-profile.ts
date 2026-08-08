@@ -15,6 +15,7 @@ export const PROFILE_QUERY_KEY = ["user", "profile"] as const
  * Hook to fetch the current logged-in user profile via TanStack Query.
  */
 export function useProfile(initialData?: FullUser) {
+  const user = useAuthStore((s) => s.user)
   return useQuery<FullUser>({
     queryKey: PROFILE_QUERY_KEY,
     queryFn: async () => {
@@ -22,6 +23,7 @@ export function useProfile(initialData?: FullUser) {
       if (!data) throw new Error("Failed to load profile")
       return data
     },
+    enabled: !!user,
     initialData,
     staleTime: 60 * 1000,
   })

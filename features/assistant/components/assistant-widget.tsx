@@ -87,7 +87,7 @@ export function AssistantWidget() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 40 }}
             transition={{ type: "spring", stiffness: 350, damping: 30 }}
-            className="fixed end-0 bottom-8 z-50 flex items-center"
+            className="fixed end-0 bottom-8 z-50 flex items-center pointer-events-none"
           >
             <motion.button
               type="button"
@@ -95,8 +95,8 @@ export function AssistantWidget() {
               aria-label={t("open")}
               whileTap={{ scale: 0.95 }}
               className={cn(
-                "group relative flex items-center gap-3 rounded-s-full border border-e-0 border-border/80 bg-background/95 py-2 ps-2 pe-4 shadow-2xl backdrop-blur-md transition-all duration-300 ease-out hover:border-primary/50 hover:bg-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                "translate-x-[calc(100%-2rem)] opacity-95 hover:translate-x-0 hover:opacity-100 rtl:-translate-x-[calc(100%-2rem)] rtl:hover:translate-x-0"
+                "group relative flex items-center gap-3 rounded-s-full border border-e-0 border-border/80 bg-background/95 py-2 ps-2 pe-4 shadow-2xl backdrop-blur-md transition-all duration-300 ease-out hover:border-primary/50 hover:bg-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-events-auto",
+                "translate-x-[calc(100%-2rem)] opacity-95 hover:translate-x-0 hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100 rtl:-translate-x-[calc(100%-2rem)] rtl:hover:translate-x-0 rtl:focus-visible:translate-x-0"
               )}
             >
               {/* Pulsing ring AI Chef Icon */}
