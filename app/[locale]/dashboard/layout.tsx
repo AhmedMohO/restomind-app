@@ -11,6 +11,7 @@ import {
   getMySubscription,
   hasDashboardAccess,
 } from "@/features/subscription/api"
+import { getCurrentUser } from "@/lib/auth/auth"
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -42,6 +43,8 @@ export default async function DashboardLayout({
   const requestHeaders = await headers()
   const currentPath = requestHeaders.get("x-pathname") ?? `/${locale}/dashboard`
 
+  const user = await getCurrentUser()
+
   let needsSubscription = false
   try {
     const subscription = await getMySubscription()
@@ -58,8 +61,8 @@ export default async function DashboardLayout({
               future — is covered without per-page work. */}
           <SubscriptionGate locale={safeLocale}>{children}</SubscriptionGate>
         </AppSidebar>
-        {/* Fixed-position, so it floats over every dashboard page. */}
-        <AssistantWidget />
+        {/* Fixed-position, so it floats over every dashboard page (hidden for admin). */}
+        {user?.role !== "admin" && <AssistantWidget />}
       </ProtectedRoute>
     </Suspense>
   )

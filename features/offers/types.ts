@@ -1,6 +1,8 @@
 import type { useTranslations } from "next-intl"
 
 import type { ApiOffer, CreateOfferInput, GetOffersParams, UpdateOfferInput } from "@/features/offers/api/type"
+import type { ApiCategory } from "@/features/categories/api/type"
+import type { Restaurant } from "@/features/restaurant/types"
 
 // ─── Narrow aliases ──────────────────────────────────────────────────────────
 
@@ -21,4 +23,16 @@ export interface OfferFormProps {
   onSubmit: (data: CreateOfferInput | UpdateOfferInput) => Promise<void>
   isSubmitting?: boolean
   onCancel?: () => void
+}
+
+export interface OffersContentClientProps {
+  initialOffers: ApiOffer[]
+  allCategories: ApiCategory[]
+  allRestaurants?: Restaurant[]
+}
+
+export interface RestaurantCardProps {
+  restaurant: Restaurant
+  offersCount?: number
+  onSelect: (id: string) => void
 }

@@ -1,6 +1,13 @@
 "use client"
 
-import React, { useMemo, useTransition } from "react"
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react"
 import { useSearchParams } from "next/navigation"
 import { useRouter, usePathname, Link } from "@/i18n/routing"
 import { useTranslations } from "next-intl"
@@ -10,6 +17,10 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
+  Utensils,
+  Store,
+  MapPin,
+  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -20,38 +31,18 @@ import {
 } from "@/features/products/components"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import type { ApiOffer } from "@/features/offers/api/type"
-import type { ApiCategory } from "@/features/categories/api/type"
-import type { ApiRestaurant } from "@/features/orders/api/type"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import type { GetActiveOffersParams } from "@/features/offers/api/type"
+import { useRestaurantsList } from "@/features/restaurant/hooks/use-restaurant"
+import { useActiveOffersList } from "@/features/offers/hooks/use-offers"
+import type { OffersContentClientProps } from "@/features/offers/types"
+import { getPageNumbers } from "@/features/offers/utils"
+import { RestaurantCard } from "@/features/offers/components/restaurant-card"
+import Image from "next/image"
 
-interface OffersContentClientProps {
-  initialOffers: ApiOffer[]
-  allCategories: ApiCategory[]
-  allRestaurants?: ApiRestaurant[]
-}
-
-const getPageNumbers = (
-  current: number,
-  totalPages: number
-): (number | string)[] => {
-  if (totalPages <= 5) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1)
-  }
-
-  const pages: (number | string)[] = [1]
-  if (current > 3) pages.push("...")
-
-  const start = Math.max(2, current - 1)
-  const end = Math.min(totalPages - 1, current + 1)
-  for (let i = start; i <= end; i++) {
-    if (!pages.includes(i)) pages.push(i)
-  }
-
-  if (current < totalPages - 2) pages.push("...")
-  if (!pages.includes(totalPages)) pages.push(totalPages)
-
-  return pages
-}
+const SHOPS_PER_PAGE = 12
+const OFFERS_PER_PAGE = 12
 
 export function OffersContentClient({
   initialOffers,
@@ -63,6 +54,70 @@ export function OffersContentClient({
   const router = useRouter()
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
+
+  // --- Shops tab: debounced search + server-side pagination ---
+  const shopSearchParam = searchParams.get("shopSearch") || ""
+  const shopPage = Math.max(1, Number(searchParams.get("shopPage")) || 1)
+  const [shopSearchInput, setShopSearchInput] = useState(shopSearchParam)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Sync local input when URL param changes externally (e.g. browser back)
+  useEffect(() => {
+    setShopSearchInput(shopSearchParam)
+  }, [shopSearchParam])
+
+  const handleShopSearchChange = useCallback(
+    (value: string) => {
+      setShopSearchInput(value)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => {
+        startTransition(() => {
+          const params = new URLSearchParams(searchParams.toString())
+          if (value.trim()) {
+            params.set("shopSearch", value.trim())
+          } else {
+            params.delete("shopSearch")
+          }
+          params.delete("shopPage") // reset to page 1 on new search
+          const qs = params.toString()
+          router.push(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false })
+        })
+      }, 400)
+    },
+    [searchParams, pathname, router, startTransition]
+  )
+
+  // TanStack Query for paginated restaurants (shops tab)
+  const { data: restaurantsData, isLoading: isShopsLoading } =
+    useRestaurantsList(
+      {
+        page: shopPage,
+        limit: SHOPS_PER_PAGE,
+        search: shopSearchParam || undefined,
+      },
+      {
+        initialData:
+          shopPage === 1 && !shopSearchParam && allRestaurants.length
+            ? {
+                items: allRestaurants.slice(0, SHOPS_PER_PAGE),
+                page: 1,
+                limit: SHOPS_PER_PAGE,
+                total: allRestaurants.length,
+                totalPages: Math.ceil(allRestaurants.length / SHOPS_PER_PAGE),
+              }
+            : undefined,
+      }
+    )
+
+  const paginatedShops = restaurantsData?.items ?? []
+  const shopsTotalPages = restaurantsData?.totalPages ?? 1
+  const shopsTotalCount = restaurantsData?.total ?? allRestaurants.length
+  const shopPageNumbers = getPageNumbers(shopPage, shopsTotalPages)
+
+  // Active Tab: "items" (products) vs "shops" (restaurants)
+  const activeTab = useMemo(() => {
+    return searchParams.get("tab") === "shops" ? "shops" : "items"
+  }, [searchParams])
 
   // 1. Parsed URL Filter State
   const filterState = useMemo(() => {
@@ -102,177 +157,95 @@ export function OffersContentClient({
     }
   }, [searchParams])
 
-  // 2. Extract available tags from initialOffers
-  const availableTags = useMemo(() => {
-    const tagSet = new Set<string>()
+  // Count offers per restaurant ID for badge rendering
+  const offersCountMap = useMemo(() => {
+    const countsMap = new Map<string, number>()
     for (const offer of initialOffers) {
-      const prodTags = offer.productId?.tags
-      if (Array.isArray(prodTags)) {
-        for (const tag of prodTags) {
-          if (tag) tagSet.add(tag)
-        }
+      const rest = offer.restaurantId
+      const id = typeof rest === "object" ? rest?._id : rest
+      if (id) {
+        countsMap.set(id, (countsMap.get(id) || 0) + 1)
       }
     }
-    return Array.from(tagSet)
+    return countsMap
   }, [initialOffers])
 
-  // 3. Extract available restaurants from initialOffers & allRestaurants prop
-  const availableRestaurants = useMemo(() => {
-    const map = new Map<string, { _id: string; name: string }>()
-
-    if (allRestaurants.length > 0) {
-      for (const rest of allRestaurants) {
-        if (rest?._id && rest?.name) {
-          map.set(rest._id, { _id: rest._id, name: rest.name })
-        }
-      }
+  // Shop pagination URL builders
+  const buildShopUrlWithPage = (p: number) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (p <= 1) {
+      params.delete("shopPage")
+    } else {
+      params.set("shopPage", String(p))
     }
+    const qs = params.toString()
+    return `${pathname}${qs ? `?${qs}` : ""}`
+  }
 
-    for (const offer of initialOffers) {
-      const rest = offer.restaurantId as ApiRestaurant | string | undefined
-      if (typeof rest === "object" && rest?._id && rest?.name) {
-        map.set(rest._id, { _id: rest._id, name: rest.name })
-      }
-    }
-
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
-  }, [initialOffers, allRestaurants])
-
-  // 4. Extract available categories from initialOffers & allCategories
-  const availableCategories = useMemo(() => {
-    const categoryIdentifiers = new Set<string>()
-
-    for (const offer of initialOffers) {
-      const cat = offer.productId?.category
-      if (cat) {
-        if (typeof cat === "object") {
-          if (cat._id) categoryIdentifiers.add(cat._id)
-          if (cat.name) categoryIdentifiers.add(cat.name)
-        } else if (typeof cat === "string") {
-          categoryIdentifiers.add(cat)
-        }
-      }
-    }
-
-    if (categoryIdentifiers.size === 0) return allCategories
-
-    return allCategories.filter(
-      (cat) =>
-        categoryIdentifiers.has(cat._id) || categoryIdentifiers.has(cat.name)
-    )
-  }, [initialOffers, allCategories])
-
-  // 5. Reactive Filtering
-  const filteredOffers = useMemo(() => {
-    const {
-      q,
-      minPrice,
-      maxPrice,
-      categories,
-      restaurants,
-      tags,
-      isBestseller,
-      featuredOnly,
-      minDiscount,
-    } = filterState
-
-    const searchQuery = q.trim().toLowerCase()
-
-    return initialOffers.filter((offer) => {
-      const prod = offer.productId
-      const rest = offer.restaurantId as ApiRestaurant | string | undefined
-
-      // Search Query Match (Title, Description, Restaurant Name)
-      if (searchQuery) {
-        const titleMatch = prod?.title?.toLowerCase().includes(searchQuery)
-        const descMatch = prod?.description?.toLowerCase().includes(searchQuery)
-        const restName = typeof rest === "object" ? rest?.name : undefined
-        const restMatch = restName?.toLowerCase().includes(searchQuery)
-        if (!titleMatch && !descMatch && !restMatch) return false
-      }
-
-      // Price Range Match
-      const price = prod?.discountedPrice ?? prod?.price ?? 0
-      if (price < minPrice || price > maxPrice) return false
-
-      // Categories Filter Match
-      if (categories.length > 0) {
-        const prodCat = prod?.category
-        const catId = typeof prodCat === "object" ? prodCat?._id : prodCat
-        const catName = typeof prodCat === "object" ? prodCat?.name : prodCat
-        const matchesCat = categories.some((c) => c === catId || c === catName)
-        if (!matchesCat) return false
-      }
-
-      // Restaurants Filter Match
-      if (restaurants.length > 0) {
-        const restId = typeof rest === "object" ? rest?._id : rest
-        const restName = typeof rest === "object" ? rest?.name : undefined
-        const matchesRest = restaurants.some(
-          (r) => r === restId || r === restName
-        )
-        if (!matchesRest) return false
-      }
-
-      // Tags Filter Match
-      if (tags.length > 0) {
-        const prodTags = prod?.tags ?? []
-        const hasTag = tags.some((t) => prodTags.includes(t))
-        if (!hasTag) return false
-      }
-
-      // Bestseller Only Match
-      if (isBestseller && !prod?.isBestseller) return false
-
-      // Featured Offers Only Match
-      if (featuredOnly && !offer.featured) return false
-
-      // Minimum Discount Match
-      if (minDiscount > 0 && (offer.discountPercentage ?? 0) < minDiscount) {
-        return false
-      }
-
-      return true
+  const handleShopPageChange = (p: number) => {
+    startTransition(() => {
+      router.push(buildShopUrlWithPage(p), { scroll: true })
     })
-  }, [initialOffers, filterState])
+  }
 
-  // 6. Sorting
-  const sortedOffers = useMemo(() => {
-    const list = [...filteredOffers]
+  // --- Server-side filtered/sorted/paginated offers via TanStack Query ---
+  const sortMapping: Record<
+    string,
+    { sortBy: GetActiveOffersParams["sortBy"]; sortOrder: "asc" | "desc" }
+  > = {
+    "price-asc": { sortBy: "offerPrice", sortOrder: "asc" },
+    "price-desc": { sortBy: "offerPrice", sortOrder: "desc" },
+    "rating-desc": { sortBy: "discountPercentage", sortOrder: "desc" },
+  }
+  const serverSort = sortMapping[filterState.sort]
 
-    switch (filterState.sort) {
-      case "price-asc":
-        return list.sort(
-          (a, b) =>
-            (a.productId?.discountedPrice ?? 0) -
-            (b.productId?.discountedPrice ?? 0)
-        )
-      case "price-desc":
-        return list.sort(
-          (a, b) =>
-            (b.productId?.discountedPrice ?? 0) -
-            (a.productId?.discountedPrice ?? 0)
-        )
-      case "rating-desc":
-        return list.sort(
-          (a, b) =>
-            (b.productId?.rating ?? b.discountPercentage ?? 0) -
-            (a.productId?.rating ?? a.discountPercentage ?? 0)
-        )
-      default:
-        return list
+  const offersQueryParams = useMemo(
+    () => ({
+      page: filterState.page,
+      limit: filterState.limit,
+      ...(filterState.q ? { search: filterState.q } : {}),
+      ...(filterState.categories.length === 1
+        ? { categoryId: filterState.categories[0] }
+        : {}),
+      ...(filterState.restaurants.length === 1
+        ? { restaurantId: filterState.restaurants[0] }
+        : {}),
+      ...(filterState.featuredOnly ? { featured: true } : {}),
+      ...(filterState.minPrice > 0 ? { minPrice: filterState.minPrice } : {}),
+      ...(filterState.maxPrice < 500 ? { maxPrice: filterState.maxPrice } : {}),
+      ...(serverSort
+        ? { sortBy: serverSort.sortBy, sortOrder: serverSort.sortOrder }
+        : {}),
+    }),
+    [filterState, serverSort]
+  )
+
+  const { data: offersData, isLoading: isOffersLoading } = useActiveOffersList(
+    offersQueryParams,
+    {
+      initialData:
+        !filterState.q &&
+        filterState.page === 1 &&
+        filterState.categories.length === 0 &&
+        filterState.restaurants.length === 0 &&
+        !filterState.featuredOnly &&
+        filterState.minPrice === 0 &&
+        filterState.maxPrice >= 500 &&
+        !serverSort
+          ? {
+              items: initialOffers.slice(0, filterState.limit),
+              page: 1,
+              limit: filterState.limit,
+              total: initialOffers.length,
+              totalPages: Math.ceil(initialOffers.length / filterState.limit),
+            }
+          : undefined,
     }
-  }, [filteredOffers, filterState.sort])
+  )
 
-  // 7. Pagination
-  const totalCount = sortedOffers.length
-  const totalPages = Math.ceil(totalCount / filterState.limit) || 1
-  const startIdx = (filterState.page - 1) * filterState.limit
-
-  const displayedOffers = useMemo(() => {
-    return sortedOffers.slice(startIdx, startIdx + filterState.limit)
-  }, [sortedOffers, startIdx, filterState.limit])
-
+  const displayedOffers = offersData?.items ?? []
+  const totalPages = offersData?.totalPages ?? 1
+  const offersTotalCount = offersData?.total ?? initialOffers.length
   const pageNumbers = getPageNumbers(filterState.page, totalPages)
 
   const buildUrlWithPage = (p: number) => {
@@ -292,133 +265,199 @@ export function OffersContentClient({
     })
   }
 
+  const handleTabChange = (newTab: "items" | "shops") => {
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (newTab === "shops") {
+        params.set("tab", "shops")
+      } else {
+        params.delete("tab")
+      }
+      const qs = params.toString()
+      router.push(`${pathname}${qs ? `?${qs}` : ""}`)
+    })
+  }
+
+  const handleSelectRestaurant = (restaurantId: string) => {
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete("tab") // Switch back to items view
+      params.set("restaurants", restaurantId)
+      params.set("page", "1")
+      const qs = params.toString()
+      router.push(`${pathname}${qs ? `?${qs}` : ""}`)
+    })
+  }
+
+  const handleClearRestaurantFilter = () => {
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete("restaurants")
+      params.set("page", "1")
+      const qs = params.toString()
+      router.push(`${pathname}${qs ? `?${qs}` : ""}`)
+    })
+  }
+
+  // Currently selected restaurant object for filter banner
+  const selectedRestaurantObj = useMemo(() => {
+    if (filterState.restaurants.length === 0) return null
+    const id = filterState.restaurants[0]
+    return allRestaurants.find((r) => r._id === id || r.name === id)
+  }, [filterState.restaurants, allRestaurants])
+
   return (
     <div className="container mx-auto space-y-6">
-      {/* Top Header Bar */}
-      <div className="flex flex-col justify-between gap-4 border-b border-border/20 py-2 md:flex-row md:items-center">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-[#2B1B15] sm:text-4xl dark:text-neutral-100">
-            {t("title")}
+      {/* Top Header Bar & Theme Tab Switcher */}
+      <div className="flex flex-col gap-4 border-b border-[#ECE6DB] pb-5 md:flex-row md:items-center md:justify-between dark:border-neutral-800">
+        <div className="space-y-1">
+          <h1 className="font-serif text-2xl font-bold tracking-tight text-[#2B1B15] sm:text-3xl dark:text-neutral-100">
+            {activeTab === "shops" ? t("allShopsTitle") : t("title")}
           </h1>
-          <p className="mt-1 max-w-xl text-xs leading-relaxed text-muted-foreground sm:text-sm">
-            {t("subtitle")}
+          <p className="text-xs font-medium text-muted-foreground">
+            {activeTab === "shops"
+              ? t("shopsFound", { count: shopsTotalCount })
+              : t("subtitle")}
           </p>
         </div>
 
-        {/* Mobile Filter Drawer Button */}
-        <div className="flex items-center gap-2 lg:hidden">
-          <Sheet>
-            <SheetTrigger
-              render={
-                <Button
-                  variant="outline"
-                  className="h-10 gap-1.5 rounded-xl border-[#ECE6DB] px-4 text-xs tracking-wider uppercase dark:border-neutral-800"
-                >
-                  <SlidersHorizontal className="h-4 w-4 text-primary" />
-                  <span>{t("filters")}</span>
-                </Button>
-              }
-            />
-            <SheetContent
-              side="left"
-              className="w-80 overflow-y-auto p-4 pt-10"
+        {/* Tab Toggle Control (RestoMind Theme) */}
+        <div className="inline-flex shrink-0 items-center gap-1 rounded-2xl border border-[#ECE6DB] bg-[#FAF7F2] p-1.5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900/80">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={isPending}
+            onClick={() => handleTabChange("items")}
+            className={cn(
+              "flex h-auto cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold tracking-wide transition-all duration-200 disabled:opacity-80",
+              activeTab === "items"
+                ? "border border-[#ECE6DB]/80 bg-white text-[#7C4A27] shadow-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-[#E68A49]"
+                : "text-muted-foreground hover:bg-white/50 hover:text-foreground dark:hover:bg-neutral-800/40"
+            )}
+          >
+            <Utensils className="h-3.5 w-3.5" />
+            <span>{t("tabItems")}</span>
+            <Badge
+              variant="secondary"
+              className="ml-0.5 rounded-full border-none bg-[#FAF2ED] px-2 py-0.5 text-[10px] font-bold text-[#7C4A27] dark:bg-neutral-800/80 dark:text-[#E68A49]"
             >
-              <ProductFilterSidebar
-                availableCategories={availableCategories}
-                availableTags={availableTags}
-                availableRestaurants={availableRestaurants}
-                startTransition={startTransition}
-              />
-            </SheetContent>
-          </Sheet>
+              {offersTotalCount}
+            </Badge>
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={isPending}
+            onClick={() => handleTabChange("shops")}
+            className={cn(
+              "flex h-auto cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold tracking-wide transition-all duration-200 disabled:opacity-80",
+              activeTab === "shops"
+                ? "border border-[#ECE6DB]/80 bg-white text-[#7C4A27] shadow-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-[#E68A49]"
+                : "text-muted-foreground hover:bg-white/50 hover:text-foreground dark:hover:bg-neutral-800/40"
+            )}
+          >
+            <Store className="h-3.5 w-3.5" />
+            <span>{t("tabShops")}</span>
+            <Badge
+              variant="secondary"
+              className="ml-0.5 rounded-full border-none bg-[#FAF2ED] px-2 py-0.5 text-[10px] font-bold text-[#7C4A27] dark:bg-neutral-800/80 dark:text-[#E68A49]"
+            >
+              {allRestaurants.length}
+            </Badge>
+          </Button>
         </div>
       </div>
 
-      {/* 2-Column Sidebar & Grid Layout */}
-      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-4">
-        {/* Desktop Left Sidebar */}
-        <aside className="sticky top-4 hidden max-h-[calc(100vh-8rem)] overflow-y-auto lg:col-span-1 lg:block">
-          <ProductFilterSidebar
-            availableCategories={availableCategories}
-            availableTags={availableTags}
-            availableRestaurants={availableRestaurants}
-            startTransition={startTransition}
-          />
-        </aside>
+      {/* Main Content View Container with Smooth Loading Indicator */}
+      <div className="relative min-h-[400px]">
+        {/* Visible Transition Loading Overlay on tab switch & filter updates */}
+        {isPending && (
+          <div className="absolute inset-0 z-20 flex items-start justify-center rounded-3xl bg-white/50 pt-20 backdrop-blur-[1px] transition-all duration-300 dark:bg-neutral-950/50">
+            <div className="flex items-center gap-3 rounded-2xl border border-[#ECE6DB] bg-white px-5 py-3 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+              <Loader2 className="h-5 w-5 animate-spin text-[#7C4A27] dark:text-[#E68A49]" />
+              <span className="text-xs font-semibold text-foreground">
+                {t("updating")}
+              </span>
+            </div>
+          </div>
+        )}
 
-        {/* Right Content Area */}
-        <section className="min-w-0 space-y-6 lg:col-span-3">
-          <ProductsFilterBar startTransition={startTransition} />
-
-          <ActiveFilters
-            availableCategories={allCategories}
-            availableRestaurants={availableRestaurants}
-          />
-
-          <div className="relative">
-            {/* Transition Loading Overlay */}
-            {isPending && (
-              <div className="absolute inset-0 z-10 flex items-start justify-center rounded-2xl bg-white/40 pt-20 backdrop-blur-[1px] dark:bg-neutral-950/40">
-                <div className="flex items-center gap-2 rounded-full border border-[#ECE6DB] bg-white px-4 py-2 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t("updating")}
-                  </span>
-                </div>
+        {activeTab === "shops" ? (
+          <section className="space-y-6">
+            {/* Shop Search Subheader */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative w-full sm:w-80">
+                <Search className="absolute top-1/2 left-3.5 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground rtl:right-3.5 rtl:left-auto" />
+                <Input
+                  type="text"
+                  value={shopSearchInput}
+                  onChange={(e) => handleShopSearchChange(e.target.value)}
+                  placeholder={t("searchShopsPlaceholder")}
+                  className="h-11 w-full rounded-2xl border border-[#ECE6DB] bg-white pr-4 pl-10 text-xs font-medium placeholder:text-muted-foreground focus:border-primary focus:outline-none rtl:pr-10 rtl:pl-4 dark:border-neutral-800 dark:bg-neutral-900"
+                />
               </div>
-            )}
+            </div>
 
-            {displayedOffers.length > 0 ? (
+            {/* Restaurant Cards Grid */}
+            {isShopsLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#7C4A27] dark:text-[#E68A49]" />
+              </div>
+            ) : paginatedShops.length > 0 ? (
               <>
                 <div
                   className={cn(
-                    "grid grid-cols-1 gap-6 transition-opacity duration-200 sm:grid-cols-2 md:grid-cols-3",
+                    "grid grid-cols-1 gap-6 transition-opacity duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
                     isPending && "opacity-50"
                   )}
                 >
-                  {displayedOffers.map((offer) => (
-                    <ProductCard key={offer._id} product={offer} />
+                  {paginatedShops.map((shop) => (
+                    <RestaurantCard
+                      key={shop._id}
+                      restaurant={shop}
+                      offersCount={offersCountMap.get(shop._id) || 0}
+                      onSelect={handleSelectRestaurant}
+                    />
                   ))}
                 </div>
 
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
+                {/* Shops Pagination Controls */}
+                {shopsTotalPages > 1 && (
                   <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-[#ECE6DB] pt-8 dark:border-neutral-800">
                     <Link
-                      href={buildUrlWithPage(filterState.page - 1)}
+                      href={buildShopUrlWithPage(shopPage - 1)}
                       onClick={(e) => {
                         e.preventDefault()
-                        if (filterState.page > 1)
-                          handlePageChange(filterState.page - 1)
+                        if (shopPage > 1) handleShopPageChange(shopPage - 1)
                       }}
                       className={cn(
                         "flex h-9 w-9 items-center justify-center rounded-xl border border-[#ECE6DB] bg-white text-xs transition-colors dark:border-neutral-800 dark:bg-neutral-900",
-                        filterState.page === 1 &&
-                          "pointer-events-none opacity-30"
+                        shopPage === 1 && "pointer-events-none opacity-30"
                       )}
                     >
                       <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
                     </Link>
 
-                    {pageNumbers.map((p, idx) =>
+                    {shopPageNumbers.map((p, idx) =>
                       p === "..." ? (
                         <span
-                          key={`dots-${idx}`}
+                          key={`shop-dots-${idx}`}
                           className="flex h-9 w-9 items-center justify-center text-xs text-muted-foreground"
                         >
                           ...
                         </span>
                       ) : (
                         <Link
-                          key={`page-${p}`}
-                          href={buildUrlWithPage(p as number)}
+                          key={`shop-page-${p}`}
+                          href={buildShopUrlWithPage(p as number)}
                           onClick={(e) => {
                             e.preventDefault()
-                            handlePageChange(p as number)
+                            handleShopPageChange(p as number)
                           }}
                           className={cn(
                             "flex h-9 w-9 items-center justify-center rounded-xl border text-xs font-semibold transition-colors",
-                            p === filterState.page
+                            p === shopPage
                               ? "border-[#7C4A27] bg-[#7C4A27] text-white dark:border-[#C2733C] dark:bg-[#C2733C]"
                               : "border-[#ECE6DB] bg-white text-muted-foreground hover:bg-[#FAF7F2] dark:border-neutral-800 dark:bg-neutral-900"
                           )}
@@ -429,15 +468,15 @@ export function OffersContentClient({
                     )}
 
                     <Link
-                      href={buildUrlWithPage(filterState.page + 1)}
+                      href={buildShopUrlWithPage(shopPage + 1)}
                       onClick={(e) => {
                         e.preventDefault()
-                        if (filterState.page < totalPages)
-                          handlePageChange(filterState.page + 1)
+                        if (shopPage < shopsTotalPages)
+                          handleShopPageChange(shopPage + 1)
                       }}
                       className={cn(
                         "flex h-9 w-9 items-center justify-center rounded-xl border border-[#ECE6DB] bg-white text-xs transition-colors dark:border-neutral-800 dark:bg-neutral-900",
-                        filterState.page === totalPages &&
+                        shopPage === shopsTotalPages &&
                           "pointer-events-none opacity-30"
                       )}
                     >
@@ -449,20 +488,212 @@ export function OffersContentClient({
             ) : (
               <div className="flex flex-col items-center justify-center space-y-4 rounded-[24px] border border-dashed border-[#ECE6DB] bg-white p-8 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="rounded-full bg-[#FAF2ED] p-4 text-primary dark:bg-neutral-800 dark:text-[#E68A49]">
-                  <Search size={36} />
+                  <Store size={36} />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
-                    {t("noProductsFound")}
+                    {t("noShopsFound")}
                   </h3>
                   <p className="max-w-sm text-xs text-muted-foreground">
-                    {t("noProductsDesc")}
+                    {t("noShopsDesc")}
                   </p>
                 </div>
               </div>
             )}
+          </section>
+        ) : (
+          /* Items View */
+          <div className="space-y-6">
+            {/* Top Mobile Filter Trigger */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <Sheet>
+                <SheetTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      className="h-10 gap-1.5 rounded-xl border-[#ECE6DB] px-4 text-xs tracking-wider uppercase dark:border-neutral-800"
+                    >
+                      <SlidersHorizontal className="h-4 w-4 text-primary" />
+                      <span>{t("filters")}</span>
+                    </Button>
+                  }
+                />
+                <SheetContent
+                  side="left"
+                  className="w-80 overflow-y-auto p-4 pt-10"
+                >
+                  <ProductFilterSidebar
+                    availableCategories={allCategories}
+                    availableRestaurants={allRestaurants}
+                    startTransition={startTransition}
+                  />
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {/* Selected Restaurant Filter Banner */}
+            {selectedRestaurantObj && (
+              <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center dark:bg-primary/10">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Store className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+                      {t("selectedRestaurant")}
+                    </span>
+                    <h3 className="font-serif text-base font-bold text-[#2B1B15] dark:text-neutral-100">
+                      {selectedRestaurantObj.name}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleTabChange("shops")}
+                    className="cursor-pointer gap-1.5 rounded-xl border-[#ECE6DB] bg-white text-xs hover:bg-[#FAF7F2] dark:border-neutral-800 dark:bg-neutral-900"
+                  >
+                    <Store className="h-3.5 w-3.5 text-primary" />
+                    <span>{t("viewAllShops")}</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearRestaurantFilter}
+                    className="cursor-pointer gap-1 rounded-xl text-xs text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                  >
+                    <X className="h-4 w-4" />
+                    <span>{t("clear")}</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* 2-Column Sidebar & Grid Layout */}
+            <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-4">
+              {/* Desktop Left Sidebar */}
+              <aside className="sticky top-4 hidden max-h-[calc(100vh-8rem)] overflow-y-auto lg:col-span-1 lg:block">
+                <ProductFilterSidebar
+                  availableCategories={allCategories}
+                  availableRestaurants={allRestaurants}
+                  startTransition={startTransition}
+                />
+              </aside>
+
+              {/* Right Content Area */}
+              <section className="min-w-0 space-y-6 lg:col-span-3">
+                <ProductsFilterBar startTransition={startTransition} />
+
+                <ActiveFilters
+                  availableCategories={allCategories}
+                  availableRestaurants={allRestaurants}
+                />
+
+                <div className="relative">
+                  {isOffersLoading ? (
+                    <div className="flex items-center justify-center py-20">
+                      <Loader2 className="h-8 w-8 animate-spin text-[#7C4A27] dark:text-[#E68A49]" />
+                    </div>
+                  ) : displayedOffers.length > 0 ? (
+                    <>
+                      <div
+                        className={cn(
+                          "grid grid-cols-1 gap-6 transition-opacity duration-200 sm:grid-cols-2 md:grid-cols-3",
+                          isPending && "opacity-50"
+                        )}
+                      >
+                        {displayedOffers.map((offer) => (
+                          <ProductCard key={offer._id} product={offer} />
+                        ))}
+                      </div>
+
+                      {/* Pagination Controls */}
+                      {totalPages > 1 && (
+                        <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-[#ECE6DB] pt-8 dark:border-neutral-800">
+                          <Link
+                            href={buildUrlWithPage(filterState.page - 1)}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (filterState.page > 1)
+                                handlePageChange(filterState.page - 1)
+                            }}
+                            className={cn(
+                              "flex h-9 w-9 items-center justify-center rounded-xl border border-[#ECE6DB] bg-white text-xs transition-colors dark:border-neutral-800 dark:bg-neutral-900",
+                              filterState.page === 1 &&
+                                "pointer-events-none opacity-30"
+                            )}
+                          >
+                            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                          </Link>
+
+                          {pageNumbers.map((p, idx) =>
+                            p === "..." ? (
+                              <span
+                                key={`dots-${idx}`}
+                                className="flex h-9 w-9 items-center justify-center text-xs text-muted-foreground"
+                              >
+                                ...
+                              </span>
+                            ) : (
+                              <Link
+                                key={`page-${p}`}
+                                href={buildUrlWithPage(p as number)}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  handlePageChange(p as number)
+                                }}
+                                className={cn(
+                                  "flex h-9 w-9 items-center justify-center rounded-xl border text-xs font-semibold transition-colors",
+                                  p === filterState.page
+                                    ? "border-[#7C4A27] bg-[#7C4A27] text-white dark:border-[#C2733C] dark:bg-[#C2733C]"
+                                    : "border-[#ECE6DB] bg-white text-muted-foreground hover:bg-[#FAF7F2] dark:border-neutral-800 dark:bg-neutral-900"
+                                )}
+                              >
+                                {p}
+                              </Link>
+                            )
+                          )}
+
+                          <Link
+                            href={buildUrlWithPage(filterState.page + 1)}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (filterState.page < totalPages)
+                                handlePageChange(filterState.page + 1)
+                            }}
+                            className={cn(
+                              "flex h-9 w-9 items-center justify-center rounded-xl border border-[#ECE6DB] bg-white text-xs transition-colors dark:border-neutral-800 dark:bg-neutral-900",
+                              filterState.page === totalPages &&
+                                "pointer-events-none opacity-30"
+                            )}
+                          >
+                            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+                          </Link>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center space-y-4 rounded-[24px] border border-dashed border-[#ECE6DB] bg-white p-8 py-16 text-center dark:border-neutral-800 dark:bg-neutral-900">
+                      <div className="rounded-full bg-[#FAF2ED] p-4 text-primary dark:bg-neutral-800 dark:text-[#E68A49]">
+                        <Search size={36} />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-serif text-lg font-bold text-[#2B1B15] dark:text-neutral-100">
+                          {t("noProductsFound")}
+                        </h3>
+                        <p className="max-w-sm text-xs text-muted-foreground">
+                          {t("noProductsDesc")}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
           </div>
-        </section>
+        )}
       </div>
     </div>
   )

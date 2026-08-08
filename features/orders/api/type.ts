@@ -59,6 +59,9 @@ export interface ApiRestaurant {
   logoUrl?: string
   image?: string | { public_id: string; secure_url: string }
   address?: { street?: string; city?: string; country?: string }
+  description?: string
+  phone?: string
+  rating?: number
 }
 
 /** Line item as returned inside a group's per-restaurant sub-order. */

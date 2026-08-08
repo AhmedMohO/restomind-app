@@ -77,7 +77,10 @@ export interface GetRestaurantsQueryKeyParams {
   search?: string
 }
 
-export function useRestaurantsList(params: GetRestaurantsQueryKeyParams = {}) {
+export function useRestaurantsList(
+  params: GetRestaurantsQueryKeyParams = {},
+  options?: { initialData?: PaginatedRestaurants }
+) {
   const queryKey = [...RESTAURANTS_LIST_QUERY_KEY, params] as const
   return useQuery<PaginatedRestaurants>({
     queryKey,
@@ -92,6 +95,7 @@ export function useRestaurantsList(params: GetRestaurantsQueryKeyParams = {}) {
       return data ?? { items: [], page: 1, limit: 10, total: 0, totalPages: 1 }
     },
     staleTime: 30 * 1000,
+    initialData: options?.initialData,
   })
 }
 

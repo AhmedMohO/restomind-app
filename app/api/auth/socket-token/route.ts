@@ -23,12 +23,7 @@ export async function GET() {
       )
     }
 
-    let wsUrl = process.env.NEXT_PUBLIC_WS_URL || API_URL || "http://localhost:4000"
-
-    // Upgrade to HTTPS/WSS in production to prevent Mixed Content blocking
-    if (process.env.NODE_ENV === "production") {
-      wsUrl = wsUrl.replace(/^http:\/\//, "https://")
-    }
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || API_URL || "http://localhost:4000"
 
     return NextResponse.json(
       {

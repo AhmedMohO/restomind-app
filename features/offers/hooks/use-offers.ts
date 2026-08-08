@@ -5,12 +5,30 @@ import { buildQueryString } from "@/lib/api/utils"
 import type {
   ApiOffer,
   CreateOfferInput,
+  GetActiveOffersParams,
   GetOffersParams,
   PaginatedOffers,
   UpdateOfferInput,
 } from "@/features/offers/api/type"
 
 export const OFFERS_QUERY_KEY = ["offers"] as const
+export const ACTIVE_OFFERS_LIST_QUERY_KEY = ["offers", "active"] as const
+
+export function useActiveOffersList(
+  params: GetActiveOffersParams = {},
+  options?: { initialData?: PaginatedOffers }
+) {
+  return useQuery<PaginatedOffers>({
+    queryKey: [...ACTIVE_OFFERS_LIST_QUERY_KEY, params],
+    queryFn: async () => {
+      const qs = buildQueryString(params)
+      const res = await clientFetch<PaginatedOffers>(`/offers/active${qs}`)
+      return res ?? { items: [], page: 1, limit: 10, total: 0, totalPages: 1 }
+    },
+    staleTime: 30 * 1000,
+    initialData: options?.initialData,
+  })
+}
 
 export function useOffersList(params: GetOffersParams = {}) {
   return useQuery<PaginatedOffers>({

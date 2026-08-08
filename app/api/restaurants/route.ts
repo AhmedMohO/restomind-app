@@ -8,9 +8,6 @@ import { handleUpstreamError, requireAnyRole } from "@/lib/api/route-helpers"
 export async function GET(request: Request) {
   await connection()
 
-  const authError = await requireAnyRole(["admin", "manager"])
-  if (authError) return authError
-
   const { searchParams } = new URL(request.url)
   const page = searchParams.get("page") ?? undefined
   const limit = searchParams.get("limit") ?? undefined

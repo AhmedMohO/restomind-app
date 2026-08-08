@@ -26,7 +26,6 @@ export interface ApiRestaurantFilter {
 
 interface ProductFilterSidebarProps {
   availableCategories: ApiCategory[]
-  availableTags: string[]
   availableRestaurants?: ApiRestaurantFilter[]
   minPriceLimit?: number
   maxPriceLimit?: number
@@ -37,7 +36,6 @@ const DISCOUNT_OPTIONS = [0, 15, 25, 40]
 
 export function ProductFilterSidebar({
   availableCategories,
-  availableTags,
   availableRestaurants = [],
   minPriceLimit = 0,
   maxPriceLimit = 500,
@@ -420,36 +418,6 @@ export function ProductFilterSidebar({
             </div>
           </AccordionContent>
         </AccordionItem>
-
-        {/* DYNAMIC TAGS SECTION (Only Available Tags from Offers) */}
-        {availableTags.length > 0 && (
-          <AccordionItem value="tags" className="border-none">
-            <AccordionTriggerPlus className="pb-2">
-              {t("tags")}
-            </AccordionTriggerPlus>
-            <AccordionContent className="pt-2">
-              <div className="flex flex-wrap gap-1.5">
-                {availableTags.map((tag) => {
-                  const isChecked = activeTags.includes(tag)
-                  return (
-                    <button
-                      key={tag}
-                      onClick={() => handleTagToggle(tag, !isChecked)}
-                      className={cn(
-                        "rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors",
-                        isChecked
-                          ? "border-[#7C4A27] bg-[#7C4A27] text-white dark:border-[#C2733C] dark:bg-[#C2733C]"
-                          : "border-[#ECE6DB] bg-white text-muted-foreground hover:bg-[#FAF7F2] dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
-                      )}
-                    >
-                      {tag}
-                    </button>
-                  )
-                })}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        )}
       </Accordion>
     </div>
   )

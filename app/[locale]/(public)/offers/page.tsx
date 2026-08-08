@@ -3,24 +3,20 @@ import type { Metadata } from "next"
 import { getAlternates } from "@/lib/seo/metadata"
 import { webpageJsonLd } from "@/lib/seo/json-ld"
 import { OffersContentClient } from "./offers-content-client"
-import { getActiveOffers } from "@/features/offers/api"
-import { getCategories } from "@/features/categories/api"
-import { getRestaurants } from "@/features/restaurant/api"
+import { getCachedOffersData } from "./offers-cache"
+import { routing } from "@/i18n/routing"
 
 type Props = {
   params: Promise<{ locale: string }>
 }
 
-async function OffersListFetcher() {
-  const [offersRes, categoriesRes, restaurantsRes] = await Promise.all([
-    getActiveOffers({ page: 1, limit: 100 }).catch(() => undefined),
-    getCategories().catch(() => undefined),
-    getRestaurants({ page: 1, limit: 100 }).catch(() => undefined),
-  ])
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }))
+}
 
-  const initialOffers = offersRes?.items ?? []
-  const allCategories = categoriesRes?.data ?? []
-  const allRestaurants = restaurantsRes?.items ?? []
+async function OffersListFetcher() {
+  const { initialOffers, allCategories, allRestaurants } =
+    await getCachedOffersData()
 
   return (
     <OffersContentClient
@@ -70,3 +66,4 @@ export default async function OffersPage({ params }: Props) {
     </>
   )
 }
+

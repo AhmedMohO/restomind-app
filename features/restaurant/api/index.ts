@@ -13,7 +13,7 @@
 
 import "server-only"
 
-import { apiClient } from "@/lib/api/client"
+import { apiClient, publicApiClient } from "@/lib/api/client"
 import { buildQueryString, extractApiMessage, parseOrThrow } from "@/lib/api/utils"
 import { ApiError } from "@/lib/auth/errors"
 import type { PaginatedRestaurants, Restaurant, UpdateRestaurantPayload } from "../types"
@@ -53,7 +53,7 @@ export async function getRestaurants(
   params: GetRestaurantsParams = {}
 ): Promise<PaginatedRestaurants> {
   const qs = buildQueryString(params)
-  const response = await apiClient(`/restaurants${qs}`)
+  const response = await publicApiClient(`/restaurants${qs}`)
   return parseOrThrow<PaginatedRestaurants>(response, "getRestaurants")
 }
 
