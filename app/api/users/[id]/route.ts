@@ -9,6 +9,7 @@ import {
   type UpdateUserPayload,
 } from "@/features/users/api"
 import { ApiError } from "@/lib/auth/errors"
+import { requireAnyRole } from "@/lib/api/route-helpers"
 
 export async function GET(
   _request: Request,
@@ -16,13 +17,8 @@ export async function GET(
 ) {
   await connection()
 
-  const session = await getSession()
-  if (!session.isLoggedIn || !session.user) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 }
-    )
-  }
+  const authError = await requireAnyRole(["admin", "manager"])
+  if (authError) return authError
 
   const { id } = await params
 

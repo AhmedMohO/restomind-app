@@ -8,9 +8,13 @@ import { NextResponse, connection } from "next/server"
 import { getProfileApi } from "@/features/profile/api/profile"
 import type { ApiResponse } from "@/features/auth/auth"
 import type { FullUser } from "@/features/profile/api/profile"
+import { requireAuth } from "@/lib/api/route-helpers"
 
 export async function GET() {
   await connection()
+
+  const authError = await requireAuth()
+  if (authError) return authError
 
   try {
     const user = await getProfileApi()
