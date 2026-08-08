@@ -23,10 +23,12 @@ import { API_URL } from "./config"
 import { AuthenticationError, RefreshTokenExpiredError } from "./errors"
 import {
   getSession,
+  saveSession,
   updateTokens,
   destroySession,
   computeExpiresAt,
 } from "./session"
+import type { MeApiUser } from "@/features/auth/auth"
 
 // ---------------------------------------------------------------------------
 // Refresh lock
@@ -118,6 +120,33 @@ export async function refreshSession(
       refreshToken: session.tokens.refreshToken,
       expiresAt: computeExpiresAt(),
     })
+
+    // Re-validate the cached role/profile alongside the token — a role
+    // change (e.g. demotion) must not persist past the next refresh cycle.
+    // Non-fatal: if this call fails, the refresh itself still succeeded and
+    // the user keeps their previous (possibly stale) role until the next
+    // refresh attempt rather than being logged out over a transient error.
+    try {
+      const meResponse = await fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${data.accessToken}` },
+        cache: "no-store",
+      })
+      if (meResponse.ok) {
+        const apiUser = (await meResponse.json()) as MeApiUser
+        session.user = {
+          _id: apiUser._id,
+          firstName: apiUser.firstName,
+          lastName: apiUser.lastName,
+          email: apiUser.email,
+          role: apiUser.role,
+          isEmailVerified: apiUser.isEmailVerified,
+          restaurantId: apiUser.restaurantId,
+        }
+        await saveSession(session)
+      }
+    } catch (err) {
+      console.warn("[auth] Role revalidation on refresh failed (non-fatal)", err)
+    }
 
     console.info("[auth] Access token refreshed successfully")
     resolve(data.accessToken)
