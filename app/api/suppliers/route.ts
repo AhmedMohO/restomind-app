@@ -4,8 +4,10 @@ import { createSupplier, getSuppliers } from "@/features/suppliers/api"
 import {
   handleServerError,
   jsonSuccess,
+  readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
+import { createSupplierSchema } from "@/schemas/supplier"
 
 const MANAGER_ROLES = ["manager", "admin"] as const
 const SUPPLIER_READ_ROLES = ["admin", "manager", "staff"] as const
@@ -39,9 +41,11 @@ export async function POST(request: Request) {
   const authError = await requireAnyRole([...MANAGER_ROLES])
   if (authError) return authError
 
+  const parsed = await readJsonBody(request, createSupplierSchema)
+  if (!parsed.ok) return parsed.response
+
   try {
-    const body = await request.json()
-    const data = await createSupplier(body)
+    const data = await createSupplier(parsed.data)
     return jsonSuccess(data, 201)
   } catch (err) {
     return handleServerError(err, "Failed to create supplier")
