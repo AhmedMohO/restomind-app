@@ -25,12 +25,12 @@ export default function StorySection() {
   )
 
   return (
-    <section className="relative w-full overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background py-16 sm:py-20 md:py-28">
+    <section className="relative w-full overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background py-16">
       {/* Background Accent Glows (RTL & LTR Direction Aware) */}
-      <div className="pointer-events-none absolute top-1/4 -start-20 size-96 rounded-full bg-primary/5 blur-3xl transition-all duration-700 ease-in-out" />
-      <div className="pointer-events-none absolute bottom-1/4 -end-20 size-96 rounded-full bg-amber-500/5 blur-3xl transition-all duration-700 ease-in-out" />
+      <div className="pointer-events-none absolute -start-20 top-1/4 size-96 rounded-full bg-primary/5 blur-3xl transition-all duration-700 ease-in-out" />
+      <div className="pointer-events-none absolute -end-20 bottom-1/4 size-96 rounded-full bg-amber-500/5 blur-3xl transition-all duration-700 ease-in-out" />
 
-      <div className="relative container mx-auto px-4 sm:px-6 md:px-8">
+      <div className="relative container mx-auto px-4">
         {/* Section Header */}
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-bold tracking-wider text-primary uppercase shadow-xs transition-all duration-300 hover:border-primary/40 hover:bg-primary/15">
@@ -53,8 +53,8 @@ export default function StorySection() {
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all duration-300 ease-in-out sm:px-5 sm:py-2.5 sm:text-sm",
                 activeTab === "all"
-                  ? "bg-background text-foreground shadow-sm scale-100"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                  ? "scale-100 bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-background/40 hover:text-foreground"
               )}
             >
               <Users className="size-4 transition-transform duration-300" />
@@ -66,8 +66,8 @@ export default function StorySection() {
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all duration-300 ease-in-out sm:px-5 sm:py-2.5 sm:text-sm",
                 activeTab === "merchant"
-                  ? "bg-amber-500 text-slate-950 shadow-sm scale-100"
-                  : "text-muted-foreground hover:text-foreground hover:bg-amber-500/10"
+                  ? "scale-100 bg-amber-500 text-slate-950 shadow-sm"
+                  : "text-muted-foreground hover:bg-amber-500/10 hover:text-foreground"
               )}
             >
               <Store className="size-4 transition-transform duration-300" />
@@ -79,8 +79,8 @@ export default function StorySection() {
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all duration-300 ease-in-out sm:px-5 sm:py-2.5 sm:text-sm",
                 activeTab === "customer"
-                  ? "bg-primary text-primary-foreground shadow-sm scale-100"
-                  : "text-muted-foreground hover:text-foreground hover:bg-primary/10"
+                  ? "scale-100 bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
               )}
             >
               <ShoppingBag className="size-4 transition-transform duration-300" />
@@ -90,15 +90,15 @@ export default function StorySection() {
         </div>
 
         {/* Content Body Grid */}
-        <div className="mt-12 grid grid-cols-1 items-center gap-10 md:mt-16 md:grid-cols-12 lg:gap-14">
+        <div className="mt-12 grid grid-cols-1 items-center gap-10 md:mt-16 lg:grid-cols-12 lg:gap-14">
           {/* Visual Images Column */}
           <div className="md:col-span-6 lg:col-span-5">
             <div className="relative transition-all duration-500 ease-in-out">
               {/* Dual image view when 'all' tab is selected */}
               {activeTab === "all" && (
-                <div className="relative aspect-[4/3] w-full animate-in fade-in-50 zoom-in-95 transition-all duration-500 ease-in-out sm:aspect-[3/2] md:aspect-[4/3] lg:aspect-square">
+                <div className="relative aspect-[4/3] w-full animate-in transition-all duration-500 ease-in-out fade-in-50 zoom-in-95 sm:aspect-[3/2] md:aspect-[4/3] lg:aspect-square">
                   {/* Top/Primary Image: Merchant (Positioned start-0 top-0) */}
-                  <div className="absolute top-0 start-0 h-[78%] w-[82%] overflow-hidden rounded-3xl border border-border/40 bg-muted shadow-xl transition-all duration-500 ease-in-out hover:scale-[1.03] hover:shadow-2xl">
+                  <div className="absolute start-0 top-0 h-[78%] w-[82%] overflow-hidden rounded-3xl border border-border/40 bg-muted shadow-xl transition-all duration-500 ease-in-out hover:scale-[1.03] hover:shadow-2xl">
                     <Image
                       src="/images/Landing/story-merchant.png"
                       alt="Artisan Baker and AI Surplus Management"
@@ -107,7 +107,7 @@ export default function StorySection() {
                       priority
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300" />
-                    <div className="absolute bottom-3 start-3 end-3 text-white transition-all duration-300">
+                    <div className="absolute start-3 end-3 bottom-3 text-white transition-all duration-300">
                       <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/90 px-2 py-0.5 text-[11px] font-bold text-slate-950 backdrop-blur-xs transition-all duration-300 hover:bg-amber-400">
                         <Store className="size-3" />
                         {t("merchantBadge")}
@@ -116,7 +116,7 @@ export default function StorySection() {
                   </div>
 
                   {/* Overlapping Bottom Image: Customer (Positioned end-0 bottom-0) */}
-                  <div className="absolute bottom-0 end-0 h-[68%] w-[72%] overflow-hidden rounded-3xl border-2 border-background bg-muted shadow-2xl transition-all duration-500 ease-in-out hover:scale-[1.03]">
+                  <div className="absolute end-0 bottom-0 h-[68%] w-[72%] overflow-hidden rounded-3xl border-2 border-background bg-muted shadow-2xl transition-all duration-500 ease-in-out hover:scale-[1.03]">
                     <Image
                       src="/images/Landing/story-customer.png"
                       alt="Customer Enjoying Fresh Surplus Meal"
@@ -124,7 +124,7 @@ export default function StorySection() {
                       className="object-cover transition-transform duration-700 hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300" />
-                    <div className="absolute bottom-3 start-3 end-3 text-white transition-all duration-300">
+                    <div className="absolute start-3 end-3 bottom-3 text-white transition-all duration-300">
                       <span className="inline-flex items-center gap-1 rounded-md bg-primary/90 px-2 py-0.5 text-[11px] font-bold text-primary-foreground backdrop-blur-xs transition-all duration-300 hover:bg-primary">
                         <ShoppingBag className="size-3" />
                         {t("customerBadge")}
@@ -133,8 +133,8 @@ export default function StorySection() {
                   </div>
 
                   {/* Glassmorphism Stat Badge (Direction Aware start-4 top-4) */}
-                  <div className="absolute top-4 start-4 z-20 flex items-center gap-2.5 rounded-2xl border border-white/20 bg-background/90 px-4 py-2.5 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-105 hover:bg-background">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-colors duration-300">
+                  <div className="absolute start-4 top-4 z-20 flex items-center gap-2.5 rounded-2xl border border-white/20 bg-background/90 px-4 py-2.5 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-105 hover:bg-background">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 transition-colors duration-300 dark:text-emerald-400">
                       <Leaf className="size-4" />
                     </div>
                     <div>
@@ -151,7 +151,7 @@ export default function StorySection() {
 
               {/* Single Focus Image: Merchant */}
               {activeTab === "merchant" && (
-                <div className="relative aspect-[4/3] w-full animate-in fade-in-50 zoom-in-95 overflow-hidden rounded-3xl border border-amber-500/30 bg-muted shadow-2xl transition-all duration-500 ease-in-out sm:aspect-[3/2] md:aspect-[4/3] lg:aspect-square">
+                <div className="relative aspect-[4/3] w-full animate-in overflow-hidden rounded-3xl border border-amber-500/30 bg-muted shadow-2xl transition-all duration-500 ease-in-out fade-in-50 zoom-in-95 sm:aspect-[3/2] md:aspect-[4/3] lg:aspect-square">
                   <Image
                     src="/images/Landing/story-merchant.png"
                     alt="Artisan Baker"
@@ -162,7 +162,7 @@ export default function StorySection() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-300" />
 
                   {/* Floating Stat Overlay (Direction Aware start-6 end-6 bottom-6) */}
-                  <div className="absolute bottom-6 start-6 end-6 rounded-2xl border border-amber-500/30 bg-stone-950/80 p-4 text-white backdrop-blur-md transition-all duration-300 hover:border-amber-500/50 hover:bg-stone-950/90">
+                  <div className="absolute start-6 end-6 bottom-6 rounded-2xl border border-amber-500/30 bg-stone-950/80 p-4 text-white backdrop-blur-md transition-all duration-300 hover:border-amber-500/50 hover:bg-stone-950/90">
                     <div className="flex items-center gap-3">
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 font-bold text-stone-950 transition-transform duration-300 hover:scale-110">
                         <TrendingUp className="size-5" />
@@ -182,7 +182,7 @@ export default function StorySection() {
 
               {/* Single Focus Image: Customer */}
               {activeTab === "customer" && (
-                <div className="relative aspect-[4/3] w-full animate-in fade-in-50 zoom-in-95 overflow-hidden rounded-3xl border border-primary/30 bg-muted shadow-2xl transition-all duration-500 ease-in-out sm:aspect-[3/2] md:aspect-[4/3] lg:aspect-square">
+                <div className="relative aspect-[4/3] w-full animate-in overflow-hidden rounded-3xl border border-primary/30 bg-muted shadow-2xl transition-all duration-500 ease-in-out fade-in-50 zoom-in-95 sm:aspect-[3/2] md:aspect-[4/3] lg:aspect-square">
                   <Image
                     src="/images/Landing/story-customer.png"
                     alt="Customer enjoying food"
@@ -193,7 +193,7 @@ export default function StorySection() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-300" />
 
                   {/* Floating Stat Overlay (Direction Aware start-6 end-6 bottom-6) */}
-                  <div className="absolute bottom-6 start-6 end-6 rounded-2xl border border-primary/30 bg-background/80 p-4 text-foreground shadow-lg backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:bg-background/90">
+                  <div className="absolute start-6 end-6 bottom-6 rounded-2xl border border-primary/30 bg-background/80 p-4 text-foreground shadow-lg backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:bg-background/90">
                     <div className="flex items-center gap-3">
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary font-bold text-primary-foreground transition-transform duration-300 hover:scale-110">
                         <Percent className="size-5" />
@@ -217,15 +217,15 @@ export default function StorySection() {
           <div className="flex flex-col justify-center md:col-span-6 lg:col-span-7">
             {/* OVERVIEW TAB CONTENT */}
             {activeTab === "all" && (
-              <div className="grid grid-cols-1 gap-6 animate-in fade-in-50 slide-in-from-bottom-3 transition-all duration-500 ease-in-out sm:grid-cols-2">
+              <div className="grid animate-in grid-cols-1 gap-6 transition-all duration-500 ease-in-out fade-in-50 slide-in-from-bottom-3 sm:grid-cols-2">
                 {/* Merchant Highlight Card */}
-                <div className="group relative flex flex-col justify-between rounded-2xl border border-amber-500/30 bg-card/60 p-6 transition-all duration-300 ease-in-out hover:border-amber-500/60 hover:bg-card hover:shadow-xl hover:-translate-y-1">
+                <div className="group relative flex flex-col justify-between rounded-2xl border border-amber-500/30 bg-card/60 p-6 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:border-amber-500/60 hover:bg-card hover:shadow-xl">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex size-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500/20">
+                      <div className="flex size-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500/20 dark:text-amber-400">
                         <Store className="size-5" />
                       </div>
-                      <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 transition-colors duration-300 group-hover:bg-amber-500/20">
+                      <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-600 transition-colors duration-300 group-hover:bg-amber-500/20 dark:text-amber-400">
                         {t("merchantBadge")}
                       </span>
                     </div>
@@ -266,7 +266,7 @@ export default function StorySection() {
                 </div>
 
                 {/* Customer Highlight Card */}
-                <div className="group relative flex flex-col justify-between rounded-2xl border border-primary/30 bg-card/60 p-6 transition-all duration-300 ease-in-out hover:border-primary/60 hover:bg-card hover:shadow-xl hover:-translate-y-1">
+                <div className="group relative flex flex-col justify-between rounded-2xl border border-primary/30 bg-card/60 p-6 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:border-primary/60 hover:bg-card hover:shadow-xl">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
@@ -316,7 +316,7 @@ export default function StorySection() {
 
             {/* MERCHANT TAB DETAILED CONTENT */}
             {activeTab === "merchant" && (
-              <div className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 transition-all duration-500 ease-in-out">
+              <div className="animate-in space-y-6 transition-all duration-500 ease-in-out fade-in-50 slide-in-from-bottom-3">
                 <div>
                   <span className="inline-block text-xs font-bold tracking-wider text-amber-500 uppercase transition-all duration-300">
                     {t("merchantBadge")}
@@ -330,8 +330,8 @@ export default function StorySection() {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  <div className="group flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:border-amber-500/40 hover:bg-card/90 hover:shadow-md hover:-translate-y-0.5">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500/20">
+                  <div className="group flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-amber-500/40 hover:bg-card/90 hover:shadow-md">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500/20 dark:text-amber-400">
                       <Brain className="size-5" />
                     </div>
                     <div>
@@ -344,8 +344,8 @@ export default function StorySection() {
                     </div>
                   </div>
 
-                  <div className="group flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:border-amber-500/40 hover:bg-card/90 hover:shadow-md hover:-translate-y-0.5">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500/20">
+                  <div className="group flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-amber-500/40 hover:bg-card/90 hover:shadow-md">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500/20 dark:text-amber-400">
                       <TrendingUp className="size-5" />
                     </div>
                     <div>
@@ -358,8 +358,8 @@ export default function StorySection() {
                     </div>
                   </div>
 
-                  <div className="group flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:border-amber-500/40 hover:bg-card/90 hover:shadow-md hover:-translate-y-0.5">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500/20">
+                  <div className="group flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-amber-500/40 hover:bg-card/90 hover:shadow-md">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500/20 dark:text-amber-400">
                       <Users className="size-5" />
                     </div>
                     <div>
@@ -387,7 +387,7 @@ export default function StorySection() {
 
             {/* CUSTOMER TAB DETAILED CONTENT */}
             {activeTab === "customer" && (
-              <div className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 transition-all duration-500 ease-in-out">
+              <div className="animate-in space-y-6 transition-all duration-500 ease-in-out fade-in-50 slide-in-from-bottom-3">
                 <div>
                   <span className="inline-block text-xs font-bold tracking-wider text-primary uppercase transition-all duration-300">
                     {t("customerBadge")}
@@ -401,7 +401,7 @@ export default function StorySection() {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  <div className="group flex items-start gap-4 rounded-2xl border border-primary/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:border-primary/40 hover:bg-card/90 hover:shadow-md hover:-translate-y-0.5">
+                  <div className="group flex items-start gap-4 rounded-2xl border border-primary/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card/90 hover:shadow-md">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
                       <Percent className="size-5" />
                     </div>
@@ -415,7 +415,7 @@ export default function StorySection() {
                     </div>
                   </div>
 
-                  <div className="group flex items-start gap-4 rounded-2xl border border-primary/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:border-primary/40 hover:bg-card/90 hover:shadow-md hover:-translate-y-0.5">
+                  <div className="group flex items-start gap-4 rounded-2xl border border-primary/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card/90 hover:shadow-md">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
                       <ShoppingBag className="size-5" />
                     </div>
@@ -429,7 +429,7 @@ export default function StorySection() {
                     </div>
                   </div>
 
-                  <div className="group flex items-start gap-4 rounded-2xl border border-primary/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:border-primary/40 hover:bg-card/90 hover:shadow-md hover:-translate-y-0.5">
+                  <div className="group flex items-start gap-4 rounded-2xl border border-primary/20 bg-card p-4.5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card/90 hover:shadow-md">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
                       <Leaf className="size-5" />
                     </div>

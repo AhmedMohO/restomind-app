@@ -18,6 +18,7 @@ import {
 } from "@/features/auth/actions/auth"
 import { loginAction } from "@/features/auth/actions/login"
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
+import { POST_LOGIN_REDIRECT } from "@/lib/auth/config"
 import { useRouter } from "@/i18n/routing"
 import { Link } from "@/i18n/routing"
 
@@ -216,7 +217,9 @@ function RegisterFormContent({
 
       if (loginResult.success && loginResult.user) {
         setUser(loginResult.user)
-        router.push("/")
+        const role = loginResult.user.role
+        const targetUrl = (role && POST_LOGIN_REDIRECT[role]) || "/"
+        router.push(targetUrl)
         router.refresh()
         return
       }

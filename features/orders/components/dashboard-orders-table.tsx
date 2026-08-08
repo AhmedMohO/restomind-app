@@ -188,9 +188,9 @@ export function DashboardOrdersTable({ role }: DashboardOrdersTableProps) {
                 <TableHead className="text-start">
                   {t("colCreatedAt")}
                 </TableHead>
-                {isAdmin && (
+                {/* {isAdmin && (
                   <TableHead className="text-end">{t("colActions")}</TableHead>
-                )}
+                )} */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -236,7 +236,7 @@ export function DashboardOrdersTable({ role }: DashboardOrdersTableProps) {
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(order.createdAt, locale)}
                   </TableCell>
-                  {isAdmin && (
+                  {/* {isAdmin && (
                     <TableCell
                       className="text-end"
                       onClick={(event) => event.stopPropagation()}
@@ -251,7 +251,7 @@ export function DashboardOrdersTable({ role }: DashboardOrdersTableProps) {
                         <span>{t("issueRefund")}</span>
                       </Button>
                     </TableCell>
-                  )}
+                  )} */}
                 </TableRow>
               ))}
             </TableBody>

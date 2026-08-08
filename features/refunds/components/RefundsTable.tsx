@@ -51,8 +51,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useQueryClient } from "@tanstack/react-query"
 import { TablePagination } from "@/components/ui/table-pagination"
 import { reviewRefundAction } from "../actions"
+import { REFUNDS_QUERY_KEY } from "../hooks/use-refunds"
 import {
   formatRefundAmount,
   needsAttention,
@@ -137,6 +139,7 @@ export default function RefundsTable({
   refunds,
   canReview = false,
 }: RefundsTableProps) {
+  const queryClient = useQueryClient()
   const t = useTranslations("Dashboard.refunds")
   const locale = useLocale()
 
@@ -276,6 +279,7 @@ export default function RefundsTable({
       }
       if (result.success) {
         toast.success(result.message)
+        void queryClient.invalidateQueries({ queryKey: REFUNDS_QUERY_KEY })
       } else {
         toast.error(result.message)
       }
@@ -595,9 +599,7 @@ export default function RefundsTable({
                           <IconComponent
                             className={`size-3.5 shrink-0 ${refund.status === "processing" ? "animate-spin" : ""}`}
                           />
-                          <span>
-                            {t(`statusLabels.${refund.status}` as any)}
-                          </span>
+                          <span>{t(`statusLabels.${refund.status}`)}</span>
                         </Badge>
 
                         {/* Settlement tag */}
@@ -754,7 +756,7 @@ export default function RefundsTable({
                   variant="outline"
                   className={`text-xs font-semibold ${STATUS_CONFIG[detailsRefund.status]?.badgeClass}`}
                 >
-                  {t(`statusLabels.${detailsRefund.status}` as any)}
+                  {t(`statusLabels.${detailsRefund.status}`)}
                 </Badge>
               )}
             </div>

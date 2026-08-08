@@ -13,6 +13,7 @@ import { loginSchema, type LoginInput } from "@/schemas/login"
 import { loginAction } from "@/features/auth/actions/login"
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
 import type { UserRole } from "@/features/auth/auth"
+import { POST_LOGIN_REDIRECT } from "@/lib/auth/config"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -90,12 +91,8 @@ export function LoginForm({
 
     // Redirect based on role
     const role = result.user?.role
-    const DASHBOARD_ROLES: UserRole[] = ["admin", "manager"]
-    if (role && DASHBOARD_ROLES.includes(role)) {
-      router.push("/dashboard")
-    } else {
-      router.push("/")
-    }
+    const targetUrl = (role && POST_LOGIN_REDIRECT[role]) || "/"
+    router.push(targetUrl)
     router.refresh()
   }
 

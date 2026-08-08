@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache"
 import {
   completePayout,
   createAdjustment,
+  getMyPayoutHistory,
+  getMyStatement,
   getPayoutHistoryFor,
   getStatementFor,
   recordPayout,
@@ -19,6 +21,28 @@ import { extractApiMessage } from "@/lib/api/utils"
 export type PayoutActionResult =
   | { success: true; message: string }
   | { success: false; message: string }
+
+/** Merchant: read own live statement. */
+export async function fetchMyStatementAction(
+  cutoffDate?: string
+): Promise<PayoutStatement | null> {
+  try {
+    return await getMyStatement(cutoffDate)
+  } catch (error) {
+    console.error("[fetchMyStatementAction]", error)
+    return null
+  }
+}
+
+/** Merchant: read own settlements history. */
+export async function fetchMyPayoutHistoryAction(): Promise<Payout[]> {
+  try {
+    return await getMyPayoutHistory()
+  } catch (error) {
+    console.error("[fetchMyPayoutHistoryAction]", error)
+    return []
+  }
+}
 
 /**
  * Admin: read one merchant's live statement.

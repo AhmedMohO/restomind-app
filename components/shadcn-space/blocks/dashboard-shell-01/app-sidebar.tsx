@@ -165,12 +165,18 @@ function useDashboardNav(): NavItem[] {
       roles: ["admin", "manager"],
     },
 
-    // Section 5: Administration
+    // Section 2: Administration
     { label: t("administration"), isSection: true },
     {
       title: role === "admin" ? t("restaurants") : t("restaurantProfile"),
       icon: Store,
       href: "/dashboard/restaurants",
+      roles: ["admin", "manager"],
+    },
+    {
+      title: t("users"),
+      icon: Users,
+      href: "/dashboard/users",
       roles: ["admin", "manager"],
     },
     {
@@ -214,26 +220,13 @@ function useDashboardNav(): NavItem[] {
     // paywall, and the trial countdown. A permanent "pay" item in the nav of
     // a merchant who has already paid only invites a second purchase.
     {
-      title: t("users"),
-      icon: Users,
-      href: "/dashboard/users",
-      roles: ["admin", "manager"],
-    },
-    {
       title: t("imports"),
       icon: Upload,
       href: "/dashboard/imports",
-      roles: ["admin", "manager"],
-    },
-    {
-      title: t("notifications"),
-      icon: Bell,
-      href: "/dashboard/notifications",
-      roles: ["admin", "manager"],
+      roles: ["manager"],
     },
 
-
-    // Section 2: AI & Intelligence
+    // Section 3: AI & Intelligence
     { label: t("aiIntelligence"), isSection: true },
     {
       title: t("predictions"),
@@ -251,7 +244,7 @@ function useDashboardNav(): NavItem[] {
       title: t("productionPlan"),
       icon: CalendarClock,
       href: "/dashboard/production-plan",
-      roles: [ "manager", "staff"],
+      roles: ["manager", "staff"],
     },
     {
       title: t("waste"),
@@ -260,7 +253,7 @@ function useDashboardNav(): NavItem[] {
       roles: ["manager"],
     },
 
-    // Section 3: Menu & Catalog
+    // Section 4: Menu & Catalog
     { label: t("catalog"), isSection: true },
     {
       title: t("categories"),
@@ -286,26 +279,26 @@ function useDashboardNav(): NavItem[] {
       href: "/dashboard/recipes",
       roles: ["manager"],
     },
-// RV&E
-    // Section 4: Inventory & Supply
+
+    // Section 5: Inventory & Supply
     { label: t("inventoryOps"), isSection: true },
     {
       title: t("inventory"),
       icon: Boxes,
       href: "/dashboard/inventory",
-      roles: [ "manager", "staff"],
+      roles: ["manager", "staff"],
     },
     {
       title: t("ingredients"),
       icon: Carrot,
       href: "/dashboard/ingredients",
-      roles: [ "manager", "staff" ],
+      roles: ["manager", "staff"],
     },
     {
       title: t("purchaseOrders"),
       icon: Truck,
       href: "/dashboard/purchase-orders",
-      roles: [ "manager", "staff"],
+      roles: ["manager", "staff"],
     },
     {
       title: t("suppliers"),
@@ -313,7 +306,6 @@ function useDashboardNav(): NavItem[] {
       href: "/dashboard/suppliers",
       roles: ["manager", "staff"],
     },
-
 
     // Section 6: Settings
     { label: t("settings"), isSection: true },
