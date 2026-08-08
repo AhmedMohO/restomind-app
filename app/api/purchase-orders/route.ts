@@ -8,8 +8,10 @@ import type { PurchaseOrderStatus } from "@/features/purchase-orders/types"
 import {
   handleServerError,
   jsonSuccess,
+  readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
+import { createPurchaseOrderSchema } from "@/schemas/purchase-order"
 
 const MANAGER_ROLES = ["manager", "admin"] as const
 const PO_READ_ROLES = ["admin", "manager", "staff"] as const
@@ -45,9 +47,11 @@ export async function POST(request: Request) {
   const authError = await requireAnyRole(MANAGER_ROLES)
   if (authError) return authError
 
+  const parsed = await readJsonBody(request, createPurchaseOrderSchema)
+  if (!parsed.ok) return parsed.response
+
   try {
-    const body = await request.json()
-    const res = await createPurchaseOrder(body)
+    const res = await createPurchaseOrder(parsed.data)
     return jsonSuccess(res.data, 201)
   } catch (err) {
     return handleServerError(err, "Failed to create purchase order")
