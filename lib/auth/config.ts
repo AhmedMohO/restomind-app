@@ -79,6 +79,15 @@ export const DASHBOARD_ALLOWED_ROLES = ["admin", "manager", "staff"] as const
  * Route prefix → required roles.
  * An empty array means "any authenticated user" (auth-only).
  * Routes not listed here are public.
+ *
+ * Known limitation: prefixes can't express a stricter role for a dynamic
+ * `[id]` sub-path than its parent list page (e.g. `/dashboard/restaurants`
+ * allows admin+manager, but `/dashboard/restaurants/:id` and `/:id/edit` are
+ * admin-only per their DashboardAuthGuard). Closing that gap needs a real
+ * path-pattern matcher (e.g. path-to-regexp), not a bigger prefix table —
+ * out of scope here. The client-side DashboardAuthGuard on those pages still
+ * enforces the tighter check; only server-rendered data for the broader role
+ * range is the residual exposure.
  */
 export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
   "/dashboard/categories": ["admin"],
@@ -90,7 +99,7 @@ export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
   "/dashboard/predictions": ["manager"],
   "/dashboard/production-plan": ["admin", "manager", "staff"],
   "/dashboard/recommendations": ["manager"],
-  "/dashboard/waste": ["manager"],
+  "/dashboard/waste": ["manager", "staff"],
   "/dashboard/imports": ["admin", "manager"],
   "/dashboard/inventory": ["admin", "manager", "staff"],
   "/dashboard/suppliers": ["admin", "manager", "staff"],
@@ -106,6 +115,12 @@ export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
   "/dashboard/billing": ["admin", "manager", "staff"],
   "/dashboard/offers/new": ["manager"],
   "/dashboard/products/new": ["admin", "manager"],
+  "/dashboard/admin/settings": ["admin"],
+  "/dashboard/admin/plans": ["admin"],
+  "/dashboard/notifications": ["admin", "manager"],
+  "/dashboard/restaurants": ["admin", "manager"],
+  "/dashboard/purchase-orders/new": ["admin", "manager"],
+  "/dashboard/partnership-applications": ["admin"],
   "/dashboard": DASHBOARD_ALLOWED_ROLES,
   "/orders": ["customer"],
   "/favourites": ["customer"],
@@ -120,7 +135,13 @@ export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
 export function getRouteRoles(path: string): UserRole[] | null {
   // Strip optional locale segment (e.g. /en/dashboard → /dashboard)
   const normalised = path.replace(/^\/[a-z]{2}(\/|$)/, "/")
-  for (const [prefix, roles] of Object.entries(ROUTE_ROLE_MAP)) {
+  // Longest-prefix-wins: object insertion order must not decide precedence,
+  // otherwise a broader prefix listed earlier (e.g. "/dashboard/offers")
+  // silently shadows a more specific one listed later ("/dashboard/offers/new").
+  const byLengthDesc = Object.entries(ROUTE_ROLE_MAP).sort(
+    (a, b) => b[0].length - a[0].length
+  )
+  for (const [prefix, roles] of byLengthDesc) {
     if (normalised.startsWith(prefix)) return [...roles] as UserRole[]
   }
   return null

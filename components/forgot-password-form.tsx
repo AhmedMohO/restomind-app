@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 import { useZodResolver } from "@/lib/zod-locale"
@@ -81,6 +81,19 @@ export function ForgotPasswordForm() {
     resolver: useZodResolver(resetPasswordSchema),
     defaultValues: { password: "", confirmPassword: "" },
   })
+
+  useEffect(() => {
+    return () => {
+      emailForm.reset({ email: "" })
+      otpForm.reset({ email: "", otp: "" })
+      resetForm.reset({ password: "", confirmPassword: "" })
+      setStep("email")
+      setTargetEmail("")
+      setResetToken("")
+      setServerError(null)
+      setServerSuccess(null)
+    }
+  }, [emailForm, otpForm, resetForm])
 
   function startResendCooldown(seconds = 60) {
     setResendCooldown(seconds)
@@ -194,6 +207,7 @@ export function ForgotPasswordForm() {
         className="flex flex-col gap-6"
         onSubmit={emailForm.handleSubmit(onEmailSubmit)}
         noValidate
+        autoComplete="off"
       >
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
@@ -414,6 +428,7 @@ export function ForgotPasswordForm() {
       className="flex flex-col gap-6"
       onSubmit={resetForm.handleSubmit(onResetSubmit)}
       noValidate
+      autoComplete="off"
     >
       <FieldGroup>
         <div className="flex flex-col items-center gap-3 text-center">

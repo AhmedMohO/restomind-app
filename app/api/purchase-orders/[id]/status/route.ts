@@ -4,8 +4,10 @@ import { updatePurchaseOrderStatus } from "@/features/purchase-orders/api"
 import {
   handleServerError,
   jsonSuccess,
+  readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
+import { updatePurchaseOrderStatusSchema } from "@/schemas/purchase-order"
 
 const MANAGER_ROLES = ["manager", "admin"] as const
 
@@ -18,11 +20,13 @@ export async function PATCH(
   const authError = await requireAnyRole(MANAGER_ROLES)
   if (authError) return authError
 
+  const parsed = await readJsonBody(request, updatePurchaseOrderStatusSchema)
+  if (!parsed.ok) return parsed.response
+
   const { id } = await params
 
   try {
-    const { status } = await request.json()
-    const res = await updatePurchaseOrderStatus(id, status)
+    const res = await updatePurchaseOrderStatus(id, parsed.data.status)
     return jsonSuccess(res.data)
   } catch (err) {
     return handleServerError(err, "Failed to update purchase order status")

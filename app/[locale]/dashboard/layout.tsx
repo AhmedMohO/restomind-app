@@ -1,5 +1,6 @@
 import React, { Suspense } from "react"
 import type { Metadata } from "next"
+import { headers } from "next/headers"
 import ProtectedRoute from "@/features/auth/components/ProtectedRoute"
 import { routing } from "@/i18n/routing"
 import { setRequestLocale } from "next-intl/server"
@@ -18,9 +19,11 @@ export const metadata: Metadata = {
 /**
  * Dashboard layout — protected by role via ProtectedRoute.
  *
- * ROUTE_ROLE_MAP assigns ["admin","manager"] to /dashboard, so
- * unauthenticated users are redirected to /login and unauthorized
- * users (customers) are redirected to the home page.
+ * The real visited path (set by proxy.ts as the `x-pathname` header) is
+ * passed through so ProtectedRoute resolves the PER-PAGE role from
+ * ROUTE_ROLE_MAP, not just the generic /dashboard role set. Falls back to
+ * `/${locale}/dashboard` if the header is missing (e.g. direct server-side
+ * invocation outside the normal request path).
  */
 export default async function DashboardLayout({
   children,
@@ -36,6 +39,9 @@ export default async function DashboardLayout({
 
   setRequestLocale(safeLocale)
 
+  const requestHeaders = await headers()
+  const currentPath = requestHeaders.get("x-pathname") ?? `/${locale}/dashboard`
+
   let needsSubscription = false
   try {
     const subscription = await getMySubscription()
@@ -46,7 +52,7 @@ export default async function DashboardLayout({
 
   return (
     <Suspense>
-      <ProtectedRoute locale={safeLocale} route={`/${locale}/dashboard`}>
+      <ProtectedRoute locale={safeLocale} route={currentPath}>
         <AppSidebar needsSubscription={needsSubscription}>
           {/* Resolved once here, so every dashboard page — present and
               future — is covered without per-page work. */}

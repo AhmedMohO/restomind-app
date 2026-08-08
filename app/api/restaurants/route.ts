@@ -3,18 +3,13 @@ import { getSession } from "@/lib/auth/session"
 import type { ApiResponse, UserRole } from "@/features/auth/auth"
 import type { PaginatedRestaurants, Restaurant } from "@/features/restaurant/types"
 import { createRestaurantApi, getRestaurants } from "@/features/restaurant/api"
-import { handleUpstreamError } from "@/lib/api/route-helpers"
+import { handleUpstreamError, requireAnyRole } from "@/lib/api/route-helpers"
 
 export async function GET(request: Request) {
   await connection()
 
-  const session = await getSession()
-  if (!session.isLoggedIn || !session.user) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 }
-    )
-  }
+  const authError = await requireAnyRole(["admin", "manager"])
+  if (authError) return authError
 
   const { searchParams } = new URL(request.url)
   const page = searchParams.get("page") ?? undefined

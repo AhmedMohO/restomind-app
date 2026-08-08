@@ -1,13 +1,14 @@
 import { connection } from "next/server"
 
 import { getOfferById, updateOffer } from "@/features/offers/api"
-import type { UpdateOfferInput } from "@/features/offers/api/type"
 import {
   handleServerError,
   jsonSuccess,
+  readJsonBody,
   requireAnyRole,
   requireAuth,
 } from "@/lib/api/route-helpers"
+import { updateOfferSchema } from "@/schemas/offer"
 
 const OFFER_ROLES = ["admin", "manager", "staff"] as const
 const OFFER_WRITE_ROLE = "manager" as const
@@ -42,9 +43,11 @@ export async function PATCH(
 
   const { id } = await params
 
+  const parsed = await readJsonBody(request, updateOfferSchema)
+  if (!parsed.ok) return parsed.response
+
   try {
-    const body = (await request.json()) as UpdateOfferInput
-    const res = await updateOffer(id, body)
+    const res = await updateOffer(id, parsed.data)
     return jsonSuccess(res.data)
   } catch (err) {
     return handleServerError(err, "Failed to update offer")

@@ -1,12 +1,14 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback } from "react"
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query"
 import { notificationService } from "../services/notification-service"
-import { notificationSocketService } from "../services/socket-service"
+import { useNotificationSocket } from "./useNotificationSocket"
 import type {
-  NotificationItem,
   NotificationQuery,
+  PaginatedNotifications,
   PaginationMeta,
+  UnreadCountData,
 } from "../types"
 
 interface UseNotificationsOptions {
@@ -14,201 +16,155 @@ interface UseNotificationsOptions {
   autoFetchOnMount?: boolean
 }
 
+const EMPTY_PAGINATION: PaginationMeta = {
+  page: 1,
+  limit: 10,
+  totalItems: 0,
+  totalPages: 0,
+  hasNext: false,
+  hasPrevious: false,
+}
+
+const listKey = (query: NotificationQuery) => ["notifications", "list", query] as const
+const unreadCountKey = ["notifications", "unread-count"] as const
+
 export function useNotifications(options: UseNotificationsOptions = {}) {
-  const {
-    initialQuery = { page: 1, limit: 10 },
-    autoFetchOnMount = true,
-  } = options
+  const { initialQuery = { page: 1, limit: 10 }, autoFetchOnMount = true } = options
+  const queryClient = useQueryClient()
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([])
-  const [unreadCount, setUnreadCount] = useState<number>(0)
-  const [pagination, setPagination] = useState<PaginationMeta>({
-    page: initialQuery.page || 1,
-    limit: initialQuery.limit || 10,
-    totalItems: 0,
-    totalPages: 0,
-    hasNext: false,
-    hasPrevious: false,
+  // `initialQuery` is only read on mount by design — callers change the
+  // query via `fetchNotifications(overrideQuery)`, which react-query keys
+  // off of directly, matching the previous hook's external contract.
+  const activeQuery = initialQuery
+
+  // Wire the global socket subscription — only the first mounted instance
+  // actually subscribes; subsequent mounts are no-ops.  This prevents the
+  // double-increment bug where multiple hook instances each bumped the count.
+  useNotificationSocket()
+
+  const listQuery = useQuery({
+    queryKey: listKey(activeQuery),
+    queryFn: () => notificationService.getUserNotifications(activeQuery),
+    enabled: autoFetchOnMount,
+    // Keep the previous page's data visible while the next page loads,
+    // preventing an empty-list flash on pagination / filter changes.
+    placeholderData: keepPreviousData,
   })
-  const [isLoading, setIsLoading] = useState<boolean>(autoFetchOnMount)
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
-  const [query, setQuery] = useState<NotificationQuery>(initialQuery)
 
-  const isMountedRef = useRef(true)
+  const unreadCountQuery = useQuery({
+    queryKey: unreadCountKey,
+    queryFn: () => notificationService.getUnreadCount(),
+    staleTime: 30 * 1000,
+  })
 
-  useEffect(() => {
-    isMountedRef.current = true
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
+  const notifications = listQuery.data?.data ?? []
+  const pagination = listQuery.data?.pagination ?? EMPTY_PAGINATION
+  const unreadCount = unreadCountQuery.data?.count ?? 0
 
-  /** Fetch badge unread count */
   const fetchUnreadCount = useCallback(async () => {
-    try {
-      const res = await notificationService.getUnreadCount()
-      if (isMountedRef.current) {
-        setUnreadCount(res.count)
-      }
-    } catch (err) {
-      console.error("[useNotifications] fetchUnreadCount failed", err)
-    }
-  }, [])
+    await queryClient.invalidateQueries({ queryKey: unreadCountKey })
+  }, [queryClient])
 
-  /** Fetch notifications list */
   const fetchNotifications = useCallback(
-    async (overrideQuery?: NotificationQuery, isBackground = false) => {
-      const activeQuery = { ...query, ...overrideQuery }
-      if (!isBackground) {
-        setIsLoading(true)
-      } else {
-        setIsRefreshing(true)
-      }
-      setError(null)
-
-      try {
-        const res = await notificationService.getUserNotifications(activeQuery)
-        if (isMountedRef.current) {
-          setNotifications(res.data)
-          setPagination(res.pagination)
-          setQuery(activeQuery)
-        }
-        // Also sync unread count
-        await fetchUnreadCount()
-      } catch (err) {
-        if (isMountedRef.current) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load notifications"
-          )
-        }
-      } finally {
-        if (isMountedRef.current) {
-          setIsLoading(false)
-          setIsRefreshing(false)
-        }
-      }
+    async (overrideQuery?: NotificationQuery) => {
+      const nextQuery = { ...activeQuery, ...overrideQuery }
+      await queryClient.fetchQuery({
+        queryKey: listKey(nextQuery),
+        queryFn: () => notificationService.getUserNotifications(nextQuery),
+      })
+      // Count is only invalidated when an action actually changes it
+      // (mark-as-read, delete, socket notification) — not on every list
+      // refetch.  invalidateQueries bypasses staleTime, so the old
+      // unconditional call here caused the count to refetch on every
+      // pagination / filter click, defeating the 30s staleTime.
     },
-    [query, fetchUnreadCount]
+    [activeQuery, queryClient]
   )
 
-  /** Mark single notification read */
-  const markAsRead = useCallback(async (id: string) => {
-    // Optimistic state update
-    setNotifications((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, isRead: true, readAt: new Date().toISOString() }
-          : item
+  const markAsRead = useCallback(
+    async (id: string) => {
+      queryClient.setQueryData<PaginatedNotifications>(listKey(activeQuery), (old) =>
+        old
+          ? {
+              ...old,
+              data: old.data.map((item) =>
+                item.id === id
+                  ? { ...item, isRead: true, readAt: new Date().toISOString() }
+                  : item
+              ),
+            }
+          : old
       )
-    )
-    setUnreadCount((prev) => Math.max(0, prev - 1))
+      queryClient.setQueryData<UnreadCountData>(unreadCountKey, (old) =>
+        old ? { count: Math.max(0, old.count - 1) } : old
+      )
+      try {
+        await notificationService.markAsRead(id)
+      } catch (err) {
+        console.error(`[useNotifications] markAsRead failed for ${id}`, err)
+        await fetchUnreadCount()
+      }
+    },
+    [queryClient, activeQuery, fetchUnreadCount]
+  )
 
-    try {
-      await notificationService.markAsRead(id)
-    } catch (err) {
-      console.error(`[useNotifications] markAsRead failed for ${id}`, err)
-      // Revert if error occurs by re-fetching
-      await fetchUnreadCount()
-    }
-  }, [fetchUnreadCount])
-
-  /** Mark all notifications read */
   const markAllAsRead = useCallback(async () => {
-    // Optimistic state update
-    setNotifications((prev) =>
-      prev.map((item) => ({
-        ...item,
-        isRead: true,
-        readAt: new Date().toISOString(),
-      }))
+    queryClient.setQueryData<PaginatedNotifications>(listKey(activeQuery), (old) =>
+      old
+        ? { ...old, data: old.data.map((item) => ({ ...item, isRead: true, readAt: new Date().toISOString() })) }
+        : old
     )
-    setUnreadCount(0)
-
+    queryClient.setQueryData<UnreadCountData>(unreadCountKey, { count: 0 })
     try {
       await notificationService.markAllAsRead()
     } catch (err) {
       console.error("[useNotifications] markAllAsRead failed", err)
       await fetchUnreadCount()
     }
-  }, [fetchUnreadCount])
+  }, [queryClient, activeQuery, fetchUnreadCount])
 
-  /** Delete notification */
   const deleteNotification = useCallback(
     async (id: string) => {
-      const target = notifications.find((n) => n.id === id)
-      // Optimistic state update
-      setNotifications((prev) => prev.filter((item) => item.id !== id))
+      const current = queryClient.getQueryData<PaginatedNotifications>(listKey(activeQuery))
+      const target = current?.data.find((item) => item.id === id)
+
+      queryClient.setQueryData<PaginatedNotifications>(listKey(activeQuery), (old) =>
+        old ? { ...old, data: old.data.filter((item) => item.id !== id) } : old
+      )
       if (target && !target.isRead) {
-        setUnreadCount((prev) => Math.max(0, prev - 1))
+        queryClient.setQueryData<UnreadCountData>(unreadCountKey, (old) =>
+          old ? { count: Math.max(0, old.count - 1) } : old
+        )
       }
 
       try {
         await notificationService.deleteNotification(id)
       } catch (err) {
         console.error(`[useNotifications] deleteNotification failed for ${id}`, err)
-        // Refetch on error
         await fetchNotifications()
       }
     },
-    [notifications, fetchNotifications]
+    [queryClient, activeQuery, fetchNotifications]
   )
 
-  // Initial fetch on mount
-  useEffect(() => {
-    if (autoFetchOnMount) {
-      fetchNotifications()
-    } else {
-      fetchUnreadCount()
-    }
-  }, [autoFetchOnMount]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Subscribe to live WebSocket notifications
-  useEffect(() => {
-    const unsubscribe = notificationSocketService.subscribe((incoming) => {
-      if (!isMountedRef.current) return
-
-      setNotifications((prev) => {
-        // Prevent duplicate items
-        if (prev.some((n) => n.id === incoming.id)) {
-          return prev
-        }
-        // If query filters by type and types don't match, ignore in list
-        if (query.type && incoming.type !== query.type) {
-          return prev
-        }
-        // If query filters for read-only notifications, ignore unread item in list
-        if (query.isRead === true) {
-          return prev
-        }
-        return [incoming, ...prev]
-      })
-
-      setUnreadCount((prev) => prev + 1)
-      setPagination((prev) => ({
-        ...prev,
-        totalItems: prev.totalItems + 1,
-      }))
-    })
-
-    return () => {
-      unsubscribe()
-    }
-  }, [query.isRead, query.type])
+  // Socket subscription is handled globally by useNotificationSocket() above.
+  // It bumps the unread count once and invalidates list queries so each
+  // consumer's useQuery refetches on its own.
 
   return {
     notifications,
     unreadCount,
     pagination,
-    isLoading,
-    isRefreshing,
-    error,
-    query,
+    isLoading: listQuery.isLoading,
+    isRefreshing: listQuery.isFetching && !listQuery.isLoading,
+    error: listQuery.error instanceof Error ? listQuery.error.message : null,
+    query: activeQuery,
     fetchNotifications,
     fetchUnreadCount,
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    refresh: () => fetchNotifications(query, true),
+    refresh: () =>
+      queryClient.invalidateQueries({ queryKey: listKey(activeQuery) }).then(fetchUnreadCount),
   }
 }

@@ -1,9 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useLocale, useTranslations } from "next-intl"
-import { ChevronLeft, ChevronRight, Loader2, TrendingUp } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Loader2,
+  TrendingUp,
+} from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -32,6 +38,18 @@ export function RecommendationCarousel({
   const locale = useLocale()
   const isRtl = locale === "ar"
   const [rawIndex, setIndex] = useState(0)
+  const [isExpanded, setIsExpanded] = useState(true)
+
+  // Track recommendations reference to auto-open whenever updated with new recommendations
+  const prevRecsRef = useRef(recommendations)
+  useEffect(() => {
+    if (prevRecsRef.current !== recommendations) {
+      prevRecsRef.current = recommendations
+      if (recommendations.length > 0) {
+        setIsExpanded(true)
+      }
+    }
+  }, [recommendations])
 
   if (recommendations.length === 0) return null
 
@@ -47,109 +65,166 @@ export function RecommendationCarousel({
   const NextIcon = isRtl ? ChevronLeft : ChevronRight
 
   return (
-    <div className="border-b border-border bg-gradient-to-b from-primary/8 to-transparent px-4 py-3">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-          <TrendingUp className="size-3.5 text-primary" />
-          {t("recommendations.heading")}
-        </span>
+    <div className="border-b border-border bg-gradient-to-b from-primary/8 to-transparent px-4 py-2.5">
+      {/* Accordion Header */}
+      <div
+        onClick={() => setIsExpanded((prev) => !prev)}
+        className="flex cursor-pointer items-center justify-between gap-2 py-0.5 select-none"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            setIsExpanded((prev) => !prev)
+          }
+        }}
+        aria-expanded={isExpanded}
+        aria-label={
+          isExpanded
+            ? t("recommendations.collapse")
+            : t("recommendations.expand")
+        }
+      >
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            <TrendingUp className="size-3.5 text-primary" />
+            {t("recommendations.heading")}
+          </span>
+          <span className="grid min-w-4 place-items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary tabular-nums">
+            {count}
+          </span>
+        </div>
 
-        {count > 1 && (
-          <div className="flex items-center gap-1">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-6 rounded-full"
-              onClick={() => go(-1)}
-              aria-label={t("recommendations.previous")}
-            >
-              <PrevIcon className="size-3.5" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-6 rounded-full"
-              onClick={() => go(1)}
-              aria-label={t("recommendations.next")}
-            >
-              <NextIcon className="size-3.5" />
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={current.recommendationId ?? `${index}-${current.title}`}
-          initial={{ opacity: 0, x: isRtl ? -16 : 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: isRtl ? 16 : -16 }}
-          transition={{ duration: 0.2 }}
-          className="rounded-2xl border border-border bg-card p-3 shadow-sm"
+        <div
+          className="flex items-center gap-1"
+          onClick={(e) => e.stopPropagation()}
         >
-          <div className="mb-2 flex flex-wrap items-center gap-1.5">
-            <Badge
-              variant="outline"
-              className={cn("border", PRIORITY_STYLES[current.priority])}
-            >
-              {t(`recommendations.priority.${current.priority}`)}
-            </Badge>
-            {current.estimatedSaving > 0 && (
-              <Badge
-                variant="outline"
-                className="border-emerald-500/20 bg-emerald-500/10 tabular-nums text-emerald-600 dark:text-emerald-400"
+          {count > 1 && isExpanded && (
+            <div className="me-1 flex items-center gap-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-6 rounded-full"
+                onClick={() => go(-1)}
+                aria-label={t("recommendations.previous")}
               >
-                {t("recommendations.saving", {
-                  amount: formatCurrency(current.estimatedSaving, locale),
-                })}
-              </Badge>
-            )}
-          </div>
-
-          <h3
-            dir="auto"
-            className="font-heading text-sm leading-snug font-semibold"
-          >
-            {current.title}
-          </h3>
-          <p
-            dir="auto"
-            className="mt-1 line-clamp-3 text-xs leading-relaxed text-muted-foreground"
-          >
-            {current.description}
-          </p>
+                <PrevIcon className="size-3.5" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-6 rounded-full"
+                onClick={() => go(1)}
+                aria-label={t("recommendations.next")}
+              >
+                <NextIcon className="size-3.5" />
+              </Button>
+            </div>
+          )}
 
           <Button
-            size="sm"
-            className="mt-3 w-full rounded-full"
-            disabled={applyingIndex !== null}
-            onClick={() => onApply(current, index)}
+            size="icon"
+            variant="ghost"
+            className="size-6 rounded-full text-muted-foreground hover:text-foreground"
+            onClick={() => setIsExpanded((prev) => !prev)}
+            aria-label={
+              isExpanded
+                ? t("recommendations.collapse")
+                : t("recommendations.expand")
+            }
           >
-            {applyingIndex === index && (
-              <Loader2 className="size-3.5 animate-spin" />
-            )}
-            {t("recommendations.apply")}
-          </Button>
-        </motion.div>
-      </AnimatePresence>
-
-      {count > 1 && (
-        <div className="mt-2 flex justify-center gap-1.5">
-          {recommendations.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setIndex(i)}
-              aria-label={t("recommendations.goTo", { index: i + 1 })}
-              aria-current={i === index}
-              className={cn(
-                "h-1.5 rounded-full transition-all",
-                i === index ? "w-4 bg-primary" : "w-1.5 bg-border"
-              )}
+            <ChevronUp
+              className={` ${isExpanded ? "rotate-180" : ""} size-3.5 transition-transform duration-300 ease-in-out`}
             />
-          ))}
+          </Button>
         </div>
-      )}
+      </div>
+
+      {/* Accordion Body */}
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? "auto" : 0,
+          opacity: isExpanded ? 1 : 0,
+        }}
+        transition={{ duration: 0.25, ease: "easeInOut" }}
+        className="overflow-hidden"
+      >
+        <div className="pt-2">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current.recommendationId ?? `${index}-${current.title}`}
+              initial={{ opacity: 0, x: isRtl ? -16 : 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: isRtl ? 16 : -16 }}
+              transition={{ duration: 0.2 }}
+              className="rounded-2xl border border-border bg-card p-3 shadow-sm"
+            >
+              <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                <Badge
+                  variant="outline"
+                  className={cn("border", PRIORITY_STYLES[current.priority])}
+                >
+                  {t(`recommendations.priority.${current.priority}`)}
+                </Badge>
+                {current.estimatedSaving > 0 && (
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-500/20 bg-emerald-500/10 text-emerald-600 tabular-nums dark:text-emerald-400"
+                  >
+                    {t("recommendations.saving", {
+                      amount: formatCurrency(current.estimatedSaving, locale),
+                    })}
+                  </Badge>
+                )}
+              </div>
+
+              <h3
+                dir="auto"
+                className="font-heading text-sm leading-snug font-semibold"
+              >
+                {current.title}
+              </h3>
+              <p
+                dir="auto"
+                className="mt-1 line-clamp-3 text-xs leading-relaxed text-muted-foreground"
+              >
+                {current.description}
+              </p>
+
+              <Button
+                size="sm"
+                className="mt-3 w-full rounded-full"
+                disabled={applyingIndex !== null}
+                onClick={() => onApply(current, index)}
+              >
+                {applyingIndex === index && (
+                  <Loader2 className="size-3.5 animate-spin" />
+                )}
+                {t("recommendations.apply")}
+              </Button>
+            </motion.div>
+          </AnimatePresence>
+
+          {count > 1 && (
+            <div className="mt-2 flex justify-center gap-1.5">
+              {recommendations.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  aria-label={t("recommendations.goTo", { index: i + 1 })}
+                  aria-current={i === index}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all",
+                    i === index ? "w-4 bg-primary" : "w-1.5 bg-border"
+                  )}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   )
 }

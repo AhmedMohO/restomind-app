@@ -2,9 +2,13 @@ import { NextResponse, connection } from "next/server"
 import { getMySubscription } from "@/features/subscription/api"
 import type { ApiResponse } from "@/features/auth/auth"
 import type { MySubscription } from "@/features/subscription/api/type"
+import { requireAuth } from "@/lib/api/route-helpers"
 
 export async function GET() {
   await connection()
+
+  const authError = await requireAuth()
+  if (authError) return authError
 
   try {
     const subscription = await getMySubscription()

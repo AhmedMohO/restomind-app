@@ -1,18 +1,28 @@
-import { NextResponse, connection } from "next/server"
-import { getSession } from "@/lib/auth/session"
-import type { ApiResponse } from "@/features/auth/auth"
-import { createUser, getUsers, type ApiUser, type PaginatedUsers, CreateUserPayload } from "@/features/users/api"
+import { connection } from "next/server"
+import {
+  createUser,
+  getUsers,
+  type ApiUser,
+  type CreateUserPayload,
+  type PaginatedUsers,
+} from "@/features/users/api"
+import {
+  handleServerError,
+  handleUpstreamError,
+  jsonSuccess,
+  readJsonBody,
+  requireAnyRole,
+  requireSessionUser,
+} from "@/lib/api/route-helpers"
+import { createUserSchema } from "@/schemas/user"
+
+const USER_ROLES = ["admin", "manager"] as const
 
 export async function GET(request: Request) {
   await connection()
 
-  const session = await getSession()
-  if (!session.isLoggedIn || !session.user) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 }
-    )
-  }
+  const authError = await requireAnyRole(USER_ROLES)
+  if (authError) return authError
 
   const { searchParams } = new URL(request.url)
   const page = searchParams.get("page") ?? undefined
@@ -27,61 +37,60 @@ export async function GET(request: Request) {
       ...(search ? { search } : {}),
       ...(role ? { role: role as "admin" | "manager" | "customer" | "staff" } : {}),
     })
-    return NextResponse.json<ApiResponse<PaginatedUsers>>(
-      { success: true, data },
-      { status: 200 }
-    )
+    return jsonSuccess<PaginatedUsers>(data)
   } catch (err) {
     console.error("[api/users] GET failed", err)
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "INTERNAL_ERROR",
-        message: err instanceof Error ? err.message : "Failed to fetch users",
-      },
-      { status: 500 }
-    )
+    return handleUpstreamError(err, "Failed to fetch users")
   }
 }
 
 export async function POST(request: Request) {
   await connection()
 
-  const session = await getSession()
-  if (!session.isLoggedIn || !session.user) {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 }
-    )
+  const auth = await requireSessionUser(USER_ROLES)
+  if (!auth.ok) return auth.response
+
+  const parsed = await readJsonBody(request, createUserSchema)
+  if (!parsed.ok) return parsed.response
+
+  const body = parsed.data
+
+  if (auth.user.role !== "admin") {
+    if (body.role === "admin" || body.role === "manager") {
+      return handleServerError(
+        "Only an admin can assign the admin or manager role",
+        "Only an admin can assign the admin or manager role",
+        403
+      )
+    }
+    body.restaurantId = auth.user.restaurantId ?? null
   }
 
-  let body
-  try {
-    body = (await request.json()) as CreateUserPayload
-    console.log(body);
-
-  } catch {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Invalid JSON body" },
-      { status: 400 }
-    )
+  // createUserSchema allows `null` on several optional fields (for clearing
+  // values on update-style forms); CreateUserPayload only accepts
+  // `string | undefined` for those same fields. Normalize null -> undefined
+  // here rather than relaxing the schema or casting past the mismatch.
+  const payload: CreateUserPayload = {
+    firstName: body.firstName,
+    lastName: body.lastName,
+    email: body.email,
+    password: body.password,
+    phone: body.phone,
+    role: body.role,
+    restaurantId: body.restaurantId ?? undefined,
+    gender: body.gender ?? undefined,
+    DOB: body.DOB ?? undefined,
+    employeeCode: body.employeeCode ?? undefined,
+    department: body.department ?? undefined,
+    hireDate: body.hireDate ?? undefined,
+    notes: body.notes ?? undefined,
   }
 
   try {
-    const res = await createUser(body)
-    return NextResponse.json<ApiResponse<ApiUser>>(
-      { success: true, data: res.data },
-      { status: 201 }
-    )
+    const res = await createUser(payload)
+    return jsonSuccess<ApiUser>(res.data, 201)
   } catch (err) {
     console.error("[api/users] POST failed", err)
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: "INTERNAL_ERROR",
-        message: err instanceof Error ? err.message : "Failed to create user",
-      },
-      { status: 500 }
-    )
+    return handleUpstreamError(err, "Failed to create user")
   }
 }

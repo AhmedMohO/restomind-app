@@ -67,5 +67,6 @@
     "@importcsv/react": {
       "zod": "$zod"
     }
-  }
+  },
+  "packageManager": "bun@1.2.22"
 }

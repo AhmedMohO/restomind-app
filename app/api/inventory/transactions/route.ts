@@ -8,8 +8,10 @@ import type { StockTransactionTypeEnum } from "@/features/inventory/types"
 import {
   handleServerError,
   jsonSuccess,
+  readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
+import { createStockTransactionSchema } from "@/schemas/inventory"
 
 const INVENTORY_ROLES = ["admin", "manager", "staff"] as const
 
@@ -45,9 +47,11 @@ export async function POST(request: Request) {
   const authError = await requireAnyRole(INVENTORY_ROLES)
   if (authError) return authError
 
+  const parsed = await readJsonBody(request, createStockTransactionSchema)
+  if (!parsed.ok) return parsed.response
+
   try {
-    const body = await request.json()
-    const res = await createStockTransaction(body)
+    const res = await createStockTransaction(parsed.data)
     return jsonSuccess(res.data, 201)
   } catch (err) {
     return handleServerError(err, "Failed to create stock transaction")

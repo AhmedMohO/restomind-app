@@ -5,8 +5,10 @@ import type { WasteReasonEnum } from "@/features/inventory/types"
 import {
   handleServerError,
   jsonSuccess,
+  readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
+import { createWasteEventSchema } from "@/schemas/inventory"
 
 const INVENTORY_ROLES = ["admin", "manager", "staff"] as const
 
@@ -42,9 +44,11 @@ export async function POST(request: Request) {
   const authError = await requireAnyRole(INVENTORY_ROLES)
   if (authError) return authError
 
+  const parsed = await readJsonBody(request, createWasteEventSchema)
+  if (!parsed.ok) return parsed.response
+
   try {
-    const body = await request.json()
-    const res = await createWasteEvent(body)
+    const res = await createWasteEvent(parsed.data)
     return jsonSuccess(res.data, 201)
   } catch (err) {
     return handleServerError(err, "Failed to log waste event")

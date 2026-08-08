@@ -3,7 +3,16 @@
 import * as React from "react"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { Edit2, KeyRound, Loader2, Mail, Plus, Power, Search, Trash2 } from "lucide-react"
+import {
+  Edit2,
+  KeyRound,
+  Loader2,
+  Mail,
+  Plus,
+  Power,
+  Search,
+  Trash2,
+} from "lucide-react"
 import Image from "next/image"
 import { Link, useRouter } from "@/i18n/routing"
 
@@ -126,12 +135,19 @@ export function AdminUserTable() {
       await statusMutation.mutateAsync({ id: user._id, isActive: nextStatus })
       toast.success(
         nextStatus
-          ? t("statusActivatedSuccess") || "User account activated successfully!"
-          : t("statusDeactivatedSuccess") || "User account deactivated successfully!"
+          ? t("statusActivatedSuccess") ||
+              "User account activated successfully!"
+          : t("statusDeactivatedSuccess") ||
+              "User account deactivated successfully!"
       )
     } catch (err) {
       console.error("[AdminUserTable] status toggle failed", err)
-      toast.error(getErrorMessage(err, t("statusUpdateError") || "Failed to update user status"))
+      toast.error(
+        getErrorMessage(
+          err,
+          t("statusUpdateError") || "Failed to update user status"
+        )
+      )
     } finally {
       setTogglingId(null)
     }
@@ -142,10 +158,14 @@ export function AdminUserTable() {
     setResendingId(user._id)
     try {
       const res = await resendMutation.mutateAsync(user._id)
-      toast.success(res?.message || t("resendSuccess") || "Setup email resent successfully!")
+      toast.success(
+        res?.message || t("resendSuccess") || "Setup email resent successfully!"
+      )
     } catch (err) {
       console.error("[AdminUserTable] resend setup failed", err)
-      toast.error(getErrorMessage(err, t("resendError") || "Failed to resend setup email"))
+      toast.error(
+        getErrorMessage(err, t("resendError") || "Failed to resend setup email")
+      )
     } finally {
       setResendingId(null)
     }
@@ -157,11 +177,18 @@ export function AdminUserTable() {
     try {
       const res = await resetPasswordMutation.mutateAsync(user._id)
       toast.success(
-        res?.message || t("resetPasswordSuccess") || "Password reset link sent to staff email!"
+        res?.message ||
+          t("resetPasswordSuccess") ||
+          "Password reset link sent to staff email!"
       )
     } catch (err) {
       console.error("[AdminUserTable] reset password failed", err)
-      toast.error(getErrorMessage(err, t("resetPasswordError") || "Failed to send reset link"))
+      toast.error(
+        getErrorMessage(
+          err,
+          t("resetPasswordError") || "Failed to send reset link"
+        )
+      )
     } finally {
       setResettingId(null)
     }
@@ -193,12 +220,6 @@ export function AdminUserTable() {
       {/* Filter and search bar */}
       <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         <div className="flex w-full max-w-full flex-1 flex-col gap-1.5 sm:max-w-sm">
-          <Label
-            htmlFor="admin-user-search"
-            className="text-xs font-semibold text-muted-foreground"
-          >
-            {t("searchPlaceholder")}
-          </Label>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -273,7 +294,9 @@ export function AdminUserTable() {
                 <TableHead className="text-start">{t("colUser")}</TableHead>
                 <TableHead className="text-start">{t("colEmail")}</TableHead>
                 <TableHead className="text-start">{t("colRole")}</TableHead>
-                <TableHead className="text-start">{t("colDepartment") || "Dept / Code"}</TableHead>
+                <TableHead className="text-start">
+                  {t("colDepartment") || "Dept / Code"}
+                </TableHead>
                 <TableHead className="text-start">{t("colStatus")}</TableHead>
                 <TableHead className="text-start">{t("colActions")}</TableHead>
               </TableRow>
@@ -336,9 +359,11 @@ export function AdminUserTable() {
                     <TableCell className="text-xs text-muted-foreground">
                       {user.department || user.employeeCode ? (
                         <div className="flex flex-col">
-                          <span className="font-medium text-foreground">{user.department || "Staff"}</span>
+                          <span className="font-medium text-foreground">
+                            {user.department || "Staff"}
+                          </span>
                           {user.employeeCode && (
-                            <span className="text-[11px] font-mono text-muted-foreground">
+                            <span className="font-mono text-[11px] text-muted-foreground">
                               {user.employeeCode}
                             </span>
                           )}
@@ -365,8 +390,16 @@ export function AdminUserTable() {
                             size="icon"
                             disabled={isTogglingThis}
                             onClick={(e) => handleToggleStatus(user, e)}
-                            className={user.isActive !== false ? "size-8 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10" : "size-8 rounded-lg text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"}
-                            title={user.isActive !== false ? t("deactivateUser") || "Deactivate Account" : t("activateUser") || "Activate Account"}
+                            className={
+                              user.isActive !== false
+                                ? "size-8 rounded-lg text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
+                                : "size-8 rounded-lg text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
+                            }
+                            title={
+                              user.isActive !== false
+                                ? t("deactivateUser") || "Deactivate Account"
+                                : t("activateUser") || "Activate Account"
+                            }
                           >
                             {isTogglingThis ? (
                               <Loader2 className="size-4 animate-spin" />
@@ -377,40 +410,50 @@ export function AdminUserTable() {
                         )}
 
                         {/* Resend Setup Email */}
-                        {user.role === "staff" && (user.isActive === false || !user.isEmailVerified) && !user.isDeleted && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={isResendingThis}
-                            onClick={(e) => handleResendSetup(user, e)}
-                            className="size-8 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-500/10"
-                            title={t("resendSetupEmail") || "Resend Setup Invitation Link"}
-                          >
-                            {isResendingThis ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              <Mail className="size-4" />
-                            )}
-                          </Button>
-                        )}
+                        {user.role === "staff" &&
+                          (user.isActive === false || !user.isEmailVerified) &&
+                          !user.isDeleted && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={isResendingThis}
+                              onClick={(e) => handleResendSetup(user, e)}
+                              className="size-8 rounded-lg text-blue-600 hover:bg-blue-500/10 hover:text-blue-700"
+                              title={
+                                t("resendSetupEmail") ||
+                                "Resend Setup Invitation Link"
+                              }
+                            >
+                              {isResendingThis ? (
+                                <Loader2 className="size-4 animate-spin" />
+                              ) : (
+                                <Mail className="size-4" />
+                              )}
+                            </Button>
+                          )}
 
                         {/* Reset Password Email */}
-                        {user.role === "staff" && user.isActive && user.isEmailVerified && !user.isDeleted && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={isResettingThis}
-                            onClick={(e) => handleResetPassword(user, e)}
-                            className="size-8 rounded-lg text-purple-600 hover:text-purple-700 hover:bg-purple-500/10"
-                            title={t("resetPassword") || "Send Password Reset Link"}
-                          >
-                            {isResettingThis ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              <KeyRound className="size-4" />
-                            )}
-                          </Button>
-                        )}
+                        {user.role === "staff" &&
+                          user.isActive &&
+                          user.isEmailVerified &&
+                          !user.isDeleted && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={isResettingThis}
+                              onClick={(e) => handleResetPassword(user, e)}
+                              className="size-8 rounded-lg text-purple-600 hover:bg-purple-500/10 hover:text-purple-700"
+                              title={
+                                t("resetPassword") || "Send Password Reset Link"
+                              }
+                            >
+                              {isResettingThis ? (
+                                <Loader2 className="size-4 animate-spin" />
+                              ) : (
+                                <KeyRound className="size-4" />
+                              )}
+                            </Button>
+                          )}
 
                         {/* Edit Button */}
                         <Button
@@ -490,4 +533,3 @@ export function AdminUserTable() {
     </div>
   )
 }
-

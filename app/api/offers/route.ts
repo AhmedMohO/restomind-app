@@ -1,13 +1,15 @@
 import { connection } from "next/server"
 
 import { createOffer, getOffers } from "@/features/offers/api"
-import type { CreateOfferInput, GetOffersParams } from "@/features/offers/api/type"
+import type { GetOffersParams } from "@/features/offers/api/type"
 import {
   handleServerError,
   jsonSuccess,
+  readJsonBody,
   requireAnyRole,
   requireAuth,
 } from "@/lib/api/route-helpers"
+import { createOfferSchema } from "@/schemas/offer"
 
 const OFFER_ROLES = ["admin", "manager", "staff"] as const
 const OFFER_WRITE_ROLE = "manager" as const
@@ -51,9 +53,11 @@ export async function POST(request: Request) {
   const authError = await requireAuth(OFFER_WRITE_ROLE)
   if (authError) return authError
 
+  const parsed = await readJsonBody(request, createOfferSchema)
+  if (!parsed.ok) return parsed.response
+
   try {
-    const body = (await request.json()) as CreateOfferInput
-    const res = await createOffer(body)
+    const res = await createOffer(parsed.data)
     return jsonSuccess(res.data, 201)
   } catch (err) {
     return handleServerError(err, "Failed to create offer")

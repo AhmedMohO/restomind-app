@@ -9,6 +9,9 @@ export async function GET(
   await connection()
   const { id } = await params
 
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   try {
     const res = await getCategoryById(id)
     return jsonSuccess(res.data)

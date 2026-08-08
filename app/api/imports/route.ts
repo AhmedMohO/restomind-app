@@ -9,6 +9,9 @@ import {
   requireSessionUser,
 } from "@/lib/api/route-helpers"
 
+const ALLOWED_IMPORT_EXTENSIONS = [".csv"]
+const MAX_IMPORT_FILE_SIZE_BYTES = 10 * 1024 * 1024 // 10 MB
+
 /**
  * GET /imports — recent job history. `getImportJobs` returns the upstream's
  * raw `{ items, page, limit, total, totalPages }` (no `data` wrapper on
@@ -61,10 +64,30 @@ export async function POST(request: Request) {
   // backend would 400 with the same message anyway
   // (`ImportsService.createImport`), but failing fast here avoids the
   // network hop for the most common mistake (submitting with no file).
-  if (!(formData.get("file") instanceof File)) {
+  const file = formData.get("file")
+  if (!(file instanceof File)) {
     return handleServerError(
       "CSV file is required",
       "CSV file is required",
+      400
+    )
+  }
+
+  const hasAllowedExtension = ALLOWED_IMPORT_EXTENSIONS.some((ext) =>
+    file.name.toLowerCase().endsWith(ext)
+  )
+  if (!hasAllowedExtension) {
+    return handleServerError(
+      "Only .csv files are supported",
+      "Only .csv files are supported",
+      400
+    )
+  }
+
+  if (file.size > MAX_IMPORT_FILE_SIZE_BYTES) {
+    return handleServerError(
+      "File exceeds the 10 MB import size limit",
+      "File exceeds the 10 MB import size limit",
       400
     )
   }

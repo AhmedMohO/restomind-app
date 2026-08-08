@@ -2,25 +2,19 @@ import { NextResponse, connection } from "next/server"
 import type { ApiResponse } from "@/features/auth/auth"
 import {
   submitPartnershipApplication,
-  type CreatePartnershipPayload,
   type PartnershipApplicationItem,
 } from "@/features/partner/api"
+import { readJsonBody } from "@/lib/api/route-helpers"
+import { createPartnershipSchema } from "@/schemas/partnership"
 
 export async function POST(request: Request) {
   await connection()
 
-  let body: CreatePartnershipPayload
-  try {
-    body = (await request.json()) as CreatePartnershipPayload
-  } catch {
-    return NextResponse.json<ApiResponse>(
-      { success: false, error: "Bad Request", message: "Invalid JSON body" },
-      { status: 400 }
-    )
-  }
+  const parsed = await readJsonBody(request, createPartnershipSchema)
+  if (!parsed.ok) return parsed.response
 
   try {
-    const res = await submitPartnershipApplication(body)
+    const res = await submitPartnershipApplication(parsed.data)
     return NextResponse.json<
       ApiResponse<{ message: string; application: PartnershipApplicationItem }>
     >({ success: true, data: res }, { status: 201 })
