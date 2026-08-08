@@ -334,7 +334,11 @@ const AppSidebar = ({
   const isEN = locale === "en"
 
   return (
-    <SidebarProvider defaultOpen={!needsSubscription}>
+    <SidebarProvider
+      defaultOpen={!needsSubscription}
+      open={needsSubscription ? false : undefined}
+      disabled={needsSubscription}
+    >
       <Sidebar side={isEN ? "left" : "right"} className="bg-background px-0">
         <div className="flex h-full flex-col gap-4 bg-background py-4">
           {/* ---------------- Header ---------------- */}

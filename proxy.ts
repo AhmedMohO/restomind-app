@@ -36,6 +36,7 @@ const AUTH_PAGE_PATTERNS = [
   "/forgot-password",
   "/reset-password",
   "/confirm-email",
+  "/setup-account",
 ]
 
 /**

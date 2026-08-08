@@ -164,10 +164,26 @@ function SetupAccountFormContent({
         {serverError && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            className="flex flex-col gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
           >
-            <AlertCircle className="mt-0.5 size-4 shrink-0" />
-            <span>{serverError}</span>
+            <div className="flex items-start gap-2">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              <span>{serverError}</span>
+            </div>
+            {(serverError.toLowerCase().includes("invalid") ||
+              serverError.toLowerCase().includes("expired") ||
+              serverError.toLowerCase().includes("token") ||
+              serverError.toLowerCase().includes("failed")) && (
+              <Button
+                nativeButton={false}
+                render={<Link href="/login" />}
+                variant="outline"
+                size="sm"
+                className="mt-1 self-start border-destructive/30 bg-background text-destructive hover:bg-destructive/10"
+              >
+                {t("backToLogin") || "Go to Login"}
+              </Button>
+            )}
           </div>
         )}
 
