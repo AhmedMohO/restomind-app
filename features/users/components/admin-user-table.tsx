@@ -250,9 +250,21 @@ export function AdminUserTable() {
               <SelectTrigger
                 id="admin-role-filter"
                 aria-label={t("role")}
-                className="w-[150px] rounded-xl"
+                className="w-full sm:w-[150px] rounded-xl"
               >
-                <SelectValue placeholder={t("roleAll")} />
+                <SelectValue placeholder={t("roleAll")}>
+                  {roleFilter === "all"
+                    ? t("roleAll")
+                    : roleFilter === "admin"
+                    ? t("roleAdmin")
+                    : roleFilter === "manager"
+                    ? t("roleManager")
+                    : roleFilter === "staff"
+                    ? t("roleStaff")
+                    : roleFilter === "customer"
+                    ? t("roleCustomer")
+                    : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("roleAll")}</SelectItem>

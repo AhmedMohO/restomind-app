@@ -353,8 +353,8 @@ export function InventoryContainer() {
         }
         className="w-full space-y-4"
       >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList className="h-11 rounded-xl bg-muted/60 p-1">
+        <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
+          <TabsList className="h-11 w-full sm:w-fit overflow-x-auto rounded-xl bg-muted/60 p-1">
             <TabsTrigger
               value="batches"
               className="gap-2 rounded-lg text-xs font-medium data-[state=active]:bg-background"
@@ -379,10 +379,10 @@ export function InventoryContainer() {
           </TabsList>
 
           {/* Controls & Filters */}
-          <div className="flex flex-wrap items-end gap-2">
+          <div className="flex flex-wrap items-end gap-3 w-full 2xl:w-auto">
             {/* Search Input */}
             {activeTab === "batches" && (
-              <div className="flex flex-col gap-1.5 w-full sm:w-64">
+              <div className="flex flex-col gap-1.5 w-full sm:w-64 max-w-full">
                 <Label htmlFor="inventory-search-input" className="text-xs font-semibold text-muted-foreground">
                   {t("searchPlaceholder")}
                 </Label>
@@ -400,7 +400,7 @@ export function InventoryContainer() {
             )}
 
             {/* Ingredient Filter */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 w-full sm:w-48">
               <Label htmlFor="inventory-ingredient-filter" className="text-xs font-semibold text-muted-foreground">
                 {t("filterAllIngredients")}
               </Label>
@@ -410,7 +410,7 @@ export function InventoryContainer() {
                   if (val) setSelectedIngredientFilter(val)
                 }}
               >
-                <SelectTrigger id="inventory-ingredient-filter" className="h-10 w-[180px] rounded-xl text-xs">
+                <SelectTrigger id="inventory-ingredient-filter" className="h-10 w-full rounded-xl text-xs">
                   <SelectValue placeholder={t("filterAllIngredients")}>
                     {selectedIngredientFilter === "all"
                       ? t("filterAllIngredients")
@@ -432,7 +432,7 @@ export function InventoryContainer() {
 
             {/* Extra filter for transactions tab */}
             {activeTab === "transactions" && (
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 w-full sm:w-44">
                 <Label htmlFor="inventory-type-filter" className="text-xs font-semibold text-muted-foreground">
                   {t("filterAllTypes")}
                 </Label>
@@ -442,8 +442,12 @@ export function InventoryContainer() {
                     if (val) setSelectedTypeFilter(val)
                   }}
                 >
-                  <SelectTrigger id="inventory-type-filter" className="h-10 w-[160px] rounded-xl text-xs">
-                    <SelectValue placeholder={t("filterAllTypes")} />
+                  <SelectTrigger id="inventory-type-filter" className="h-10 w-full rounded-xl text-xs">
+                    <SelectValue placeholder={t("filterAllTypes")}>
+                      {selectedTypeFilter === "all"
+                        ? t("filterAllTypes")
+                        : t(`type_${selectedTypeFilter}` as any)}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("filterAllTypes")}</SelectItem>
@@ -459,7 +463,7 @@ export function InventoryContainer() {
 
             {/* Extra filter for waste tab */}
             {activeTab === "waste" && (
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 w-full sm:w-44">
                 <Label htmlFor="inventory-reason-filter" className="text-xs font-semibold text-muted-foreground">
                   {t("filterAllReasons")}
                 </Label>
@@ -469,8 +473,12 @@ export function InventoryContainer() {
                     if (val) setSelectedReasonFilter(val)
                   }}
                 >
-                  <SelectTrigger id="inventory-reason-filter" className="h-10 w-[160px] rounded-xl text-xs">
-                    <SelectValue placeholder={t("filterAllReasons")} />
+                  <SelectTrigger id="inventory-reason-filter" className="h-10 w-full rounded-xl text-xs">
+                    <SelectValue placeholder={t("filterAllReasons")}>
+                      {selectedReasonFilter === "all"
+                        ? t("filterAllReasons")
+                        : t(`reason_${selectedReasonFilter}` as any)}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("filterAllReasons")}</SelectItem>
@@ -479,12 +487,12 @@ export function InventoryContainer() {
                       {t(`reason_${r}`)}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
         {/* --- Tab 1: Batches --- */}
         <TabsContent value="batches" className="m-0">
@@ -573,7 +581,7 @@ export function InventoryContainer() {
                       onClick={() => setBatchPage((p) => p - 1)}
                       className="h-8 rounded-lg text-xs"
                     >
-                      <ChevronLeft className="size-4" />
+                      <ChevronLeft className="size-4 rtl:rotate-180" />
                     </Button>
                     <Button
                       variant="outline"
@@ -582,7 +590,7 @@ export function InventoryContainer() {
                       onClick={() => setBatchPage((p) => p + 1)}
                       className="h-8 rounded-lg text-xs"
                     >
-                      <ChevronRight className="size-4" />
+                      <ChevronRight className="size-4 rtl:rotate-180" />
                     </Button>
                   </div>
                 </div>
@@ -676,7 +684,7 @@ export function InventoryContainer() {
                       onClick={() => setTxnPage((p) => p - 1)}
                       className="h-8 rounded-lg text-xs"
                     >
-                      <ChevronLeft className="size-4" />
+                      <ChevronLeft className="size-4 rtl:rotate-180" />
                     </Button>
                     <Button
                       variant="outline"
@@ -685,7 +693,7 @@ export function InventoryContainer() {
                       onClick={() => setTxnPage((p) => p + 1)}
                       className="h-8 rounded-lg text-xs"
                     >
-                      <ChevronRight className="size-4" />
+                      <ChevronRight className="size-4 rtl:rotate-180" />
                     </Button>
                   </div>
                 </div>
@@ -783,7 +791,7 @@ export function InventoryContainer() {
                       onClick={() => setWastePage((p) => p - 1)}
                       className="h-8 rounded-lg text-xs"
                     >
-                      <ChevronLeft className="size-4" />
+                      <ChevronLeft className="size-4 rtl:rotate-180" />
                     </Button>
                     <Button
                       variant="outline"
@@ -792,7 +800,7 @@ export function InventoryContainer() {
                       onClick={() => setWastePage((p) => p + 1)}
                       className="h-8 rounded-lg text-xs"
                     >
-                      <ChevronRight className="size-4" />
+                      <ChevronRight className="size-4 rtl:rotate-180" />
                     </Button>
                   </div>
                 </div>

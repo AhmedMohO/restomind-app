@@ -1,14 +1,18 @@
 "use client"
 
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { parsePhoneNumberFromString } from "libphonenumber-js"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { type PartnerApplicationInput } from "@/schemas/partner"
+import {
+  partnerStep1Schema,
+  partnerStep2Schema,
+  partnerStep3Schema,
+  partnerApplicationSchema,
+  type PartnerApplicationInput,
+} from "@/schemas/partner"
 import { Link } from "@/i18n/routing"
 import {
   Card,
@@ -55,6 +59,12 @@ import {
 import { useSubmitPartnershipApplication } from "../hooks/use-partnership"
 import { PartnershipStatusCheck } from "./PartnershipStatusCheck"
 
+const stepSchemas = {
+  1: partnerStep1Schema,
+  2: partnerStep2Schema,
+  3: partnerStep3Schema,
+} as const
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -81,91 +91,8 @@ export default function PartnerApplicationForm() {
 
   const submitMutation = useSubmitPartnershipApplication()
 
-  // ---------------------------------------------------------------------------
-  // Build Zod schemas with translated messages so zodResolver puts the final
-  // human-readable string directly into errors[name].message.
-  // fieldError can then render msg as-is without calling t() again.
-  // ---------------------------------------------------------------------------
-  const step1Schema = useMemo(
-    () =>
-      z.object({
-        restaurantName: z
-          .string()
-          .trim()
-          .min(1, { message: t("validationRequired") })
-          .min(3, { message: t("validationMin3") }),
-        businessType: z
-          .string()
-          .trim()
-          .min(1, { message: t("validationRequired") }),
-      }),
-    [t]
-  )
-
-  const step2Schema = useMemo(
-    () =>
-      z.object({
-        ownerFirstName: z
-          .string()
-          .trim()
-          .min(1, { message: t("validationRequired") })
-          .min(3, { message: t("firstNameMin") }),
-        ownerLastName: z
-          .string()
-          .trim()
-          .min(1, { message: t("validationRequired") })
-          .min(3, { message: t("lastNameMin") }),
-        email: z
-          .string()
-          .trim()
-          .min(1, { message: t("validationRequired") })
-          .email({ message: t("validationInvalidEmail") }),
-        phone: z
-          .string()
-          .trim()
-          .min(1, { message: t("validationRequired") })
-          .refine(
-            (val) => {
-              if (!val || val.trim() === "") return false
-              const parsed = parsePhoneNumberFromString(val)
-              return parsed ? parsed.isValid() : false
-            },
-            { message: t("validationInvalidPhone") }
-          ),
-      }),
-    [t]
-  )
-
-  const step3Schema = useMemo(
-    () =>
-      z.object({
-        city: z
-          .string()
-          .trim()
-          .min(1, { message: t("validationRequired") }),
-        district: z
-          .string()
-          .trim()
-          .min(1, { message: t("validationRequired") }),
-        commercialReg: z.string().optional(),
-        socialLink: z.string().optional(),
-        notes: z.string().optional(),
-      }),
-    [t]
-  )
-
-  const fullSchema = useMemo(
-    () => step1Schema.merge(step2Schema).merge(step3Schema),
-    [step1Schema, step2Schema, step3Schema]
-  )
-
-  const stepSchemas = useMemo(
-    () => ({ 1: step1Schema, 2: step2Schema, 3: step3Schema }) as const,
-    [step1Schema, step2Schema, step3Schema]
-  )
-
   const form = useForm<PartnerApplicationInput>({
-    resolver: zodResolver(fullSchema),
+    resolver: zodResolver(partnerApplicationSchema),
     defaultValues: {
       restaurantName: "",
       businessType: "",
@@ -180,6 +107,7 @@ export default function PartnerApplicationForm() {
       notes: "",
     },
     mode: "onTouched",
+    reValidateMode: "onChange",
   })
 
   const {
@@ -187,7 +115,7 @@ export default function PartnerApplicationForm() {
     handleSubmit,
     setValue,
     trigger,
-    formState: { errors, isSubmitting, touchedFields },
+    formState: { errors, isSubmitting },
   } = form
 
   const formData = useWatch({ control: form.control })
@@ -198,9 +126,9 @@ export default function PartnerApplicationForm() {
       schema.shape
     ) as (keyof PartnerApplicationInput)[]
 
-    const valid = await trigger(fieldsToValidate)
+    const valid = await trigger(fieldsToValidate, { shouldFocus: true })
     if (valid) setStep((prev) => prev + 1)
-  }, [step, stepSchemas, trigger])
+  }, [step, trigger])
 
   const handleBack = useCallback(() => {
     setStep((prev) => Math.max(1, prev - 1))
@@ -241,19 +169,12 @@ export default function PartnerApplicationForm() {
     }
   }
 
-  // zodResolver puts the final Zod `.message` string directly into
-  // errors[name].message — no translation call needed here.
-  // We suppress errors for fields the user hasn't touched yet AND where no
-  // submit has been attempted — this prevents step 3 fields (city, district)
-  // from showing errors as soon as the user arrives, because the full-schema
-  // resolver pre-populates their error state during step 2's trigger() call.
   const fieldError = (name: keyof PartnerApplicationInput) => {
     const msg = errors[name]?.message
     if (!msg) return null
-    if (!touchedFields[name] && !isSubmitted) return null
     return (
       <p role="alert" className="mt-1 text-xs font-medium text-red-500">
-        {msg}
+        {t(msg as any)}
       </p>
     )
   }
@@ -330,7 +251,7 @@ export default function PartnerApplicationForm() {
             </div>
 
             {/* What happens next */}
-            <div className="space-y-4 text-left rtl:text-right">
+            <div className="space-y-4 text-start">
               <h4 className="font-serif text-base font-bold text-[#2B1B15] dark:text-stone-200">
                 {t("whatHappensNext")}
               </h4>

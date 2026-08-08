@@ -242,7 +242,13 @@ export function UserForm({
                 disabled={isPending}
               >
                 <SelectTrigger className="w-full rounded-xl">
-                  <SelectValue placeholder={t("selectGender")} />
+                  <SelectValue placeholder={t("selectGender")}>
+                    {selectedGender === "male"
+                      ? t("male")
+                      : selectedGender === "female"
+                      ? t("female")
+                      : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="male">{t("male")}</SelectItem>
@@ -346,7 +352,17 @@ export function UserForm({
               disabled={isPending || isManager}
             >
               <SelectTrigger className="w-full rounded-xl">
-                <SelectValue placeholder={t("roleSelectPlaceholder")} />
+                <SelectValue placeholder={t("roleSelectPlaceholder")}>
+                  {selectedRole === "customer"
+                    ? t("roleCustomer")
+                    : selectedRole === "staff"
+                    ? t("roleStaff")
+                    : selectedRole === "manager"
+                    ? t("roleManager")
+                    : selectedRole === "admin"
+                    ? t("roleAdmin")
+                    : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {isManager ? (

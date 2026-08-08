@@ -12,6 +12,7 @@ import {
   MailCheck,
   KeyRound,
   RefreshCw,
+  ArrowLeft,
 } from "lucide-react"
 
 import {
@@ -262,12 +263,13 @@ export function ForgotPasswordForm() {
           </Field>
 
           <Field>
-            <FieldDescription className="text-center text-sm">
+            <FieldDescription className="flex justify-center text-sm">
               <Link
                 href="/login"
-                className="font-semibold text-muted-foreground underline-offset-4 hover:underline"
+                className="inline-flex items-center justify-center gap-1.5 font-semibold text-muted-foreground underline-offset-4 hover:underline hover:text-foreground"
               >
-                ← {t("backToLogin")}
+                <ArrowLeft className="size-4 shrink-0 transition-transform rtl:rotate-180" />
+                <span>{t("backToLogin")}</span>
               </Link>
             </FieldDescription>
           </Field>
@@ -397,7 +399,7 @@ export function ForgotPasswordForm() {
           </Field>
 
           <Field>
-            <FieldDescription className="text-center text-sm">
+            <FieldDescription className="flex justify-center text-sm">
               <button
                 type="button"
                 onClick={() => {
@@ -406,9 +408,10 @@ export function ForgotPasswordForm() {
                   setServerSuccess(null)
                   otpForm.reset()
                 }}
-                className="font-semibold text-muted-foreground underline-offset-4 hover:underline"
+                className="inline-flex items-center justify-center gap-1.5 font-semibold text-muted-foreground underline-offset-4 hover:underline hover:text-foreground"
               >
-                ← {t("otpBack")}
+                <ArrowLeft className="size-4 shrink-0 transition-transform rtl:rotate-180" />
+                <span>{t("otpBack")}</span>
               </button>
             </FieldDescription>
           </Field>

@@ -6,7 +6,7 @@ import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 import { useZodResolver } from "@/lib/zod-locale"
 import { useTranslations } from "next-intl"
-import { Eye, EyeOff, Loader2, MailCheck, RefreshCw } from "lucide-react"
+import { Eye, EyeOff, Loader2, MailCheck, RefreshCw, ArrowLeft } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { registerSchema, type RegisterInput } from "@/schemas/auth"
@@ -572,7 +572,7 @@ function RegisterFormContent({
 
         {/* Back */}
         <Field>
-          <FieldDescription className="text-center text-sm">
+          <FieldDescription className="flex justify-center text-sm">
             <button
               type="button"
               onClick={() => {
@@ -582,9 +582,10 @@ function RegisterFormContent({
                 setServerSuccess(null)
                 otpForm.reset()
               }}
-              className="font-semibold text-muted-foreground underline-offset-4 hover:underline"
+              className="inline-flex items-center justify-center gap-1.5 font-semibold text-muted-foreground underline-offset-4 hover:underline hover:text-foreground"
             >
-              ← {t("otpBack")}
+              <ArrowLeft className="size-4 shrink-0 transition-transform rtl:rotate-180" />
+              <span>{t("otpBack")}</span>
             </button>
           </FieldDescription>
         </Field>

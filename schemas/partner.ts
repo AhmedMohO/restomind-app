@@ -25,9 +25,10 @@ export const partnerStep2Schema = z.object({
     .min(1, { message: "validationRequired" })
     .min(3, { message: "lastNameMin" }),
   email: z
-    .email({ message: "validationInvalidEmail" })
+    .string()
     .trim()
-    .min(1, { message: "validationRequired" }),
+    .min(1, { message: "validationRequired" })
+    .email({ message: "validationInvalidEmail" }),
   phone: z
     .string()
     .trim()

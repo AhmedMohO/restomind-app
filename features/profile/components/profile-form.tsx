@@ -186,7 +186,13 @@ export function ProfileForm({
                 disabled={isSubmitting}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t("genderSelect")} />
+                  <SelectValue placeholder={t("genderSelect")}>
+                    {selectedGender === "male"
+                      ? t("male")
+                      : selectedGender === "female"
+                      ? t("female")
+                      : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="male">{t("male")}</SelectItem>

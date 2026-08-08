@@ -175,7 +175,7 @@ export function CreateUserDialog({
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field data-invalid={!!errors.gender}>
-              <FieldLabel>Gender</FieldLabel>
+              <FieldLabel>{t("gender")}</FieldLabel>
               <Select
                 value={currentGender ?? ""}
                 onValueChange={(val) =>
@@ -187,11 +187,17 @@ export function CreateUserDialog({
                 disabled={isPending}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select gender" />
+                  <SelectValue placeholder={t("selectGender")}>
+                    {currentGender === "male"
+                      ? t("male")
+                      : currentGender === "female"
+                      ? t("female")
+                      : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="male">{t("male")}</SelectItem>
+                  <SelectItem value="female">{t("female")}</SelectItem>
                 </SelectContent>
               </Select>
               <FieldError errors={[errors.gender]} />
@@ -229,7 +235,15 @@ export function CreateUserDialog({
               disabled={isPending}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={t("selectRolePlaceholder")} />
+                <SelectValue placeholder={t("selectRolePlaceholder")}>
+                  {currentRole === "manager"
+                    ? t("roleManager")
+                    : currentRole === "admin"
+                    ? t("roleAdmin")
+                    : currentRole === "customer"
+                    ? t("roleCustomer")
+                    : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="manager">{t("roleManager")}</SelectItem>

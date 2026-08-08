@@ -417,7 +417,13 @@ export function DashboardProfileContainer({
                       onValueChange={(val) => field.onChange(val || null)}
                     >
                       <SelectTrigger className="h-10 w-full rounded-xl border-input/80 bg-background/50 text-xs font-medium sm:text-sm">
-                        <SelectValue placeholder={t("selectGender")} />
+                        <SelectValue placeholder={t("selectGender")}>
+                          {field.value === "male"
+                            ? t("genderMale")
+                            : field.value === "female"
+                            ? t("genderFemale")
+                            : undefined}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="male">{t("genderMale")}</SelectItem>

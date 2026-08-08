@@ -6,14 +6,7 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useZodResolver } from "@/lib/zod-locale"
 import { useTranslations } from "next-intl"
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  KeyRound,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react"
+import { Eye, EyeOff, Loader2, KeyRound, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { setupAccountSchema, type SetupAccountInput } from "@/schemas/auth"
@@ -266,12 +259,13 @@ function SetupAccountFormContent({
         </Field>
 
         <Field>
-          <div className="text-center text-sm">
+          <div className="flex justify-center text-sm">
             <Link
               href="/login"
-              className="font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              className="inline-flex items-center justify-center gap-1.5 font-semibold text-muted-foreground underline-offset-4 hover:underline hover:text-foreground"
             >
-              {t("backToLogin") || "Back to Login"}
+              <ArrowLeft className="size-4 shrink-0 transition-transform rtl:rotate-180" />
+              <span>{t("backToLogin") || "Back to Login"}</span>
             </Link>
           </div>
         </Field>
