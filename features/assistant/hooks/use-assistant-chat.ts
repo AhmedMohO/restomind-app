@@ -13,6 +13,8 @@ import type {
 } from "@/features/assistant/api/type"
 
 export interface ApproveActionVariables {
+  // Display/query-invalidation only — the backend executes whatever tool and
+  // arguments are sealed inside `approvalToken`, not these.
   toolName: string
   arguments: Record<string, unknown>
   approved: boolean
@@ -22,6 +24,8 @@ export interface ApproveActionVariables {
    * backend logs the run without linking it to a recommendation_action row.
    */
   recommendationActionId?: string
+  /** Required. Signed by the backend when this action/recommendation was proposed. */
+  approvalToken: string
 }
 
 export function useAssistantChat() {

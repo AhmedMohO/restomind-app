@@ -57,6 +57,7 @@ export function AssistantWidget() {
         recommendationActionId: rec.recommendationActionId,
         toolName: rec.actionPayload.toolName,
         arguments: rec.actionPayload.arguments,
+        approvalToken: rec.approvalToken,
         approved: true,
       },
       {
@@ -69,7 +70,12 @@ export function AssistantWidget() {
   function decideAction(action: AssistantPendingAction, approved: boolean) {
     setDecidingTool(action.toolName)
     approve.mutate(
-      { toolName: action.toolName, arguments: action.arguments, approved },
+      {
+        toolName: action.toolName,
+        arguments: action.arguments,
+        approvalToken: action.approvalToken,
+        approved,
+      },
       {
         onSuccess: () => resolveAction(action.toolName),
         onSettled: () => setDecidingTool(null),

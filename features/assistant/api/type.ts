@@ -14,6 +14,12 @@ export interface AssistantRecommendation {
     toolName: string
     arguments: Record<string, unknown>
   }
+  /**
+   * Signed proof of exactly what `actionPayload` was proposed. Approval
+   * executes only what this token carries — send it back unmodified with
+   * `POST /assistant/approve-action`, it isn't something the client derives.
+   */
+  approvalToken: string
 }
 
 /** A tool the planner selected but refused to run without a human. */
@@ -21,6 +27,8 @@ export interface AssistantPendingAction {
   toolName: string
   arguments: Record<string, unknown>
   status: string
+  /** Same contract as `AssistantRecommendation.approvalToken`. */
+  approvalToken: string
 }
 
 /** Body of `POST /assistant/chat`. */

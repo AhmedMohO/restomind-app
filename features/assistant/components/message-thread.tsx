@@ -7,32 +7,109 @@ import { Check, Loader2, ShieldQuestion, Sparkles, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { parseRichText } from "@/features/assistant/lib/rich-text"
+import {
+  parseRichText,
+  type RichBlock,
+  type RichSpan,
+  type TableAlign,
+} from "@/features/assistant/lib/rich-text"
 import type {
   AssistantMessage,
   AssistantPendingAction,
 } from "@/features/assistant/api/type"
 
+function Spans({ spans }: { spans: RichSpan[] }) {
+  return (
+    <>
+      {spans.map((span, i) =>
+        span.bold ? (
+          <strong key={i} className="font-semibold">
+            {span.text}
+          </strong>
+        ) : (
+          <span key={i}>{span.text}</span>
+        )
+      )}
+    </>
+  )
+}
+
+const ALIGN_CLASS: Record<TableAlign, string> = {
+  start: "text-start",
+  center: "text-center",
+  end: "text-end",
+}
+
+function RichTable({ block }: { block: Extract<RichBlock, { type: "table" }> }) {
+  return (
+    <div className="my-1.5 overflow-x-auto rounded-lg border border-border/60">
+      <table className="w-full border-collapse text-xs">
+        <thead>
+          <tr className="bg-muted/60">
+            {block.header.map((cell, ci) => (
+              <th
+                key={ci}
+                className={cn(
+                  "border-b border-border/60 px-2 py-1.5 font-semibold whitespace-nowrap",
+                  ALIGN_CLASS[block.align[ci] ?? "start"]
+                )}
+              >
+                <Spans spans={cell} />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {block.rows.map((row, ri) => (
+            <tr key={ri} className={cn(ri % 2 === 1 && "bg-muted/20")}>
+              {row.map((cell, ci) => (
+                <td
+                  key={ci}
+                  className={cn(
+                    "border-b border-border/40 px-2 py-1.5 tabular-nums whitespace-nowrap",
+                    ALIGN_CLASS[block.align[ci] ?? "start"]
+                  )}
+                >
+                  <Spans spans={cell} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 function RichText({ text }: { text: string }) {
   return (
     <>
-      {parseRichText(text).map((line, i) =>
-        line.spans.length === 0 ? (
-          <div key={i} className="h-2" />
-        ) : (
-          <p key={i} className={cn(line.bullet && "ms-4 list-item list-disc")}>
-            {line.spans.map((span, j) =>
-              span.bold ? (
-                <strong key={j} className="font-semibold">
-                  {span.text}
-                </strong>
-              ) : (
-                <span key={j}>{span.text}</span>
-              )
-            )}
-          </p>
-        )
-      )}
+      {parseRichText(text).map((block, i) => {
+        switch (block.type) {
+          case "blank":
+            return <div key={i} className="h-2" />
+          case "table":
+            return <RichTable key={i} block={block} />
+          case "heading":
+            return (
+              <p
+                key={i}
+                className={cn(
+                  "mt-1 font-heading font-semibold first:mt-0",
+                  block.level <= 2 ? "text-sm" : "text-xs"
+                )}
+              >
+                <Spans spans={block.spans} />
+              </p>
+            )
+          default:
+            return (
+              <p key={i} className={cn(block.type === "bullet" && "ms-4 list-item list-disc")}>
+                <Spans spans={block.spans} />
+              </p>
+            )
+        }
+      })}
     </>
   )
 }

@@ -7,8 +7,12 @@ export const assistantChatSchema = z.object({
 
 export const assistantApproveActionSchema = z.object({
   recommendationActionId: z.string().optional(),
-  toolName: z.string().min(1),
-  arguments: z.record(z.string(), z.unknown()),
+  // Not trusted for execution — the backend executes only the toolName/
+  // arguments sealed inside `approvalToken`. Kept optional so the client can
+  // still display what it thinks it's approving.
+  toolName: z.string().min(1).optional(),
+  arguments: z.record(z.string(), z.unknown()).optional(),
+  approvalToken: z.string().min(1),
   approved: z.boolean(),
   sessionId: z.string().min(1).optional(),
 })
