@@ -107,17 +107,22 @@ export async function refreshSession(
       )
     }
 
-    const data = (await response.json()) as { accessToken?: string }
+    const data = (await response.json()) as {
+      accessToken?: string
+      refreshToken?: string
+    }
 
     if (!data.accessToken) {
       await destroySession(session)
       throw new AuthenticationError("Invalid refresh response from server")
     }
 
-    // Preserve the existing refresh token (no rotation from this API)
+    // Save both the new access token AND the new rotated refresh token from backend
+    const newRefreshToken = data.refreshToken ?? session.tokens.refreshToken
+
     await updateTokens(session, {
       accessToken: data.accessToken,
-      refreshToken: session.tokens.refreshToken,
+      refreshToken: newRefreshToken,
       expiresAt: computeExpiresAt(),
     })
 
