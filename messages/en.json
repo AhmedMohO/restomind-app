@@ -527,8 +527,9 @@
       "headline": "{trained} / {total} products trained",
       "backfillButton": "Backfill history",
       "backfilling": "Backfilling…",
-      "backfillSuccess": "History backfilled — training will pick up the new data shortly.",
+      "backfillSuccess": "History backfilled — training now needs about 90 quiet (non-holiday) days per product.",
       "backfillError": "Could not backfill history",
+      "daysLabel": "{days} / {minDays} days",
       "empty": "No products to train yet.",
       "allStatuses": "All statuses",
       "statusFilter": "Status"
