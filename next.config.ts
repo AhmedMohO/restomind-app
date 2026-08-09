@@ -53,7 +53,7 @@ const nextConfig: NextConfig = {
         key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
-          "img-src 'self' data: https://images.unsplash.com https://res.cloudinary.com",
+          "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com",
           "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
           "style-src 'self' 'unsafe-inline'",
           `connect-src ${buildConnectSrc()}`,

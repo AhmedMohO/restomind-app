@@ -181,6 +181,7 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
             {t("retry")}
           </Button>
           <Button
+            nativeButton={false}
             render={<Link href="/dashboard/products" />}
             className="rounded-xl"
           >
@@ -222,6 +223,7 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
 
         <div className="flex w-full items-center gap-2.5 sm:w-auto">
           <Button
+            nativeButton={false}
             render={<Link href={`/dashboard/products/${product._id}/edit`} />}
             className="flex-1 gap-2 rounded-xl sm:flex-initial"
           >

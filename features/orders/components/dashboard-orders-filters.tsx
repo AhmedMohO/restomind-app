@@ -123,10 +123,22 @@ export function DashboardOrdersFilters({
   const tOrders = useTranslations("Orders")
   const activeFilterCount = countActiveFilters(filters)
 
-  const updateTotalPriceRange = (next: [number, number]) => {
+  const [localPriceRange, setLocalPriceRange] = React.useState<[number, number]>(
+    filters.totalPriceRange
+  )
+
+  React.useEffect(() => {
+    setLocalPriceRange(filters.totalPriceRange)
+  }, [filters.totalPriceRange])
+
+  const updateLocalPriceRange = (next: [number, number]) => {
     const min = Math.max(TOTAL_PRICE_MIN, Math.min(next[0], TOTAL_PRICE_MAX))
     const max = Math.max(min, Math.min(next[1], TOTAL_PRICE_MAX))
-    onChange("totalPriceRange", [min, max])
+    setLocalPriceRange([min, max])
+  }
+
+  const handleApplyPriceRange = () => {
+    onChange("totalPriceRange", localPriceRange)
   }
 
   return (
@@ -474,11 +486,11 @@ export function DashboardOrdersFilters({
                   dir={locale === "ar" ? "rtl" : "ltr"}
                 >
                   <span>
-                    {formatCurrency(filters.totalPriceRange[0], locale)}
+                    {formatCurrency(localPriceRange[0], locale)}
                   </span>
                   <span>–</span>
                   <span>
-                    {formatCurrency(filters.totalPriceRange[1], locale)}
+                    {formatCurrency(localPriceRange[1], locale)}
                   </span>
                 </span>
               </Badge>
@@ -489,9 +501,9 @@ export function DashboardOrdersFilters({
                 min={TOTAL_PRICE_MIN}
                 max={TOTAL_PRICE_MAX}
                 step={5}
-                value={filters.totalPriceRange}
+                value={localPriceRange}
                 onValueChange={(value) =>
-                  updateTotalPriceRange(value as [number, number])
+                  updateLocalPriceRange(value as [number, number])
                 }
                 className="py-2"
               />
@@ -504,12 +516,12 @@ export function DashboardOrdersFilters({
                     id="order-min-price-filter"
                     type="number"
                     min={TOTAL_PRICE_MIN}
-                    max={filters.totalPriceRange[1]}
-                    value={filters.totalPriceRange[0]}
+                    max={localPriceRange[1]}
+                    value={localPriceRange[0]}
                     onChange={(e) =>
-                      updateTotalPriceRange([
+                      updateLocalPriceRange([
                         Number(e.target.value || TOTAL_PRICE_MIN),
-                        filters.totalPriceRange[1],
+                        localPriceRange[1],
                       ])
                     }
                     className="h-8 rounded-xl text-center text-xs"
@@ -522,12 +534,12 @@ export function DashboardOrdersFilters({
                   <Input
                     id="order-max-price-filter"
                     type="number"
-                    min={filters.totalPriceRange[0]}
+                    min={localPriceRange[0]}
                     max={TOTAL_PRICE_MAX}
-                    value={filters.totalPriceRange[1]}
+                    value={localPriceRange[1]}
                     onChange={(e) =>
-                      updateTotalPriceRange([
-                        filters.totalPriceRange[0],
+                      updateLocalPriceRange([
+                        localPriceRange[0],
                         Number(e.target.value || TOTAL_PRICE_MAX),
                       ])
                     }
@@ -535,6 +547,14 @@ export function DashboardOrdersFilters({
                   />
                 </div>
               </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleApplyPriceRange}
+                className="w-full rounded-xl text-xs font-semibold"
+              >
+                {t("applyPriceRange")}
+              </Button>
             </div>
           </FilterSection>
         </div>

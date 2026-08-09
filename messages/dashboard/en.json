@@ -193,6 +193,7 @@
     "totalPriceRange": "Total price range",
     "minTotal": "Min total",
     "maxTotal": "Max total",
+    "applyPriceRange": "Apply",
     "startDate": "Start date",
     "endDate": "End date",
     "resetFilters": "Reset Filters",

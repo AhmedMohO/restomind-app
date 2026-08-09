@@ -193,6 +193,7 @@
     "totalPriceRange": "نطاق إجمالي السعر",
     "minTotal": "أقل إجمالي",
     "maxTotal": "أعلى إجمالي",
+    "applyPriceRange": "تطبيق",
     "startDate": "تاريخ البداية",
     "endDate": "تاريخ النهاية",
     "resetFilters": "إعادة ضبط الفلاتر",
