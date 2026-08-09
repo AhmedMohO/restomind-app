@@ -569,30 +569,6 @@ export function AdminRestaurantModels({
                   <span>Add Product</span>
                 </Button>
               )}
-
-              {activeTab === "offers" && (
-                <Button
-                  nativeButton={false}
-                  size="sm"
-                  render={<Link href="/dashboard/offers/new" />}
-                  className="gap-2 rounded-xl text-xs"
-                >
-                  <Plus className="size-4" />
-                  <span>Create Offer</span>
-                </Button>
-              )}
-
-              {activeTab === "purchase-orders" && (
-                <Button
-                  nativeButton={false}
-                  size="sm"
-                  render={<Link href="/dashboard/purchase-orders/new" />}
-                  className="gap-2 rounded-xl text-xs"
-                >
-                  <Plus className="size-4" />
-                  <span>Create Purchase Order</span>
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
