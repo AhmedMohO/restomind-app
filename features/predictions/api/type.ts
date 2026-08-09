@@ -59,6 +59,7 @@ export interface LearnedStatus {
   restaurantId: string
   totalProducts: number
   trainedCount: number
+  minDaysForLearned: number
   degraded: boolean
   degradedReason?: string
   items: LearnedStatusItem[]
@@ -95,6 +96,7 @@ export const EMPTY_LEARNED_STATUS: LearnedStatus = {
   restaurantId: "",
   totalProducts: 0,
   trainedCount: 0,
+  minDaysForLearned: 0,
   degraded: false,
   items: [],
 }

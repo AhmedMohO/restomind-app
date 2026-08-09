@@ -26,6 +26,13 @@ import {
 } from "@/features/predictions/hooks/use-predictions"
 import type { LearnedStatusItem } from "@/features/predictions/api/type"
 
+// The learned level only appears after ~90 "quiet" (non-weekend, non-holiday)
+// days, which is roughly 170 calendar days of history. The backend's default
+// backfill window (120 days) cannot reach that. Ask for the largest window the
+// schema allows: the model de-dupes on (date, productId) and the backend only
+// pushes transactions that actually exist, so over-asking costs nothing.
+const BACKFILL_HISTORY_DAYS = 365
+
 /**
  * Per-product model training progress with status item filtering and
  * TablePagination. `data.degraded` means the status itself is a local guess
@@ -157,7 +164,7 @@ export function LearningStatusStrip() {
               size="sm"
               variant="outline"
               disabled={backfillMutation.isPending}
-              onClick={() => backfillMutation.mutate(undefined)}
+              onClick={() => backfillMutation.mutate({ days: BACKFILL_HISTORY_DAYS })}
             >
               {backfillMutation.isPending ? (
                 <Loader2 className="size-3.5 animate-spin" />
@@ -193,7 +200,11 @@ export function LearningStatusStrip() {
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-medium text-muted-foreground">
-                        {pct}%
+                        {t("learning.daysLabel", {
+                          days: item.observedDays,
+                          minDays: data.minDaysForLearned,
+                        })}{" "}
+                        · {pct}%
                       </span>
                       {getStatusBadge(item.status)}
                     </div>
