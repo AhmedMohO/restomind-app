@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton"
 
-function FavoriteProductSkeleton() {
+export function FavoriteProductSkeleton() {
   return (
     <div className="flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
       <div>
@@ -34,21 +34,27 @@ function FavoriteProductSkeleton() {
   )
 }
 
+export function FavouritesGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <FavoriteProductSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
 export default function FavouritesLoading() {
   return (
     <div className="container mx-auto min-h-[60vh] space-y-8 px-4 py-8">
       {/* Title Skeleton */}
       <div className="flex items-center gap-3">
-        <Skeleton className="size-8 rounded-full shrink-0" />
+        <Skeleton className="size-8 shrink-0 rounded-full" />
         <Skeleton className="h-9 w-48 rounded-lg" />
       </div>
 
       {/* Grid of Product Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <FavoriteProductSkeleton key={i} />
-        ))}
-      </div>
+      <FavouritesGridSkeleton />
     </div>
   )
 }

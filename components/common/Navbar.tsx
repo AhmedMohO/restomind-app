@@ -154,37 +154,33 @@ export default function Navbar() {
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <HasRole roles={["admin", "manager", "staff"]}>
-                    <DropdownMenuItem
-                      onClick={() => router.push("/dashboard")}
-                      className="cursor-pointer gap-2 py-2"
-                    >
-                      <LayoutDashboard className="size-4 text-muted-foreground" />
-                      <span>{t("dashboard")}</span>
-                    </DropdownMenuItem>
+                    <Link href="/dashboard" prefetch={true} className="w-full">
+                      <DropdownMenuItem className="cursor-pointer gap-2 py-2">
+                        <LayoutDashboard className="size-4 text-muted-foreground" />
+                        <span>{t("dashboard")}</span>
+                      </DropdownMenuItem>
+                    </Link>
                   </HasRole>
-                  <DropdownMenuItem
-                    onClick={() => router.push("/profile")}
-                    className="cursor-pointer gap-2 py-2"
-                  >
-                    <User className="size-4 text-muted-foreground" />
-                    <span>{t("profile")}</span>
-                  </DropdownMenuItem>
+                  <Link href="/profile" prefetch={true} className="w-full">
+                    <DropdownMenuItem className="cursor-pointer gap-2 py-2">
+                      <User className="size-4 text-muted-foreground" />
+                      <span>{t("profile")}</span>
+                    </DropdownMenuItem>
+                  </Link>
                   {!isManagementRole && (
                     <>
-                      <DropdownMenuItem
-                        onClick={() => router.push("/orders")}
-                        className="cursor-pointer gap-2 py-2"
-                      >
-                        <ShoppingBag className="size-4 text-muted-foreground" />
-                        <span>{t("orders")}</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => router.push("/favourites")}
-                        className="cursor-pointer gap-2 py-2"
-                      >
-                        <Heart className="size-4 text-muted-foreground" />
-                        <span>{t("favourites")}</span>
-                      </DropdownMenuItem>
+                      <Link href="/orders" prefetch={true} className="w-full">
+                        <DropdownMenuItem className="cursor-pointer gap-2 py-2">
+                          <ShoppingBag className="size-4 text-muted-foreground" />
+                          <span>{t("orders")}</span>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/favourites" prefetch={true} className="w-full">
+                        <DropdownMenuItem className="cursor-pointer gap-2 py-2">
+                          <Heart className="size-4 text-muted-foreground" />
+                          <span>{t("favourites")}</span>
+                        </DropdownMenuItem>
+                      </Link>
                     </>
                   )}
                   <DropdownMenuSeparator />

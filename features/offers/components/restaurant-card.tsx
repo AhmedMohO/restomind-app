@@ -36,7 +36,7 @@ export function RestaurantCard({
       className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-[24px] border border-[#ECE6DB] bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
     >
       {/* Top Banner */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[18px] bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-700">
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[18px] bg-gradient-to-br from-[#7C4A27] via-[#9E5D32] to-[#C2733C]">
         <Image
           src={coverUrl}
           fill

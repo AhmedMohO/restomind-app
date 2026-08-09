@@ -1,32 +1,31 @@
+import { Suspense } from "react"
 import { setRequestLocale } from "next-intl/server"
 import { getTranslations } from "next-intl/server"
 import { getAllMyOrders } from "@/features/orders/api"
-import OrdersClient from "@/features/orders/components/OrdersClient"
+import OrdersClient, {
+  OrdersContentList,
+} from "@/features/orders/components/OrdersClient"
 import { AlertCircle } from "lucide-react"
 import { ORDER_STATUSES } from "@/features/orders/status"
 import type { ApiOrderGroup, OrderStatus } from "@/features/orders/api/type"
+import { OrderCardsSkeleton } from "./loading"
 
 export type FilterStatus = "all" | OrderStatus
 export type SortOption = "newest" | "oldest" | "highestTotal"
 
 const PAGE_SIZE = 6
 
-export default async function OrdersPage({
-  params,
-  searchParams,
+async function OrdersFetcher({
+  activeStatus,
+  searchQuery,
+  sortBy,
+  currentPage,
 }: {
-  params: Promise<{ locale: string }>
-  searchParams: Promise<{
-    status?: string
-    q?: string
-    sort?: string
-    page?: string
-  }>
+  activeStatus: FilterStatus
+  searchQuery: string
+  sortBy: SortOption
+  currentPage: number
 }) {
-  const { locale } = await params
-  const { status, q, sort, page } = await searchParams
-
-  setRequestLocale(locale)
   const t = await getTranslations("Orders")
 
   let orderGroups: ApiOrderGroup[] = []
@@ -43,7 +42,7 @@ export default async function OrdersPage({
 
   if (fetchError) {
     return (
-      <div className="container mx-auto flex min-h-[70vh] items-center justify-center px-4 py-12">
+      <div className="container mx-auto flex min-h-[40vh] items-center justify-center px-4 py-12">
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="rounded-full bg-rose-50 p-5 dark:bg-rose-950/30">
             <AlertCircle className="size-10 text-rose-500" />
@@ -65,21 +64,6 @@ export default async function OrdersPage({
   for (const group of orderGroups) {
     tabCounts[group.overallStatus] = (tabCounts[group.overallStatus] || 0) + 1
   }
-
-  const activeStatus: FilterStatus =
-    status &&
-    (status === "all" || ORDER_STATUSES.includes(status as OrderStatus))
-      ? (status as FilterStatus)
-      : "all"
-
-  const searchQuery = q ? q.trim() : ""
-  const sortBy: SortOption =
-    sort && ["newest", "oldest", "highestTotal"].includes(sort)
-      ? (sort as SortOption)
-      : "newest"
-
-  const currentPage =
-    page && !isNaN(Number(page)) && Number(page) > 0 ? Number(page) : 1
 
   let filtered = [...orderGroups]
 
@@ -129,16 +113,63 @@ export default async function OrdersPage({
   )
 
   return (
+    <OrdersContentList
+      orderGroups={paginatedOrderGroups}
+      tabCounts={tabCounts}
+      currentPage={safePage}
+      totalPages={totalPages}
+    />
+  )
+}
+
+export default async function OrdersPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{
+    status?: string
+    q?: string
+    sort?: string
+    page?: string
+  }>
+}) {
+  const { locale } = await params
+  const { status, q, sort, page } = await searchParams
+
+  setRequestLocale(locale)
+
+  const activeStatus: FilterStatus =
+    status &&
+    (status === "all" || ORDER_STATUSES.includes(status as OrderStatus))
+      ? (status as FilterStatus)
+      : "all"
+
+  const searchQuery = q ? q.trim() : ""
+  const sortBy: SortOption =
+    sort && ["newest", "oldest", "highestTotal"].includes(sort)
+      ? (sort as SortOption)
+      : "newest"
+
+  const currentPage =
+    page && !isNaN(Number(page)) && Number(page) > 0 ? Number(page) : 1
+
+  return (
     <div className="container mx-auto min-h-[70vh] px-4 py-8">
       <OrdersClient
-        orderGroups={paginatedOrderGroups}
-        tabCounts={tabCounts}
         activeStatus={activeStatus}
         searchQuery={searchQuery}
         sortBy={sortBy}
-        currentPage={safePage}
-        totalPages={totalPages}
-      />
+      >
+        <Suspense fallback={<OrderCardsSkeleton />}>
+          <OrdersFetcher
+            activeStatus={activeStatus}
+            searchQuery={searchQuery}
+            sortBy={sortBy}
+            currentPage={currentPage}
+          />
+        </Suspense>
+      </OrdersClient>
     </div>
   )
 }

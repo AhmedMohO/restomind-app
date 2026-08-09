@@ -2,7 +2,6 @@
 
 import React, {
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -58,13 +57,15 @@ export function OffersContentClient({
   // --- Shops tab: debounced search + server-side pagination ---
   const shopSearchParam = searchParams.get("shopSearch") || ""
   const shopPage = Math.max(1, Number(searchParams.get("shopPage")) || 1)
+  const [prevShopSearchParam, setPrevShopSearchParam] = useState(shopSearchParam)
   const [shopSearchInput, setShopSearchInput] = useState(shopSearchParam)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Sync local input when URL param changes externally (e.g. browser back)
-  useEffect(() => {
+  if (shopSearchParam !== prevShopSearchParam) {
+    setPrevShopSearchParam(shopSearchParam)
     setShopSearchInput(shopSearchParam)
-  }, [shopSearchParam])
+  }
 
   const handleShopSearchChange = useCallback(
     (value: string) => {
