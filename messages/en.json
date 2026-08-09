@@ -1044,5 +1044,39 @@
       "pageOf": "Page {page} of {totalPages}",
       "rowsPerPage": "Rows per page"
     }
+  },
+  "ContactWidget": {
+    "open": "Contact Us",
+    "title": "Contact Us",
+    "subtitle": "We're here to help",
+    "status": "Online",
+    "collapse": "Close",
+    "description": "Fill in the details below and we'll continue the conversation on WhatsApp.",
+    "send": "Send via WhatsApp",
+    "disclaimer": "Opens WhatsApp with a pre-filled message",
+    "loadingOrders": "Loading your orders…",
+    "fields": {
+      "name": "Your Name",
+      "subject": "Subject",
+      "relatedOrder": "Related Order",
+      "message": "Message",
+      "optional": "optional"
+    },
+    "placeholders": {
+      "name": "e.g. Ahmed Mohamed",
+      "subject": "e.g. Issue with my order",
+      "selectOrder": "Select an order (optional)",
+      "searchOrder": "Search orders...",
+      "orderId": "e.g. Order ID or description",
+      "message": "Describe your issue or question…"
+    },
+    "whatsapp": {
+      "header": "Support Request"
+    },
+    "success": {
+      "title": "Message Ready!",
+      "description": "WhatsApp has been opened with your message. Our team will respond shortly.",
+      "sendAnother": "Send Another Message"
+    }
   }
 }

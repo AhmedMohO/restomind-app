@@ -1,6 +1,7 @@
 import Footer from "@/components/common/Footer"
 import Navbar from "@/components/common/Navbar"
 import { CartProvider } from "@/hooks/use-cart"
+import { ContactWidget } from "@/features/contact/components/contact-widget"
 import { setRequestLocale } from "next-intl/server"
 
 export default async function PublicLayout({
@@ -19,6 +20,7 @@ export default async function PublicLayout({
         <Navbar />
         {children}
         <Footer />
+        <ContactWidget />
       </>
     </CartProvider>
   )
