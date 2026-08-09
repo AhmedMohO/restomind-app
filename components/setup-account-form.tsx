@@ -23,11 +23,17 @@ import {
 } from "@/components/ui/field"
 
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
+import { logoutAction } from "@/features/auth/actions/login"
+
+export interface SetupAccountFormProps extends React.ComponentProps<"form"> {
+  isLoggedIn?: boolean
+}
 
 function SetupAccountFormContent({
   className,
+  isLoggedIn,
   ...props
-}: React.ComponentProps<"form">) {
+}: SetupAccountFormProps) {
   const t = useTranslations("Auth")
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -55,13 +61,18 @@ function SetupAccountFormContent({
 
   useEffect(() => {
     useAuthStore.getState().setUser(null)
+    if (isLoggedIn) {
+      logoutAction().catch((err) =>
+        console.warn("[SetupAccountForm] Auto-logout failed", err)
+      )
+    }
     reset({ password: "", confirmPassword: "" })
     return () => {
       reset({ password: "", confirmPassword: "" })
       setServerError(null)
       setServerSuccess(null)
     }
-  }, [reset])
+  }, [isLoggedIn, reset])
 
   async function onSubmit(data: SetupAccountInput) {
     setServerError(null)
@@ -293,7 +304,7 @@ function SetupAccountFormContent({
   )
 }
 
-export function SetupAccountForm(props: React.ComponentProps<"form">) {
+export function SetupAccountForm(props: SetupAccountFormProps) {
   return (
     <Suspense
       fallback={

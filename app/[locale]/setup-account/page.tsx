@@ -7,6 +7,8 @@ import LangToggle from "@/components/common/LangToggle"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { getAlternates } from "@/lib/seo/metadata"
 
+import { getSession } from "@/lib/auth/session"
+
 type Props = {
   params: Promise<{ locale: string }>
 }
@@ -25,7 +27,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SetupAccountPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
-  const t = await getTranslations("Auth")
+
+  const [session, t] = await Promise.all([
+    getSession(),
+    getTranslations("Auth"),
+  ])
 
   return (
     <div className="grid min-h-svh bg-background select-none lg:grid-cols-2">
@@ -55,7 +61,7 @@ export default async function SetupAccountPage({ params }: Props) {
         {/* Form container */}
         <div className="flex flex-1 items-center justify-center py-8">
           <div className="w-full max-w-md rounded-2xl border border-border/40 bg-card p-6 shadow-xs md:p-8">
-            <SetupAccountForm />
+            <SetupAccountForm isLoggedIn={session.isLoggedIn} />
           </div>
         </div>
       </div>
