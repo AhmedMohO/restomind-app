@@ -12,6 +12,16 @@ export const createBatchSchema = z.object({
   receivedDate: z.string().optional(),
 })
 
+/** Bulk payload from the "Create Inventory Batches" page — matches backend CreateBatchesDto */
+export const createBatchesSchema = z.object({
+  batches: z.array(createBatchSchema).min(1),
+})
+
+export const createBatchOrBatchesSchema = z.union([
+  createBatchSchema,
+  createBatchesSchema,
+])
+
 export const createStockTransactionSchema = z.object({
   ingredientId: z.string().min(1),
   batchId: z.string().optional(),

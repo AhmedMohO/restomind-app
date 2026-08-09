@@ -1,6 +1,7 @@
 // schemas/inventory.test.ts
 import { describe, expect, test } from "bun:test"
 import {
+  createBatchesSchema,
   createBatchSchema,
   createStockTransactionSchema,
   createWasteEventSchema,
@@ -29,6 +30,28 @@ describe("createBatchSchema", () => {
         expiryDate: "2026-12-31",
       }).success
     ).toBe(false)
+  })
+})
+
+describe("createBatchesSchema", () => {
+  test("accepts a bulk batches payload", () => {
+    expect(
+      createBatchesSchema.safeParse({
+        batches: [
+          {
+            ingredientId: "64f0000000000000000000aa",
+            batchNumber: "B-001",
+            quantityRemaining: 10,
+            unitCost: 2.5,
+            expiryDate: "2026-12-31",
+          },
+        ],
+      }).success
+    ).toBe(true)
+  })
+
+  test("rejects an empty batches array", () => {
+    expect(createBatchesSchema.safeParse({ batches: [] }).success).toBe(false)
   })
 })
 

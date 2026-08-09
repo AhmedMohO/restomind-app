@@ -116,10 +116,7 @@ export function CreateBatchPage() {
     }))
 
     try {
-      // Backend accepts { batches: [...] } — cast via CreateBatchesDto shape
-      await createMutation.mutateAsync({
-        batches,
-      } as unknown as CreateBatchInput)
+      await createMutation.mutateAsync({ batches })
       toast.success(t("batchesCreateSuccess"))
       router.push("/dashboard/inventory")
     } catch (err) {

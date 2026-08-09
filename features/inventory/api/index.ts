@@ -3,6 +3,7 @@ import "server-only"
 import { apiClient } from "@/lib/api/client"
 import { buildQueryString, parseOrThrow } from "@/lib/api/utils"
 import type {
+  CreateBatchesInput,
   CreateBatchInput,
   CreateStockTransactionInput,
   CreateWasteEventInput,
@@ -30,7 +31,7 @@ export async function getBatches(
 
 /** POST /inventory/batches — create single or multiple inventory batches */
 export async function createBatch(
-  data: CreateBatchInput | CreateBatchInput[]
+  data: CreateBatchInput | CreateBatchInput[] | CreateBatchesInput
 ): Promise<{ data: InventoryBatch | InventoryBatch[]; count?: number }> {
   const response = await apiClient("/inventory/batches", {
     method: "POST",

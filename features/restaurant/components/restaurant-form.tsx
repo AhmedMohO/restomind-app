@@ -26,6 +26,8 @@ import { PaginatedUserSelect } from "@/features/users/components/paginated-user-
 import { restaurantSchema, type RestaurantInput } from "@/schemas/restaurant"
 import { getImageUrl } from "@/lib/utils"
 import type { Restaurant } from "../types"
+import { useZodResolver } from "@/lib/zod-locale"
+import { Link } from "@/i18n/routing"
 
 export interface RestaurantFormProps {
   mode: "create" | "edit"
@@ -55,7 +57,8 @@ export function RestaurantForm({
   )
 
   const [prevRestaurant, setPrevRestaurant] = React.useState(restaurant)
-  const [prevDefaultValues, setPrevDefaultValues] = React.useState(defaultValues)
+  const [prevDefaultValues, setPrevDefaultValues] =
+    React.useState(defaultValues)
 
   if (restaurant !== prevRestaurant || defaultValues !== prevDefaultValues) {
     setPrevRestaurant(restaurant)

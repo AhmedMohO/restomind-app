@@ -7,7 +7,7 @@ import {
   readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
-import { createBatchSchema } from "@/schemas/inventory"
+import { createBatchOrBatchesSchema } from "@/schemas/inventory"
 
 const INVENTORY_ROLES = ["admin", "manager", "staff"] as const
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   const authError = await requireAnyRole(INVENTORY_ROLES)
   if (authError) return authError
 
-  const parsed = await readJsonBody(request, createBatchSchema)
+  const parsed = await readJsonBody(request, createBatchOrBatchesSchema)
   if (!parsed.ok) return parsed.response
 
   try {

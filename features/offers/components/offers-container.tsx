@@ -257,7 +257,7 @@ export function OffersContainer() {
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
-        {isManager && (
+        {canManageOffers && (
           <Button
             nativeButton={false}
             render={<Link href="/dashboard/offers/new" />}

@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { clientFetch } from "@/lib/api/fetch-client"
 import { buildQueryString } from "@/lib/api/utils"
 import type {
+  CreateBatchesInput,
   CreateBatchInput,
   CreateStockTransactionInput,
   CreateWasteEventInput,
@@ -50,7 +51,9 @@ export function useCreateBatch() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: CreateBatchInput | CreateBatchInput[]) => {
+    mutationFn: async (
+      input: CreateBatchInput | CreateBatchInput[] | CreateBatchesInput
+    ) => {
       const res = await clientFetch<InventoryBatch | InventoryBatch[]>("/inventory/batches", {
         method: "POST",
         body: input as unknown as Record<string, unknown>,
