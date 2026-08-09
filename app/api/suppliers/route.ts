@@ -2,14 +2,14 @@ import { connection } from "next/server"
 
 import { createSupplier, getSuppliers } from "@/features/suppliers/api"
 import {
-  handleServerError,
+  handleUpstreamError,
   jsonSuccess,
   readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
 import { createSupplierSchema } from "@/schemas/supplier"
 
-const MANAGER_ROLES = ["manager", "admin"] as const
+const SUPPLIER_WRITE_ROLES = ["admin", "manager", "staff"] as const
 const SUPPLIER_READ_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(request: Request) {
@@ -31,14 +31,14 @@ export async function GET(request: Request) {
     })
     return jsonSuccess(data)
   } catch (err) {
-    return handleServerError(err, "Failed to fetch suppliers")
+    return handleUpstreamError(err, "Failed to fetch suppliers")
   }
 }
 
 export async function POST(request: Request) {
   await connection()
 
-  const authError = await requireAnyRole([...MANAGER_ROLES])
+  const authError = await requireAnyRole([...SUPPLIER_WRITE_ROLES])
   if (authError) return authError
 
   const parsed = await readJsonBody(request, createSupplierSchema)
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     const data = await createSupplier(parsed.data)
     return jsonSuccess(data, 201)
   } catch (err) {
-    return handleServerError(err, "Failed to create supplier")
+    return handleUpstreamError(err, "Failed to create supplier")
   }
 }
 

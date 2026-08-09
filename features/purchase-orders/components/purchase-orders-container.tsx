@@ -271,16 +271,14 @@ export function PurchaseOrdersContainer() {
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
-        {!isStaff && (
-          <Button
-            nativeButton={false}
-            render={<Link href="/dashboard/purchase-orders/new" />}
-            className="gap-2 rounded-xl"
-          >
-            <Plus className="size-4" />
-            <span>{t("addPO")}</span>
-          </Button>
-        )}
+        <Button
+          nativeButton={false}
+          render={<Link href="/dashboard/purchase-orders/new" />}
+          className="gap-2 rounded-xl"
+        >
+          <Plus className="size-4" />
+          <span>{t("addPO")}</span>
+        </Button>
       </div>
 
       {/* Control Bar */}

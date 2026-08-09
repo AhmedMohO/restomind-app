@@ -2,14 +2,14 @@ import { connection } from "next/server"
 
 import { updatePurchaseOrderStatus } from "@/features/purchase-orders/api"
 import {
-  handleServerError,
+  handleUpstreamError,
   jsonSuccess,
   readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
 import { updatePurchaseOrderStatusSchema } from "@/schemas/purchase-order"
 
-const MANAGER_ROLES = ["manager", "admin"] as const
+const PO_WRITE_ROLES = ["admin", "manager", "staff"] as const
 
 export async function PATCH(
   request: Request,
@@ -17,7 +17,7 @@ export async function PATCH(
 ) {
   await connection()
 
-  const authError = await requireAnyRole(MANAGER_ROLES)
+  const authError = await requireAnyRole(PO_WRITE_ROLES)
   if (authError) return authError
 
   const parsed = await readJsonBody(request, updatePurchaseOrderStatusSchema)
@@ -29,6 +29,6 @@ export async function PATCH(
     const res = await updatePurchaseOrderStatus(id, parsed.data.status)
     return jsonSuccess(res.data)
   } catch (err) {
-    return handleServerError(err, "Failed to update purchase order status")
+    return handleUpstreamError(err, "Failed to update purchase order status")
   }
 }

@@ -659,9 +659,6 @@ export function ProductsContainer() {
                           }
                           disabled={updatingAvailabilityId === product._id}
                         />
-                        {updatingAvailabilityId === product._id && (
-                          <Loader2 className="size-3.5 animate-spin text-primary" />
-                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
@@ -689,18 +686,16 @@ export function ProductsContainer() {
                             <Eye className="size-4" />
                             <span>{t("viewDetails")}</span>
                           </DropdownMenuItem>
-                          {!isStaff && (
-                            <DropdownMenuItem
-                              render={
-                                <Link
-                                  href={`/dashboard/products/${product._id}/edit`}
-                                />
-                              }
-                            >
-                              <Pencil className="size-4" />
-                              <span>{t("edit")}</span>
-                            </DropdownMenuItem>
-                          )}
+                          <DropdownMenuItem
+                            render={
+                              <Link
+                                href={`/dashboard/products/${product._id}/edit`}
+                              />
+                            }
+                          >
+                            <Pencil className="size-4" />
+                            <span>{t("edit")}</span>
+                          </DropdownMenuItem>
                           {!isStaff && (
                             <DropdownMenuItem
                               variant="destructive"

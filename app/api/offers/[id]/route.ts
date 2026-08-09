@@ -2,7 +2,7 @@ import { connection } from "next/server"
 
 import { getOfferById, updateOffer } from "@/features/offers/api"
 import {
-  handleServerError,
+  handleUpstreamError,
   jsonSuccess,
   readJsonBody,
   requireAnyRole,
@@ -11,7 +11,7 @@ import {
 import { updateOfferSchema } from "@/schemas/offer"
 
 const OFFER_ROLES = ["admin", "manager", "staff"] as const
-const OFFER_WRITE_ROLE = "manager" as const
+const OFFER_WRITE_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(
   _request: Request,
@@ -28,7 +28,7 @@ export async function GET(
     const res = await getOfferById(id)
     return jsonSuccess(res.data)
   } catch (err) {
-    return handleServerError(err, "Failed to fetch offer")
+    return handleUpstreamError(err, "Failed to fetch offer")
   }
 }
 
@@ -38,7 +38,7 @@ export async function PATCH(
 ) {
   await connection()
 
-  const authError = await requireAuth(OFFER_WRITE_ROLE)
+  const authError = await requireAnyRole(OFFER_WRITE_ROLES)
   if (authError) return authError
 
   const { id } = await params
@@ -50,6 +50,6 @@ export async function PATCH(
     const res = await updateOffer(id, parsed.data)
     return jsonSuccess(res.data)
   } catch (err) {
-    return handleServerError(err, "Failed to update offer")
+    return handleUpstreamError(err, "Failed to update offer")
   }
 }

@@ -104,12 +104,10 @@ export function SuppliersContainer() {
           </p>
         </div>
 
-        {!isStaff && (
-          <Button onClick={() => setIsFormOpen(true)} className="shrink-0 gap-2">
-            <Plus className="size-4" />
-            {t("addSupplierButton")}
-          </Button>
-        )}
+        <Button onClick={() => setIsFormOpen(true)} className="shrink-0 gap-2">
+          <Plus className="size-4" />
+          {t("addSupplierButton")}
+        </Button>
       </div>
 
       {/* Metrics / Summary Cards */}
@@ -307,26 +305,24 @@ export function SuppliersContainer() {
                     {supplier.createdAt ? formatDate(supplier.createdAt) : "—"}
                   </TableCell>
 
-                  {!isStaff && (
-                    <TableCell
-                      className="text-end"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10 hover:text-primary"
-                        render={
-                          <Link
-                            href={`/dashboard/purchase-orders/new?supplierId=${supplier._id}`}
-                          >
-                            <Truck className="size-3.5" />
-                            <span>{t("actions.createPo")}</span>
-                          </Link>
-                        }
-                      />
-                    </TableCell>
-                  )}
+                  <TableCell
+                    className="text-end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10 hover:text-primary"
+                      render={
+                        <Link
+                          href={`/dashboard/purchase-orders/new?supplierId=${supplier._id}`}
+                        >
+                          <Truck className="size-3.5" />
+                          <span>{t("actions.createPo")}</span>
+                        </Link>
+                      }
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

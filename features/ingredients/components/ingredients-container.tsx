@@ -257,14 +257,12 @@ export function IngredientsContainer() {
                           }
                         />
                         <DropdownMenuContent align="end" className="w-40">
-                          {!isStaff && (
-                            <DropdownMenuItem
-                              onClick={() => openEdit(ingredient)}
-                            >
-                              <Pencil className="size-4" />
-                              <span>{t("edit")}</span>
-                            </DropdownMenuItem>
-                          )}
+                          <DropdownMenuItem
+                            onClick={() => openEdit(ingredient)}
+                          >
+                            <Pencil className="size-4" />
+                            <span>{t("edit")}</span>
+                          </DropdownMenuItem>
                           {!isStaff && (
                             <DropdownMenuItem
                               variant="destructive"

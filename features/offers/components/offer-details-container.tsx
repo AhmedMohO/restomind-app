@@ -80,8 +80,8 @@ function getStatusBadgeVariant(
 export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
   const locale = useLocale()
   const t = useTranslations("Dashboard.offers")
-  const { hasRole } = useAuth()
-  const isManager = hasRole("manager")
+  const { hasAnyRole } = useAuth()
+  const canManage = hasAnyRole(["admin", "manager", "staff"])
 
   const { data: offer, isLoading, isError, refetch } = useOfferById(offerId)
   const cancelMutation = useCancelOffer()
@@ -173,18 +173,17 @@ export function OfferDetailsContainer({ offerId }: OfferDetailsContainerProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          {isManager && offer.status !== "cancelled" && offer.status !== "expired" && (
+          {canManage && offer.status !== "cancelled" && offer.status !== "expired" && (
             <Button
               nativeButton={false}
               render={<Link href={`/dashboard/offers/${offer._id}/edit`} />}
-              variant="outline"
-              className="gap-2 rounded-xl"
+              className="flex-1 gap-2 rounded-xl sm:flex-initial"
             >
               <Pencil className="size-4" />
               <span>{t("edit")}</span>
             </Button>
           )}
-          {isManager &&
+          {canManage &&
             offer.status !== "cancelled" &&
             offer.status !== "expired" &&
             new Date(offer.endDate) > new Date() && (

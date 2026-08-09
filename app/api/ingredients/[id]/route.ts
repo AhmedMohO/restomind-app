@@ -15,6 +15,7 @@ import {
 import { ingredientUpdateSchema } from "@/schemas/ingredient"
 
 const INGREDIENT_ROLE = "manager" as const
+const INGREDIENT_UPDATE_ROLES = ["admin", "manager", "staff"] as const
 const INGREDIENT_READ_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(
@@ -42,7 +43,7 @@ export async function PATCH(
 ) {
   await connection()
 
-  const authError = await requireAuth(INGREDIENT_ROLE)
+  const authError = await requireAnyRole(INGREDIENT_UPDATE_ROLES)
   if (authError) return authError
 
   const { id } = await params

@@ -3,7 +3,7 @@ import { connection } from "next/server"
 import { createOffer, getOffers } from "@/features/offers/api"
 import type { GetOffersParams } from "@/features/offers/api/type"
 import {
-  handleServerError,
+  handleUpstreamError,
   jsonSuccess,
   readJsonBody,
   requireAnyRole,
@@ -12,7 +12,7 @@ import {
 import { createOfferSchema } from "@/schemas/offer"
 
 const OFFER_ROLES = ["admin", "manager", "staff"] as const
-const OFFER_WRITE_ROLE = "manager" as const
+const OFFER_WRITE_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(request: Request) {
   await connection()
@@ -43,14 +43,14 @@ export async function GET(request: Request) {
     })
     return jsonSuccess(data)
   } catch (err) {
-    return handleServerError(err, "Failed to fetch offers")
+    return handleUpstreamError(err, "Failed to fetch offers")
   }
 }
 
 export async function POST(request: Request) {
   await connection()
 
-  const authError = await requireAuth(OFFER_WRITE_ROLE)
+  const authError = await requireAnyRole(OFFER_WRITE_ROLES)
   if (authError) return authError
 
   const parsed = await readJsonBody(request, createOfferSchema)
@@ -60,6 +60,6 @@ export async function POST(request: Request) {
     const res = await createOffer(parsed.data)
     return jsonSuccess(res.data, 201)
   } catch (err) {
-    return handleServerError(err, "Failed to create offer")
+    return handleUpstreamError(err, "Failed to create offer")
   }
 }

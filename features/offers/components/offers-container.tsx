@@ -87,8 +87,8 @@ export function OffersContainer() {
   const router = useRouter()
   const locale = useLocale()
   const t = useTranslations("Dashboard.offers")
-  const { hasRole } = useAuth()
-  const isManager = hasRole("manager")
+  const { hasAnyRole } = useAuth()
+  const canManageOffers = hasAnyRole(["admin", "manager", "staff"])
 
   const [page, setPage] = React.useState(1)
   const [limit, setLimit] = React.useState(10)
@@ -717,7 +717,7 @@ export function OffersContainer() {
                             <Eye className="size-4" />
                             <span>{t("viewDetails")}</span>
                           </DropdownMenuItem>
-                          {isManager &&
+                          {canManageOffers &&
                             offer.status !== "cancelled" &&
                             offer.status !== "expired" && (
                               <DropdownMenuItem
@@ -732,7 +732,7 @@ export function OffersContainer() {
                                 <span>{t("edit")}</span>
                               </DropdownMenuItem>
                             )}
-                          {isManager &&
+                          {canManageOffers &&
                             offer.status !== "cancelled" &&
                             offer.status !== "expired" &&
                             new Date(offer.endDate) > new Date() && (

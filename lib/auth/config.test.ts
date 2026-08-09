@@ -3,7 +3,7 @@ import { getRouteRoles } from "./config"
 
 describe("getRouteRoles", () => {
   test("resolves the more specific prefix even when a broader prefix is listed first in the map", () => {
-    expect(getRouteRoles("/en/dashboard/offers/new")).toEqual(["manager"])
+    expect(getRouteRoles("/en/dashboard/offers/new")).toEqual(["admin", "manager", "staff"])
     expect(getRouteRoles("/en/dashboard/products/new")).toEqual(["admin", "manager"])
   })
 

@@ -6,14 +6,14 @@ import {
 } from "@/features/purchase-orders/api"
 import type { PurchaseOrderStatus } from "@/features/purchase-orders/types"
 import {
-  handleServerError,
+  handleUpstreamError,
   jsonSuccess,
   readJsonBody,
   requireAnyRole,
 } from "@/lib/api/route-helpers"
 import { createPurchaseOrderSchema } from "@/schemas/purchase-order"
 
-const MANAGER_ROLES = ["manager", "admin"] as const
+const PO_WRITE_ROLES = ["admin", "manager", "staff"] as const
 const PO_READ_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(request: Request) {
@@ -37,14 +37,14 @@ export async function GET(request: Request) {
     })
     return jsonSuccess(data)
   } catch (err) {
-    return handleServerError(err, "Failed to fetch purchase orders")
+    return handleUpstreamError(err, "Failed to fetch purchase orders")
   }
 }
 
 export async function POST(request: Request) {
   await connection()
 
-  const authError = await requireAnyRole(MANAGER_ROLES)
+  const authError = await requireAnyRole(PO_WRITE_ROLES)
   if (authError) return authError
 
   const parsed = await readJsonBody(request, createPurchaseOrderSchema)
@@ -54,6 +54,6 @@ export async function POST(request: Request) {
     const res = await createPurchaseOrder(parsed.data)
     return jsonSuccess(res.data, 201)
   } catch (err) {
-    return handleServerError(err, "Failed to create purchase order")
+    return handleUpstreamError(err, "Failed to create purchase order")
   }
 }

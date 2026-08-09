@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useTranslations } from "next-intl"
-import { Edit2, FolderTree, Loader2 } from "lucide-react"
+import { Edit2, Loader2 } from "lucide-react"
 import Image from "next/image"
 import { Link } from "@/i18n/routing"
 
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCategoryById } from "../hooks/use-categories"
 import { CategoryDialog } from "./category-dialog"
+import { getImageUrl } from "@/lib/utils"
 
 interface CategoryDetailsContainerProps {
   id: string
@@ -77,22 +78,16 @@ export function CategoryDetailsContainer({ id }: CategoryDetailsContainerProps) 
       <Card className="overflow-hidden rounded-xl border-border bg-card">
         <CardContent className="p-6">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-start">
-            {category.image?.secure_url ? (
-              <div className="relative size-24 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted shadow-sm sm:size-28">
-                <Image
-                  fill
-                  src={category.image.secure_url}
-                  alt={category.name}
-                  className="object-cover"
-                  priority
-                  sizes="(max-width: 640px) 96px, 112px"
-                />
-              </div>
-            ) : (
-              <div className="flex size-24 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary sm:size-28">
-                <FolderTree className="size-12" />
-              </div>
-            )}
+            <div className="relative size-24 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted shadow-sm sm:size-28">
+              <Image
+                fill
+                src={getImageUrl(category.image?.secure_url)}
+                alt={category.name}
+                className="object-cover"
+                priority
+                sizes="(max-width: 640px) 96px, 112px"
+              />
+            </div>
 
             <div className="space-y-1">
               <h2 className="text-xl font-bold text-foreground sm:text-2xl">

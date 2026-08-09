@@ -12,7 +12,8 @@ import {
 } from "@/lib/api/route-helpers"
 
 const PRODUCT_ROLES = ["admin", "manager", "staff"] as const
-const PRODUCT_WRITE_ROLES = ["admin", "manager"] as const
+const PRODUCT_UPDATE_ROLES = ["admin", "manager", "staff"] as const
+const PRODUCT_DELETE_ROLES = ["admin", "manager"] as const
 
 export async function GET(
   _request: Request,
@@ -37,7 +38,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   await connection()
-  const authError = await requireAnyRole(PRODUCT_WRITE_ROLES)
+  const authError = await requireAnyRole(PRODUCT_UPDATE_ROLES)
   if (authError) return authError
 
   const { id } = await params
@@ -56,7 +57,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   await connection()
-  const authError = await requireAnyRole(PRODUCT_WRITE_ROLES)
+  const authError = await requireAnyRole(PRODUCT_DELETE_ROLES)
   if (authError) return authError
 
   const { id } = await params
