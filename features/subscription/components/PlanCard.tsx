@@ -90,7 +90,7 @@ export default function PlanCard({
 
       <CardContent className="space-y-4 p-0">
         {notSold ? (
-          <p className="text-muted-foreground py-2 text-base font-medium">
+          <p className="py-2 text-base font-medium text-muted-foreground">
             {t("notSoldOnInterval")}
           </p>
         ) : (
@@ -113,7 +113,7 @@ export default function PlanCard({
               {/* Per-month equivalent is what makes two intervals comparable;
                   without it a yearly figure just looks more expensive. */}
               {interval !== "monthly" && (
-                <span className="text-muted-foreground text-sm font-medium tabular-nums">
+                <span className="text-sm font-medium text-muted-foreground tabular-nums">
                   {t("perMonthEquivalent", {
                     amount: option.perMonthEGP.toLocaleString(),
                   })}
@@ -154,45 +154,76 @@ export default function PlanCard({
               <span className="font-semibold text-foreground">
                 {plan.productCap === null
                   ? t("unlimitedProducts")
-                  : t("upToProducts", { cap: plan.productCap.toLocaleString() })}
+                  : t("upToProducts", {
+                      cap: plan.productCap.toLocaleString(),
+                    })}
               </span>
             </li>
             <li className="flex items-start gap-2.5">
               <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-foreground/90">{t("benefits.aiForecasting")}</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-foreground/90">{t("benefits.surplusOffers")}</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className={cn("text-foreground/90", isScale && "font-semibold text-foreground")}>
-                {isScale ? t("benefits.advancedInventory") : t("benefits.inventoryRecipes")}
+              <span className="text-foreground/90">
+                {t("benefits.aiForecasting")}
               </span>
             </li>
             <li className="flex items-start gap-2.5">
               <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-foreground/90">{t("benefits.orderRefunds")}</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className={cn("text-foreground/90", isScale && "font-semibold text-foreground")}>
-                {isScale ? t("benefits.deepAnalytics") : t("benefits.analytics")}
+              <span className="text-foreground/90">
+                {t("benefits.surplusOffers")}
               </span>
             </li>
             <li className="flex items-start gap-2.5">
               <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-foreground/90">{t("benefits.weeklyPayouts")}</span>
+              <span
+                className={cn(
+                  "text-foreground/90",
+                  isScale && "font-semibold text-foreground"
+                )}
+              >
+                {isScale
+                  ? t("benefits.advancedInventory")
+                  : t("benefits.inventoryRecipes")}
+              </span>
             </li>
             <li className="flex items-start gap-2.5">
               <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-foreground/90">{t("benefits.customerGrowth")}</span>
+              <span className="text-foreground/90">
+                {t("benefits.orderRefunds")}
+              </span>
             </li>
             <li className="flex items-start gap-2.5">
               <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span className={cn("text-foreground/90", isScale && "font-semibold text-primary")}>
-                {isScale ? t("benefits.prioritySupport") : t("benefits.standardSupport")}
+              <span
+                className={cn(
+                  "text-foreground/90",
+                  isScale && "font-semibold text-foreground"
+                )}
+              >
+                {t("benefits.analytics")}
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-foreground/90">
+                {t("benefits.weeklyPayouts")}
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-foreground/90">
+                {t("benefits.customerGrowth")}
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span
+                className={cn(
+                  "text-foreground/90",
+                  isScale && "font-semibold text-primary"
+                )}
+              >
+                {isScale
+                  ? t("benefits.prioritySupport")
+                  : t("benefits.standardSupport")}
               </span>
             </li>
           </ul>
@@ -210,4 +241,3 @@ export default function PlanCard({
     </Card>
   )
 }
-

@@ -22,6 +22,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
+
 function SetupAccountFormContent({
   className,
   ...props
@@ -52,6 +54,7 @@ function SetupAccountFormContent({
   } = form
 
   useEffect(() => {
+    useAuthStore.getState().setUser(null)
     reset({ password: "", confirmPassword: "" })
     return () => {
       reset({ password: "", confirmPassword: "" })
