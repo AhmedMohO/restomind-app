@@ -2,18 +2,11 @@
 
 import Image from "next/image"
 import { useTranslations } from "next-intl"
-import {
-  AlertTriangle,
-  Check,
-  ImageOff,
-  Loader2,
-  RotateCcw,
-} from "lucide-react"
+import { AlertTriangle, Check, Loader2, RotateCcw } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn, getImageUrl } from "@/lib/utils"
 import { formatQty } from "@/lib/charts/format"
 import { Button } from "@/components/ui/button"
-import { ConfidenceBadge } from "@/components/ai/confidence-badge"
 import { SourceBadge } from "@/components/ai/source-badge"
 import {
   getProductId,
@@ -111,19 +104,13 @@ export function ActualsRow({
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-muted">
-            {product?.image ? (
-              <Image
-                src={product.image.secure_url}
-                alt={title}
-                fill
-                sizes="44px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                <ImageOff className="size-4" strokeWidth={1.5} />
-              </div>
-            )}
+            <Image
+              src={getImageUrl(product?.image?.secure_url)}
+              alt={title}
+              fill
+              sizes="44px"
+              className="object-cover"
+            />
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-foreground">

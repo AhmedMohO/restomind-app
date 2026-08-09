@@ -27,6 +27,7 @@ import { PhoneInput } from "@/components/ui/phone-input"
 import { Textarea } from "@/components/ui/textarea"
 import Image from "next/image"
 import { getErrorMessage } from "@/lib/api/utils"
+import { getImageUrl } from "@/lib/utils"
 
 interface RestaurantProfileFormProps {
   initialData: Restaurant
@@ -271,7 +272,7 @@ export function RestaurantProfileForm({
                     <div className="relative size-32 overflow-hidden rounded-2xl border border-border bg-muted shadow-md">
                       <Image
                         fill
-                        src={previewUrl}
+                        src={getImageUrl(previewUrl)}
                         alt="Logo preview"
                         className="object-cover transition-transform group-hover:scale-105"
                       />

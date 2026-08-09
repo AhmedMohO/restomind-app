@@ -3,14 +3,14 @@
 import * as React from "react"
 import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
-import { ChevronDown, ImageOff, Loader2, RefreshCw } from "lucide-react"
+import { ChevronDown, Loader2, RefreshCw } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { ConfidenceBadge } from "@/components/ai/confidence-badge"
 import { SourceBadge } from "@/components/ai/source-badge"
-import { cn } from "@/lib/utils"
+import { cn, getImageUrl } from "@/lib/utils"
 import { formatQty } from "@/lib/charts/format"
 import type { Prediction } from "@/features/predictions/api/type"
 import { useRecalculatePrediction } from "@/features/predictions/hooks/use-predictions"
@@ -88,19 +88,13 @@ export function PredictionRow({ prediction }: PredictionRowProps) {
         <TableCell>
           <div className="flex min-w-0 items-center gap-2.5">
             <div className="relative size-9 shrink-0 overflow-hidden rounded-lg bg-muted">
-              {product?.image ? (
-                <Image
-                  src={product.image.secure_url}
-                  alt={title}
-                  fill
-                  sizes="36px"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                  <ImageOff className="size-4" strokeWidth={1.5} />
-                </div>
-              )}
+              <Image
+                src={getImageUrl(product?.image?.secure_url)}
+                alt={title}
+                fill
+                sizes="36px"
+                className="object-cover"
+              />
             </div>
             <span className="min-w-0 truncate text-sm font-medium text-foreground">
               {title}

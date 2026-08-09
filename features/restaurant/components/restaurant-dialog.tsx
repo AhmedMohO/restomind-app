@@ -32,6 +32,7 @@ import {
 } from "../hooks/use-restaurant"
 import type { OwnerUserSummary, Restaurant } from "../types"
 import { getErrorMessage } from "@/lib/api/utils"
+import { getImageUrl } from "@/lib/utils"
 
 interface RestaurantDialogProps {
   open: boolean
@@ -311,7 +312,7 @@ export function RestaurantDialog({
                     <div className="relative size-24 overflow-hidden rounded-xl border border-border bg-muted shadow-sm">
                       <Image
                         fill
-                        src={previewUrl}
+                        src={getImageUrl(previewUrl)}
                         alt="Restaurant Preview"
                         className="object-cover"
                       />

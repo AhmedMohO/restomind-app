@@ -20,7 +20,7 @@ import { SortableHeader, TableState } from "@/components/ui/table-state"
 import { Link } from "@/i18n/routing"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useTableControls } from "@/hooks/use-table-controls"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, getImageUrl } from "@/lib/utils"
 import type { ApiProduct } from "@/features/products/api/type"
 import { useProductsList } from "@/features/products/hooks/use-products"
 
@@ -166,22 +166,16 @@ export function RecipesContainer() {
                   className="transition-colors hover:bg-muted/50"
                 >
                   <TableCell className="w-[64px]">
-                    {product.image?.secure_url ? (
-                      <div className="relative size-12 overflow-hidden rounded-xl border border-border bg-muted">
-                        <Image
-                          fill
-                          src={product.image.secure_url}
-                          alt={product.title}
-                          className="object-cover"
-                          loading="lazy"
-                          sizes="48px"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
-                        {product.title?.[0]?.toUpperCase() ?? "P"}
-                      </div>
-                    )}
+                    <div className="relative size-12 overflow-hidden rounded-xl border border-border bg-muted">
+                      <Image
+                        fill
+                        src={getImageUrl(product.image?.secure_url)}
+                        alt={product.title}
+                        className="object-cover"
+                        loading="lazy"
+                        sizes="48px"
+                      />
+                    </div>
                   </TableCell>
                   <TableCell className="font-semibold text-foreground">
                     <span className="block max-w-[260px] truncate">

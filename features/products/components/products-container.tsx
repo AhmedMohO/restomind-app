@@ -80,7 +80,7 @@ import {
   useDeleteProduct,
   useProductsList,
 } from "@/features/products/hooks/use-products"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, getImageUrl } from "@/lib/utils"
 import { getErrorMessage } from "@/lib/api/utils"
 
 function getRefName(
@@ -558,22 +558,16 @@ export function ProductsContainer() {
                     className="cursor-pointer transition-colors hover:bg-muted/50"
                   >
                     <TableCell className="w-[64px]">
-                      {product.image?.secure_url ? (
-                        <div className="relative size-12 overflow-hidden rounded-xl border border-border bg-muted">
-                          <Image
-                            fill
-                            src={product.image.secure_url}
-                            alt={product.title}
-                            className="object-cover"
-                            loading="lazy"
-                            sizes="48px"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
-                          {product.title?.[0]?.toUpperCase() ?? "P"}
-                        </div>
-                      )}
+                      <div className="relative size-12 overflow-hidden rounded-xl border border-border bg-muted">
+                        <Image
+                          fill
+                          src={getImageUrl(product.image?.secure_url)}
+                          alt={product.title}
+                          className="object-cover"
+                          loading="lazy"
+                          sizes="48px"
+                        />
+                      </div>
                     </TableCell>
                     <TableCell className="w-[28%] min-w-[180px]">
                       <div className="min-w-0 space-y-1">

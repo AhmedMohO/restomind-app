@@ -35,7 +35,7 @@ import {
   useProductById,
 } from "@/features/products/hooks/use-products"
 import type { ApiProduct } from "@/features/products/api/type"
-import { formatCurrency, formatDate } from "@/lib/utils"
+import { formatCurrency, formatDate, getImageUrl } from "@/lib/utils"
 import { getErrorMessage } from "@/lib/api/utils"
 
 interface ProductDetailsContainerProps {
@@ -259,21 +259,14 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
         <div className="space-y-4">
           <Card className="overflow-hidden rounded-3xl border-border/80 p-2 shadow-2xs">
             <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted/50">
-              {product.image?.secure_url ? (
-                <Image
-                  fill
-                  src={product.image.secure_url}
-                  alt={product.title}
-                  className="object-cover"
-                  loading="lazy"
-                  sizes="(min-width: 1024px) 320px, 100vw"
-                />
-              ) : (
-                <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground/60">
-                  <Package className="size-14 stroke-[1.5]" />
-                  <span className="text-xs font-medium">{t("noImage")}</span>
-                </div>
-              )}
+              <Image
+                fill
+                src={getImageUrl(product.image?.secure_url)}
+                alt={product.title}
+                className="object-cover"
+                loading="lazy"
+                sizes="(min-width: 1024px) 320px, 100vw"
+              />
 
               {/* Status + bestseller overlay on the image itself */}
               <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">

@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from "next-intl"
 import { Link } from "@/i18n/routing"
 import Image from "next/image"
 import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, Store } from "lucide-react"
+import { getImageUrl } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -130,8 +131,7 @@ export default function CartSheet() {
                 const productObj = item.offer.productId
                 const itemTitle = productObj?.title || ""
                 const restaurantName = getCartItemRestaurantName(item)
-                const itemImage =
-                  productObj?.image?.secure_url || "/placeholder.svg"
+                const itemImage = getImageUrl(productObj?.image?.secure_url)
                 const originalPrice =
                   item.unitOriginalPrice ?? item.offer.originalPrice ?? 0
                 const discountedPrice =

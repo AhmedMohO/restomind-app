@@ -5,7 +5,7 @@ import { Link, useRouter } from "@/i18n/routing"
 import { Plus, Heart, Star, Loader2 } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
-import { cn, formatCurrency } from "@/lib/utils"
+import { cn, formatCurrency, getImageUrl } from "@/lib/utils"
 import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
 import type { ApiOffer } from "@/features/offers/api/type"
@@ -79,7 +79,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
         {/* Product Image Container (extends to edges of the card) */}
         <div className="dark:bg-neutral-850 relative aspect-[4/3] w-full overflow-hidden bg-[#FAF7F2]">
           <Image
-            src={product.image?.secure_url || "/placeholder.svg"}
+            src={getImageUrl(product.image?.secure_url)}
             alt={product.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

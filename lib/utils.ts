@@ -107,3 +107,25 @@ export function formatDate(value: string, locale: string = "ar") {
     timeStyle: "short",
   }).format(date)
 }
+
+/**
+ * Resolves an image URL safely.
+ * Handles relative backend assets (/public/..., /assets/...) by routing them to backend API or fallback.
+ * Passes blob: and data: URLs through untouched for instant local file upload previews.
+ */
+export function getImageUrl(url?: string | null): string {
+  if (!url) return "/placeholder.svg"
+  if (url.startsWith("blob:") || url.startsWith("data:")) return url
+  if (
+    url.includes("/assets/placeholder.svg") ||
+    url.includes("/public/placeholder.svg")
+  ) {
+    return "/placeholder.svg"
+  }
+  if (url.startsWith("/")) {
+    const apiPublicUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3004"
+    return `${apiPublicUrl.replace(/\/$/, "")}${url}`
+  }
+  return url
+}

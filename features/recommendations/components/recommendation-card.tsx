@@ -2,12 +2,12 @@
 
 import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
-import { ImageOff, Quote } from "lucide-react"
+import { Quote } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+import { cn, getImageUrl } from "@/lib/utils"
 import { formatEgp, formatPercent } from "@/lib/charts/format"
 import type { Recommendation } from "@/features/recommendations/api/type"
 
@@ -60,19 +60,13 @@ export function RecommendationCard({
     <Card className="gap-0 overflow-hidden p-0">
       {/* Image + discount sticker */}
       <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-muted">
-        {product?.image ? (
-          <Image
-            src={product.image.secure_url}
-            alt={title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <ImageOff className="size-8" strokeWidth={1.5} />
-          </div>
-        )}
+        <Image
+          src={getImageUrl(product?.image?.secure_url)}
+          alt={title}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover"
+        />
 
         {/* The discount is the visual anchor: a sale-sticker corner tag. */}
         <Badge className={cn("absolute start-3 top-3 z-30 border")}>

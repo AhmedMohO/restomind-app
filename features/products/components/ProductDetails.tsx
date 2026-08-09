@@ -7,7 +7,7 @@ import type { ApiOffer } from "@/features/offers/api/type"
 import { useActiveOffers } from "@/features/offers/hooks"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
-import { cn } from "@/lib/utils"
+import { cn, getImageUrl } from "@/lib/utils"
 import ProductCarousel from "@/components/common/ProductCarousel"
 import { useTranslations } from "next-intl"
 import Image from "next/image"
@@ -108,7 +108,7 @@ export default function ProductDetails({
       <div className="flex gap-8 max-lg:flex-wrap max-lg:justify-center w-full">
         {/* Left Side: Product Image */}
         <Image
-          src={product.image?.secure_url || "/placeholder.svg"}
+          src={getImageUrl(product.image?.secure_url)}
           alt={product.title}
           width={600}
           height={600}

@@ -24,8 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { CreateUserDialog } from "@/features/users/components/create-user-dialog"
 import { PaginatedUserSelect } from "@/features/users/components/paginated-user-select"
 import { restaurantSchema, type RestaurantInput } from "@/schemas/restaurant"
-import { useZodResolver } from "@/lib/zod-locale"
-import { Link } from "@/i18n/routing"
+import { getImageUrl } from "@/lib/utils"
 import type { Restaurant } from "../types"
 
 export interface RestaurantFormProps {
@@ -295,7 +294,7 @@ export function RestaurantForm({
                     <div className="relative size-32 overflow-hidden rounded-2xl border border-border bg-muted shadow-md">
                       <Image
                         fill
-                        src={previewUrl}
+                        src={getImageUrl(previewUrl)}
                         alt="Restaurant Preview"
                         className="object-cover transition-transform group-hover:scale-105"
                       />

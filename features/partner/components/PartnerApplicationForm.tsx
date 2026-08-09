@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -54,8 +54,12 @@ import {
   Search,
   FileEdit,
   Loader2,
+  ShieldAlert,
+  LayoutDashboard,
 } from "lucide-react"
 
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { UserRoleBadge } from "@/features/users/components/user-role-badge"
 import { useSubmitPartnershipApplication } from "../hooks/use-partnership"
 import { PartnershipStatusCheck } from "./PartnershipStatusCheck"
 
@@ -70,20 +74,20 @@ const stepSchemas = {
 // ---------------------------------------------------------------------------
 export default function PartnerApplicationForm() {
   const t = useTranslations("PartnerApplication")
+  const { user, isHydrated, role } = useAuth()
   const searchParams = useSearchParams()
-
-  const [activeTab, setActiveTab] = useState<"apply" | "status">(
-    () => (searchParams.get("tab") === "status" ? "status" : "apply")
+  const tabParam = searchParams.get("tab")
+  const [prevTabParam, setPrevTabParam] = useState(tabParam)
+  const [activeTab, setActiveTab] = useState<"apply" | "status">(() =>
+    tabParam === "status" ? "status" : "apply"
   )
 
-  useEffect(() => {
-    const tabParam = searchParams.get("tab")
-    if (tabParam === "status") {
-      setActiveTab("status")
-    } else if (tabParam === "apply") {
-      setActiveTab("apply")
+  if (tabParam !== prevTabParam) {
+    setPrevTabParam(tabParam)
+    if (tabParam === "status" || tabParam === "apply") {
+      setActiveTab(tabParam)
     }
-  }, [searchParams])
+  }
 
   const [step, setStep] = useState<number>(1)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -133,6 +137,124 @@ export default function PartnerApplicationForm() {
   const handleBack = useCallback(() => {
     setStep((prev) => Math.max(1, prev - 1))
   }, [])
+
+  if (!isHydrated) {
+    return (
+      <Card className="mx-auto w-full max-w-3xl rounded-3xl border border-[#ECE6DB] bg-white p-10 text-center shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+        <CardContent className="flex flex-col items-center justify-center space-y-4 p-0 py-12">
+          <Loader2 className="size-8 animate-spin text-[#7C4A27] dark:text-[#E68A49]" />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const isRestrictedRole =
+    isHydrated &&
+    user !== null &&
+    (role === "admin" || role === "manager" || role === "staff")
+
+  if (isRestrictedRole && role) {
+    const roleLabel =
+      role === "admin"
+        ? t("roleAdminLabel")
+        : role === "manager"
+          ? t("roleManagerLabel")
+          : t("roleStaffLabel")
+
+    return (
+      <Card className="mx-auto w-full max-w-3xl rounded-3xl border border-stone-200/80 bg-white p-6 text-center shadow-xl sm:p-10 dark:border-neutral-800 dark:bg-neutral-900">
+        <CardContent className="space-y-8 p-0">
+          <div className="mx-auto flex size-20 items-center justify-center rounded-3xl bg-amber-500/10 text-[#7C4A27] shadow-xs dark:bg-amber-500/20 dark:text-[#E68A49]">
+            <Building2 className="size-10" />
+          </div>
+
+          <div className="space-y-3">
+            <Badge
+              variant="outline"
+              className="rounded-full border-amber-600/30 bg-amber-500/10 px-4 py-1 text-xs font-bold tracking-wider text-amber-800 uppercase dark:border-amber-500/30 dark:bg-amber-500/20 dark:text-amber-300"
+            >
+              <Sparkles className="me-1.5 inline size-3.5" />
+              <span>{t("restrictedRoleBadge")}</span>
+            </Badge>
+
+            <h2 className="font-serif text-3xl font-bold text-[#2B1B15] dark:text-stone-100">
+              {t("restrictedRoleTitle")}
+            </h2>
+
+            <p className="mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+              {t("restrictedRoleDesc", { role: roleLabel })}
+            </p>
+          </div>
+
+          {/* Account Details */}
+          <div className="mx-auto max-w-lg rounded-2xl border border-stone-200/80 bg-stone-50/70 p-4 text-start dark:border-neutral-800 dark:bg-neutral-800/50">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-[#7C4A27]/10 text-[#7C4A27] dark:bg-[#E68A49]/20 dark:text-[#E68A49]">
+                  <User className="size-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("signedInAs")}
+                  </p>
+                  <p className="text-sm font-bold text-foreground">
+                    {user.firstName || user.lastName
+                      ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+                      : user.email}
+                  </p>
+                  {user.email && (user.firstName || user.lastName) && (
+                    <p className="text-xs text-muted-foreground">
+                      {user.email}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <UserRoleBadge role={role} />
+            </div>
+          </div>
+
+          {/* Role specific note */}
+          <div className="mx-auto max-w-lg rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-start dark:border-amber-500/30 dark:bg-amber-500/10">
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="mt-0.5 size-5 shrink-0 text-[#7C4A27] dark:text-[#E68A49]" />
+              <p className="text-xs leading-relaxed text-stone-700 dark:text-stone-300">
+                {role === "admin"
+                  ? t("restrictedAdminNote")
+                  : role === "manager"
+                    ? t("restrictedManagerNote")
+                    : t("restrictedStaffNote")}
+              </p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+            <Link
+              href="/dashboard"
+              className={cn(
+                buttonVariants(),
+                "h-auto rounded-full bg-[#7C4A27] px-7 py-3 text-sm font-semibold text-white shadow-md hover:bg-[#60391E] dark:bg-[#C2733C] dark:hover:bg-[#AC6432]"
+              )}
+            >
+              <LayoutDashboard className="size-4" />
+              <span>{t("goToDashboard")}</span>
+              <ArrowRight className="size-4 rtl:rotate-180" />
+            </Link>
+
+            <Link
+              href="/offers"
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "h-auto rounded-full px-6 py-3 text-sm font-semibold"
+              )}
+            >
+              <span>{t("viewOffers")}</span>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const onSubmit = async (data: PartnerApplicationInput) => {
     try {
@@ -349,10 +471,7 @@ export default function PartnerApplicationForm() {
               </div>
             </div>
 
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="space-y-6"
-            >
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               {/* ---- STEP 1: Business Profile ---- */}
               {step === 1 && (
                 <div className="space-y-6">

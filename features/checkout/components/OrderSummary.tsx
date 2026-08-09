@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 import { Plus, Minus, Trash2, ShoppingBag, Store } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { getCartItemRestaurantName } from "@/features/cart/utils"
-import { cn } from "@/lib/utils"
+import { cn, getImageUrl } from "@/lib/utils"
 import { Link } from "@/i18n/routing"
 
 interface OrderSummaryProps {
@@ -57,7 +57,7 @@ export default function OrderSummary({ deliveryFee }: OrderSummaryProps) {
           const productObj = item.offer.productId
           const itemTitle = productObj?.title || ""
           const restaurantName = getCartItemRestaurantName(item)
-          const itemImage = productObj?.image?.secure_url || "/placeholder.svg"
+          const itemImage = getImageUrl(productObj?.image?.secure_url)
           const originalPrice =
             item.unitOriginalPrice ?? item.offer.originalPrice ?? 0
           const discountedPrice =

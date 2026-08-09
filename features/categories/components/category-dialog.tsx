@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useCreateCategory, useUpdateCategory } from "../hooks/use-categories"
 import type { ApiCategory } from "../api/type"
 import { getErrorMessage } from "@/lib/api/utils"
+import { getImageUrl } from "@/lib/utils"
 
 interface CategoryDialogProps {
   open: boolean
@@ -193,7 +194,7 @@ export function CategoryDialog({
                   <div className="relative size-24 overflow-hidden rounded-xl border border-border bg-muted shadow-sm">
                     <Image
                       fill
-                      src={previewUrl}
+                      src={getImageUrl(previewUrl)}
                       alt="Category Preview"
                       className="object-cover"
                     />

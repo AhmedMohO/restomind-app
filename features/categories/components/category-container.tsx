@@ -24,6 +24,7 @@ import { useCategoriesList, useDeleteCategory } from "../hooks/use-categories"
 import type { ApiCategory } from "../api/type"
 import { CategoryDialog } from "./category-dialog"
 import { getErrorMessage } from "@/lib/api/utils"
+import { getImageUrl } from "@/lib/utils"
 
 export function CategoryContainer() {
   const t = useTranslations("Dashboard.categories")
@@ -181,21 +182,15 @@ export function CategoryContainer() {
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        {category.image?.secure_url ? (
-                          <div className="relative size-10 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
-                            <Image
-                              fill
-                              src={category.image.secure_url}
-                              alt={category.name}
-                              className="object-cover"
-                              sizes="40px"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
-                            {category.name?.[0]?.toUpperCase() ?? "C"}
-                          </div>
-                        )}
+                        <div className="relative size-10 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
+                          <Image
+                            fill
+                            src={getImageUrl(category.image?.secure_url)}
+                            alt={category.name}
+                            className="object-cover"
+                            sizes="40px"
+                          />
+                        </div>
                         <span className="font-semibold text-foreground">
                           {category.name}
                         </span>

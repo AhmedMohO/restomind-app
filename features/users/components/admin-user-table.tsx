@@ -218,7 +218,7 @@ export function AdminUserTable() {
       </div>
 
       {/* Filter and search bar */}
-      <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+      <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex w-full max-w-full flex-1 flex-col gap-1.5 sm:max-w-sm">
           <div className="relative">
             <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -234,12 +234,6 @@ export function AdminUserTable() {
 
         {!isManager && (
           <div className="flex flex-col gap-2">
-            <Label
-              htmlFor="admin-role-filter"
-              className="text-xs font-semibold whitespace-nowrap text-muted-foreground"
-            >
-              {t("role")}:
-            </Label>
             <Select
               value={roleFilter}
               onValueChange={(val) => {
@@ -250,20 +244,20 @@ export function AdminUserTable() {
               <SelectTrigger
                 id="admin-role-filter"
                 aria-label={t("role")}
-                className="w-full sm:w-[150px] rounded-xl"
+                className="w-full rounded-xl sm:w-[150px]"
               >
                 <SelectValue placeholder={t("roleAll")}>
                   {roleFilter === "all"
                     ? t("roleAll")
                     : roleFilter === "admin"
-                    ? t("roleAdmin")
-                    : roleFilter === "manager"
-                    ? t("roleManager")
-                    : roleFilter === "staff"
-                    ? t("roleStaff")
-                    : roleFilter === "customer"
-                    ? t("roleCustomer")
-                    : undefined}
+                      ? t("roleAdmin")
+                      : roleFilter === "manager"
+                        ? t("roleManager")
+                        : roleFilter === "staff"
+                          ? t("roleStaff")
+                          : roleFilter === "customer"
+                            ? t("roleCustomer")
+                            : undefined}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>

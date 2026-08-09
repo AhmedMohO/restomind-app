@@ -8,6 +8,7 @@ import { Loader2, Save, Upload, Utensils, X } from "lucide-react"
 import Image from "next/image"
 import { useTranslations } from "next-intl"
 
+import { getImageUrl } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -77,7 +78,7 @@ export function ProductForm({
   const isAdmin = role === "admin"
   const [imageFile, setImageFile] = React.useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null)
-  const displayPreviewUrl = previewUrl ?? product?.image?.secure_url ?? null
+  const displayPreviewUrl = getImageUrl(previewUrl ?? product?.image?.secure_url)
 
   const {
     register,
