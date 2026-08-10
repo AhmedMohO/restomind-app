@@ -35,6 +35,7 @@ export interface PartnershipApplicationStatusResult {
 
 export interface PartnershipApplicationItem {
   _id: string
+  applicationId: string
   businessName: string
   businessType: string
   description?: string

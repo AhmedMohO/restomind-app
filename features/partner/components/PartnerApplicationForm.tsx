@@ -273,9 +273,7 @@ export default function PartnerApplicationForm() {
       })
 
       const app = res?.application
-      setReferenceId(
-        app?._id || `RM-PARTNER-${Math.floor(100000 + Math.random() * 900000)}`
-      )
+      setReferenceId(app?.applicationId ?? "")
       setIsSubmitted(true)
 
       toast.success(

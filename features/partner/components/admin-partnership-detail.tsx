@@ -53,8 +53,12 @@ interface AdminPartnershipDetailProps {
 export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
   const t = useTranslations("Dashboard.partnershipApplications")
 
-  const { data: application, isLoading, isError, refetch } =
-    usePartnershipApplicationById(id)
+  const {
+    data: application,
+    isLoading,
+    isError,
+    refetch,
+  } = usePartnershipApplicationById(id)
 
   const [approveOpen, setApproveOpen] = React.useState(false)
   const [rejectOpen, setRejectOpen] = React.useState(false)
@@ -76,12 +80,14 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
   if (isError || !application) {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-4 text-center">
-        <p className="text-sm text-muted-foreground">
-          {t("notFound")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("notFound")}</p>
         <div className="flex items-center gap-2">
           <BackButton href="/dashboard/partnership-applications" />
-          <Button variant="outline" onClick={() => refetch()} className="rounded-xl">
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            className="rounded-xl"
+          >
             {t("retry")}
           </Button>
         </div>
@@ -153,7 +159,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               <PartnershipStatusBadge status={application.status} />
             </div>
             <p className="text-xs text-muted-foreground capitalize">
-              {application.businessType} • ID: {application._id}
+              {application.businessType} • ID: {application.applicationId}
             </p>
           </div>
         </div>
@@ -165,7 +171,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               variant="outline"
               onClick={handleMarkReview}
               disabled={markReviewMutation.isPending}
-              className="rounded-xl gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+              className="gap-2 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50"
             >
               {markReviewMutation.isPending ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -182,14 +188,14 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               <Button
                 variant="outline"
                 onClick={() => setRejectOpen(true)}
-                className="rounded-xl gap-2 text-destructive border-destructive/20 hover:bg-destructive/10"
+                className="gap-2 rounded-xl border-destructive/20 text-destructive hover:bg-destructive/10"
               >
                 <XCircle className="size-4" />
                 <span>{t("reject")}</span>
               </Button>
               <Button
                 onClick={() => setApproveOpen(true)}
-                className="rounded-xl gap-2 bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                className="gap-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
               >
                 <CheckCircle className="size-4" />
                 <span>{t("approveApplication")}</span>
@@ -202,7 +208,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               variant="outline"
               onClick={handleResendEmail}
               disabled={resendEmailMutation.isPending}
-              className="rounded-xl gap-2"
+              className="gap-2 rounded-xl"
             >
               {resendEmailMutation.isPending ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -216,7 +222,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
       </div>
 
       {/* Grid of detail cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Card 1: Business Profile */}
         <Card className="rounded-2xl border border-border">
           <CardHeader className="pb-3">
@@ -232,20 +238,24 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
             </div>
             <div className="flex justify-between border-b border-border/60 pb-2">
               <span className="text-muted-foreground">{t("businessType")}</span>
-              <span className="capitalize font-medium">{application.businessType}</span>
+              <span className="font-medium capitalize">
+                {application.businessType}
+              </span>
             </div>
             {application.commercialRegistration && (
               <div className="flex justify-between border-b border-border/60 pb-2">
-                <span className="text-muted-foreground flex items-center gap-1">
+                <span className="flex items-center gap-1 text-muted-foreground">
                   <FileText className="size-3.5" />
                   {t("commercialReg")}
                 </span>
-                <span className="font-mono text-xs">{application.commercialRegistration}</span>
+                <span className="font-mono text-xs">
+                  {application.commercialRegistration}
+                </span>
               </div>
             )}
             {application.website && (
               <div className="flex justify-between border-b border-border/60 pb-2">
-                <span className="text-muted-foreground flex items-center gap-1">
+                <span className="flex items-center gap-1 text-muted-foreground">
                   <Globe className="size-3.5" />
                   {t("website")}
                 </span>
@@ -253,7 +263,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
                   href={application.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs text-primary underline truncate max-w-[200px]"
+                  className="max-w-[200px] truncate text-xs text-primary underline"
                 >
                   {application.website}
                 </a>
@@ -261,11 +271,11 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
             )}
             {application.notes && (
               <div className="space-y-1 pt-1">
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <MessageSquare className="size-3.5" />
                   {t("notes")}
                 </span>
-                <p className="text-xs rounded-xl bg-muted/50 p-2.5 leading-relaxed text-foreground">
+                <p className="rounded-xl bg-muted/50 p-2.5 text-xs leading-relaxed text-foreground">
                   {application.notes}
                 </p>
               </div>
@@ -287,21 +297,23 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               <span className="font-semibold">{ownerFullName}</span>
             </div>
             <div className="flex justify-between border-b border-border/60 pb-2">
-              <span className="text-muted-foreground flex items-center gap-1">
+              <span className="flex items-center gap-1 text-muted-foreground">
                 <Mail className="size-3.5" />
                 {t("email")}
               </span>
               <span className="font-medium">{application.email}</span>
             </div>
             <div className="flex justify-between border-b border-border/60 pb-2">
-              <span className="text-muted-foreground flex items-center gap-1">
+              <span className="flex items-center gap-1 text-muted-foreground">
                 <Phone className="size-3.5" />
                 {t("phone")}
               </span>
-              <span dir="ltr" className="font-mono text-xs">{application.phone}</span>
+              <span dir="ltr" className="font-mono text-xs">
+                {application.phone}
+              </span>
             </div>
             <div className="flex justify-between border-b border-border/60 pb-2">
-              <span className="text-muted-foreground flex items-center gap-1">
+              <span className="flex items-center gap-1 text-muted-foreground">
                 <MapPin className="size-3.5" />
                 {t("cityDistrict")}
               </span>
@@ -327,9 +339,9 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               <span>{t("reviewAudit")}</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-            <div className="rounded-xl border border-border p-3 space-y-1 bg-muted/30">
-              <span className="text-muted-foreground flex items-center gap-1">
+          <CardContent className="grid grid-cols-1 gap-4 text-xs sm:grid-cols-2 md:grid-cols-4">
+            <div className="space-y-1 rounded-xl border border-border bg-muted/30 p-3">
+              <span className="flex items-center gap-1 text-muted-foreground">
                 <Calendar className="size-3.5" />
                 {t("submittedAt")}
               </span>
@@ -340,8 +352,8 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               </span>
             </div>
 
-            <div className="rounded-xl border border-border p-3 space-y-1 bg-muted/30">
-              <span className="text-muted-foreground flex items-center gap-1">
+            <div className="space-y-1 rounded-xl border border-border bg-muted/30 p-3">
+              <span className="flex items-center gap-1 text-muted-foreground">
                 <Clock className="size-3.5" />
                 {t("reviewedBy")}
               </span>
@@ -354,8 +366,8 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               </span>
             </div>
 
-            <div className="rounded-xl border border-border p-3 space-y-1 bg-muted/30">
-              <span className="text-muted-foreground flex items-center gap-1">
+            <div className="space-y-1 rounded-xl border border-border bg-muted/30 p-3">
+              <span className="flex items-center gap-1 text-muted-foreground">
                 <CheckCircle className="size-3.5" />
                 {t("approvedBy")}
               </span>
@@ -368,15 +380,16 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               </span>
             </div>
 
-            <div className="rounded-xl border border-border p-3 space-y-1 bg-muted/30">
-              <span className="text-muted-foreground flex items-center gap-1">
+            <div className="space-y-1 rounded-xl border border-border bg-muted/30 p-3">
+              <span className="flex items-center gap-1 text-muted-foreground">
                 <Store className="size-3.5" />
                 {t("createdRestaurantId")}
               </span>
-              <span className="font-mono truncate font-semibold text-foreground">
+              <span className="truncate font-mono font-semibold text-foreground">
                 {application.restaurantId
                   ? typeof application.restaurantId === "object"
-                    ? application.restaurantId._id || application.restaurantId.name
+                    ? application.restaurantId._id ||
+                      application.restaurantId.name
                     : application.restaurantId
                   : "—"}
               </span>
@@ -402,7 +415,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
 
       {/* Reject Modal */}
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
-        <DialogContent className="rounded-2xl max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>{t("rejectModalTitle")}</DialogTitle>
             <DialogDescription>
@@ -414,7 +427,10 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
           </DialogHeader>
 
           <div className="space-y-2 py-2">
-            <Label htmlFor="reject-reason-detail" className="text-xs font-semibold">
+            <Label
+              htmlFor="reject-reason-detail"
+              className="text-xs font-semibold"
+            >
               {t("rejectionReasonLabel")}
             </Label>
             <Textarea
@@ -442,7 +458,7 @@ export function AdminPartnershipDetail({ id }: AdminPartnershipDetailProps) {
               variant="destructive"
               onClick={handleRejectConfirm}
               disabled={!rejectionReason.trim() || rejectMutation.isPending}
-              className="rounded-xl gap-2"
+              className="gap-2 rounded-xl"
             >
               {rejectMutation.isPending && (
                 <Loader2 className="size-4 animate-spin" />

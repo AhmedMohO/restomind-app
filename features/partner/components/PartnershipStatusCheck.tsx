@@ -84,7 +84,7 @@ export function PartnershipStatusCheck() {
               type="text"
               value={applicationId}
               onChange={(e) => setApplicationId(e.target.value)}
-              placeholder="e.g. 64b8f... or Application ID"
+              placeholder="e.g. RESTO-000123"
               className="h-11 rounded-xl border-stone-200 bg-stone-50/50 px-3.5 text-sm dark:border-neutral-700 dark:bg-neutral-800/50"
             />
           </div>
