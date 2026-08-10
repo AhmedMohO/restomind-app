@@ -72,7 +72,7 @@ export default async function AboutPage() {
             </Link>
 
             <Link
-              href="/register"
+              href="/partner-application"
               className={cn(
                 buttonVariants({
                   variant: "outline",

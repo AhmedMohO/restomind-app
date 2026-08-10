@@ -12,6 +12,7 @@ import {
   hasDashboardAccess,
 } from "@/features/subscription/api"
 import { getCurrentUser } from "@/lib/auth/auth"
+import { NotificationSocketProvider } from "@/providers/notification-socket-provider"
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -56,13 +57,15 @@ export default async function DashboardLayout({
   return (
     <Suspense>
       <ProtectedRoute locale={safeLocale} route={currentPath}>
-        <AppSidebar needsSubscription={needsSubscription}>
-          {/* Resolved once here, so every dashboard page — present and
-              future — is covered without per-page work. */}
-          <SubscriptionGate locale={safeLocale}>{children}</SubscriptionGate>
-        </AppSidebar>
-        {/* Fixed-position, so it floats over every dashboard page (hidden for admin). */}
-        {user?.role !== "admin" && <AssistantWidget />}
+        <NotificationSocketProvider>
+          <AppSidebar needsSubscription={needsSubscription}>
+            {/* Resolved once here, so every dashboard page — present and
+                future — is covered without per-page work. */}
+            <SubscriptionGate locale={safeLocale}>{children}</SubscriptionGate>
+          </AppSidebar>
+          {/* Fixed-position, so it floats over every dashboard page (hidden for admin). */}
+          {user?.role !== "admin" && <AssistantWidget />}
+        </NotificationSocketProvider>
       </ProtectedRoute>
     </Suspense>
   )

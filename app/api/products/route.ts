@@ -8,7 +8,7 @@ import {
 } from "@/lib/api/route-helpers"
 
 const PRODUCT_ROLES = ["admin", "manager", "staff"] as const
-const PRODUCT_WRITE_ROLES = ["admin", "manager"] as const
+const PRODUCT_WRITE_ROLES = ["admin", "manager", "staff"] as const
 
 export async function GET(request: Request) {
   await connection()

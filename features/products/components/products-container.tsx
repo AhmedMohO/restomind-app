@@ -657,6 +657,7 @@ export function ProductsContainer() {
                           onCheckedChange={(checked) =>
                             handleAvailabilityChange(product, checked)
                           }
+                          className={`${updatingAvailabilityId === product._id ? "opacity-50" : ""}`}
                           disabled={updatingAvailabilityId === product._id}
                         />
                       </div>

@@ -18,7 +18,6 @@ import { SmoothScrollProvider } from "@/providers/smooth-scroll-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import QueryProvider from "@/providers/use-query-provider"
 import { AuthProvider } from "@/providers/auth-provider"
-import { NotificationSocketProvider } from "@/providers/notification-socket-provider"
 import { ZodLocaleProvider } from "@/providers/zod-locale-provider"
 import { DirectionProvider } from "@base-ui/react/direction-provider"
 import { organizationJsonLd } from "@/lib/seo/json-ld"
@@ -194,11 +193,7 @@ async function LocaleMessages({ children }: { children: React.ReactNode }) {
   const messages = await getMessages()
   return (
     <NextIntlClientProvider messages={messages}>
-      <ZodLocaleProvider>
-        <NotificationSocketProvider>
-          {children}
-        </NotificationSocketProvider>
-      </ZodLocaleProvider>
+      <ZodLocaleProvider>{children}</ZodLocaleProvider>
     </NextIntlClientProvider>
   )
 }

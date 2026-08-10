@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 import { toast } from "sonner"
 import { useAuthStore } from "@/features/auth/store/useAuthStore"
 import { notificationSocketService } from "@/features/notifications/services/socket-service"
@@ -123,11 +124,14 @@ export function NotificationSocketProvider({
 }) {
   const user = useAuthStore((s) => s.user)
   const isHydrated = useAuthStore((s) => s.isHydrated)
+  const pathname = usePathname()
   const [lastNotification, setLastNotification] = useState<NotificationItem | null>(null)
 
+  const isDashboard = pathname?.includes("/dashboard") ?? false
+
   useEffect(() => {
-    // Connect only when user is authenticated & store is hydrated
-    if (isHydrated && user) {
+    // Connect only when user is authenticated, store is hydrated, and on a dashboard page
+    if (isHydrated && user && isDashboard) {
       notificationSocketService.connect()
 
       const unsubscribe = notificationSocketService.subscribe((notification) => {
@@ -148,10 +152,10 @@ export function NotificationSocketProvider({
       return () => {
         unsubscribe()
       }
-    } else if (isHydrated && !user) {
+    } else if (isHydrated && (!user || !isDashboard)) {
       notificationSocketService.disconnect()
     }
-  }, [user, isHydrated])
+  }, [user, isHydrated, isDashboard])
 
   return (
     <NotificationSocketContext.Provider value={{ lastNotification }}>
