@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Link, useRouter } from "@/i18n/routing"
-import { Plus, Heart, Star, Loader2 } from "lucide-react"
+import { Plus, Heart, Star, Loader2, Sparkles, Flame } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn, formatCurrency, getImageUrl } from "@/lib/utils"
@@ -18,7 +18,9 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const locale = useLocale()
   const { addToCart, toggleWishlist, wishlist } = useCart()
   const { isAuthenticated, user, hasAnyRole } = useAuth()
-  const isManagementRole = Boolean(user && hasAnyRole(["admin", "staff", "manager"]))
+  const isManagementRole = Boolean(
+    user && hasAnyRole(["admin", "staff", "manager"])
+  )
   const router = useRouter()
   const [added, setAdded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -31,6 +33,8 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const isFavorite = wishlist.includes(rawProduct._id)
   const discountedPrice = rawProduct.offerPrice ?? product.discountedPrice
   const discountPercentage = rawProduct.discountPercentage || 0
+
+  const isFeatured = Boolean(rawProduct?.featured)
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -85,17 +89,18 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {/* Badges Container: Offer Discount percentage & Bestseller */}
-          <div className="absolute start-3 top-3 z-10 flex flex-wrap items-center gap-1.5">
+          {/* Badges Container: Offer Discount percentage, Bestseller & Featured */}
+          <div className="absolute start-3 top-3 z-10 flex max-w-[calc(100%-3.5rem)] flex-wrap items-center gap-1.5">
             {discountPercentage > 0 && (
-              <span className="rounded-full bg-[#7C4A27] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm dark:bg-[#C2733C]">
+              <span className="inline-flex items-center rounded-full bg-[#7C4A27] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm dark:bg-[#C2733C]">
                 {t("discountBadge", { percent: discountPercentage })}
               </span>
             )}
 
-            {product.isBestseller && (
-              <span className="rounded-full bg-[#E6BF8F] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#2B1B15] uppercase shadow-sm">
-                {t("bestseller")}
+            {isFeatured && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-600 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm dark:bg-amber-500 dark:text-neutral-950">
+                <Sparkles size={11} className="shrink-0" />
+                {t("featured")}
               </span>
             )}
           </div>

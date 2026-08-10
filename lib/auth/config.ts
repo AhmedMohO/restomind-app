@@ -116,7 +116,7 @@ export const ROUTE_ROLE_MAP: Record<string, readonly UserRole[]> = {
   "/dashboard/payouts": ["admin", "manager", "staff"],
   "/dashboard/billing": ["admin", "manager", "staff"],
   "/dashboard/offers/new": ["admin", "manager", "staff"],
-  "/dashboard/products/new": ["admin", "manager"],
+  "/dashboard/products/new": ["admin", "manager", "staff"],
   "/dashboard/admin/settings": ["admin"],
   "/dashboard/admin/plans": ["admin"],
   "/dashboard/notifications": ["admin", "manager", "staff"],

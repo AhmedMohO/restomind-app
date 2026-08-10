@@ -246,16 +246,14 @@ export function ProductsContainer() {
           <p className="text-sm text-muted-foreground">{t("adminSubtitle")}</p>
         </div>
 
-        {!isStaff && (
-          <Button
-            nativeButton={false}
-            render={<Link href="/dashboard/products/new" />}
-            className="gap-2 rounded-xl"
-          >
-            <Plus className="size-4" />
-            <span>{t("addProduct")}</span>
-          </Button>
-        )}
+        <Button
+          nativeButton={false}
+          render={<Link href="/dashboard/products/new" />}
+          className="gap-2 rounded-xl"
+        >
+          <Plus className="size-4" />
+          <span>{t("addProduct")}</span>
+        </Button>
       </div>
 
       {/* Unified Control Bar with adequate margin */}

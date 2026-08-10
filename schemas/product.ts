@@ -9,7 +9,7 @@ export const productFormSchema = z.object({
   title: z.string().min(1, { message: "required" }).max(160),
   description: z.string().min(1, { message: "required" }).max(600),
   longDescription: z.string().min(1, { message: "required" }).max(3000),
-  price: z.coerce.number().min(0, { message: "min" }),
+  price: z.coerce.number().gt(0, { message: "positiveValue" }),
   category: mongoId,
   freshnessWindow: z.coerce.number().int().min(0).default(24),
   tagsText: z.string().optional(),
