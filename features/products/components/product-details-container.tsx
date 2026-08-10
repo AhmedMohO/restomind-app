@@ -7,6 +7,7 @@ import {
   Clock,
   Copy,
   Edit2,
+  Flame,
   Package,
   Sparkles,
   Star,
@@ -30,6 +31,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Link, useRouter } from "@/i18n/routing"
+import { useAuthStore } from "@/features/auth/store/useAuthStore"
 import {
   useDeleteProduct,
   useProductById,
@@ -113,6 +115,8 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
   const locale = useLocale()
   const router = useRouter()
   const t = useTranslations("Dashboard.products")
+  const role = useAuthStore((state) => state.user?.role)
+  const isStaff = role === "staff"
   const { data: product, isLoading, isError, refetch } = useProductById(id)
   const deleteMutation = useDeleteProduct()
 
@@ -230,14 +234,16 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
             <Edit2 className="size-4" />
             <span>{t("editProduct")}</span>
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => setShowDeleteConfirm(true)}
-            className="flex-1 gap-2 rounded-xl border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-initial"
-          >
-            <Trash2 className="size-4" />
-            <span>{t("delete")}</span>
-          </Button>
+          {!isStaff && (
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex-1 gap-2 rounded-xl border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-initial"
+            >
+              <Trash2 className="size-4" />
+              <span>{t("delete")}</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -268,7 +274,7 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
                 sizes="(min-width: 1024px) 320px, 100vw"
               />
 
-              {/* Status + bestseller overlay on the image itself */}
+              {/* Status + bestseller + featured overlay on the image itself */}
               <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-xs backdrop-blur-sm ${
@@ -282,7 +288,7 @@ export function ProductDetailsContainer({ id }: ProductDetailsContainerProps) {
                 </span>
                 {product.isBestseller && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-xs font-semibold text-primary shadow-xs backdrop-blur-sm">
-                    <Sparkles className="size-3" />
+                    <Flame className="size-3" />
                     {t("bestseller")}
                   </span>
                 )}

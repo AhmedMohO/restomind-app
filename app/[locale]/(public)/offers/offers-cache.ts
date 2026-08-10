@@ -6,11 +6,7 @@ import { getRestaurants } from "@/features/restaurant/api"
 export async function getCachedOffersData() {
   "use cache"
   cacheTag("offers-list", "offers", "categories", "restaurants")
-  cacheLife({
-    stale: 30,
-    revalidate: 30,
-    expire: 300,
-  })
+  cacheLife("minutes")
 
   const [offersRes, categoriesRes, restaurantsRes] = await Promise.all([
     getActiveOffers({ page: 1, limit: 100 }).catch(() => undefined),

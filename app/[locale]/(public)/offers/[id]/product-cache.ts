@@ -4,7 +4,7 @@ import { getActiveOffer, type ApiOffer } from "@/features/offers/api"
 export async function getCachedOffer(id: string): Promise<ApiOffer | null> {
   "use cache"
   cacheTag(`offer:${id}`, "offers")
-  cacheLife("hours")
+  cacheLife("minutes")
 
   try {
     const res = await getActiveOffer(id)

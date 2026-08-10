@@ -2,10 +2,11 @@
 
 import React, { useState } from "react"
 import { Link, useRouter } from "@/i18n/routing"
-import { Plus, Heart, Star, Loader2, Sparkles, Flame } from "lucide-react"
+import { Plus, Heart, Star, Loader2, Sparkles, Flame, Leaf, Hourglass, Clock } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn, formatCurrency, getImageUrl } from "@/lib/utils"
+import { getFreshnessInfo } from "@/lib/freshness"
 import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
 import type { ApiOffer } from "@/features/offers/api/type"
@@ -33,8 +34,13 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const isFavorite = wishlist.includes(rawProduct._id)
   const discountedPrice = rawProduct.offerPrice ?? product.discountedPrice
   const discountPercentage = rawProduct.discountPercentage || 0
-
+  const isBestseller = Boolean(product.isBestseller)
   const isFeatured = Boolean(rawProduct?.featured)
+  const freshness = getFreshnessInfo(
+    rawProduct.startDate,
+    rawProduct.endDate,
+    rawProduct.createdAt
+  )
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -89,7 +95,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {/* Badges Container: Offer Discount percentage, Bestseller & Featured */}
+          {/* Badges Container: Discount, Fresh, Featured & Bestseller */}
           <div className="absolute start-3 top-3 z-10 flex max-w-[calc(100%-3.5rem)] flex-wrap items-center gap-1.5">
             {discountPercentage > 0 && (
               <span className="inline-flex items-center rounded-full bg-[#7C4A27] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm dark:bg-[#C2733C]">
@@ -97,10 +103,45 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
               </span>
             )}
 
+            {freshness.status === "peak_fresh" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm">
+                <Sparkles size={11} className="shrink-0" />
+                {t("peakFresh")}
+              </span>
+            )}
+
+            {freshness.status === "fresh" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm dark:bg-emerald-400 dark:text-neutral-950">
+                <Leaf size={11} className="shrink-0" />
+                {t("dailyFresh")}
+              </span>
+            )}
+
+            {freshness.status === "expiring_soon" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-600 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm">
+                <Hourglass size={11} className="shrink-0" />
+                {t("expiringSoon")}
+              </span>
+            )}
+
+            {freshness.status === "expired" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-500 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm">
+                <Clock size={11} className="shrink-0" />
+                {t("expiredFreshness")}
+              </span>
+            )}
+
             {isFeatured && (
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-600 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm dark:bg-amber-500 dark:text-neutral-950">
                 <Sparkles size={11} className="shrink-0" />
                 {t("featured")}
+              </span>
+            )}
+
+            {isBestseller && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#E6BF8F] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#2B1B15] uppercase shadow-sm dark:bg-[#D7A977] dark:text-[#1A100B]">
+                <Flame size={11} className="shrink-0 text-[#7C4A27] fill-[#7C4A27] dark:text-[#2B1B15] dark:fill-[#2B1B15]" />
+                {t("bestseller")}
               </span>
             )}
           </div>

@@ -1,13 +1,27 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import { Link } from "@/i18n/routing"
-import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, Star, Loader2 } from "lucide-react"
+import {
+  ArrowLeft,
+  Heart,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Star,
+  Loader2,
+  Sparkles,
+  Leaf,
+  Hourglass,
+  Clock,
+  Calendar,
+} from "lucide-react"
 import type { ApiOffer } from "@/features/offers/api/type"
 import { useActiveOffers } from "@/features/offers/hooks"
 import { useCart } from "@/hooks/use-cart"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { cn, getImageUrl } from "@/lib/utils"
+import { getFreshnessInfo, formatTimeDuration } from "@/lib/freshness"
 import ProductCarousel from "@/components/common/ProductCarousel"
 import { useTranslations } from "next-intl"
 import Image from "next/image"
@@ -24,7 +38,9 @@ export default function ProductDetails({
   const product = rawProduct.productId
   const { addToCart, toggleWishlist, wishlist } = useCart()
   const { user, hasAnyRole } = useAuth()
-  const isManagementRole = Boolean(user && hasAnyRole(["admin", "staff", "manager"]))
+  const isManagementRole = Boolean(
+    user && hasAnyRole(["admin", "staff", "manager"])
+  )
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -36,6 +52,12 @@ export default function ProductDetails({
 
   const similarOffers = (similarRes?.items ?? []).filter(
     (o: ApiOffer) => o._id !== rawProduct._id && o.productId._id !== product._id
+  )
+
+  const freshness = getFreshnessInfo(
+    rawProduct.startDate,
+    rawProduct.endDate,
+    rawProduct.createdAt
   )
 
   if (!product) return null
@@ -105,7 +127,7 @@ export default function ProductDetails({
       </div>
 
       {/* Main product view split layout */}
-      <div className="flex gap-8 max-lg:flex-wrap max-lg:justify-center w-full">
+      <div className="flex w-full gap-8 max-lg:flex-wrap max-lg:justify-center">
         {/* Left Side: Product Image */}
         <Image
           src={getImageUrl(product.image?.secure_url)}
@@ -116,12 +138,41 @@ export default function ProductDetails({
         />
 
         {/* Right Side: Product Details */}
-        <div className="flex flex-col gap-4 space-y-6 py-2 text-start w-full">
+        <div className="flex w-full flex-col gap-4 space-y-6 py-2 text-start">
           <div className="space-y-4">
             {/* Top row: Tags and wishlist button */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Badge className="bg-emerald-400">{t("dailyFresh")}</Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                {freshness.status === "peak_fresh" && (
+                  <Badge className="bg-emerald-600 text-white shadow-sm hover:bg-emerald-700">
+                    <Sparkles size={12} className="me-1" />
+                    {t("peakFresh")}
+                  </Badge>
+                )}
+                {freshness.status === "fresh" && (
+                  <Badge className="bg-emerald-500 text-white hover:bg-emerald-600">
+                    <Leaf size={12} className="me-1" />
+                    {t("dailyFresh")}
+                  </Badge>
+                )}
+                {freshness.status === "expiring_soon" && (
+                  <Badge className="bg-amber-600 text-white hover:bg-amber-700">
+                    <Hourglass size={12} className="me-1" />
+                    {t("expiringSoon")}
+                  </Badge>
+                )}
+                {freshness.status === "expired" && (
+                  <Badge className="bg-slate-500 text-white hover:bg-slate-600">
+                    <Clock size={12} className="me-1" />
+                    {t("expiredFreshness")}
+                  </Badge>
+                )}
+                {rawProduct.featured && (
+                  <Badge className="bg-amber-600 text-white hover:bg-amber-700">
+                    <Sparkles size={12} className="me-1" />
+                    {t("featured")}
+                  </Badge>
+                )}
                 <Badge>
                   {t("discountBadge", { percent: discountPercentage })}
                 </Badge>
@@ -136,7 +187,9 @@ export default function ProductDetails({
                       ? "border-[#7C4A27] bg-[#FAF2ED] text-red-500 dark:bg-red-950/20"
                       : "text-muted-foreground"
                   )}
-                  title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
+                  title={
+                    isFavorite ? "Remove from wishlist" : "Add to wishlist"
+                  }
                 >
                   {isTogglingWishlist ? (
                     <Loader2 size={20} className="animate-spin text-red-500" />
@@ -192,6 +245,92 @@ export default function ProductDetails({
             <p className="text-sm leading-relaxed text-muted-foreground">
               {product.longDescription || product.description}
             </p>
+
+            {/* Freshness Status & Timeline Box */}
+            {freshness.status !== "none" && (
+              <div className="space-y-3 rounded-xl border border-[#ECE6DB] bg-[#FAF7F2]/60 p-4 dark:border-neutral-800 dark:bg-neutral-900/60">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-[#7C4A27] uppercase dark:text-[#E68A49]">
+                    <Clock size={14} />
+                    {t("freshnessTimeline")}
+                  </span>
+                  <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                    {freshness.status === "expired"
+                      ? t("expiredFreshness")
+                      : t("remainingTime", {
+                          time: formatTimeDuration(freshness.remainingMs),
+                        })}
+                  </span>
+                </div>
+
+                {/* Visual Gap Progress Bar */}
+                <div className="space-y-1.5">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all duration-500",
+                        freshness.status === "peak_fresh" &&
+                          "bg-gradient-to-r from-emerald-400 to-emerald-600",
+                        freshness.status === "fresh" && "bg-emerald-500",
+                        freshness.status === "expiring_soon" &&
+                          "animate-pulse bg-gradient-to-r from-amber-500 to-orange-500",
+                        freshness.status === "expired" && "bg-slate-400"
+                      )}
+                      style={{
+                        width: `${Math.round(freshness.remainingPercent)}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[11px] text-muted-foreground">
+                    <span>
+                      {t("freshnessProgress", {
+                        percent: Math.round(freshness.remainingPercent),
+                      })}
+                    </span>
+                    <span>
+                      {t("freshnessWindow")}:{" "}
+                      {formatTimeDuration(freshness.totalWindowMs)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Dates breakdown */}
+                <div className="grid grid-cols-2 gap-2 border-t border-[#ECE6DB]/60 pt-1 text-xs dark:border-neutral-800/60">
+                  <div className="flex flex-col">
+                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <Calendar size={12} />
+                      {t("activeDate")}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {freshness.startDate
+                        ? freshness.startDate.toLocaleString([], {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "-"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col text-end">
+                    <span className="flex items-center justify-end gap-1 text-[11px] text-muted-foreground">
+                      <Clock size={12} />
+                      {t("freshUntil")}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {freshness.expiryDate
+                        ? freshness.expiryDate.toLocaleString([], {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "-"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Row: Quantity Selector & Add to cart button */}

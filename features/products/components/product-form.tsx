@@ -78,7 +78,9 @@ export function ProductForm({
   const isAdmin = role === "admin"
   const [imageFile, setImageFile] = React.useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null)
-  const displayPreviewUrl = getImageUrl(previewUrl ?? product?.image?.secure_url)
+  const displayPreviewUrl = getImageUrl(
+    previewUrl ?? product?.image?.secure_url
+  )
 
   const {
     register,
@@ -136,8 +138,7 @@ export function ProductForm({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    onDropRejected: () =>
-      toast.error(t("imageTypeError")),
+    onDropRejected: () => toast.error(t("imageTypeError")),
     accept: { "image/*": [".jpeg", ".jpg", ".png", ".webp"] },
     maxFiles: 1,
     maxSize: 5 * 1024 * 1024,
@@ -164,14 +165,14 @@ export function ProductForm({
             <Utensils className="size-5 text-primary" />
             <span>{t("formTitle")}</span>
           </CardTitle>
-          <CardDescription>
-            {t("formSub")}
-          </CardDescription>
+          <CardDescription>{t("formSub")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-6 md:grid-cols-[220px_1fr]">
             <div className="space-y-2">
-              <FieldLabel>{t("imageLabel")} {mode === "create" ? "*" : ""}</FieldLabel>
+              <FieldLabel>
+                {t("imageLabel")} {mode === "create" ? "*" : ""}
+              </FieldLabel>
               <div
                 {...getRootProps()}
                 className={`group relative flex h-[162px] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-3 text-center transition-colors ${
@@ -229,7 +230,9 @@ export function ProductForm({
 
             <div className="space-y-4">
               <Field data-invalid={!!errors.title}>
-                <FieldLabel htmlFor="product-title">{t("titleLabel")} *</FieldLabel>
+                <FieldLabel htmlFor="product-title">
+                  {t("titleLabel")} *
+                </FieldLabel>
                 <Input
                   id="product-title"
                   {...register("title")}
@@ -240,11 +243,13 @@ export function ProductForm({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field data-invalid={!!errors.price}>
-                  <FieldLabel htmlFor="product-price">{t("priceLabel")} *</FieldLabel>
+                  <FieldLabel htmlFor="product-price">
+                    {t("priceLabel")} *
+                  </FieldLabel>
                   <Input
                     id="product-price"
                     type="number"
-                    min="0"
+                    min="0.01"
                     step="0.01"
                     {...register("price")}
                     disabled={isPending}
@@ -355,8 +360,8 @@ export function ProductForm({
       </Card>
 
       <Card className="rounded-2xl">
-        <CardContent className="grid gap-3 p-4 sm:grid-cols-2">
-          <div className="flex items-center justify-between rounded-xl border border-border p-3">
+        <CardContent className="grid gap-3 p-2">
+          <div className="flex hidden items-center justify-between rounded-xl border border-border p-3">
             <Label htmlFor="product-bestseller" className="text-xs">
               {t("bestsellerLabel")}
             </Label>

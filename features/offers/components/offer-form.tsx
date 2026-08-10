@@ -25,7 +25,11 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Select,
   SelectContent,
@@ -36,7 +40,10 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { PaginatedProductSelect } from "@/features/products/components/paginated-product-select"
 import type { ApiProduct } from "@/features/products/api/type"
-import type {  CreateOfferInput, UpdateOfferInput } from "@/features/offers/api/type"
+import type {
+  CreateOfferInput,
+  UpdateOfferInput,
+} from "@/features/offers/api/type"
 import type { DiscountType, OfferStatus } from "@/features/offers/types"
 import type { OfferFormProps } from "@/features/offers/types"
 import {
@@ -53,7 +60,9 @@ import { formatCurrency, formatDate } from "@/lib/utils"
 export type { OfferFormProps }
 
 // Computed once at module load — safe to use as a stable default inside useMemo
-const DEFAULT_END_DATE_ISO = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+const DEFAULT_END_DATE_ISO = new Date(
+  Date.now() + 24 * 60 * 60 * 1000
+).toISOString()
 
 export function OfferForm({
   initialData,
@@ -96,13 +105,11 @@ export function OfferForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
-
   // ─── State ───────────────────────────────────────────────────────────────
 
   const [productId, setProductId] = React.useState<string>(initialProductId)
-  const [selectedProduct, setSelectedProduct] = React.useState<ApiProduct | null>(
-    initialSelectedProduct
-  )
+  const [selectedProduct, setSelectedProduct] =
+    React.useState<ApiProduct | null>(initialSelectedProduct)
   const [discountType, setDiscountType] = React.useState<DiscountType>(
     initialData?.discountType ?? "percentage"
   )
@@ -110,12 +117,17 @@ export function OfferForm({
     initialData?.discountPercentage ?? 20
   )
   const [offerPrice, setOfferPrice] = React.useState<number>(
-    initialData?.offerPrice ?? (initialOriginalPrice ? initialOriginalPrice * 0.8 : 0)
+    initialData?.offerPrice ??
+      (initialOriginalPrice ? initialOriginalPrice * 0.8 : 0)
   )
 
-  const [startDate, setStartDate] = React.useState<Date | undefined>(startParsed.date)
+  const [startDate, setStartDate] = React.useState<Date | undefined>(
+    startParsed.date
+  )
   const [startHour, setStartHour] = React.useState<string>(startParsed.hour)
-  const [startMinute, setStartMinute] = React.useState<string>(startParsed.minute)
+  const [startMinute, setStartMinute] = React.useState<string>(
+    startParsed.minute
+  )
   const [startAmpm, setStartAmpm] = React.useState<string>(startParsed.ampm)
 
   const [endDate, setEndDate] = React.useState<Date | undefined>(endParsed.date)
@@ -129,8 +141,12 @@ export function OfferForm({
   const [maxPerCustomer, setMaxPerCustomer] = React.useState<string>(
     initialData?.maxPerCustomer ? String(initialData.maxPerCustomer) : ""
   )
-  const [featured, setFeatured] = React.useState<boolean>(initialData?.featured ?? false)
-  const [status, setStatus] = React.useState<OfferStatus>(initialData?.status ?? "active")
+  const [featured, setFeatured] = React.useState<boolean>(
+    initialData?.featured ?? false
+  )
+  const [status, setStatus] = React.useState<OfferStatus>(
+    initialData?.status ?? "active"
+  )
   const [errors, setErrors] = React.useState<Record<string, string>>({})
 
   // ─── Derived values ───────────────────────────────────────────────────────
@@ -154,26 +170,45 @@ export function OfferForm({
     if (!isEditing) return ["active", "scheduled", "draft"]
     const current = initialData?.status ?? "active"
     switch (current) {
-      case "draft":      return ["draft", "scheduled", "active", "cancelled"]
-      case "scheduled":  return ["scheduled", "active", "cancelled"]
-      case "active":     return ["active", "sold_out", "expired", "cancelled"]
-      case "sold_out":   return ["sold_out", "active", "expired", "cancelled"]
-      case "expired":    return ["expired"]
-      case "cancelled":  return ["cancelled"]
-      default:           return ["draft", "scheduled", "active", "sold_out", "expired", "cancelled"]
+      case "draft":
+        return ["draft", "scheduled", "active", "cancelled"]
+      case "scheduled":
+        return ["scheduled", "active", "cancelled"]
+      case "active":
+        return ["active", "sold_out", "expired", "cancelled"]
+      case "sold_out":
+        return ["sold_out", "active", "expired", "cancelled"]
+      case "expired":
+        return ["expired"]
+      case "cancelled":
+        return ["cancelled"]
+      default:
+        return [
+          "draft",
+          "scheduled",
+          "active",
+          "sold_out",
+          "expired",
+          "cancelled",
+        ]
     }
   }, [isEditing, initialData?.status])
 
   const estimatedOfferPrice = React.useMemo(() => {
     if (discountType !== "percentage") return offerPrice
     if (!originalPrice) return 0
-    return Math.round(originalPrice * (1 - discountPercentage / 100) * 100) / 100
+    return (
+      Math.round(originalPrice * (1 - discountPercentage / 100) * 100) / 100
+    )
   }, [discountType, originalPrice, discountPercentage, offerPrice])
 
   const estimatedDiscountPercentage = React.useMemo(() => {
     if (discountType !== "fixed") return discountPercentage
     if (!originalPrice || offerPrice <= 0) return 0
-    return Math.min(100, Math.max(1, Math.round((1 - offerPrice / originalPrice) * 100)))
+    return Math.min(
+      100,
+      Math.max(1, Math.round((1 - offerPrice / originalPrice) * 100))
+    )
   }, [discountType, originalPrice, offerPrice, discountPercentage])
 
   const finalStartFull = React.useMemo(
@@ -206,7 +241,11 @@ export function OfferForm({
     }
 
     if (discountType === "percentage") {
-      if (!discountPercentage || discountPercentage < 1 || discountPercentage > 100) {
+      if (
+        !discountPercentage ||
+        discountPercentage < 1 ||
+        discountPercentage > 100
+      ) {
         errs.discountPercentage = t("discountRequiredError")
       }
     } else {
@@ -225,7 +264,12 @@ export function OfferForm({
     if (finalEndFull && finalEndFull <= now) {
       errs.endDate = t("endDateFutureError")
     }
-    if (status === "active" && finalStartFull && finalStartFull > now && !isEditing) {
+    if (
+      status === "active" &&
+      finalStartFull &&
+      finalStartFull > now &&
+      !isEditing
+    ) {
       errs.status = t("activeStatusFutureStartError")
     }
     if (
@@ -240,15 +284,26 @@ export function OfferForm({
       errs.availableQuantity = t("quantityRequiredError")
     }
     if (isEditing && availableQuantity < alreadySold) {
-      errs.availableQuantity = t("quantityBelowSoldError", { sold: alreadySold })
+      errs.availableQuantity = t("quantityBelowSoldError", {
+        sold: alreadySold,
+      })
     }
-
     setErrors(errs)
     return Object.keys(errs).length === 0
   }, [
-    isReadOnly, isEditing, productId, discountType, discountPercentage,
-    offerPrice, originalPrice, finalStartFull, finalEndFull,
-    status, availableQuantity, alreadySold, t,
+    isReadOnly,
+    isEditing,
+    productId,
+    discountType,
+    discountPercentage,
+    offerPrice,
+    originalPrice,
+    finalStartFull,
+    finalEndFull,
+    status,
+    availableQuantity,
+    alreadySold,
+    t,
   ])
 
   const handleSubmit = React.useCallback(
@@ -276,14 +331,16 @@ export function OfferForm({
         if (
           canEditStartDate &&
           finalStartFull &&
-          finalStartFull.toISOString() !== new Date(initialData?.startDate ?? "").toISOString()
+          finalStartFull.toISOString() !==
+            new Date(initialData?.startDate ?? "").toISOString()
         ) {
           payload.startDate = finalStartFull.toISOString()
         }
 
         if (
           finalEndFull &&
-          finalEndFull.toISOString() !== new Date(initialData?.endDate ?? "").toISOString()
+          finalEndFull.toISOString() !==
+            new Date(initialData?.endDate ?? "").toISOString()
         ) {
           payload.endDate = finalEndFull.toISOString()
         }
@@ -311,10 +368,23 @@ export function OfferForm({
       }
     },
     [
-      isReadOnly, validate, isEditing, discountType, availableQuantity, maxPerCustomer,
-      featured, status, discountPercentage, offerPrice, canEditStartDate,
-      finalStartFull, finalEndFull, initialData?.startDate, initialData?.endDate,
-      productId, onSubmit,
+      isReadOnly,
+      validate,
+      isEditing,
+      discountType,
+      availableQuantity,
+      maxPerCustomer,
+      featured,
+      status,
+      discountPercentage,
+      offerPrice,
+      canEditStartDate,
+      finalStartFull,
+      finalEndFull,
+      initialData?.startDate,
+      initialData?.endDate,
+      productId,
+      onSubmit,
     ]
   )
 
@@ -359,7 +429,9 @@ export function OfferForm({
           {/* Pricing */}
           <div className="space-y-4 rounded-2xl border border-border/70 bg-card p-4 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <Label className="text-xs font-semibold">{t("discountType")}</Label>
+              <Label className="text-xs font-semibold">
+                {t("discountType")}
+              </Label>
               <div className="inline-flex rounded-xl bg-muted p-1 text-xs">
                 {(["percentage", "fixed"] as DiscountType[]).map((type) => (
                   <button
@@ -381,9 +453,13 @@ export function OfferForm({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {/* Original Price (display only) */}
               <div className="space-y-2">
-                <Label className="text-xs font-semibold">{t("originalPrice")}</Label>
+                <Label className="text-xs font-semibold">
+                  {t("originalPrice")}
+                </Label>
                 <div className="flex h-9 w-full items-center rounded-xl border border-input bg-muted px-3 text-sm font-medium">
-                  {originalPrice > 0 ? formatCurrency(originalPrice, locale) : "-"}
+                  {originalPrice > 0
+                    ? formatCurrency(originalPrice, locale)
+                    : "-"}
                 </div>
               </div>
 
@@ -391,7 +467,8 @@ export function OfferForm({
               {discountType === "percentage" ? (
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold">
-                    {t("discountPercentage")} <span className="text-destructive">*</span>
+                    {t("discountPercentage")}{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <div className="relative">
                     <Percent className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -400,18 +477,23 @@ export function OfferForm({
                       min={1}
                       max={100}
                       value={discountPercentage}
-                      onChange={(e) => setDiscountPercentage(Number(e.target.value))}
+                      onChange={(e) =>
+                        setDiscountPercentage(Number(e.target.value))
+                      }
                       className="rounded-xl ps-9"
                     />
                   </div>
                   {errors.discountPercentage && (
-                    <p className="text-xs text-destructive">{errors.discountPercentage}</p>
+                    <p className="text-xs text-destructive">
+                      {errors.discountPercentage}
+                    </p>
                   )}
                 </div>
               ) : (
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold">
-                    {t("offerPrice")} <span className="text-destructive">*</span>
+                    {t("offerPrice")}{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     type="number"
@@ -422,7 +504,9 @@ export function OfferForm({
                     className="rounded-xl font-bold text-primary"
                   />
                   {errors.offerPrice && (
-                    <p className="text-xs text-destructive">{errors.offerPrice}</p>
+                    <p className="text-xs text-destructive">
+                      {errors.offerPrice}
+                    </p>
                   )}
                 </div>
               )}
@@ -430,7 +514,9 @@ export function OfferForm({
               {/* Preview */}
               <div className="space-y-2">
                 <Label className="text-xs font-semibold">
-                  {discountType === "percentage" ? t("offerPrice") : t("discountPercentage")}
+                  {discountType === "percentage"
+                    ? t("offerPrice")
+                    : t("discountPercentage")}
                 </Label>
                 <div className="flex h-9 w-full items-center justify-between rounded-xl border border-border bg-muted/30 px-3 text-sm">
                   <span className="font-semibold text-primary">
@@ -450,7 +536,8 @@ export function OfferForm({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label className="text-xs font-semibold">
-                {t("availableQuantity")} <span className="text-destructive">*</span>
+                {t("availableQuantity")}{" "}
+                <span className="text-destructive">*</span>
               </Label>
               <Input
                 type="number"
@@ -465,12 +552,16 @@ export function OfferForm({
                 </p>
               )}
               {errors.availableQuantity && (
-                <p className="text-xs text-destructive">{errors.availableQuantity}</p>
+                <p className="text-xs text-destructive">
+                  {errors.availableQuantity}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold">{t("maxPerCustomer")}</Label>
+              <Label className="text-xs font-semibold">
+                {t("maxPerCustomer")}
+              </Label>
               <Input
                 type="number"
                 min={1}
@@ -512,7 +603,10 @@ export function OfferForm({
                     </Button>
                   }
                 />
-                <PopoverContent align="start" className="w-auto rounded-2xl border border-border p-0 shadow-lg">
+                <PopoverContent
+                  align="start"
+                  className="w-auto rounded-2xl border border-border p-0 shadow-lg"
+                >
                   <Calendar
                     mode="single"
                     selected={startDate}
@@ -568,8 +662,15 @@ export function OfferForm({
                     </Button>
                   }
                 />
-                <PopoverContent align="start" className="w-auto rounded-2xl border border-border p-0 shadow-lg">
-                  <Calendar mode="single" selected={endDate} onSelect={setEndDate} />
+                <PopoverContent
+                  align="start"
+                  className="w-auto rounded-2xl border border-border p-0 shadow-lg"
+                >
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                  />
                   <TimePicker
                     hour={endHour}
                     minute={endMinute}
@@ -586,37 +687,39 @@ export function OfferForm({
             </div>
           </div>
 
-          {/* Status & Featured */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold">{t("status")}</Label>
-              <Select value={status} onValueChange={(val) => setStatus(val as OfferStatus)}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {allowedStatuses.map((st) => (
-                    <SelectItem key={st} value={st}>
-                      {getOfferStatusLabel(st, t)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.status && (
-                <p className="text-xs text-destructive">{errors.status}</p>
-              )}
+          {/* Status */}
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold">{t("status")}</Label>
+            <Select
+              value={status}
+              onValueChange={(val) => setStatus(val as OfferStatus)}
+            >
+              <SelectTrigger className="rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {allowedStatuses.map((st) => (
+                  <SelectItem key={st} value={st}>
+                    {getOfferStatusLabel(st, t)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.status && (
+              <p className="text-xs text-destructive">{errors.status}</p>
+            )}
+          </div>
+          <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 p-4">
+            <div className="space-y-0.5">
+              <Label className="flex items-center gap-1.5 text-xs font-semibold">
+                <Sparkles className="size-3.5 text-primary" />
+                <span>{t("featured")}</span>
+              </Label>
+              <p className="text-[11px] text-muted-foreground">
+                {t("featuredDesc")}
+              </p>
             </div>
-
-            <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 p-4">
-              <div className="space-y-0.5">
-                <Label className="flex items-center gap-1.5 text-xs font-semibold">
-                  <Sparkles className="size-3.5 text-primary" />
-                  <span>{t("featured")}</span>
-                </Label>
-                <p className="text-[11px] text-muted-foreground">{t("featuredDesc")}</p>
-              </div>
-              <Switch checked={featured} onCheckedChange={setFeatured} />
-            </div>
+            <Switch checked={featured} onCheckedChange={setFeatured} />
           </div>
         </CardContent>
       </Card>
@@ -634,7 +737,11 @@ export function OfferForm({
             {t("cancel")}
           </Button>
         )}
-        <Button type="submit" disabled={isSubmitting || isReadOnly} className="rounded-xl">
+        <Button
+          type="submit"
+          disabled={isSubmitting || isReadOnly}
+          className="rounded-xl"
+        >
           {isSubmitting && <Loader2 className="me-2 size-4 animate-spin" />}
           <span>{isEditing ? t("saveChanges") : t("createOffer")}</span>
         </Button>
