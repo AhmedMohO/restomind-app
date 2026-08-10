@@ -217,6 +217,12 @@ export const IMPORT_COLUMNS: Record<ImportType, Column[]> = {
       validators: [{ type: "required" }, { type: "min", value: 0 }],
     },
     {
+      id: "Production Quantity",
+      label: "Production quantity",
+      type: "number",
+      validators: [{ type: "required" }, { type: "min", value: 0 }],
+    },
+    {
       id: "Selling Price",
       label: "Selling price",
       type: "number",

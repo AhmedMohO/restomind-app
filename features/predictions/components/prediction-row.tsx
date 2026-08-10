@@ -46,11 +46,13 @@ export function PredictionRow({ prediction }: PredictionRowProps) {
   const [view, setView] = React.useState<"chart" | "table">("chart")
 
   const product =
-    typeof prediction.productId === "string" ? null : prediction.productId
+    typeof prediction.productId === "object" && prediction.productId !== null
+      ? prediction.productId
+      : null
   const productId =
     typeof prediction.productId === "string"
       ? prediction.productId
-      : prediction.productId._id
+      : prediction.productId?._id ?? ""
   const title = product?.title ?? t("unknownProduct")
 
   const recalcMutation = useRecalculatePrediction({
@@ -123,7 +125,7 @@ export function PredictionRow({ prediction }: PredictionRowProps) {
             variant="ghost"
             size="icon-sm"
             aria-label={t("recalculateOne")}
-            disabled={recalcMutation.isPending}
+            disabled={recalcMutation.isPending || !productId}
             onClick={() =>
               recalcMutation.mutate({
                 productId,
