@@ -102,14 +102,16 @@ export function PaginatedSelect<T = unknown>({
     return () => clearTimeout(timer)
   }, [search])
 
-  // Reset page when popover opens/closes
-  React.useEffect(() => {
+  // Reset page when popover closes
+  const [prevOpen, setPrevOpen] = React.useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (!open) {
       setSearch("")
       setDebouncedSearch("")
       setPage(1)
     }
-  }, [open])
+  }
 
   // Fetch paginated options
   const { data, isLoading, isFetching } = useQuery<

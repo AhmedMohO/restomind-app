@@ -43,7 +43,9 @@ export function SupplierFormDialog({
     leadTimeDays?: string
   }>({})
 
-  React.useEffect(() => {
+  const [prevOpen, setPrevOpen] = React.useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (open) {
       setName("")
       setEmail("")
@@ -51,7 +53,7 @@ export function SupplierFormDialog({
       setLeadTimeDays(1)
       setFieldErrors({})
     }
-  }, [open])
+  }
 
   const validate = (): boolean => {
     const errors: typeof fieldErrors = {}

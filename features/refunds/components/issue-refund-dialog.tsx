@@ -47,9 +47,11 @@ export function IssueRefundDialog({
   const [reason, setReason] = React.useState("")
   const [isPending, startTransition] = React.useTransition()
 
-  React.useEffect(() => {
+  const [prevOpen, setPrevOpen] = React.useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (open) setReason("")
-  }, [open])
+  }
 
   function handleSubmit() {
     if (!groupId) return

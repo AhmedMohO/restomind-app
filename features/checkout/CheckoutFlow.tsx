@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "@/i18n/routing"
 import { useTranslations } from "next-intl"
 import { AnimatePresence, motion } from "framer-motion"
@@ -82,25 +82,28 @@ export default function CheckoutFlow({
   const cartItemIds = cart.map((i) => i.offer._id).join(",")
 
   // Reset delivery review state whenever cart contents change
-  useEffect(() => {
+  const [prevCartItemIds, setPrevCartItemIds] = useState(cartItemIds)
+  if (cartItemIds !== prevCartItemIds) {
+    setPrevCartItemIds(cartItemIds)
     setHasReviewedDelivery(false)
-  }, [cartItemIds])
+  }
 
   // Guard: Force Home Delivery and return user to Step 2 if cart has multiple restaurants
-  useEffect(() => {
-    if (!isSingleRestaurant) {
-      if (deliveryMethod !== "home") {
-        setDeliveryMethod("home")
-      }
-      if (step === 3 && !hasReviewedDelivery) {
-        setDirection(-1)
-        setStep(2)
-        toast.info(t("multiRestaurantStepNotice"))
-      }
+  if (!isSingleRestaurant) {
+    if (deliveryMethod !== "home") {
+      setDeliveryMethod("home")
     }
-  }, [isSingleRestaurant, deliveryMethod, step, hasReviewedDelivery, t])
+    if (step === 3 && !hasReviewedDelivery) {
+      setDirection(-1)
+      setStep(2)
+    }
+  }
 
   function goForward(next: 1 | 2 | 3) {
+    if (!isSingleRestaurant && next === 3 && !hasReviewedDelivery) {
+      toast.info(t("multiRestaurantStepNotice"))
+      return
+    }
     setDirection(1)
     setStep(next)
   }

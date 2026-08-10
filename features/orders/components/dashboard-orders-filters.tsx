@@ -123,13 +123,20 @@ export function DashboardOrdersFilters({
   const tOrders = useTranslations("Orders")
   const activeFilterCount = countActiveFilters(filters)
 
+  const [prevTotalPriceRange, setPrevTotalPriceRange] = React.useState(
+    filters.totalPriceRange
+  )
   const [localPriceRange, setLocalPriceRange] = React.useState<[number, number]>(
     filters.totalPriceRange
   )
 
-  React.useEffect(() => {
+  if (
+    prevTotalPriceRange[0] !== filters.totalPriceRange[0] ||
+    prevTotalPriceRange[1] !== filters.totalPriceRange[1]
+  ) {
+    setPrevTotalPriceRange(filters.totalPriceRange)
     setLocalPriceRange(filters.totalPriceRange)
-  }, [filters.totalPriceRange])
+  }
 
   const updateLocalPriceRange = (next: [number, number]) => {
     const min = Math.max(TOTAL_PRICE_MIN, Math.min(next[0], TOTAL_PRICE_MAX))

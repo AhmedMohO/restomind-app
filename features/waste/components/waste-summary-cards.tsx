@@ -41,6 +41,8 @@ function StatTileSkeleton() {
  * top-of-page block, the same place that button lives on the
  * recommendations screen it's reused from.
  */
+import { useIsMutating } from "@tanstack/react-query"
+
 export function WasteSummaryCards() {
   const t = useTranslations("waste")
   const locale = useLocale()
@@ -48,6 +50,9 @@ export function WasteSummaryCards() {
   const { data: summary, isLoading } = useWasteSummary(SUMMARY_WINDOW_DAYS)
 
   const scanMutation = useScanSurplus()
+  const isGlobalScanning = useIsMutating({ mutationKey: ["scan-surplus"] }) > 0
+  const isScanning = scanMutation.isPending || isGlobalScanning
+
   const [degradedReason, setDegradedReason] = React.useState<
     string | undefined
   >(undefined)
@@ -55,19 +60,11 @@ export function WasteSummaryCards() {
 
   const handleScan = () => {
     setShowDegraded(false)
-    // Per-call callbacks are safe here specifically because the button below
-    // is disabled while `scanMutation.isPending`, so a second `mutate()`
-    // that could supersede this one's callbacks before it settles can never
-    // fire — the same reasoning `ScanSurplusPanel` (Task 3) documents for
-    // this exact mutation.
     scanMutation.mutate(undefined, {
       onSuccess: (result) => {
         if (result.degraded) {
           setDegradedReason(result.degradedReason)
           setShowDegraded(true)
-          // The backend commits waste reports before calling the AI, so a
-          // degraded scan still changed data — a clean failure message
-          // would be a lie about what's now in the table below.
           toast.success(t("scanDegradedSuccess"))
         } else {
           toast.success(t("scanSuccess"))
@@ -88,13 +85,13 @@ export function WasteSummaryCards() {
           </h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Button onClick={handleScan} disabled={scanMutation.isPending}>
-          {scanMutation.isPending ? (
+        <Button onClick={handleScan} disabled={isScanning}>
+          {isScanning ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <Sparkles className="size-4" />
           )}
-          {scanMutation.isPending ? t("scanning") : t("scanButton")}
+          {isScanning ? t("scanning") : t("scanButton")}
         </Button>
       </div>
 

@@ -63,21 +63,24 @@ export function CommercialTermsDialog({
 
   // Re-seed whenever a different merchant is opened, so the dialog never shows
   // the previous restaurant's bank details.
-  React.useEffect(() => {
-    if (!restaurant) return
-    // `null` is a cleared override, not a zero rate — both must show an empty
-    // box, or reopening the dialog would present 0% as the negotiated deal.
-    const rate = restaurant.commissionRate
-    setRatePercent(
-      rate === undefined || rate === null
-        ? ""
-        : String(Number((rate * 100).toFixed(4)))
-    )
-    setMethod(restaurant.payoutDestination?.method ?? "bank")
-    setAccountName(restaurant.payoutDestination?.accountName ?? "")
-    setAccountNumber(restaurant.payoutDestination?.accountNumber ?? "")
-    setBankName(restaurant.payoutDestination?.bankName ?? "")
-  }, [restaurant])
+  const [prevRestaurant, setPrevRestaurant] = React.useState(restaurant)
+  if (restaurant !== prevRestaurant) {
+    setPrevRestaurant(restaurant)
+    if (restaurant) {
+      // `null` is a cleared override, not a zero rate — both must show an empty
+      // box, or reopening the dialog would present 0% as the negotiated deal.
+      const rate = restaurant.commissionRate
+      setRatePercent(
+        rate === undefined || rate === null
+          ? ""
+          : String(Number((rate * 100).toFixed(4)))
+      )
+      setMethod(restaurant.payoutDestination?.method ?? "bank")
+      setAccountName(restaurant.payoutDestination?.accountName ?? "")
+      setAccountNumber(restaurant.payoutDestination?.accountNumber ?? "")
+      setBankName(restaurant.payoutDestination?.bankName ?? "")
+    }
+  }
 
   const trimmedRate = ratePercent.trim()
   const parsedRate = Number(trimmedRate)

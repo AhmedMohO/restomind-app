@@ -165,9 +165,19 @@ export default function RefundsTable({
   const [isPending, startTransition] = React.useTransition()
 
   // Reset page when filters change
-  React.useEffect(() => {
+  const [prevFilters, setPrevFilters] = React.useState({
+    search,
+    statusFilter,
+    settlementFilter,
+  })
+  if (
+    prevFilters.search !== search ||
+    prevFilters.statusFilter !== statusFilter ||
+    prevFilters.settlementFilter !== settlementFilter
+  ) {
+    setPrevFilters({ search, statusFilter, settlementFilter })
     setPage(1)
-  }, [search, statusFilter, settlementFilter])
+  }
 
   // Compute Metrics
   const metrics = React.useMemo(() => {

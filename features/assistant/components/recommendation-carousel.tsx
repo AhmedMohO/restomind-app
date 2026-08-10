@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useLocale, useTranslations } from "next-intl"
 import {
@@ -41,15 +41,13 @@ export function RecommendationCarousel({
   const [isExpanded, setIsExpanded] = useState(true)
 
   // Track recommendations reference to auto-open whenever updated with new recommendations
-  const prevRecsRef = useRef(recommendations)
-  useEffect(() => {
-    if (prevRecsRef.current !== recommendations) {
-      prevRecsRef.current = recommendations
-      if (recommendations.length > 0) {
-        setIsExpanded(true)
-      }
+  const [prevRecs, setPrevRecs] = useState(recommendations)
+  if (prevRecs !== recommendations) {
+    setPrevRecs(recommendations)
+    if (recommendations.length > 0) {
+      setIsExpanded(true)
     }
-  }, [recommendations])
+  }
 
   if (recommendations.length === 0) return null
 

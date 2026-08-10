@@ -62,6 +62,7 @@ export function AdminPayoutsPanel() {
 
   const load = React.useCallback(async (id: string) => {
     if (!id) return
+    await Promise.resolve()
     setIsLoading(true)
     const [nextStatement, nextHistory] = await Promise.all([
       fetchStatementAction(id),
