@@ -562,16 +562,17 @@
     }
   },
   "productionPlan": {
-    "title": "Production plan",
-    "subtitle": "How much to make today, and what actually came off the line.",
+    "title": "Production Plan",
+    "subtitle": "AI-recommended targets for tomorrow and logging actual batch output.",
     "date": "Date",
     "datePlaceholder": "Pick a date",
     "today": "Today",
+    "tomorrow": "Tomorrow",
     "totalRecommended": "Total recommended: {qty} units",
-    "recommended": "Recommended",
-    "actualLabel": "Actual produced",
+    "recommended": "AI Target",
+    "actualLabel": "Actual Produced",
     "unknownProduct": "Unknown product",
-    "generatingHint": "Generating today's plan — this can take up to 30 seconds.",
+    "generatingHint": "Generating production plan — this can take up to 30 seconds.",
     "noPlanTitle": "No plan for this date",
     "noPlanDescription": "No plan was generated for this date.",
     "horizonCapTitle": "Too far ahead",
@@ -582,8 +583,8 @@
     "generationTimeoutDescription": "This is taking longer than expected. Try refreshing in a moment.",
     "retry": "Try again",
     "retryRow": "Retry",
-    "actualsSaved": "Saved {count} row(s)",
-    "actualsSkipped": "{count} row(s) weren't saved — they're no longer part of this plan",
+    "actualsSaved": "Saved {count} item(s)",
+    "actualsSkipped": "{count} item(s) weren't saved — they're no longer part of this plan",
     "actualsError": "Could not save actuals",
     "rowSkipped": "Not part of this plan anymore",
     "saveFailed": "Couldn't save — tap retry",
@@ -592,7 +593,37 @@
       "saving": "Saving…",
       "saved": "Saved",
       "failed": "Save failed"
-    }
+    },
+    "kpi": {
+      "totalTarget": "AI Planned Target",
+      "totalActual": "Total Actual Produced",
+      "completionRate": "Production Completion",
+      "loggedRatio": "Products Logged"
+    },
+    "actions": {
+      "fillAllAi": "Fill All with AI Target",
+      "copyAiTarget": "Copy Target",
+      "clearAll": "Reset"
+    },
+    "filters": {
+      "searchPlaceholder": "Search product name...",
+      "all": "All Products",
+      "pending": "Pending Actuals",
+      "logged": "Recorded",
+      "targetMet": "Target Met",
+      "sortBy": "Sort By",
+      "sortHighestTarget": "Highest Target",
+      "sortLowestTarget": "Lowest Target",
+      "sortName": "Name A-Z"
+    },
+    "variance": {
+      "met": "Target Met",
+      "over": "Exceeded Target",
+      "under": "In Progress",
+      "pending": "Needs Actuals"
+    },
+    "units": "units",
+    "noSearchMatch": "No products match your filter/search criteria."
   },
   "waste": {
     "title": "Waste & surplus",

@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl"
 import { Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 
+import { useIsMutating } from "@tanstack/react-query"
+
 import { Button } from "@/components/ui/button"
 import { DegradedBanner } from "@/components/ai/degraded-banner"
 import { getErrorMessage } from "@/lib/api/utils"
@@ -17,29 +19,12 @@ export interface ScanSurplusPanelProps {
   title: string
 }
 
-/**
- * The page's title/scan-button row, plus its degraded-AI banner. A client
- * component because both the scan button and the banner's visibility need
- * client state: the mutation itself, and whether the last scan came back
- * degraded.
- *
- * Layout note (fix round 1, item 6): the banner is rendered as a
- * block-level sibling BELOW the title/button row, not inside it.
- * Reproduced and confirmed the bug this replaces: with the banner nested
- * as a flex item opposite the <h1> inside
- * `flex flex-wrap items-center justify-between`, the Alert's `w-full`
- * resolves against that flex item's own shrink-to-fit width (flex items
- * don't get the normal block "fill parent" behavior), so the banner
- * rendered squeezed into a narrow column matching the row's remaining
- * space instead of spanning the page — and at narrower viewports the row
- * wrapped, pushing the title onto its own line above a still-narrow
- * banner. Keeping the banner as a sibling below the row (a plain block
- * context, not a flex item) lets it span full width like every other
- * alert on this page.
- */
 export function ScanSurplusPanel({ title }: ScanSurplusPanelProps) {
   const t = useTranslations("recommendations")
   const scanMutation = useScanSurplus()
+  const isGlobalScanning = useIsMutating({ mutationKey: ["scan-surplus"] }) > 0
+  const isScanning = scanMutation.isPending || isGlobalScanning
+
   const [degradedReason, setDegradedReason] = React.useState<
     string | undefined
   >(undefined)
@@ -69,13 +54,13 @@ export function ScanSurplusPanel({ title }: ScanSurplusPanelProps) {
         <h1 className="flex items-center gap-2 font-heading text-2xl font-bold tracking-tight">
           {title}
         </h1>
-        <Button onClick={handleScan} disabled={scanMutation.isPending}>
-          {scanMutation.isPending ? (
+        <Button onClick={handleScan} disabled={isScanning}>
+          {isScanning ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <Sparkles className="size-4" />
           )}
-          {scanMutation.isPending ? t("scanning") : t("scanButton")}
+          {isScanning ? t("scanning") : t("scanButton")}
         </Button>
       </div>
       {showDegraded && <DegradedBanner reason={degradedReason} />}

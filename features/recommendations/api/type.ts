@@ -19,6 +19,7 @@ export interface Recommendation {
   productId: RecommendationProduct | string
   type: string
   suggestedValue: number
+  suggestedQuantity?: number
   gptExplanation: string
   status: RecommendationStatus
   wasteReportId?: string

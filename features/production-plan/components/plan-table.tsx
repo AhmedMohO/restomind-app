@@ -2,13 +2,21 @@
 
 import * as React from "react"
 import { useLocale, useTranslations } from "next-intl"
-import { format } from "date-fns"
-import { AlertCircle, CalendarOff, CalendarClock, ChefHat } from "lucide-react"
-
-import { cn } from "@/lib/utils"
-import { formatQty } from "@/lib/charts/format"
+import { format, addDays } from "date-fns"
+import {
+  AlertCircle,
+  CalendarOff,
+  CalendarClock,
+  ChefHat,
+  Sparkles,
+  Search,
+  Wand2,
+  RotateCcw,
+  Calendar,
+} from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { DatePicker } from "@/components/ui/date-picker"
 import { DegradedBanner } from "@/components/ai/degraded-banner"
 import { ClientFetchError } from "@/lib/api/fetch-client"
@@ -29,16 +37,17 @@ function todayStr(): string {
   return format(new Date(), "yyyy-MM-dd")
 }
 
+function tomorrowStr(): string {
+  return format(addDays(new Date(), 1), "yyyy-MM-dd")
+}
+
 function horizonCapDate(): Date {
   const d = new Date()
   d.setDate(d.getDate() + MAX_HORIZON_DAYS)
   return d
 }
 
-/** Debounce window before an edited row is included in a batch save; a blur
- * flushes immediately regardless of this timer (brief, Step 2). */
 const DEBOUNCE_MS = 800
-
 const QTY_MAX = 1_000_000
 
 function toQty(raw: string | undefined): number {
@@ -51,10 +60,6 @@ interface RowState {
   value: string
   status: RowSaveStatus
   error?: string
-  /** True only for a `failed` row caused by a network/5xx failure — a
-   * `skipped` row (rejected by the backend because it's no longer part of
-   * the plan) has no retry affordance since resubmitting would just be
-   * skipped again. Drives whether `ActualsRow` shows the retry button. */
   retryable?: boolean
 }
 
@@ -62,32 +67,40 @@ function SkeletonCard() {
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-2xs">
       <div className="flex items-center gap-3">
-        <Skeleton className="size-11 rounded-lg" />
+        <Skeleton className="size-12 rounded-xl" />
         <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-4 w-1/4" />
+          <Skeleton className="h-3 w-1/4" />
         </div>
       </div>
-      <div className="mt-4 flex items-end justify-between gap-4">
-        <Skeleton className="h-10 w-16" />
-        <Skeleton className="h-11 flex-1" />
+      <div className="mt-4 space-y-2 rounded-lg bg-muted/30 p-3">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-2 w-full" />
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <Skeleton className="h-9 flex-1 rounded-lg" />
+        <Skeleton className="h-9 w-20 rounded-lg" />
       </div>
     </div>
   )
 }
 
-/**
- * Daily production plan — the primary screen is a data-entry list a kitchen
- * worker fills in one-handed, not a report a manager scans. Client-owns:
- * the date filter, the debounce/batch/save-state machine for the "actual
- * produced" inputs, and the three non-happy-path date states (Step 4).
- */
 export function PlanTable() {
   const t = useTranslations("productionPlan")
   const tCommon = useTranslations("Common")
   const locale = useLocale()
 
-  const [date, setDate] = React.useState<string>(() => todayStr())
+  // Default to Tomorrow as production plans are target production for tomorrow/next shift
+  const [date, setDate] = React.useState<string>(() => tomorrowStr())
+
+  // Search & Filters State
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const [statusFilter, setStatusFilter] = React.useState<
+    "all" | "pending" | "logged" | "targetMet"
+  >("all")
+  const [sortBy, setSortBy] = React.useState<
+    "highestTarget" | "lowestTarget" | "name"
+  >("highestTarget")
 
   const query = useProductionPlan(date)
   const recordActuals = useRecordActuals({
@@ -98,31 +111,18 @@ export function PlanTable() {
 
   const items = React.useMemo(() => query.data?.data.items ?? [], [query.data])
 
-  // --- per-row state: value / save status, keyed by productId ------------
+  // Per-row state
   const [rows, setRows] = React.useState<Record<string, RowState>>({})
-  // Mutable bookkeeping (never triggers a render by itself) so the debounce
-  // timer and the flush it eventually calls always see the LATEST edits,
-  // never a stale closure from the render that scheduled the timer.
   const dirtyRef = React.useRef<Set<string>>(new Set())
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
-  // Set when a flush is requested while a batch is already in flight — see
-  // the effect below that drains it once the mutation settles.
   const flushQueuedRef = React.useRef(false)
-  // The debounce timer's setTimeout callback is scheduled once but may fire
-  // long after a re-render replaced `flush` with a version closing over
-  // newer `rows` — indirecting through a ref that's reassigned every render
-  // means the timer always invokes the CURRENT flush, not the one that
-  // existed when the timer was scheduled.
   const flushRef = React.useRef<() => void>(() => {})
   const lastHandledResultRef = React.useRef<RecordActualsResponse | undefined>(
     undefined
   )
   const lastHandledErrorRef = React.useRef<unknown>(undefined)
 
-  // Re-seed row state from server data — but only for rows that aren't
-  // being actively edited (still within their debounce window, i.e. dirty)
-  // or mid-save right now. A refetch (after invalidate, or a plain remount)
-  // must never stomp an in-progress edit.
+  // Re-seed row state from server data
   React.useEffect(() => {
     if (items.length === 0) return
     setRows((prev) => {
@@ -130,16 +130,16 @@ export function PlanTable() {
       for (const item of items) {
         const id = getProductId(item)
         const existing = next[id]
-        if (
-          !existing ||
-          (!dirtyRef.current.has(id) && existing.status !== "saving")
-        ) {
+        const isUserEditing =
+          dirtyRef.current.has(id) ||
+          existing?.status === "saving"
+        if (!existing || !isUserEditing) {
           next[id] = {
             value:
               item.actualProducedQty != null
                 ? String(item.actualProducedQty)
                 : "",
-            status: "idle",
+            status: existing?.status === "saved" ? "saved" : "idle",
           }
         }
       }
@@ -150,6 +150,15 @@ export function PlanTable() {
   function flush() {
     if (recordActuals.isPending) {
       flushQueuedRef.current = true
+      setRows((prev) => {
+        const next = { ...prev }
+        dirtyRef.current.forEach((id) => {
+          if (next[id] && next[id].status !== "saving") {
+            next[id] = { ...next[id], status: "saving" }
+          }
+        })
+        return next
+      })
       return
     }
     const ids = Array.from(dirtyRef.current)
@@ -175,25 +184,10 @@ export function PlanTable() {
     recordActuals.mutate(payload)
   }
 
-  // Keeps `flushRef` pointed at the latest `flush` closure (current `rows`,
-  // current `date`, current mutation) after every render. This runs as an
-  // effect — not a direct `flushRef.current = flush` in the render body —
-  // because writing a ref during render is a lint error here (refs are for
-  // effects/handlers, not render output) and, more importantly, because a
-  // React Compiler / concurrent-rendering environment may call the render
-  // function speculatively without committing, which must never have a
-  // side effect on shared mutable state.
   React.useEffect(() => {
     flushRef.current = flush
   })
 
-  // Reconciles a successful batch against the exact rows it covered
-  // (`recordActuals.variables`, the payload of the call that just
-  // resolved) — never a per-call `mutate(vars, { onSuccess })`, which
-  // TanStack drops when a later call supersedes the observer before the
-  // earlier one resolves (see hook comment). Reading `.data`/`.variables`
-  // reactively off the mutation object is immune to that: it's plain state,
-  // not a callback registration.
   React.useEffect(() => {
     const result = recordActuals.data
     if (!result || result === lastHandledResultRef.current) return
@@ -205,9 +199,6 @@ export function PlanTable() {
       const next = { ...prev }
       for (const id of submittedIds) {
         if (skippedSet.has(id)) {
-          // A skipped productId wasn't part of the plan — retrying would
-          // just be skipped again, so this row is NOT re-marked dirty and
-          // gets no retry affordance (`retryable` stays unset).
           next[id] = {
             ...next[id],
             status: "failed",
@@ -227,14 +218,6 @@ export function PlanTable() {
     })
   }, [recordActuals.data, recordActuals.variables, t])
 
-  // Same identity-guarded pattern for a failed batch (network/5xx) — unlike
-  // a `skipped` row, nothing here says the value itself was rejected, so
-  // these rows go back into `dirtyRef` (a later flush — e.g. editing a
-  // different row — will pick them up) AND get an explicit retry
-  // affordance (`retryable: true`, see `handleRetry` below), since nothing
-  // else on this screen otherwise re-triggers a flush for a row nobody
-  // touches again. A kitchen worker shouldn't have to edit an unrelated
-  // field to un-strand a failed entry.
   React.useEffect(() => {
     const err = recordActuals.error
     if (!err || err === lastHandledErrorRef.current) return
@@ -256,26 +239,6 @@ export function PlanTable() {
     })
   }, [recordActuals.error, recordActuals.variables, t])
 
-  // Drains a flush that arrived while the previous batch was still in
-  // flight (a second row edited mid-save, or the same row edited again).
-  // This — not a per-call `mutate(vars, {...})` — is how a queued edit gets
-  // sent: it runs once `isPending` flips back to false, picking up
-  // whatever is in `dirtyRef` at that moment, which may include rows the
-  // just-settled batch already covered (re-dirtied by a newer edit) as
-  // well as rows that never got a chance to flush at all.
-  //
-  // Declared AFTER both reconciliation effects above, not before — same
-  // commit, same-phase effects run in declaration order, so this ordering
-  // is load-bearing: it guarantees the reconciliation effects always get
-  // to react to a *just-settled* batch's outcome before this one
-  // potentially fires the *next* batch and flips a row back to "saving".
-  // Getting this backwards was a real bug in an earlier version of this
-  // file (caught in review): with the drain effect declared first, a row
-  // edited again while its own submission was still in flight would
-  // flash "saving" -> the queued flush's next POST -> then get stomped
-  // back to "saved"/"failed" by the reconciliation effect reacting to the
-  // FIRST, now-superseded response, even though a second POST for a
-  // different value was already outstanding.
   React.useEffect(() => {
     if (!recordActuals.isPending && flushQueuedRef.current) {
       flushQueuedRef.current = false
@@ -289,32 +252,20 @@ export function PlanTable() {
     }
   }, [])
 
-  /** Manual retry for a `failed` row caused by a network/5xx failure (brief
-   * fix-round item 2). The row is already back in `dirtyRef` (the error
-   * effect above put it there), so this just needs to trigger a flush now
-   * instead of waiting for some other row to be edited. Deliberately a
-   * manual, explicit action rather than an automatic re-flush: a silent
-   * auto-retry loop against a persistently unreachable network would keep
-   * firing POSTs with no visible feedback beyond a repeating toast, which
-   * is worse on a kitchen tablet than a single visible "tap to retry" — and
-   * it matches how a `skipped` row already surfaces as an inline,
-   * worker-actionable state rather than an invisible background process. */
   function handleRetry(productId: string) {
     dirtyRef.current.add(productId)
     flushRef.current()
   }
 
   function handleChange(productId: string, raw: string) {
+    dirtyRef.current.add(productId)
     setRows((prev) => ({
       ...prev,
       [productId]: {
         value: raw,
-        // A row mid-save keeps showing "saving" until that call settles;
-        // otherwise a fresh edit clears any stale "saved"/"failed" light.
         status: prev[productId]?.status === "saving" ? "saving" : "idle",
       },
     }))
-    dirtyRef.current.add(productId)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       timerRef.current = null
@@ -330,39 +281,142 @@ export function PlanTable() {
     flushRef.current()
   }
 
-  // --- date-state branching (brief, Step 4) -------------------------------
+  // Action: Fill All items with AI Target
+  function handleFillAllWithAi() {
+    setRows((prev) => {
+      const next = { ...prev }
+      for (const item of items) {
+        const id = getProductId(item)
+        const recVal = String(item.recommendedQty ?? 0)
+        next[id] = {
+          value: recVal,
+          status: "idle",
+        }
+        dirtyRef.current.add(id)
+      }
+      return next
+    })
+
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null
+      flushRef.current()
+    }, 100)
+  }
+
+  // Filtered & Sorted items
+  const processedItems = React.useMemo(() => {
+    return items
+      .filter((item) => {
+        const id = getProductId(item)
+        const product =
+          typeof item.productId === "string" ? null : item.productId
+        const title = product?.title ?? ""
+        const rowVal = rows[id]?.value
+        const actualNum =
+          rowVal !== undefined && rowVal !== "" ? Number(rowVal) : null
+
+        // Search match
+        if (searchQuery.trim() !== "") {
+          if (!title.toLowerCase().includes(searchQuery.toLowerCase().trim())) {
+            return false
+          }
+        }
+
+        // Status Filter
+        if (statusFilter === "pending") {
+          return actualNum == null || actualNum === 0
+        }
+        if (statusFilter === "logged") {
+          return actualNum != null && actualNum > 0
+        }
+        if (statusFilter === "targetMet") {
+          return actualNum != null && actualNum >= (item.recommendedQty ?? 0)
+        }
+
+        return true
+      })
+      .sort((a, b) => {
+        if (sortBy === "highestTarget") {
+          return (b.recommendedQty ?? 0) - (a.recommendedQty ?? 0)
+        }
+        if (sortBy === "lowestTarget") {
+          return (a.recommendedQty ?? 0) - (b.recommendedQty ?? 0)
+        }
+        if (sortBy === "name") {
+          const titleA =
+            typeof a.productId === "string" ? "" : (a.productId?.title ?? "")
+          const titleB =
+            typeof b.productId === "string" ? "" : (b.productId?.title ?? "")
+          return titleA.localeCompare(titleB)
+        }
+        return 0
+      })
+  }, [items, rows, searchQuery, statusFilter, sortBy])
+
   const error = query.error as (ClientFetchError & { name?: string }) | null
   const status = error?.status
   const isTimeout =
     error?.name === "TimeoutError" || error?.name === "AbortError"
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 font-heading text-2xl font-bold tracking-tight">
-            {t("title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
-        </div>
+    <div className="space-y-6 pb-12">
+      {/* Hero Header Section */}
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-linear-to-r from-card via-card to-primary/5 p-6 shadow-xs">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <Sparkles className="size-3.5" />
+                AI Demand Forecasting
+              </span>
+              {recordActuals.isPending ? (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                  <RotateCcw className="size-3 animate-spin" />
+                  {tCommon("saving")}
+                </span>
+              ) : null}
+            </div>
 
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="w-44">
-            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-              {t("date")}
-            </label>
-            <DatePicker
-              value={date}
-              onChange={(value) => value && setDate(value)}
-              placeholder={t("datePlaceholder")}
-              maxDate={horizonCapDate()}
-            />
+            <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">
+              {t("title")}
+            </h1>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              {t("subtitle")}
+            </p>
           </div>
-          {date !== todayStr() ? (
-            <Button variant="outline" onClick={() => setDate(todayStr())}>
-              {t("today")}
-            </Button>
-          ) : null}
+
+          {/* Date Selector & Shortcuts */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="flex rounded-xl border border-border bg-muted/40 p-1 shadow-2xs">
+              <Button
+                variant={date === tomorrowStr() ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setDate(tomorrowStr())}
+                className="h-8 rounded-lg text-xs font-medium"
+              >
+                <Calendar className="mr-1 size-3.5" />
+                {t("tomorrow")}
+              </Button>
+              <Button
+                variant={date === todayStr() ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setDate(todayStr())}
+                className="h-8 rounded-lg text-xs font-medium"
+              >
+                {t("today")}
+              </Button>
+            </div>
+
+            <div className="w-44">
+              <DatePicker
+                value={date}
+                onChange={(value) => value && setDate(value)}
+                placeholder={t("datePlaceholder")}
+                maxDate={horizonCapDate()}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -370,17 +424,76 @@ export function PlanTable() {
         <DegradedBanner reason={query.data.degradedReason} />
       ) : null}
 
-      {query.isSuccess && query.data.data.items.length > 0 ? (
-        <p className="text-sm text-muted-foreground">
-          {t("totalRecommended", {
-            qty: formatQty(query.data.data.totalRecommendedQty, locale),
-          })}
-        </p>
+      {/* Filter, Search & Batch Actions Bar */}
+      {query.isSuccess && items.length > 0 ? (
+        <div className="flex flex-col gap-3 rounded-xl border border-border/80 bg-card p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
+          {/* Search bar */}
+          <div className="relative flex-1 sm:max-w-xs">
+            <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("filters.searchPlaceholder")}
+              className="h-9 pl-9 text-xs"
+            />
+          </div>
+
+          {/* Filter Pills & Sort */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex rounded-lg border border-border bg-muted/30 p-1">
+              <Button
+                variant={statusFilter === "all" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter("all")}
+                className="h-7 rounded-md px-2.5 text-xs font-medium"
+              >
+                {t("filters.all")}
+              </Button>
+              <Button
+                variant={statusFilter === "pending" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter("pending")}
+                className="h-7 rounded-md px-2.5 text-xs font-medium"
+              >
+                {t("filters.pending")}
+              </Button>
+              <Button
+                variant={statusFilter === "logged" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter("logged")}
+                className="h-7 rounded-md px-2.5 text-xs font-medium"
+              >
+                {t("filters.logged")}
+              </Button>
+              <Button
+                variant={statusFilter === "targetMet" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter("targetMet")}
+                className="h-7 rounded-md px-2.5 text-xs font-medium"
+              >
+                {t("filters.targetMet")}
+              </Button>
+            </div>
+
+            {/* Quick Batch Fill button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFillAllWithAi}
+              className="h-9 gap-1.5 rounded-lg border-primary/30 text-xs font-semibold text-primary hover:bg-primary/10"
+              title={t("actions.fillAllAi")}
+            >
+              <Wand2 className="size-3.5" />
+              <span>{t("actions.fillAllAi")}</span>
+            </Button>
+          </div>
+        </div>
       ) : null}
 
+      {/* Main Grid View */}
       {query.isPending ? (
         <div className="space-y-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
@@ -421,9 +534,27 @@ export function PlanTable() {
           title={t("noPlanTitle")}
           description={t("noPlanDescription")}
         />
+      ) : processedItems.length === 0 ? (
+        <EmptyState
+          icon={Search}
+          title={t("noSearchMatch")}
+          description="Try adjusting your search terms or filters."
+          action={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchQuery("")
+                setStatusFilter("all")
+              }}
+            >
+              Reset Filters
+            </Button>
+          }
+        />
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {items.map((item: ProductionPlanItem) => {
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {processedItems.map((item: ProductionPlanItem) => {
             const id = getProductId(item)
             const row = rows[id] ?? {
               value: "",
@@ -465,11 +596,7 @@ function EmptyState({
   action?: React.ReactNode
 }) {
   return (
-    <div
-      className={cn(
-        "flex h-72 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border p-6 text-center"
-      )}
-    >
+    <div className="flex h-72 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-card/50 p-6 text-center">
       <div className="flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
         <Icon className="size-6" />
       </div>

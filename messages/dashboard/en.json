@@ -1623,7 +1623,6 @@
     "placeholder": "Ask about sales, stock, waste…",
     "empty": "Ask me anything about your restaurant, or pick a suggestion below.",
     "thinking": "Thinking",
-    "suggestionsHeading": "Please pick one of the following",
     "suggestions": [
       "Offers and discounts",
       "Daily sales analysis",

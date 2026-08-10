@@ -33,13 +33,19 @@ export function useRecommendationsList(params: GetRecommendationsParams = {}) {
 export function useScanSurplus() {
   const qc = useQueryClient()
   return useMutation<{ data: ScanSurplusResult; degraded: boolean; degradedReason?: string }>({
+    mutationKey: ["scan-surplus"],
     mutationFn: async () =>
-      (await clientFetch("/recommendations/scan-surplus", { method: "POST" }))!,
+      (await clientFetch("/recommendations/scan-surplus", {
+        method: "POST",
+        signal: AbortSignal.timeout(35_000),
+      }))!,
     // Invalidate on BOTH paths: the backend commits waste reports before the
     // AI call, so a degraded scan still changed data.
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: RECOMMENDATIONS_QUERY_KEY })
-      qc.invalidateQueries({ queryKey: ["waste-reports"] })
+      return Promise.all([
+        qc.invalidateQueries({ queryKey: RECOMMENDATIONS_QUERY_KEY }),
+        qc.invalidateQueries({ queryKey: ["waste-reports"] }),
+      ])
     },
   })
 }
@@ -103,7 +109,11 @@ export function useApproveRecommendation(messages: ApproveRecommendationMessages
       else toast.error(messages.generic)
     },
     onSettled: () =>
-      qc.invalidateQueries({ queryKey: RECOMMENDATIONS_QUERY_KEY }),
+      Promise.all([
+        qc.invalidateQueries({ queryKey: RECOMMENDATIONS_QUERY_KEY }),
+        qc.invalidateQueries({ queryKey: ["offers"] }),
+        qc.invalidateQueries({ queryKey: ["waste-reports"] }),
+      ]),
   })
 }
 

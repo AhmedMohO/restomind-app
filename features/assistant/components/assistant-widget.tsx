@@ -93,7 +93,7 @@ export function AssistantWidget() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 40 }}
             transition={{ type: "spring", stiffness: 350, damping: 30 }}
-            className="fixed end-0 bottom-8 z-50 flex items-center pointer-events-none"
+            className="pointer-events-none fixed end-0 bottom-8 z-50 flex items-center"
           >
             <motion.button
               type="button"
@@ -101,7 +101,7 @@ export function AssistantWidget() {
               aria-label={t("open")}
               whileTap={{ scale: 0.95 }}
               className={cn(
-                "group relative flex items-center gap-3 rounded-s-full border border-e-0 border-border/80 bg-background/95 py-2 ps-2 pe-4 shadow-2xl backdrop-blur-md transition-all duration-300 ease-out hover:border-primary/50 hover:bg-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-events-auto",
+                "group pointer-events-auto relative flex items-center gap-3 rounded-s-full border border-e-0 border-border/80 bg-background/95 py-2 ps-2 pe-4 shadow-2xl backdrop-blur-md transition-all duration-300 ease-out hover:border-primary/50 hover:bg-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                 "translate-x-[calc(100%-2rem)] opacity-95 hover:translate-x-0 hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100 rtl:-translate-x-[calc(100%-2rem)] rtl:hover:translate-x-0 rtl:focus-visible:translate-x-0"
               )}
             >
@@ -228,31 +228,6 @@ export function AssistantWidget() {
                 />
               )}
             </div>
-
-            {/* Quick suggestions — an opener, so they retire once the
-                conversation has started and the thread carries the context. */}
-            {messages.length === 0 && (
-              <div className="shrink-0 border-t border-border px-4 py-3">
-                <p className="mb-2 text-[11px] text-muted-foreground">
-                  {t("suggestionsHeading")}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {suggestions.map((s) => (
-                    <motion.button
-                      key={s}
-                      type="button"
-                      dir="auto"
-                      whileTap={{ scale: 0.96 }}
-                      disabled={send.isPending}
-                      onClick={() => submit(s)}
-                      className="rounded-full border border-border bg-card px-3 py-1.5 text-xs transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
-                    >
-                      {s}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Composer */}
             <form

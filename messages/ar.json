@@ -563,15 +563,16 @@
   },
   "productionPlan": {
     "title": "خطة الإنتاج",
-    "subtitle": "الكمية المطلوب تحضيرها اليوم، وما تم تحضيره فعليًا.",
+    "subtitle": "توصيات الذكاء الاصطناعي المستهدفة وتسجيل الإنتاج الفعلي للدفعة.",
     "date": "التاريخ",
     "datePlaceholder": "اختر تاريخًا",
     "today": "اليوم",
+    "tomorrow": "الغد",
     "totalRecommended": "إجمالي الكمية الموصى بها: {qty} وحدة",
-    "recommended": "الكمية الموصى بها",
-    "actualLabel": "الكمية الفعلية المُنتَجة",
+    "recommended": "مستهدف AI",
+    "actualLabel": "الإنتاج الفعلي",
     "unknownProduct": "منتج غير معروف",
-    "generatingHint": "جارٍ إنشاء خطة اليوم — قد يستغرق هذا حتى 30 ثانية.",
+    "generatingHint": "جارٍ إنشاء خطة الإنتاج — قد يستغرق هذا حتى 30 ثانية.",
     "noPlanTitle": "لا توجد خطة لهذا التاريخ",
     "noPlanDescription": "لم يتم إنشاء خطة لهذا التاريخ.",
     "horizonCapTitle": "تاريخ بعيد جدًا",
@@ -582,8 +583,8 @@
     "generationTimeoutDescription": "هذا يستغرق وقتًا أطول من المتوقع. جرّب التحديث بعد قليل.",
     "retry": "إعادة المحاولة",
     "retryRow": "إعادة المحاولة",
-    "actualsSaved": "تم حفظ {count} صف",
-    "actualsSkipped": "لم يتم حفظ {count} صف — لم تعد ضمن هذه الخطة",
+    "actualsSaved": "تم حفظ {count} عنصر",
+    "actualsSkipped": "لم يتم حفظ {count} عنصر — لم تعد ضمن هذه الخطة",
     "actualsError": "تعذّر حفظ الكميات الفعلية",
     "rowSkipped": "لم تعد ضمن هذه الخطة",
     "saveFailed": "تعذّر الحفظ — اضغط لإعادة المحاولة",
@@ -592,7 +593,37 @@
       "saving": "جارٍ الحفظ…",
       "saved": "تم الحفظ",
       "failed": "فشل الحفظ"
-    }
+    },
+    "kpi": {
+      "totalTarget": "المستهدف المخطط (AI)",
+      "totalActual": "إجمالي الإنتاج الفعلي",
+      "completionRate": "نسبة إنجاز الإنتاج",
+      "loggedRatio": "المنتجات المُسجلة"
+    },
+    "actions": {
+      "fillAllAi": "تعبئة الكل بمستهدف الذكاء الاصطناعي",
+      "copyAiTarget": "نسخ المستهدف",
+      "clearAll": "إعادة ضبط"
+    },
+    "filters": {
+      "searchPlaceholder": "ابحث عن اسم المنتج...",
+      "all": "جميع المنتجات",
+      "pending": "قيد التسجيل",
+      "logged": "تم التسجيل",
+      "targetMet": "تحقق المستهدف",
+      "sortBy": "ترتيب حسب",
+      "sortHighestTarget": "الأعلى استهدافًا",
+      "sortLowestTarget": "الأقل استهدافًا",
+      "sortName": "الاسم أبجديًا"
+    },
+    "variance": {
+      "met": "مستهدف مكتمل",
+      "over": "تجاوز المستهدف",
+      "under": "قيد التنفيذ",
+      "pending": "بانتظار التسجيل"
+    },
+    "units": "وحدات",
+    "noSearchMatch": "لا توجد منتجات تطابق البحث أو التصفية الحالية."
   },
   "waste": {
     "title": "الفائض والهدر",
